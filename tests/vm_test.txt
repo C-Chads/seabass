@@ -21,8 +21,28 @@ fn codegen returns1()->int:
     return 1;
 end
 
+proc codegen returns1_2()->int:
+    __builtin_puts("Returning 1, but better!");
+    return 1;
+end
+
+proc codegen returns1_3()->int:
+    __builtin_puts("Returning 1, yet another time!");
+    return 1;
+end
+
 fn codegen returns0()->int:
     __builtin_puts("Returning 0");
+    return 0;
+end
+
+fn codegen returns0_2()->int:
+    __builtin_puts("Returning 0, again!");
+    return 0;
+end
+
+fn codegen returns0_3()->int:
+    __builtin_puts("Returning 0, yet again!");
     return 0;
 end
 
@@ -600,6 +620,13 @@ proc codegen codegen_main():
 	end	
 	if(returns0() || returns0() || returns1())
 	    __builtin_puts("You should have seen three, 0,0,1");
+	end
+	if(returns0() || returns0_2() || returns0_3() || returns1_2())
+	    __builtin_puts("0 0_2 0_3 1_2");
+	end
+	
+    if(returns1() && returns1_2() && returns1_3())
+	    __builtin_puts("1 1_2 1_3");
 	end
 	return;
 end

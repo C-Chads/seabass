@@ -2776,6 +2776,7 @@ void expr_parse_logbool(expr_node** targ){
     				c->subnodes[0] = a;
     				c->subnodes[1] = b;
     				chain = c;
+    				a = chain;
     				continue;
     			}
     			if(streq(peek()->text, "&&")){
@@ -2786,6 +2787,7 @@ void expr_parse_logbool(expr_node** targ){
     				c->subnodes[0] = a;
     				c->subnodes[1] = b;
     				chain = c;
+    				a = chain;
     				continue;
     			}
 			} else {
@@ -2794,9 +2796,10 @@ void expr_parse_logbool(expr_node** targ){
     				c = c_allocX(sizeof(expr_node));
     				c->kind = EXPR_LOGOR;
     				expr_parse_compare(&b);
-    				c->subnodes[0] = chain->subnodes[1];
+    				c->subnodes[0] = a->subnodes[1];
     				c->subnodes[1] = b;
-    				chain->subnodes[1] = c;
+    				a->subnodes[1] = c;
+    				a = a->subnodes[1];
     				continue;
     			}
     			if(streq(peek()->text, "&&")){
@@ -2804,9 +2807,10 @@ void expr_parse_logbool(expr_node** targ){
     				c = c_allocX(sizeof(expr_node));
     				c->kind = EXPR_LOGAND;
     				expr_parse_compare(&b);
-    				c->subnodes[0] = chain->subnodes[1];
+    				c->subnodes[0] = a->subnodes[1];
     				c->subnodes[1] = b;
-    				chain->subnodes[1] = c;
+    				a->subnodes[1] = c;
+    				a = a->subnodes[1];
     				continue;
     			}
 			}
