@@ -3137,8 +3137,23 @@ void parse_return(){
 	}
 	me->nexpressions = 1;
 	parse_expr((expr_node**)(me->expressions + 0) );
-    if(peek_match_keyw("end")){
-	    //we're good.
+    if(
+	    peek_match_keyw("end") || 
+	    peek_match_keyw("if") || 
+	    peek_match_keyw("elif") || 
+	    peek_match_keyw("else") ||
+	    peek_match_keyw("tail") ||
+	    peek_match_keyw("switch") ||
+	    peek_match_keyw("return") ||
+	    peek_match_keyw("asm") ||
+	    peek_match_keyw("continue") ||
+	    peek_match_keyw("break") ||
+	    peek_match_keyw("goto") ||
+	    peek_match_keyw("while") ||
+	    peek_match_keyw("for") ||
+	    peek_is_typename()
+	){
+	    //No possibility of ambiguity...
 	    return;
 	}
 	consume_semicolon("return requires semicolon.");
