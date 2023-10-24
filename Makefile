@@ -37,12 +37,12 @@ q: clean install
 
 toc_test:
 	cbas library/toc.cbas
-	cc -m32 -O3 auto_out.c library/companion.c -o toc_test
+	cc -m32 -O3 -s auto_out.c library/companion.c -o toc_test
 
 	
 toc_gnuc_test:
 	cbas library/toc_gnuc.cbas
-	cc -m32 -O3 auto_out.c library/companion_gnuc.c -o toc_test
+	cc -m32 -O3 -s auto_out.c library/companion_gnuc.c -o toc_test
 
 	
 
