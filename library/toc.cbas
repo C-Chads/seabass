@@ -17,7 +17,7 @@
 
 @wksht cpprint [
     [
-        @pprint [puts mutoa ARG1]
+        @pprint [println mutoa ARG1]
     ][
         ARG1
     ]
@@ -70,13 +70,13 @@ end
 
 //standard library imports...
 
-fn noexport inline pure strcmp(schar* a, schar* b)->int;
-fn noexport inline puts(char* a);
+
 fn predecl inline mutoa(char* dest, uint value);
 
 struct this_type_has_a_destructor
     int a
     int b
+    char* qq
 end
 
 //Thank you, Lord Jesus :)
@@ -87,18 +87,29 @@ method inline this_type_has_a_destructor.dtor():
         /       "My a was:"
         /int    (this.a)
     ]
+    if(this.qq != 0)
+        mem_free(this.qq)
+    end
 end
 
 method inline this_type_has_a_destructor.ctor():
-    puts("Hello Mom!");
+    println("Hello Mom!");
     this.a = 5;
     this.b = 7;
+    this.qq = mem_alloc(20);
+    if(this.qq == 0)
+        println("mem_alloc failed!");
+    end
 end
 
 
 
 fn  inline pure impl_streq(char* a, char* b)->i32:
-    return (strcmp(cast(schar*)a,cast(schar*)b) == 0);
+    while(1)
+        if(a[0] != b[0]) return 0 end
+        if(a[0] == 0) return 1 end
+        a++;b++;
+    end
 end
 
 data int myintegers 3, 4, 5, 7, 9, 10, -133+134;
@@ -145,7 +156,7 @@ end
 
 
 fn whosa_yousa(int a): 
-    puts("Whosa programmer? Yousa programmer!");
+    println("Whosa programmer? Yousa programmer!");
 end
 
 fn wadda(int iters):
@@ -156,10 +167,10 @@ fn wadda(int iters):
         mutoa(buf, i*i);
         //asm("qqq;\n");
         for(j = 0, j < 12, j++)
-            puts(buf);
+            println(buf);
             if(j == 3)
                 buf[0] = 'q';
-                puts(buf);
+                println(buf);
                 break;
             end
         end
@@ -191,16 +202,16 @@ atomic int my_integer = 37;
 
 fn pub main()->int:
     
-    puts("Hello World, from CBAS!");
+    println("Hello World, from CBAS!");
     char* p
     p = getfnptr(wadda);
     callfnptr[whosa_yousa](p)(30);
     if(0)
-        puts("a");
+        println("a");
     elif("eq" streq "neq")
-        puts("b");
+        println("b");
     else
-        puts("Quality!");
+        println("Quality!");
     end
     if(1)
         switch(2) aa, bb, cc, dd;
@@ -210,16 +221,16 @@ fn pub main()->int:
         switch(3) aa, bb, cc, dd;
         
         :aa
-            puts("Got a 0!");
+            println("Got a 0!");
             goto ee
         :bb
-            puts("Got a 1!");
+            println("Got a 1!");
             goto ee
         :cc
-            puts("Got a 2!");
+            println("Got a 2!");
             jump ee
         :dd
-            puts("Got a 3!");
+            println("Got a 3!");
             goto ee
         :ee
         @cpprint[
@@ -312,9 +323,19 @@ fn pub main()->int:
             if(ffff == 3) break end
             //should be cleaned up at the end of the scope...
             if(ffff == 9) goto real_end end
-            if(0) return 0; puts("This should never print!")    end
+            if(0) return 0; println("This should never print!")    end
             
         end
+    end
+    
+    
+    //test readbytes
+    if(1)
+        char[5] buf
+        println("Enter 5 characters");
+        read_bytes(get_stdin_handle(), buf, 5);
+        println("Here are your characters back:");
+        write_bytes(get_stdout_handle(), buf, 5);
     end
     
     :real_end
@@ -322,6 +343,6 @@ end
 
 
 fn codegen codegen_main():
-    cg_emitC("\n#include <stdio.h>\n#include <string.h>\n#include <stdlib.h>\n");
+    cg_emitC("");
 end
 

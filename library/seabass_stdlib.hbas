@@ -40,6 +40,8 @@ fn predecl get_errno()->int;
 fn predecl mcpy(char* dst, char* src, TGT_UMAX sz);
 
 
+fn predecl println(char* s);
+
 //this is needed to get proper compiler optimization...
 fn predecl mem_alloc(TGT_UMAX amt)->char*;
 fn predecl mem_free(char* p);
@@ -48,7 +50,12 @@ fn predecl mem_realloc(char* p, TGT_UMAX amt)->char*;
 /*
     TODO: Fill out the full feature set of
     the C standard library...
+    
+    I need stuff for controlling the terminal and
+    doing 
 */
+
+
 
 
 

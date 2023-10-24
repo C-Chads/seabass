@@ -74,6 +74,10 @@ unsigned char* mem_realloc(unsigned char* b, size_t amt){
     return realloc(b, amt);
 }
 
+void println(char* s){
+    puts(s);
+}
+
 
 
 

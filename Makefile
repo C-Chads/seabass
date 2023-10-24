@@ -35,6 +35,10 @@ dev: clean uninstall cbas_debug
 	
 q: clean install
 
+toc_test:
+	cbas library/toc.cbas
+	cc -m32 -O3 auto_out.c library/companion.c -o toc_test
+
 	
 
 uninstall:
@@ -49,4 +53,4 @@ push: clean
 	git push
 
 clean:
-	rm -f *.exe *.out *.bin *.o cbas cbas_dbg cbas_clean cbas_tcc auto_out.c
+	rm -f *.exe *.out *.bin *.o cbas cbas_dbg cbas_clean cbas_tcc auto_out.c toc_test

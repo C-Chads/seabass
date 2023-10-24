@@ -283,7 +283,6 @@
 
 
 class cgbuf noexport
-
     byte* d
     u64 sz
 end
