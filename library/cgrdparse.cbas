@@ -39,6 +39,11 @@
             if(tok_null) break; end
             eat
         end
+        go whack_a_mole
+        __builtin_puts("Wont print")
+    ]
+    whack_a_mole [
+        __builtin_puts("Fin")
     ]
     set_ident [
         this.int_name:fromstr(tok.text);
