@@ -524,6 +524,7 @@
 "end\n"
 "\n"
 "class cgtypedecl_oop_metadata\n"
+"    noexport\n"
 "    i64 ctor_id\n"
 "    i64 dtor_id\n"
 "    i64 have_checked\n"
