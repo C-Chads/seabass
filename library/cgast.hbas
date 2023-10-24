@@ -524,6 +524,7 @@ class cgexpr_node
 end
 
 class cgtypedecl_oop_metadata
+    noexport
     i64 ctor_id
     i64 dtor_id
     i64 have_checked
