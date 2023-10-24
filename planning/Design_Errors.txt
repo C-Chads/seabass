@@ -1,0 +1,75 @@
+
+DESIGN ERRORS THAT HAVE ACCRUED IN SEABASS
+
+These may be mitigated through creative thinking.
+
+PROBLEM 1
+_______________________________
+* Pointer size and maximum integer size (u64) are "locked" together. This is a problem for 
+6502 machines where you want to use integers larger than the pointer size.
+_______________________________
+SOLUTION 1: Custom code-generators for affected platforms should be used.
+	*All code which relies on 'u64' being the same as pointer size needs to be modified to
+	 remove the assumption.
+
+SOLUTION 2: Implement new types "ptri" and "ptru" which map to the target's pointer sizes.
+	* Can be done with macros. Doesn't have to be compiler-level
+
+PROBLEM 2
+__________________________________________
+* "if(cond) statement" is incomplete in seabass
+__________________________________________
+
+SOLUTION 1: Write a higher level parser which takes in if(){}elseif(){}else{} and turns it
+into seabass equivalents.
+
+SOLUTION 2: Retrain.
+
+PROBLEM 3
+___________________________________________
+Error printouts from the compiler are bad
+___________________________________________
+
+SOLUTION 1: Write a higher level parser which does its own error printing.
+
+SOLUTION 2: Change the compiler to add more detailed error information.
+
+PROBLEM 4
+____________________________________________
+Inserted tokens do not, by default, have a filename, linenum, or colnum, meaning that 
+tracking down an error will be quite difficult.
+____________________________________________
+SOLUTION 1: Have code generators provide a filename based on their invocation.
+	This can be propagated downwards
+
+PROBLEM 5
+____________________________________________
+Forgetting a return in a function with a return value
+seems to corrupt the state of the compiletime VM
+____________________________________________
+SOLUTION 1: Have the code validator insert returns at the
+end of function bodies, always returns zero'd memory.
+
+SOLUTION 2: Have the code validator throw an error
+if a function body for a function with a return value
+does not have a return statement at the end of the body.
+
+SOLUTION 3: Detect that the VM has walked off the end of
+a function with a return value
+
+PROBLEM 6
+_____________________________________________
+The compiletime VM is extremely slow
+_____________________________________________
+SOLUTION 1:
+Rewrite the ast executor to compile all codegen functions into bytecode and run that
+
+(too much work)
+
+SOLUTION 2:
+Implement another VM and assemble asm() statements for it.
+
+SOLUTION 3:
+Live with it
+
+PROBLEM 7

@@ -1,0 +1,112 @@
+
+
+CBAS NEEDS A PARSER LIBRARY.
+
+A __compiletime__ parser library.
+
+Tools for writing parsers that run at compiletime, and generate
+
+ASTs for the code parsed.
+
+IDEA 2: TEMPLATE PARSERS
+
+There are commonly-recurring patterns among parsed languages
+that I can prototype. For instance...
+
+* Operator precedence Expressions
+* Lists
+* Trees
+
+These mini templates may save me a lot of work in the future
+creating custom languages.
+
+In fact, I think it would be great to have a library of parser
+templates to work from, which can be seamlessly combined
+to create a recursive descent parser. For instance, you could have
+a "bracket pair" pattern, where you match the bracket, do some rule,
+then return.
+
+i.e. inside of a cgrdparser's body...
+
+@bracketpair [rule_which_calls "(" rule_to_call ")"
+    [
+        //put code to handle an error here...
+    ]
+]
+
+This would then create a new rule, "rule_which_calls" which, when entered,
+forces a match to "(" (otherwise, error) and then calls rule_to_call, then
+tries to check for a ")" and if it's not there, once again, error.
+
+I could do this for more than just bracketed pairs, I could make templates
+for operator precedences and all sorts of neat stuff...
+
+AWESOME!!!! YES!!!!
+
+
+IDEA 1: MAKE A PARSER GENERATOR
+
+cgrdparse is an awesome tool, but simply not enough. It has to be
+EASY to write a new programming language in seabass, so that I
+will actually do it.
+
+That means I really want a fully-fledged parser generator...
+
+I only need to care about parsing based on a definite lookahead and then a transition
+rule.
+
+Let us imagine a toy language which only lets you declare integer variables and have semicolons,
+inside of curly braces. There is one giant curly brace pair, and the it's filled with lots of
+curly braces. You can also have string literals.
+
+{
+    int a;
+    int b;
+    "Hello World!";
+    int fffff;
+    {
+        int cccc;
+        {;;{};}{}{}{;int f;}{}
+    }
+}
+
+
+@cgrdparsergenerator[
+    
+    //the root node...
+    root[
+        //The only way to solve root...
+        ["{" stmtlist "}"]
+    ][
+        //code to handle recognizing the root node...
+    ]
+    
+    stmtlist[
+        [stmt]* //zero or more rule. you can use + for 1 or more...
+    ][
+        //do something here...
+    ]
+    
+    stmt[
+        ["int" TOK_IDENT ";"]
+        [";"]
+        [STRINGLIT ";"]
+        ["{" stmtlist "}"]
+    ][
+        //do something here...
+    ]
+
+]
+
+The kicker for this parser generator is that it'll require that any
+rule starting with a non-terminal be the only rule available.
+
+
+
+I SHALL NOT SHY AWAY FROM COMPLICATED PROBLEMS...
+
+I need to confront this head-on as it's core to my entire infrastructure moving
+forward.
+
+I need to make cgrdparsergenerator.
+

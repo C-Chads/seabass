@@ -1,0 +1,13 @@
+
+HOW DO YOU RETARGET CODE IN SEABASS?
+
+1. #__CBAS_TARGET_WORDSZ, __CBAS_TARGET_MAX_FLOAT, __CBAS_TARGET_DISABLE_FLOAT
+
+    You can set the word size and float size used when doing expressions.
+    
+    `uptr` in CBAS itself is affected by this choice.
+    
+2. #define TGT_UMAX, TGT_IMAX, TGT_FMAX...
+
+    You can write macros that alias the system's unsigned and signed integer max types, as well as float max.
+    

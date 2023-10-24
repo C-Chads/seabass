@@ -1,0 +1,364 @@
+
+WRAITHGUARD- THE TEXT EDITOR
+
+    THE FIRST OF THE TOOLS OF KAGRENAC
+
+~~SCHEME FOR GUI TEXT EDITING ASCII FILES~~
+
+The basic idea is to store all non-ASCII features in a base16 string (so that two characters are a byte).
+
+This string can be anywhere in the file, and it's identified by matching the pattern WRAITHGUARD_ENC A*A.
+
+When the document is loaded, it tries to find a spot in the file where the editor's state resides, and
+loads it.
+
+When the document is saved, it searches again, and replaces the contents of the state string.
+
+    it looks like WRAITHGUARD_ENC AjklkljagalkjgjlskdaglkjglkjA where
+    the capital As denote the beginning and ending of the code.
+    
+    This will be used to encode everything from the scroll position of where you are in the document,
+    to your macros, scripts, and widgets.
+    
+~~FEATURES OF WRAITHGUARD~~
+
+0. Normal text editing.
+    You should be able to do text editing just like I'm doing right now, with all
+    the standard interface stuff. NO INSERT!!!!
+
+1. Dedicated metaprogramming scripting language.
+    It should be more powerful than javascript, i.e. allowing arbitrary manipulation
+    of the token stream like seabass.
+    
+    It doesn't need to have pointers and it can even be garbage collected, but it does
+    need arbitrary metaprogramming.
+    
+    You'll use this to implement widgets and macros.
+
+2. On-screen widgets / GUIs.
+    You should be able to embed widgets into your document which store and load state.
+    
+3. Saved state.
+    Whenever the editor saves the file, it should save the entire state of the session.
+    
+4. Multiple views.
+
+    I want it to be possible to have multiple separate views of the same document.
+    
+    I want this to happen with separate windows in the host's windowing system.
+    
+5. Linked Documents.
+
+    You could have a project file which links multiple files together, so that when
+    Wraithguard opens the "root" file, it opens all the other files, reloading
+    the entire session.
+    
+6. Customizable controls
+
+    You should be able to assign functions to all of the function keys (f1-f12) as a bare minimum.
+    
+    The editor should also have special functions for CTRL+FX for each function key, such as viewing help.
+    
+7. SYNTAX HIGHLIGHT FEATURES
+
+    At a bare minimum, a list of keywords, highlighting of matching brackets (ignoring the contents of string
+    and character literals) and etc.
+    
+8. A COMMAND ENTRY SPOT
+    
+    It'll basically be a REPL of the scripting language.
+
+~~WIDGETS~~
+
+Widgets will be simple GUI things. They'll use software rasterization and use a custom rendering
+API to achieve arbitrary rendering.
+
+You can render text, render filled triangles, or render textures.
+
+Images cannot be loaded from disk (They will have to be stored in serializable state).
+
+Widgets are implemented via modules. Their complete state is saved on ctrl+s and loaded on editor
+open.
+
+~~MODULES~~
+
+A self-contained code unit, sort of like an object in OOP, but it has its own copy of the code.
+
+It's basically sort of like that system I came up with for SME, but, well, without most of the
+complexities/intricacies.
+
+They'll implement custom methods for the editor, such as serialize(), load(), init(), update(), resize(), etcetera.
+
+
+~~~ ERRATA ~~~
+
+0. It might be possible to use seabass _as_ the scripting language
+by using networking and communicating over localhost ports. This is
+likely a bad idea, though, since seabass is not memory safe.
+
+1. Tabs, not windows. Makes writing Wraithguard in Seabass easier.
+
+2. Modules render themselves like post-it-notes or overlays on the code,
+positioned by line and column relative to the code, or as omnipresent.
+
+They can also render nothing at all.
+
+3. Modules can be edited by right clicking on them, or selecting
+from a list. The editor for them appears as another tab in your editor.
+
+4. Modules can add context menu options, including based on what the
+user has highlighted. There should be some sort of callback
+for this.
+
+5. Modules need to be able to show or hide themselves (for instance, so
+you can have a color picker that shows/hides).
+
+6. Modules need to be able to manipulate the text file.
+
+7. Undo can be implemented by saving line edits every
+couple seconds. These can be saved in the WRAITHGUARD_ENC part.
+
+8. The scripting language (if I choose that instead of Cbas) will
+have a library system which allows you to write re-usable code. They
+will be stored either in the system or in the user's home directory.
+
+9. The editor (per session) will only be editing one project at a time,
+with one "root" file and a set of other files which do not have
+WRAITHGUARD_ENC sections.
+
+10. This will be substantially easier to manage than the SME project for
+    these reasons:
+    
+    1. There is no multitasking system. All code-calling is by callbacks and hooks. 
+    This is not an "operating system scale" project. I'm not writing a kernel.
+    
+    2. There is no dependency management system.
+    
+    3. All modules are stored as source code (and possibly cached bytecode).
+    
+    4. Modules in Wraithguard don't need to talk to each other other than by
+    manipulating global variables in the editor. They are treated as entirely
+    independent.
+
+    5. There is a "base level C program" which is the main editor of Wraithguard,
+    which doesn't need to be written in wraithguard (in fact, this would be
+    pretty much impossible). Wraithguard doesn't need to be ported to itself to
+    make it a complete system.
+    
+11. Wraithguard modules will be able to create shaders to change how Wraithguard renders
+    itself. Whether these are real GPU shaders or simply software rendering is something
+    I haven't decided yet.
+    
+12. Wraithguard will be mode switching- Escape to change modes. The active mode should
+    change the color of the main gui. There should be a mode for editing text, commands,
+    and cleaning your keyboard, among others. Shall I allow modules to define new ones?
+    
+~~~ DEVELOPMENT PLAN ~~~
+
+1. Build up Seabass 
+
+    First of all, the C emitter needs to be finished, and
+    extensive tests need to be written for it to prove that
+    it is (relatively...) bugless.
+
+
+    After that, I need to finish the ASTbuilder and get a bunch
+    of higher level DSLs implemented (oopsy, notably) so that 
+    writing wraithguard will be nice and quick. I'll need 
+    templates for certain types of programs in seabass as well 
+    (parsers, notably).
+    
+    Once that's done I'll want to start work on OOPSY/Presunder,
+    which will be sort of like javascript/C++... but better, because
+    it'll have vector[type] in the base level language. Presunder
+    will allow me to write most code much more quickly than seabass
+    because it won't require me to do manual memory management.
+    
+    It'll be totally gimped at doing anything like managing resource
+    handles (and automatically closing them) but that's fine. I don't
+    need that, I just need the automatic destructors and move semantics.
+    
+2. Write an SDL2 (SDL2+TTF) wrapper for Seabass
+
+    I will need access to a fair chunk of SDL2 to do what I want. It's probably best if
+    I implement it with OpenGL too, which is going to add even more stuff to wrap, but
+    Cbas should make it fairly easy to work with.
+    
+    HOW WILL SUNDER SCRIPTS RENDER WIDGETS?
+    
+    They'll be software-rendered to textures.
+    
+    WILL SUNDER SCRIPTS BE ABLE TO CHANGE HOW THE REST OF THE EDITOR RENDERS?
+    
+    I'd really like to do shaders and stuff (awesome sauce). Could be epic.
+    
+3. Outline the rough structure of the software.
+
+    It's a text editor with a script compiler and executor built in, and this WRAITHGUARD_ENC
+    gotcha. That all needs to be baked into this. I'll want to outline what all the basic
+    types are, etcetera.
+    
+    I don't even know what that will look like yet, because SEABASS hasn't advanced enough.
+    
+    I figure it will mostly be an oopsy project.
+    
+4. Design the scripting language
+
+    I'll want a toy version of the scripting language (including metaprogramming) before
+    I put it into wraithguard. I'll want to play with the syntax. It'll probably be a
+    javascript-like, but without dynamic memory allocation.
+    
+    It will compile into bytecode (ala sisa64, but simpler).
+ 
+5. Implement the main editor.
+
+    Wraithguard without the scripting language. (Shall I call the scripting language Sunder? YES.).
+    
+    It should  be fairly quick as it's a very simple software architecture (vector of strings,
+    cursor position, screen position, zoom, tabs).
+    
+    I might also want to implement the language descriptor stuff and WRAITHGUARD_ENC.
+    
+6. Design the scripting API
+
+    How does the scripting language actually interface with Wraithguard? I'll have to
+    design the API for that. Notably...
+        
+        1. Editor state and Buffer manipulation.
+        
+            Scripts need to be able to read the state of the editor and manipulate
+            the text buffer.
+            
+        2. GUI rendering
+        
+            Scripts need to be able to draw arbitrarily to the screen (and hopefully even
+            do custom shaders!).
+            
+        3. Serialization
+        
+            Scripts need to be able to save/load state.
+            
+7. Hook up the scripting language into Wraithguard.
+
+8. Allow editing of Sunder scripts within Wraithguard and saving them to the WRAITHGUARD_ENC saved buffer.
+
+9. Write some scripts for Wraithguard in Sunder.
+
+10. Dump micro for Wraithguard
+
+
+SUNDER LANGUAGE DESIGN THOUGHTS
+
+0. Errors in Sunder do not crash Wraithguard, merely halt the module
+    and cause a general error to be emitted to the console.
+
+1. All array accesses must be bounds checked, and the thing returned from
+    array access is an lvalue reference.
+
+2. Zero non-owning pointers. Objects are always
+    full-copied, unless passed by reference to a function.
+    
+    Copy constructors are defaulted to full deep-copies of a
+    struct tree (trivial conversion).
+
+3. Memory is automatically freed by nature of the program hierarchy-
+    popping off a vector will result in that object being cleaned up.
+
+4. Arrays can be dynamically resized, but no other dynamic memory
+    management shall be possible. It'll map cleanly to realloc
+    underneath.
+    
+5. No unions.
+
+6. C/CBAS routines should be used for anything which requires
+    speed in Sunder. Sunder itself will be slow compared to
+    the editor.
+    
+7. Should look'n'feel like javascript.
+
+8. we only need these primitive types:
+
+    int (all are signed)
+    float (double)
+    byte (used primarily for doing data xfers with Wraithguard)
+    struct
+    string (treated as a primitive)
+    vector[int,float,char,struct,string]
+    
+    And we can optionally have a "reference" to one of these.
+    
+9. The set of operations needed in Sunder is very small because
+    sunder doesn't need to do everything seabass does. For instance,
+    there is no need for function pointer stuff because there
+    are no pointers.
+    
+10. The set of statements available in sunder will also likewise
+    be very small. `switch` and `tail` for instance can be entirely
+    omitted, since they really serve a real purpose in a low-level
+    systems programming language.
+    
+11. Sunder will be an interpreted language with a bytecode optimized
+    for the set of actions done in `sunder`. The fundamental operations
+    (such as vector access) should be special instructions.
+    
+    Sunder will be a mixed stack/register machine, because that's easiest
+    to design.
+    
+12. Sunder's stack can be fixed or variable in size... I think fixed is easier
+    so I'll go with that.
+    
+13. Vector and string need to have their basic operations made into sunder insns.
+
+14. Sunder bytecode will be machine-specific, and an endian test will be performed on
+    editor open to see if the cached bytecode can be used.
+    
+15. Lifetime management will be required (ala rust). It won't exist in the syntax, but
+    lifetime checks will happen when, for instance, you try to return a reference to a
+    local variable from a function (That's an error!).
+    
+    Lifetime checks actually aren't needed where references aren't being used (because deep
+    copies are always properly memory managed).
+    
+16. SHALL I PREVENT PASSING AROUND OBJECTS ON THE STACK, LIKE SEABASS?
+
+    For presunder, probably, but this does not have to be so with Sunder.
+    
+17. Sunder's memory management will store _all_ structs which can have pointers to them
+    in the giant global array. That way, it is impossible to have a pointer
+    which cannot be checked for validity.
+
+    Object composition will always be by pointer.
+
+    
+THE PRINCIPLE PROBLEM:
+
+    Owning pointers are a tree of variable size and structure.
+    References are pointers which may form a network.
+    
+    Owning pointers are singletons, and inherently represent the true
+    structure of allocated/valid memory, so they can never become invalid,
+    but references can be invalidated.
+    
+    STRATEGIES:
+    1. References are vector indices.
+    
+        Very simply, all references are just indices into a giant array/vector of owning
+        pointers. This should be very easy to implement, actually, and perfectly solves 
+        the problem...
+        
+        I'll make it so that each owning pointer in the giant array also has an associated
+        "is good" value, which can be checked by the Sunder runtime.
+        
+        Isn't that sort of like what I did for Safepointer in C? Except faster.
+        
+        YES!!! I SOLVED IT!!!!
+        
+    2. References are stored tree traversals
+    
+        Literally functors. Stupid. Moving on...
+        
+    3. Automatic lifetime annotation
+    
+        I can use an NRAS system to automatically generate
+        lifetime annotations for functions and prove that
+        memory errors are impossible.

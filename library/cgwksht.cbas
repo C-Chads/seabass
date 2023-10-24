@@ -1,0 +1,117 @@
+
+
+#include "cgwksht.hbas"
+
+
+@wksht myWorkSheet [
+    [
+        int aaa
+        aaa = 3;
+    ]
+    [
+        aaa
+    ][
+        //uncomment this line to see an error!
+        //result:push_end(cg_qtok("fn"));
+        return result;
+    ]
+]
+
+@wksht qif [
+    [
+        if(cond)
+            body;
+        end
+    ][
+        cond body
+    ][
+        return result;
+    ]
+]
+
+@wksht qfor [
+    [
+        if(1)
+            u64 varname
+            for(begin, test, iter)
+                body
+            end
+        end
+    ]
+    [
+        varname
+        begin test iter body
+    ][
+        return result;
+    ]
+]
+
+@wksht zeroargs [
+    [
+        if(1)
+            __builtin_puts("ignorethis");
+        end
+    ][][
+        return result;
+    ]
+]
+
+@wksht scope [
+    [
+        if(1)
+            BODY
+        end
+    ][BODY]
+]
+
+class bruhbruh
+    int what
+end
+
+codegen bruhbruh[50] my_bruhbruhs;
+
+
+fn codegen codegen_main():
+    @myWorkSheet three2
+    
+
+    @myWorkSheet three
+    if(three == 3)
+        __builtin_puts("I am a happy man!");
+    end
+    
+    @scope []
+    
+    @qif 1 [
+        __builtin_puts("I am a happier man!");
+    ]
+
+
+
+
+
+    @qfor i [i=0] [i<10] [i++] [
+        __builtin_puts("Yet still happier!");
+    ]
+    
+    @zeroargs
+    
+    while(0)
+    end
+    
+    (my_bruhbruhs+2).what = 3;
+    (my_bruhbruhs+3).what = 4;
+
+    (my_bruhbruhs+2).what++;
+    (my_bruhbruhs+2).what++;
+    
+    char[50] buf
+    __builtin_itoa(buf, (my_bruhbruhs+2).what);
+    __builtin_puts(buf);
+    __builtin_itoa(buf, (my_bruhbruhs+3).what);
+    __builtin_puts(buf);
+    
+    int a = 343;
+    __builtin_itoa(buf, a);
+    __builtin_puts(buf);
+end

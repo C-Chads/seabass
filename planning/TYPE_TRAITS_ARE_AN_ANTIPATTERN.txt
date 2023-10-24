@@ -1,0 +1,41 @@
+
+If I have to manually add type traits to a type in the type trait
+system, I will hate it. So I'm not doing that. It's disgusting.
+
+Furthermore, I don't want to bake it into the language. I refuse
+to do so.
+
+Type traits are something that DO NOT EXIST in base-level seabass
+and it has to stay that way- Seabass DOES NOT HAVE type traits for
+random structs you define in the language.
+
+WHAT IF TYPE TRAITS WERE RECOGNIZED AUTOMATICALLY?
+
+It might be fine if the type trait system was just a 'cache'
+for checking to see if a type had certain properties, or for
+DSLs to dump their special stuff. I have no problem with a
+higher level language checking to see if a Seabass type has
+the methods clone, copy, dtor, ctor, etcetera.
+
+I really do mind if it requires me to do @traitsystem register mytype
+or whatever. We definitely are not having that.
+
+SHALL WE USE THE AST'S USERDATA POINTERS ON TYPES?
+
+This appeals to me greatly- we query Seabass directly for a pointer
+to a type, then check its cgen_data.
+
+TYPE TRAITS ARE SPECIFIC TO A PARTICULAR TRAIT SYSTEM.
+
+I already have this built into cgknowl.
+
+HIGHER-LEVEL SYSTEMS SHOULD MAKE TYPES AND KEEP TRACK OF
+DATA THEMSELVES.
+
+Higher level systems can choose to be compatible with seabass
+types (that do not have traits) or they can choose not to.
+
+Having the type trait system impose itself on the entire language
+is a mistake and I will not do it.
+
+

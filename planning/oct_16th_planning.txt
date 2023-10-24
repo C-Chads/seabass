@@ -1,0 +1,70 @@
+
+PLANS FOR THE PROJECT OCT 16th 2023
+
+
+I have begun planning out the architecture of Wraithguard/sunder in my head. However,
+Cbas needs tons and tons of work done on it before I can even approach the implementations
+of Wraithguard and Sunder.
+
+1. AST Designer.
+
+    I want to write the AST designer roughly as described in planning/ASTdesigner.txt. It will
+    enable me to rapidly design new ASTs and traversals thereof without having to care
+    about minutae.
+    
+2. NRAS
+
+    I want to template how NRAS systems are constructed so that I can use them to analyze ASTs and
+    do dynamic contextual inference.
+    
+    This will enable me to construct programming languages which are far more intelligent than 
+    anything that currently exists.
+    
+3. OOPsy / Presunder
+
+    After the AST designer and NRAS are implemented, I want to create an object-oriented style
+    language that uses the power of NRASes and my AST designer to make a language which is a joy
+    to write and translates perfectly to Seabass. It won't completely replace Seabass, but it
+    will probably be where i do most of my future work inside of seabass.
+    
+    It'll be very easy to write because I've already made cgrdparse, and I will have made AST designer.
+    
+    It should be look sort of like sunder, but without all the checking stuff to prevent memory errors.
+    
+    I'll allow arbitrary references, for instance. I might do something like rust to prevent invalid
+    references, but, well, do I really need to?
+    
+    OOPsy will have most of the features of seabass but it will be much higher level and be more rust-like
+    without all the extra baggage that comes in rust.
+    
+    OOPsy will also be a metaprogramming language (by virtue of using Seabass parsehooks).
+    
+4. Write common data structures / an STL for OOPsy
+
+    I'll need an STL/stdlib of stuff to work with in OOPsy. Vectors and strings will be primitives, but
+    for instance, I will need linked lists and trees.
+    
+    I will also want to come  up with a scheme for interop between Seabass and oopsy (beyond the fact that
+    oopsy compiles into seabass and therefore seabass can call it- I want oopsy to be able to call seabass).
+    
+    I figure it'll work by creating function/type signatures in oopsy which map to seabass functions... sort of like
+    extern for c.
+    
+5. Allow oopsy to work locally (loopsy)
+    
+    If oopsy can work inside of seabass functions, then I've really gotten my money's worth for it.
+    
+6. Begin work on Wraithguard/sunder.
+
+    At this point, here, I'll be able to start writing the code (first wrapping SDL2, and then the implementation itself) for
+    wraithguard and sunder.
+    
+    It'll be a masterpiece of engineering (if I have the Lord's blessing).
+    
+    Blessed be the Lord Jesus Christ forever. Amen.
+    
+    
+    
+    
+
+

@@ -1,0 +1,177 @@
+# Description and Theory
+
+I have realized for some time, while writing C, that my work is slow.
+
+The things I'm writing could be written in far fewer keystrokes and with
+far cleaner syntax.
+
+It would save me time and mental effort to write code that way, but I'm
+stuck with C, so I have to use it.
+
+Even in the most powerful programming language currently in production, C++,
+I find myself feeling... crippled. Tiny irrelevant details and minutiae
+which are implicit in my work constantly occupy my mind while programming,
+preventing me from planning and working on a higher level.
+
+The design of my code is very distant from my thoughts. I have to decode
+my ideas into code in order to express them, which is not only tedious but
+time-consuming.
+
+This has caused me to think about how to solve this problem. To figure out
+how, I found myself constantly looking at how variables save time for
+programmers coming from Assembly to C.
+
+Variables perfectly represent the "thing" you are trying to do when you
+do complicated register transfers and moves in assembly language- you
+have some piece of information of some data type. Variables are
+sometimes in memory, sometimes in registers, and sometimes they 
+disappear entirely, having been optimized out or "baked into" the
+structure of the program by the compiler.
+
+Variables are a higher-order construct, existing in the mind of men,
+which has been implemented properly in the language. "Variable" is
+no longer something resting in the brain of an assembly programmer,
+it's represented in the language.
+
+This causes code written to be much cleaner, easier to read, and
+more representative of the thoughts of the programmer. The compiler
+can do the tedium of figuring out which variables will be in memory,
+which will be in registers, and which will disappear into the
+structure of the program. They are irrelevant to the architecture
+of the software for the programmer (until such time that he
+should specifically desire to tweak those things himself, when
+he shall rewrite portions of his code in a lower level code,
+which is an unusual situation).
+
+In many different areas and many different ways, I wish to make
+the same sort of leap. Those leaps are often context-specific,
+often only applying to a very peculiar use-case, a niche. They
+do not belong in the base level of a general-purpose programming
+language, as they are only useful under very unusual circumstances.
+
+You might conclude then that what we need to do is make it easy to
+write your own compilers. However, this is not enough- You see,
+within the very same project, even in the same file, even in
+the same function, even in the same linear block of code, there
+are unusual and highly specific tasks that a programmer wants to
+do.
+
+Furthermore, all of these tasks are related, and the code needs
+to "play nice" together, not only interoperating cleanly, but
+also compiling into the same target code. 
+
+So not only does it need to be easy to write your own compilers,
+they need to be embedded into a larger general-purpose programming
+language, playing nicely with other compilers and having full
+interoperability. Different portions of the same function, perhaps
+even the same statement or expression (or a portion of some other 
+higher order syntax, arbitrarily defined) may be compiled by different
+compilers.
+
+All of this eventually needs to reach one target code, the output
+of the whole system.
+
+This is what SEABASS exists to do.
+
+## Proof of Concept
+
+I would like to quickly prove to you that this idea of
+'contextual inference' is real and can really make syntax
+simpler- even without deep abstraction-crafting wizardry.
+
+Here I have written two functions in C and a tailor-made DSL
+as it would be expressed in CBAS code:
+
+```c
+int diff_muladd(int a, int b, int c, int d){
+    int m = a * b * c * d;
+    int s = a + b + c + d;
+    return m - s;
+}
+int powi(int b, int e){
+    int r;
+    r = 1;
+    if(e<1) return r;
+    while(e){
+        r = b * r;
+        e--;
+    }
+    return r;
+}
+```
+And a tailor-made DSL as it would likely be written
+in CBAS:
+```
+@pureintfns[
+    diff_muladd a b c d[
+        m = a * b * c * d;
+        s = a + b + c + d;
+        m-s;
+    ]
+    powi b e [
+        r = 1;
+        if(e<1) r;
+        while(e)[
+            r = b * r;
+            e--:
+        ]
+        r;
+    ]
+]
+```
+The basic idea of this DSL are fairly simple:
+1. No globals.
+2. No types other than int.
+
+Let me explain some of the ways the code became cleaner:
+
+1. Return types on functions can be omitted- all identifiers
+at global scope are function names.
+
+2. Parentheses and commas in function prototypes can be
+omitted, as there are no global variables, nor are there
+type qualifiers or the like. 
+
+3. Any expression statement that does not contain an
+assignment (=, ++, --) or function call would have no
+effect, so it must be the return value. This means that
+the `return` keyword can be omitted.
+
+4. New variable declarations do not require a typename.
+Whenever a new identifier is used, it is implicitly defined
+as an integer variable.
+
+More savings could likely be made, likely by making the context
+of the work more implied, but I disgress.
+
+Now, for writing two functions, implementing `pureintfns` might
+not seem worth it. However, if you had to write dozens of these 
+functions (for instance, because you are implementing a library 
+for integer math) then it might be worth it.
+
+Seabass aims to make creating and mixing these "custom notations"
+and "mini languages" easy so that the programmer can save his
+own time and mental effort by devising his own notations and
+implementing mini compilers.
+
+It should be impressed of course that these "mini compilers"
+are not limited to being invoked at global scope- they can
+be invoked both at global scope and at the statement level.
+
+It may even be possible in the future to implement them at
+the expression level, but this does not yet exist in CBAS.
+
+Furthermore, I should also impress that language additions
+in CBAS are not limited to shorthands. Entire new language
+constructs and languages can be built inside of CBAS's
+metaprogramming system. `pureintfns` does not principally
+change the way the programmer thinks about his code, only
+saves him keystrokes. I gave it as an example merely because
+it showcases how even minute, intellectually easy ideas can
+be valuable to a programmer, not just entirely new
+inventions hand-crafted by technical wizards.
+
+This power, the power of arbitrary user-defined abstractions
+mixed and mashed together in a larger codebase is the source
+of power for SEABASS.
+

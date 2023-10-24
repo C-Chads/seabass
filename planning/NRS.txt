@@ -1,0 +1,28 @@
+
+NETWORKED REASONING SOLVER
+
+By propagating properties through a set of
+nodes (on a node to itself, or on a node
+to other nodes with some set of properties)
+I can model reasoning.
+
+At the property level, there are constraints
+    (Properties contradict)
+    as well as propagation rules
+    (Properties X,Y, and Z imply W)
+    
+After considerable thought, property propagation
+and constraint resolution are algorithms executed
+on a network (notable subclass: tree) and not
+specific to parsing.
+
+I need to write data structure templates for CBAS,
+so that I can write NRS algorithms generically, so
+that I can write an NRS language, and then implement
+it as part of a wider "Language designer".
+
+Thus, this is deferred until I have data structure
+templating in CBAS.
+
+
+

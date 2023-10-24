@@ -1,0 +1,61 @@
+
+CONVERTING SEABASS TO C IS NOT THAT HARD.
+
+I just have to implement it- and when I do, I will finally have overcome C!
+
+Why do I find myself stopped on this? It is important to investigate-
+
+    1. A feeling of lethargicness and "laziness"- Like all the energy has been sucked out of me.
+    
+    2. This doesn't feel "new". All these problems are problems I solved ages ago, so it doesn't
+        feel like new work (even though it is). The intellectual work is implementing stuff which
+        is fairly trivial, just tedious.
+        
+    3. I am worried about it being unexpectedly very hard and/or the "dead birth" problem.
+        
+
+This should be one of the most exciting parts of the project- Seabass will finally be able to
+compile to native. Seabass will finally supercede C in my own work. I'll finally be able to call
+Seabass a C replacement.
+
+WHAT ARE THE STAGES TO THIS PROCESS?
+
+
+1. Get all the global symbols other than function bodies compiling to C.
+
+    This should be pretty simple. I'll want some test symbols and I'll want
+    to test to make sure that floats and whatnot get converted properly, but
+    other than that, everything is really hunky dory.
+
+2. Fill out expr_node's serializer.
+
+    Everything in it is trivial, even getfnptr and getglobalptr as they all convert directly to C.
+    
+    The only hitches are signed integer additions/subtractions/multiplications, which have to be
+    cast unsigned, added, and then cast as signed again.
+    
+    Everything else is pretty much one-to-one with slightly different syntax. Everything.
+    
+3. Fill out cg_stmt's serializer.
+
+    All the cases handled. It's really not that much. If statements and the like have scopes in them,
+    and for those we simply call cgscope's serializer.
+    
+4. Fill out cgscope's serializer.
+
+    Variables have to be declared and then the statements serialized.
+    
+5. Begin testing on example code.
+
+    I'll want a set of test code which uses all of seabass's main features.
+    
+    This code will be what I use to test toc.hbas
+
+6. Write some example programs which use stuff from C- notably, the standard library.
+
+    I pretty much just have to predeclare the function prototypes and pass the includes via the prefix,
+    and we're golden. 
+
+7. Declare Seabass a real systems implementation language.
+
+    The most powerful ever created? Perhaps. Time will tell.

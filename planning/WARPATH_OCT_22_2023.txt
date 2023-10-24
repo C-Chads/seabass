@@ -1,0 +1,51 @@
+
+THE ROUTE OF CONQUEST LAYS BEFORE ME.
+
+~
+I must be careful to remember God in all my
+doings and avoid pride. May the Lord Jesus
+help me in these matters, but not in anger,
+lest I be brought to nothing. Amen.
+~
+
+THE UNRAS IMPLEMENTATION IS ALMOST COMPLETED.
+
+Wow!
+
+However, I need to plan out what the next steps are, and how I get there.
+
+I feel... lost. Lacking direction.
+
+I've just made a bunch of big changes to Seabass's base level syntax.
+
+THE UNRAS NEEDS UTILITY FUNCTIONS FOR PATTERN MATCHING RELATIONSHIPS
+once I have the ability to match linkage patterns (coord 15 connects to a coord 3)
+then it'll be possible to write inferencing rules in terms of
+those pattern matches.
+
+this will be the powerhouse of the UNRAS system for universal computation.
+
+... and it is pretty much finished. Wow. 
+
+HOWEVER!
+
+I would like to implement more functions to do pattern matching. For instance,
+I need to be able to access a link which is a vector of children, and push
+onto it.
+
+That's done too!
+
+Now, I need to write tests of the UAST and its methods.
+
+I need to come up with a way to write 
+
+1. TEST THE UNRAS
+
+The UNRAS needs to be tested. Unit tests of the methods.
+
+2. DEVISE A SCHEME FOR WRITING UNRAS RULES
+
+I need to figure out how it is i'm going to write extremely ambiguous
+grammars.
+
+

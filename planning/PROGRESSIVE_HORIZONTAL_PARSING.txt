@@ -1,0 +1,8 @@
+
+It should be possible, using the NRAS, to perform a total
+transformation from a sequence of tokens to an AST by progressively
+generating interpretations based on the initial relationship (placement
+in the text file) between tokens.
+
+Inferences can be drawn locally, deriving intermediate concepts
+until it finally reaches a finished state.

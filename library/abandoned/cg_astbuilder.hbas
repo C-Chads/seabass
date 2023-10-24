@@ -1,0 +1,1285 @@
+
+
+#guard AST_Designer_Library_DMHSW
+#include "cgtoken_manip_tools.hbas"
+/*
+    Compiletime AST manipulation tools-
+    
+    Create your own AST and then use this toolset to manipulate it (i.e. traverse,
+    push onto it, etc).
+    
+    Meant to accompany cgrdparse.
+    
+    DESIRED FEATURES-
+    
+    1. Let you define ASTnode struct and devises schemes to traverse a tree of them.
+    2. Creates a new struct, the "ASTbuilder" (which can be given any name you like) along with
+        methods to create and traverse the AST.
+    3. Create the traversal code (what happens on an initial visitation of a node, subsequent
+    visits after returning from child nodes, and eventual on-retreat once retreat from all children
+    has happened.
+    4. Do all this without overflowing the real stack of the machine. I.e., have our own
+        stacks which are used for the traversal.
+    5. Template common operations and make them easy.
+    6. Also defines all the stuff needed to push stuff onto the AST.
+
+
+    WHAT DOES IT MEAN TO "INITIALLY VISIT", "SUBSEQUENTLY VISIT" AND "RETREAT FROM" A NODE?
+    
+    Entering a node for the first time, from the parent, is an "initial visitation". It then goes to all
+    its children. 
+    
+    Each time we return from a child, that is a "subsequent visit". Once we have handled all
+    our children, we then return to our parent, but before we do that, we execute the "on retreat" fn.
+    
+    Returning to the parent so it can go to its next child (or return itself) is the "retreat".
+    
+    All of these actions can result in you needing to do something in the traversal.
+    
+    WHAT ABOUT BUILDING THE AST INITIALLY?
+    
+    Every time you push onto an AST, you can either push onto a member vector/array of children, or
+    onto a single child pointer.
+    
+    Once you do, you can then start pushing its children, or simply skip that altogether.
+    
+    INTERMEDIATE STATES?
+    
+    It's possible that an AST node's children will be transformed into other children. This
+    should be thought of as a traversal-oriented action and not initial building.
+    
+    HOW DO WE HANDLE NULL CHILDREN?
+    
+    Skip them.
+    
+    HOW DO WE STORE TRAVERSAL STATE?
+    
+    Stack of ints, stack of pointers. The pointers say "what node" and the
+    ints say "which child of that node".
+    
+    HOW WILL THIS MAKE WRITING PROGRAMMING LANGUAGES EASIER?
+    
+    It'll become very easy to write your own ASTs and quickly define all the
+    algorithms to traverse them.
+    
+    CAN I WRITE MULTIPLE TRAVERSALS?
+    
+    ...Yes. That needs to be part of this. Furthermore, you should be able to extend a pre-existing
+    ASTbuilder with new traversals...
+    
+    
+    PLAN FOR DEVELOPMENT
+    
+    1. Write the code to parse a defnode command and add it to the database of all astbuilder nodes. This
+        will create the database of possible ast node types. It's basically just a struct definition
+        plus list of "walkables".
+        
+        WHAT GOES INTO A MAKENODE COMMAND?
+        
+        @cgastbuilder_defnode [
+            myASTNode[
+                i64 type
+                myOtherAstNode* child
+                myOtherAstNode** children
+                u64 nchildren
+                u64 _children_cap //capacity of the children vector.
+                yetAnotherAstNode* my_reference
+            ][
+                child* //this pointer should be traversed!
+                children*[nchildren _children_cap] //this array of pointers should be traversed.
+                //my_reference* is omitted!
+            ]
+        ]
+        
+    2. Begin parsing the traversal definition code. It uses only a single node type (because that's easiest to
+        work with and avoids polymorphism with the traversal stack).
+        
+        This should be fairly trivial. After all, there's only one node type!
+        
+        WHAT GOES INTO THE TRAVERSAL DEFINITION?
+        
+        @cgastbuilder_deftraversal myTraversal  //traversal name
+        [
+            myASTNode //the node kind for the traversal
+            stack static[500] //possible options: real, static[sz], dynamic
+            
+                The stack works by keeping track of the node being traversed, the position in its children,
+                and the position in the vector child, per node.
+                
+                so for instance if you have a node with pure_child and vec_children, then it would
+                say it is on 0,0 for pure_child before progressing to 1,0 for vec_children, and then
+                1,1 1,2 1,3 1,4 for each of vec_children's constituents.
+            
+            vars [
+                i64 count
+                myOtherNode* this_other_tree
+            ]
+            entrance [
+                //code for what happens when you enter a node goes here
+            ]
+            return [
+                //code for what happens when you return  to a node from a child goes here
+            ]
+            retreat [
+                //code for what happens immediately before we pop this node off the stack goes here.
+            ]
+        ]
+        
+    3. Parse and manipulate the traversal rule code.
+    
+        There will be commands similar to cgrdparse (but probably much lighter) that allow you to do common
+        operations which are needed for an AST traversal.
+    
+    4. Generate the "walkable push" methods. soft push (push without pushing onto the traversal stack) is also needed.
+    
+        This will be used in actually constructing the AST, i.e., inside of cgrdparse.
+        
+        I have already generated push methods for the node structs to push onto their walkables, however
+        
+        astbuilders also need to be able to soft_push and hard_push walkables that are of the parent
+        node type. Soft_push pushes a walkable without pushing it onto the traversal stack, but hard_push
+        pushes onto the traversal stack.
+        
+        Walkables not of the node type are simply `push` and not hard or soft.
+    
+    5. Generate the complete traversal code
+    
+        Automatically generate all the code to perform the traversal on the data structure, including initialization
+        of the astbuilder.
+        
+        This is where the magic will happen for cg_astbuilder
+        
+    6. Write tests
+    
+        I'll want to write a toy programming language or something to test the AST traversal system. Wow!
+    
+    
+    ERRATA
+    
+        astbuilder cannot be runtime and compiletime, as we don't necessarily know how to allocate memory
+        on the target. I'm only writing cgastbuilder, not a general purpose ast designer.
+*/
+
+
+fn codegen get_type_id(char* name)->i64:
+    cgast* ast
+    i64 i
+    i64 ntypedecls 
+    cgtypedecl* typedecls;
+    
+    ast = cast(cgast*)cg_getast();
+    ntypedecls = ast.ntypedecls[0];
+    typedecls = ast.type_table[0];
+    
+    for(i = 0, i < ntypedecls , i++)
+        if((typedecls+i).name streq name)
+            return i;
+        end
+    end
+    
+    return -1;
+end
+
+class cg_astbuilder_astnode_walkable noexport
+    cgstr name //name of the variable.
+    
+    //if this is a vector of children, we need to keep track of
+    //the length of the vector. This happens using another member
+    //variable. We might also want to keep track of the capacity.
+    //ARRAYS ARE CANCELLED! STUPID!
+    
+    cgstr vector_length_name
+    
+    //the vector also has a capacity.
+    cgstr vector_cap_name
+
+    u8 is_ptr //is this a pointer (needs to be allocated)?
+    u8 is_parent_type //is this walkable the same basetype as the parent?
+    u8 is_vector //is this thing a vector? If this is true, is_ptr says whether it is a vector of pointers...
+end
+
+class cg_astbuilder_astnode_structdef noexport
+    cgstr name
+    cg_astbuilder_astnode_walkable* walkables //walkable pointers...
+    u64 nwalkables //number of walkables...
+    i64 astnode_typeid
+end
+
+class cg_astbuilder_traversal_ruledef noexport
+    i64 astnode_typeid
+    cgstr on_entrance
+    cgstr on_visit
+    cgstr on_retreat
+end
+
+
+//the
+
+class cg_astbuilder_traversaldef noexport
+    cgstr name //name of the traversal struct
+    cgstr contents //contents of the traversal struct...
+    
+    cg_astbuilder_traversal_ruledef* rules
+    i64 astnode_typeid //Only one node type...
+    u64 nrules
+    
+    u64 traversal_stack_size
+    
+    u8 traversal_stack_mode
+    /* The following modes are possible-
+        0 - Use the real stack (Stack overflow possible)
+        1 - Static with static size (Stack overflow still possible, but configurable!)
+        2 - Dynamic with a starting size (Stack overflow almost impossible)
+        
+        To be absolutely clear, none of the variables you define inside of a
+        rule are preserved. The on_XXX rule gets called, and then we return
+        from it to continue the traversal.
+        
+        the traversal stack is ONLY for storing *where in the traversal we are*.
+    */
+    
+    //The traversaldef also creates the AST builder stuff which allows you to push
+    //nodes onto the AST, and push/pop the stack. For the topmost node, you can push onto arbitrary
+    //pointers.
+    
+    //I figure that we do this by creating myBuilder:push_myAstNode_myWalkableMemberOfmyAstNode(somenodetype* _input_)
+    //methods for each ast node and each walkable. These are then usable from within your seabass code.
+end
+
+
+
+//Our database!
+codegen cg_astbuilder_astnode_structdef* cg_astbuilder_all_structdefs = 0;
+codegen u64 cg_astbuilder_n_astnode_structdefs = 0;
+
+
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/*
+    TODO:
+    examine this function, and figure out why it was so much more complicated to write
+    than the basic idea...
+    
+    1. Error handling
+    2. Having to refer to the structs I was modifying over and over again (even though in-context it's obvious what I'm doing)
+    3. having to carefully avoid memory errors
+*/
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+fn codegen cg_astbuilder_push_node_structdef(char* name, cgstrll* walkables_input):
+    cgast* ast
+    cg_astbuilder_astnode_structdef* targ
+    
+    ast = cast(cgast*)cg_getast();
+    i64 id_typedecl = ast.ntypedecls[0]; // this is where the new node struct will go....
+    cgstrll* walkables_walker
+    
+    cg_astbuilder_all_structdefs = cast(cg_astbuilder_astnode_structdef*)
+    __builtin_realloc(
+        cast(u8*)cg_astbuilder_all_structdefs, 
+        
+        sizeof(cg_astbuilder_astnode_structdef) *
+        (++cg_astbuilder_n_astnode_structdefs)
+    );
+    targ = cg_astbuilder_all_structdefs + (cg_astbuilder_n_astnode_structdefs-1);
+    targ.name:fromstr(name);
+    targ.walkables = 0;
+    targ.nwalkables = 0;
+    targ.astnode_typeid = id_typedecl;
+    
+    
+    
+    cg_astbuilder_astnode_walkable current_walkable
+    if(walkables_input == 0)
+        return; //we are done!
+    end
+    for(walkables_walker = walkables_input; walkables_walker != 0;0)
+        //Require that this is an identifier...
+        if(walkables_walker.d != CG_TOK_IDENT)
+            @pprint[
+                /       "cgastbuilder_defnode syntax error!"
+                /       "Expected identifier in walkables list!"
+                /       "The syntax of the walkables section"
+                /       "Name is:"
+                /       (name)
+            ]
+            __builtin_exit(1);
+        end
+        
+        //it _is_ an identifier...
+        current_walkable.name:fromstr(walkables_walker.text);
+        current_walkable.is_ptr = 1;
+        current_walkable.is_vector = 0;
+        current_walkable.vector_length_name.s = 0;
+        current_walkable.vector_cap_name.s = 0;
+        
+        walkables_walker =  walkables_walker.right;
+        if(walkables_walker == 0) //reached the end of the line!
+            goto push_break_end
+        end
+        if(walkables_walker.d == CG_TOK_OBRACK)
+            //Consume the opening square bracket!
+            walkables_walker =  walkables_walker.right;
+        else
+            goto push_continue_end
+        end
+        //require an identifier!
+        if(walkables_walker == 0)
+            @pprint[
+                /       "cgastbuilder_defnode syntax error!"
+                /       "Walkables list terminates after an opening bracket. This should be impossible!"
+                /       "Name is:"
+                /       (name)
+            ]
+            __builtin_exit(1);
+        end
+        if(walkables_walker.d != CG_TOK_IDENT)
+            @pprint[
+                /       "cgastbuilder_defnode syntax error!"
+                /       "Expected identifier inside of brackets, the vector length variable."
+                /       "Syntax is: myVectorMember[myVectorsLengthMember myVectorsCapMember]"
+                /       "The capacity member can be omitted, but you will not have O(1) push if you do..."
+                /       "Name is:"
+                /       (name)
+            ]
+            __builtin_exit(1);
+        end
+        
+        
+        //we are dealing with a vector walkable... the vector length variable's name is listed.
+        current_walkable.is_ptr = 0;
+        current_walkable.is_vector = 1;
+        current_walkable.vector_length_name:fromstr(walkables_walker.text);
+        walkables_walker = walkables_walker.right; //consume the vector length name!!!
+        
+        //handle the case that we've reached the end of the list...
+        if(walkables_walker == 0)
+            @pprint[
+                /       "cgastbuilder_defnode syntax error!"
+                /       "Walkables list terminates after an opening bracket and an identifier. This should be impossible!"
+                /       "Name is:"
+                /       (name)
+            ]
+            __builtin_exit(1);
+        end
+        
+
+        //we might also support a cap...
+        if(walkables_walker.d == CG_TOK_IDENT)
+            current_walkable.vector_cap_name:fromstr(walkables_walker.text);
+            walkables_walker = walkables_walker.right; //Consume the vector cap name!
+            if(walkables_walker == 0)
+                @pprint[
+                    /       "cgastbuilder_defnode syntax error!"
+                    /       "Walkables list terminates after an opening bracket and two identifiers. This should be impossible!"
+                    /       "Name is:"
+                    /       (name)
+                ]
+                __builtin_exit(1);
+            end
+            if(walkables_walker.d != CG_TOK_CBRACK)
+                @pprint[
+                    /       "cgastbuilder_defnode syntax error!"
+                    /       "Walkables list lacks a closing bracket after an opening bracket and two identifiers. This should be impossible!"
+                    /       "Name is:"
+                    /       (name)
+                ]
+                __builtin_exit(1);
+            end
+        end
+    
+        if(walkables_walker == 0)
+            @pprint[
+                /       "cgastbuilder_defnode syntax error!"
+                /       "Walkables list terminates after an opening bracket and one identifier. This should be impossible!"
+                /       "Name is:"
+                /       (name)
+            ]
+            __builtin_exit(1);
+        end
+        if(walkables_walker.d != CG_TOK_CBRACK)
+            @pprint[
+                /       "cgastbuilder_defnode syntax error!"
+                /       "Walkables list lacks a closing bracket after an opening bracket and one identifier. This should be impossible!"
+                /       "Name is:"
+                /       (name)
+            ]
+            __builtin_exit(1);
+        end
+        walkables_walker =  walkables_walker.right; //consume the closing bracket!
+        
+        //now do the push...
+       
+        if(walkables_walker == 0)
+            //this is the last element in walkables...
+            goto push_break_end  
+        else 
+            goto push_continue_end 
+        end
+        
+        :push_break_end
+            targ.walkables = cast(cg_astbuilder_astnode_walkable*)__builtin_realloc(
+                cast(u8*)targ.walkables, 
+                (++targ.nwalkables) * 
+                sizeof(cg_astbuilder_astnode_walkable)
+            );
+            (targ.walkables + targ.nwalkables-1) := current_walkable;
+        break
+        
+        :push_continue_end
+            targ.walkables = cast(cg_astbuilder_astnode_walkable*)__builtin_realloc(
+                cast(u8*)targ.walkables, 
+                (++targ.nwalkables) * 
+                sizeof(cg_astbuilder_astnode_walkable)
+            );
+            (targ.walkables + targ.nwalkables-1) := current_walkable;
+        continue
+    end
+    //we have now pushed on all walkables...
+end
+
+//TODO: design the astbuilder stuff- astbuilder is going to be a lot more
+//complex than cgrdparse because it's supposed to fully represent a data structure.
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//  DEFTRAVERSAL (bldrn)
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+@mkbldrn cgastbuilder_deftraversal 2 [ //name, body
+    //TODO
+    @dupell_inlist
+    cgstrll* name_rip
+    cgstrll* body_rip
+    
+    @cg_bldr_foldout_arg name_rip inlist_dupe
+    if(name_rip == 0)
+        @pprint[
+            /       "cgastbuilder_deftraversal error!"
+            /       "First argument was EMPTY!"
+        ]
+        __builtin_exit(1);    
+    end
+    if(name_rip.d != CG_TOK_IDENT)
+        @pprint[
+            /       "cgastbuilder_deftraversal error!"
+            /       "First token of first argument was not an identifier!"
+        ]
+        __builtin_exit(1);
+    end
+    @cg_bldr_foldout_arg body_rip inlist_dupe
+    if(body_rip == 0)
+        @pprint[
+            /       "cgastbuilder_deftraversal error!"
+            /       "Body was empty!"
+        ]
+        __builtin_exit(1);
+    end
+    //TODO
+    
+    return cast(cgstrll*)0;
+]
+
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//  DEFNODE (bldrn)
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+@mkbldrn cgastbuilder_defnode 3 [ //name, contents, walkables
+    //TODO commands:
+    //defnode - ?DONE? (UNTESTED)
+    //mktraversal
+    
+    
+    @dupell_inlist
+    cgstrll* contents = 0;
+    cgstrll* walkables = 0;
+    cgstrll* struct_name = 0;
+
+    @cg_bldr_foldout_arg struct_name inlist_dupe
+    if(struct_name == 0)
+        @pprint[
+            /       "cgastbuilder_defnode error!"
+            /       "First argument was EMPTY!"
+        ]
+        __builtin_exit(1);    
+    end
+    if(struct_name.d != CG_TOK_IDENT)
+        @pprint[
+            /       "cgastbuilder_defnode error!"
+            /       "First token of first argument was not an identifier!"
+        ]
+        __builtin_exit(1);
+    end
+    @cg_bldr_foldout_arg contents inlist_dupe 
+    if(contents == 0)
+        @pprint[
+            /       "cgastbuilder_defnode error!"
+            /       "Contents of struct are... EMPTY?!?!"
+            /       "Name is:"
+            /       (struct_name.text)
+        ]
+        __builtin_exit(1);
+    end
+    //contents:debug_print();
+    @cg_bldr_foldout_arg walkables inlist_dupe 
+    //walkables.debug_print();
+    @initqtok "struct"
+    
+    @pushtok [struct_name] //this is a move... DO NOT FREE IT!
+    @pushtok [contents.dupell()] ; @rwalk_skip;
+    @pushqtok "end"
+    
+
+    cg_astbuilder_push_node_structdef(
+        __builtin_strdup(struct_name.text) /*Recall that this was moved before...*/, 
+        walkables
+    ); //walkables is now moved..
+    
+    /*
+    @pprint[
+        /bar
+        /   "DEBUG_CG_ASTBUILDER Done with defnode..."
+        /   (struct_name.text)
+        /bar
+    ]
+    */
+    //TODO: Generate pushes for all walkables...
+    i64 i
+    i64 nwalkables
+    
+    /*These are the globals...
+        codegen cg_astbuilder_astnode_structdef* cg_astbuilder_all_structdefs = 0;
+        codegen u64 cg_astbuilder_n_astnode_structdefs = 0;
+    */
+    
+    
+    cg_astbuilder_astnode_structdef* cur = 
+        cg_astbuilder_all_structdefs + 
+        cg_astbuilder_n_astnode_structdefs-1
+    ;
+    nwalkables = cur.nwalkables;
+    for(i = 0, i < nwalkables; i++)
+        //for each walkable, generate a push method...
+        //for vectors, we actually do a vector push...
+        u64 we_found_ourselves_in_the_struct_definition = 0;
+        u64 our_pointerlevel = 0; //for vectors, this is 
+        u64 were_we_an_array = 0;
+        u64 is_vector
+        u64 has_cap
+        cgstr len_name
+        cgstr cap_name
+        cgstr this_walkables_typename //It _must_ be pointerlevel 1...
+        
+        //retrieve the cur_walkable...
+        cg_astbuilder_astnode_walkable* cur_walkable = cur.walkables + i;
+        is_vector = cur_walkable.is_vector;
+        len_name := cur_walkable.vector_length_name;
+        cap_name := cur_walkable.vector_cap_name;
+        if(cap_name.s == 0)
+            has_cap = 0;
+        end
+        
+        
+        //Check the current walkable's entry in the struct definition and retrieve its type.
+        if(is_vector)
+
+            //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            /*
+            *       This is the difficult case- the struct has a "walkable" member
+            *       which is a vector, either of pointers, or of raw structs. Based
+            *       on the pointerlevel of the member, it can be deduced whether it
+            *       is a vector of pointers or vector of structs. A vector of structs
+            *       requires re-allocing an entire node's worth of data. In either case,
+            *       a single pointer is passed as an argument, but for double pointer,
+            *       we simply put the pointer in the list (assumed owning!) but for
+            *       a vector of structs, we must do a move (:=) into the "slot" in
+            *       the vector.
+            *       The "push" method generated will push onto the vector, whereas in the
+            *       simple case, we simply assign the pointer (i.e. like a normal tree).
+            *       Push will obviously only work correctly if the vector is in a valid
+            *       state (correct capacity, length, and pointer) once push was invoked.
+            *       
+            */
+            //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            //COMPLEX CASE!
+            //TODO
+            cgstr mtd_name
+            cgstr temp
+            mtd_name:fromstr("push");
+            temp.s = "_"; mtd_name:add(temp);
+            mtd_name:add(cur_walkable.name);
+            //generate the function
+            @tokmanip_push_strings[
+                method codegen
+            ]
+            @pushqtok [struct_name.text]
+            @pushqtok ":"
+            @pushqtok [mtd_name.s]
+            @pushqtok "("
+            //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            //TRAVERSE THE STRUCT DEFINITION, FIND THE CUR_WALKABLE (IS_VECTOR)
+            //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            if(1)
+                    u64 traversal_mode = 0; //0 = need type identifier.
+                    u64 bracket_level = 0; //for parsing the array size...
+                    cgstrll* cur_in_def = contents;
+                    this_walkables_typename.s = 0;
+                    while(1)
+                        if(cur_in_def == 0) break end
+                        
+                        if(traversal_mode == 0) //must be keyword or ident. Typename.
+                            if(
+                                cur_in_def.d == CG_TOK_SEMIC
+                            )
+                                cur_in_def = cur_in_def.right;
+                                continue
+                            elif(
+                                cur_in_def.d == CG_TOK_IDENT ||
+                                cur_in_def.d == CG_TOK_KEYWORD
+                            )
+                                //check explicitly for the keywords "union" and "noexport"
+                                if(
+                                    cur_in_def.text streq "noexport" ||
+                                    cur_in_def.text streq "union"
+                                )
+                                     cur_in_def = cur_in_def.right;
+                                     continue
+                                end
+                                this_walkables_typename.s = cur_in_def.text;
+                                our_pointerlevel = 0;
+                                were_we_an_array = 0;
+                                cur_in_def = cur_in_def.right;
+                                traversal_mode = 1;
+                                continue
+                            else
+                                @pprint[
+                                    /       "cgastbuilder_defnode error!"
+                                    /       "Struct definition syntax error"
+                                    /       "Expected keyword or identifier (Typename)..."
+                                    /       "Struct's name is:"
+                                    /       (struct_name.text)
+                                    /       "Walkable's name is:"
+                                    /       (cur_walkable.name.s)
+                                ]
+                                __builtin_exit(1);
+                            end
+                        elif(traversal_mode == 1) //could be pointer or brackets or ident....
+                            if(
+                                cur_in_def.d == CG_TOK_IDENT
+                            )
+                                traversal_mode = 3;
+                                continue
+                            elif(
+                                cur_in_def.d == CG_TOK_OBRACK
+                            )
+                                traversal_mode = 4;
+                                were_we_an_array = 1;
+                                continue
+                            elif(
+                                cur_in_def.d == CG_TOK_OPERATOR
+                            )
+                                if(cur_in_def.text streq "*")
+                                    our_pointerlevel++;
+                                    cur_in_def = cur_in_def.right;
+                                    continue
+                                end
+                                //error!
+                                @pprint[
+                                    /       "cgastbuilder_defnode error!"
+                                    /       "Struct definition syntax error"
+                                    /       "Where a pointerlevel would usually be specified,"
+                                    /       "There appears to be a foreign operator!"
+                                    /       "Struct's name is:"
+                                    /       (struct_name.text)
+                                    /       "Walkable's name is:"
+                                    /       (cur_walkable.name.s)
+                                    /       "The typename retrieved was:"
+                                    /       (this_walkables_typename.s)
+                                ]
+                                __builtin_exit(1);
+                            end //cur_in_def.d == CG_TOK_OPERATOR
+                            @pprint[
+                                /       "cgastbuilder_defnode error!"
+                                /       "Struct definition syntax error"
+                                /       "Where a pointerlevel would usually be specified,"
+                                /       "There appears to be a foreign token!"
+                                /       "Struct's name is:"
+                                /       (struct_name.text)
+                                /       "Walkable's name is:"
+                                /       (cur_walkable.name.s)
+                                /       "The typename retrieved was:"
+                                /       (this_walkables_typename.s)
+                            ]
+                            __builtin_exit(1);
+                        elif(traversal_mode == 3) //Reached identifier NAME OF THE VARIABLE!!
+                            if(
+                               cur_in_def.d != CG_TOK_IDENT
+                            )
+                                    @pprint[
+                                        /       "cgastbuilder_defnode error!"
+                                        /       "Struct definition syntax error"
+                                        /       "Where the struct member name should appear,"
+                                        /       "There appears to be a foreign token !"
+                                        /       "Struct's name is:"
+                                        /       (struct_name.text)
+                                        /       "Walkable's name is:"
+                                        /       (cur_walkable.name.s)
+                                        /       "The typename retrieved was:"
+                                        /       (this_walkables_typename.s)
+                                        /       "And it had a pointerlevel of:"
+                                        /int    (our_pointerlevel)
+                                    ]
+                                    if(cur_in_def.text != 0)
+                                        @pprint[
+                                            /       "The token we found had text, it was:"
+                                            /       (cur_in_def.text)
+                                        ]
+                                    end
+                                    __builtin_exit(1);
+                            end
+                            if(cur_in_def.text streq cur_walkable.name.s)
+                                we_found_ourselves_in_the_struct_definition = 1;
+                                break
+                            end
+                            cur_in_def = cur_in_def.right;
+                            traversal_mode = 0;
+                            continue
+                        elif(traversal_mode == 4) //traversing the contents of [arraysize+1]
+                            if(cur_in_def.d == CG_TOK_OBRACK)
+                                bracket_level++;
+                            elif(cur_in_def.d == CG_TOK_CBRACK)
+                                bracket_level--;
+                            end
+                            cur_in_def = cur_in_def.right;
+                            if(bracket_level == 0)
+                                traversal_mode = 3;
+                            end
+                            continue;
+                        end
+                        @pprint[
+                            /       "cgastbuilder_defnode error!"
+                            /       "Internal error!"
+                            /       "The traversal_mode case handler fell through!"
+                            /       "The walkable WAS a vector!"
+                            /       "Struct's name is:"
+                            /       (struct_name.text)
+                            /       "Walkable's name is:"
+                            /       (cur_walkable.name.s)
+                            /       "The unhandled mode was:"
+                            /int    (traversal_mode)
+                        ]
+                        __builtin_exit(1);
+                    end //eof while
+                    if(!we_found_ourselves_in_the_struct_definition)
+                        @pprint[
+                            /       "cgastbuilder_defnode error!"
+                            /       "Struct definition syntax error"
+                            /       "A walkable was specified, but does not exist"
+                            /       "in the struct definition!"
+                            /       "Struct name is:"
+                            /       (struct_name.text)
+                            /       "Walkable's name is:"
+                            /       (cur_walkable.name.s)
+                        ]
+                    end
+                    if(our_pointerlevel != 1 && our_pointerlevel != 2)
+                        @pprint[
+                            /       "cgastbuilder_defnode error!"
+                            /       "Struct definition syntax error"
+                            /       "A walkable was specified, but it has a pointerlevel other than 1 or 2"
+                            /       "in the struct definition!"
+                            /       "Struct name is:"
+                            /       (struct_name.text)
+                            /       "Walkable's name is:"
+                            /       (cur_walkable.name.s)
+                            /       "And we found a pointerlevel of:"
+                            /int    (our_pointerlevel)
+                            /       "Which is not allowed, because it was specified as a vector member walkable!"
+                            /       "You are allowed to declare vector walkables as vectors of pointers, or vectors"
+                            /       "of raw structs."
+                        ]
+                    end
+                    //This is necessary for the AST designer...
+                    if(struct_name.text streq this_walkables_typename.s)
+                        cur_walkable.is_parent_type = 1;
+                    else
+                        cur_walkable.is_parent_type = 0;
+                    end
+                    //we can now emit the type of the input variable!
+                    @pushqtok [this_walkables_typename.s]
+            end //eof if(1) end for the struct definition traversal variables.
+            //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            @pushqtok "*"
+            @pushqtok "_cg_astbuilder_input_arg_"
+            
+            @pushqtok ")"
+            @pushqtok ":"
+                //STEP 1: PERFORM THE VECTOR RESIZE
+                /*
+                    //for a capped vector pointerlevel 1:
+                    
+                    
+                    if(this.CAPNAME <= (this.LEN_NAME+1))
+                        this.CAPNAME = this.CAPNAME * 2;
+                        this.VECNAME = cast(VEC_TYPENAME*)__builtin_realloc(
+                            cast(u8*)this.VECNAME, 
+                            this.CAPNAME * sizeof(VEC_TYPENAME)
+                        );
+                    end
+                    this.LEN_NAME++;
+                    
+                    //for an uncapped vector pointerlevel 1:
+                    this.VECNAME = cast(VEC_TYPENAME*)__builtin_realloc(
+                        cast(u8*)this.VECNAME, 
+                        (this.LEN_NAME+1) * sizeof(VEC_TYPENAME)
+                    );
+                    this.LEN_NAME++;
+
+                    
+                    
+                    //for a capped vector pointerlevel 2:
+                    
+                    if(this.CAPNAME <= (this.LEN_NAME+1))
+                        this.CAPNAME = this.CAPNAME * 2;
+                        this.VECNAME = cast(VEC_TYPENAME**)__builtin_realloc(
+                            cast(u8*)this.VECNAME, 
+                            this.CAPNAME * sizeof(uptr)
+                        );
+                    end
+                    this.LEN_NAME++;
+                    
+                    //for an uncapped vector pointerlevel 2:
+                    this.VECNAME = cast(VEC_TYPENAME*)__builtin_realloc(
+                        cast(u8*)this.VECNAME, 
+                        (this.LEN_NAME+1) * sizeof(uptr)
+                    );
+                    this.LEN_NAME++;
+                */
+                
+                //POINTER LEVEL IS 1~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                if(our_pointerlevel == 1)
+                    if(has_cap)
+                        //comparing the cap to the length...
+                        @tokmanip_push_strings[
+                            if(
+                                this.
+                        ]
+                            @pushqtok [cap_name.s]
+                            @tokmanip_push_strings[
+                                <= (this.
+                            ]
+                            @pushqtok [len_name.s]
+                        @tokmanip_push_strings[
+                                + 1)
+                            ) //eof if(this.CAP_NAME <= (this.LEN_NAME + 1))
+                            //begining the first statement, to double the cap
+                                this.
+                        ]
+                        //the cap will be doubled...
+                        @pushqtok [cap_name.s]
+                        @tokmanip_push_strings[
+                            = this.
+                        ]
+                        @pushqtok [cap_name.s]
+                        @tokmanip_push_strings[
+                            * 2 + 1; //+1 is needed in case cap was zero...
+                        ]
+                        //we have to realloc the vector now....
+                        @tokmanip_push_strings[
+                            this.
+                        ]
+                        @pushqtok [cur_walkable.name.s]
+                        @tokmanip_push_strings[
+                            = cast(
+                        ]
+                        @pushqtok [this_walkables_typename.s]
+                        @tokmanip_push_strings[
+                            *)__builtin_realloc(
+                                cast(u8*)this.
+                        ]
+                        @pushqtok [cur_walkable.name.s]
+                            @tokmanip_push_strings[
+                                , //now for the second argument of __builtin_realloc, the size!
+                                this.
+                            ]
+                            @pushqtok [cap_name.s]
+                            @tokmanip_push_strings[
+                                * sizeof(
+                            ]
+                                @pushqtok [this_walkables_typename.s]
+                            @pushqtok ")" //eof sizeof...
+                        @pushqtok ")" //eof realloc...
+                        @pushqtok ";" //finishing the realloc statement...
+                        @pushqtok "end" //end of if...
+                    else
+                        //just do a realloc...
+                        //we have to realloc the vector now....
+                        @tokmanip_push_strings[
+                            this.
+                        ]
+                        @pushqtok [cur_walkable.name.s]
+                        @tokmanip_push_strings[
+                            = cast(
+                        ]
+                        @pushqtok [this_walkables_typename.s]
+                        @tokmanip_push_strings[
+                            *)__builtin_realloc(
+                                cast(u8*)this.
+                        ]
+                        @pushqtok [cur_walkable.name.s]
+                            @tokmanip_push_strings[
+                                , //now for the second argument of __builtin_realloc, the size!
+                                (this.
+                            ]
+                            @pushqtok [len_name.s]
+                            @tokmanip_push_strings[
+                                +1)* sizeof(
+                            ]
+                                @pushqtok [this_walkables_typename.s]
+                            @pushqtok ")" //eof sizeof...
+                        @pushqtok ")" //eof realloc...
+                        @pushqtok ";" //finishing the realloc statement...
+                    end
+                else //POINTER LEVEL WAS 2~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                    if(has_cap)
+                        //comparing the cap to the length...
+                        @tokmanip_push_strings[
+                            if(
+                                this.
+                        ]
+                            @pushqtok [cap_name.s]
+                            @tokmanip_push_strings[
+                                <= (this.
+                            ]
+                            @pushqtok [len_name.s]
+                        @tokmanip_push_strings[
+                                + 1) 
+                            ) //eof if(this.CAP_NAME <= (this.LEN_NAME - 1))
+                            //begining the first statement, to double the cap.
+                                this.
+                        ]
+                        //the cap will be doubled...
+                        @pushqtok [cap_name.s]
+                        @tokmanip_push_strings[
+                            = this.
+                        ]
+                        @pushqtok [cap_name.s]
+                        @tokmanip_push_strings[
+                            * 2 + 1; //+1 is needed in case cap was zero...
+                        ]
+                        //we have to realloc the vector now....
+                        @tokmanip_push_strings[
+                            this.
+                        ]
+                        @pushqtok [cur_walkable.name.s]
+                        @tokmanip_push_strings[
+                            = cast(
+                        ]
+                        @pushqtok [this_walkables_typename.s]
+                        @tokmanip_push_strings[
+                            **)__builtin_realloc(
+                                cast(u8*)this.
+                        ]
+                        @pushqtok [cur_walkable.name.s]
+                            @tokmanip_push_strings[
+                                , //now for the second argument of __builtin_realloc, the size!
+                                    this.
+                            ]
+                            @pushqtok [cap_name.s]
+                        @tokmanip_push_strings[
+                                    * sizeof(uptr)
+                                );
+                            end //end of the if statement...
+                        ]
+                    else
+                        //TODO: just do a realloc...
+                        @tokmanip_push_strings[
+                            this.
+                        ]
+                        @pushqtok [cur_walkable.name.s]
+                        @tokmanip_push_strings[
+                            = cast(
+                        ]
+                        @pushqtok [this_walkables_typename.s]
+                        @tokmanip_push_strings[
+                            **)__builtin_realloc(
+                                cast(u8*)this.
+                        ]
+                        @pushqtok [cur_walkable.name.s]
+                            @tokmanip_push_strings[
+                                , //now for the second argument of __builtin_realloc, the size!
+                                (this.
+                            ]
+                            @pushqtok [len_name.s]
+                            @tokmanip_push_strings[
+                                    +1) * sizeof(uptr)
+                                );
+
+                            ]
+                    end                
+                end
+                @tokmanip_push_strings[
+                    this.
+                ]
+                @pushqtok [len_name.s]
+                @pushqtok "++"
+                @pushqtok ";"
+                
+                
+                //TODO: move onto vector... UNWRITTEN!!!!
+                if(our_pointerlevel == 1)
+                    //perform a move...
+                    /*
+                        (this.WALKABLE_NAME+(this.LEN_NAME - 1)) := _cg_astbuilder_input_arg_;
+                    */
+                    @pushqtok "("
+                        @pushqtok "this"
+                        @pushqtok "."
+                        @pushqtok [cur_walkable.name.s]
+                        @pushqtok "+"
+                            @pushqtok "("
+                                @pushqtok "this"
+                                @pushqtok "."
+                                @pushqtok [len_name.s]
+                                @pushqtok "-"
+                                @pushqtok "1"
+                            @pushqtok ")"
+                    @pushqtok ")"
+                    @pushqtok ":="
+                    @pushqtok "_cg_astbuilder_input_arg_"
+                    @pushqtok ";"
+                else
+                    //Copy the pointer... 
+                    /*
+                        this.WALKABLE_NAME[this.LEN_NAME - 1] = _cg_astbuilder_input_arg_;
+                    */
+                    @pushqtok "this"
+                    @pushqtok "."
+                    @pushqtok [cur_walkable.name.s]
+                    @pushqtok "["
+                        @pushqtok "this"
+                        @pushqtok "."
+                        @pushqtok [len_name.s]
+                        @pushqtok "-"
+                        @pushqtok "1"
+                    @pushqtok "]"
+                    @pushqtok "="
+                    @pushqtok "_cg_astbuilder_input_arg_"
+                    @pushqtok ";"
+                end
+            @pushqtok "end"
+        else //NOT A VECTOR
+            //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            /*
+            *       This is the easy case- We have a walkable member
+            *       which _is_not_ a vector. "pushing" onto it merely
+            *       means assigning the pointer.
+            */
+            //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            cgstr mtd_name
+            cgstr temp
+            mtd_name:fromstr("push");
+            temp.s = "_"; mtd_name:add(temp);
+            mtd_name:add(cur_walkable.name);
+            //generate the function
+            @tokmanip_push_strings[
+                method codegen
+            ]
+            @pushqtok [struct_name.text]
+            @pushqtok ":"
+            @pushqtok [mtd_name.s]
+            @pushqtok "("
+            
+            //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            //TRAVERSE THE STRUCT DEFINITION, FIND THE CUR_WALKABLE (IS_NOT_VECTOR)
+            //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            if(1)   
+                    u64 traversal_mode = 0; //0 = need type identifier.
+                    u64 bracket_level = 0; //for parsing the array size...
+                    cgstrll* cur_in_def = contents;
+                    this_walkables_typename.s = 0;
+                    while(1)
+                        if(cur_in_def == 0) break end
+                        
+                        if(traversal_mode == 0) //must be keyword or ident. Typename.
+                            if(
+                                cur_in_def.d == CG_TOK_SEMIC
+                            )
+                                cur_in_def = cur_in_def.right;
+                                continue
+                            elif(
+                                cur_in_def.d == CG_TOK_IDENT ||
+                                cur_in_def.d == CG_TOK_KEYWORD
+                            )
+                                //check explicitly for the keywords "union" and "noexport"
+                                if(
+                                    cur_in_def.text streq "noexport" ||
+                                    cur_in_def.text streq "union"
+                                )
+                                     cur_in_def = cur_in_def.right;
+                                     continue
+                                end
+                                this_walkables_typename.s = cur_in_def.text;
+                                our_pointerlevel = 0;
+                                were_we_an_array = 0;
+                                cur_in_def = cur_in_def.right;
+                                traversal_mode = 1;
+                                continue
+                            else
+                                @pprint[
+                                    /       "cgastbuilder_defnode error!"
+                                    /       "Struct definition syntax error"
+                                    /       "Expected keyword or identifier (Typename)..."
+                                    /       "Struct's name is:"
+                                    /       (struct_name.text)
+                                    /       "Walkable's name is:"
+                                    /       (cur_walkable.name.s)
+                                ]
+                                __builtin_exit(1);
+                            end
+                        elif(traversal_mode == 1) //could be pointer or brackets or ident....
+                            if(
+                                cur_in_def.d == CG_TOK_IDENT
+                            )
+                                traversal_mode = 3;
+                                continue
+                            elif(
+                                cur_in_def.d == CG_TOK_OBRACK
+                            )
+                                traversal_mode = 4;
+                                were_we_an_array = 1;
+                                continue
+                            elif(
+                                cur_in_def.d == CG_TOK_OPERATOR
+                            )
+                                if(cur_in_def.text streq "*")
+                                    our_pointerlevel++;
+                                    cur_in_def = cur_in_def.right;
+                                    continue
+                                end
+                                //error!
+                                @pprint[
+                                    /       "cgastbuilder_defnode error!"
+                                    /       "Struct definition syntax error"
+                                    /       "Where a pointerlevel would usually be specified,"
+                                    /       "There appears to be a foreign operator!"
+                                    /       "Struct's name is:"
+                                    /       (struct_name.text)
+                                    /       "Walkable's name is:"
+                                    /       (cur_walkable.name.s)
+                                ]
+                                __builtin_exit(1);
+                            end //cur_in_def.d == CG_TOK_OPERATOR
+                        elif(traversal_mode == 3) //Reached identifier NAME OF THE VARIABLE!!
+                            if(
+                               cur_in_def.d != CG_TOK_IDENT
+                            )
+                                    @pprint[
+                                        /       "cgastbuilder_defnode error!"
+                                        /       "Struct definition syntax error"
+                                        /       "Where the struct member name should appear,"
+                                        /       "There appears to be a foreign token !"
+                                        /       "Struct's name is:"
+                                        /       (struct_name.text)
+                                        /       "Walkable's name is:"
+                                        /       (cur_walkable.name.s)
+                                        /       "The typename retrieved was:"
+                                        /       (this_walkables_typename.s)
+                                        /       "And it had a pointerlevel of:"
+                                        /int    (our_pointerlevel)
+                                    ]
+                                    if(cur_in_def.text != 0)
+                                        @pprint[
+                                        /       "The token we found had text, it was:"
+                                        /       (cur_in_def.text)
+                                        ]
+                                    end
+                                    __builtin_exit(1);
+                            end
+                            if(cur_in_def.text streq cur_walkable.name.s)
+                                we_found_ourselves_in_the_struct_definition = 1;
+                                break
+                            end
+                            cur_in_def = cur_in_def.right;
+                            traversal_mode = 0;
+                            continue
+                        elif(traversal_mode == 4) //traversing the contents of [arraysize+1]
+                            
+                            if(cur_in_def.d == CG_TOK_OBRACK)
+                                bracket_level++;
+                            elif(cur_in_def.d == CG_TOK_CBRACK)
+                                bracket_level--;
+                            end
+                            cur_in_def = cur_in_def.right;
+                            if(bracket_level == 0)
+                                traversal_mode = 3;
+                            end
+                            continue
+                        end
+                        @pprint[
+                            /       "cgastbuilder_defnode error!"
+                            /       "Internal error!"
+                            /       "The traversal_mode case handler fell through!"
+                            /       "The walkable was NOT a vector!"
+                            /       "Struct's name is:"
+                            /       (struct_name.text)
+                            /       "Walkable's name is:"
+                            /       (cur_walkable.name.s)
+                            /       "The unhandled mode was:"
+                            /int    (traversal_mode)
+                        ]
+                        __builtin_exit(1);
+                    end //eof while
+                    if(!we_found_ourselves_in_the_struct_definition)
+                        @pprint[
+                            /       "cgastbuilder_defnode error!"
+                            /       "Struct definition syntax error"
+                            /       "A walkable was specified, but does not exist"
+                            /       "in the struct definition!"
+                            /       "Struct name is:"
+                            /       (struct_name.text)
+                            /       "Walkable's name is:"
+                            /       (cur_walkable.name.s)
+                        ]
+                    end
+                    if(our_pointerlevel != 1)
+                        @pprint[
+                            /       "cgastbuilder_defnode error!"
+                            /       "Struct definition syntax error"
+                            /       "A non-vector walkable was specified, but it has a pointerlevel other than 1!"
+                            /       "in the struct definition!"
+                            /       "Struct name is:"
+                            /       (struct_name.text)
+                            /       "Walkable's name is:"
+                            /       (cur_walkable.name.s)
+                            /       "And we found a pointerlevel of:"
+                            /int    (our_pointerlevel)
+                            /       "Which is not allowed, because it was specified as a non-vector member!"
+                        ]
+                        __builtin_exit(1);
+                    end
+                    //This is necessary for the AST designer...
+                    if(struct_name.text streq this_walkables_typename.s)
+                        cur_walkable.is_parent_type = 1
+                    else
+                        cur_walkable.is_parent_type = 0
+                    end
+                    //we can now emit the type of the input variable!
+                    @pushqtok [this_walkables_typename.s]
+            end //eof if(1) end for the struct definition traversal variables.
+            @pushqtok "*"
+            @pushqtok "_cg_astbuilder_input_arg_" //this is the name of the input argument...
+            
+            @pushqtok ")"
+            @pushqtok ":"
+                @pushqtok "this"
+                @pushqtok "."
+                @pushqtok [cur_walkable.name.s]
+                @pushqtok "="
+                @pushqtok "_cg_astbuilder_input_arg_"
+                @pushqtok ";"
+            @pushqtok "end"
+        end //eof giant if statement, if(is_vector) else end
+    end //eof for over all walkables
+    contents:freelist();
+    return retval;
+    
+]
+

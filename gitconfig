@@ -1,0 +1,15 @@
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+[remote "origin"]
+	url = git@github.com:gek169/seabass.git
+	pushurl = git@github.com:gek169/seabass.git
+	pushurl = git@codeberg.org:gek/seabass.git
+	pushurl = git@github.com:C-Chads/seabass.git
+	pushurl = git@gitlab.com:gek169/seabass.git
+	fetch = +refs/heads/*:refs/remotes/origin/*
+[branch "main"]
+	remote = origin
+	merge = refs/heads/main

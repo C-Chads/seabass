@@ -1,0 +1,57 @@
+
+
+#guard cg_exec_library_DMHSW
+
+
+
+#include "cgbuilder.hbas"
+
+
+
+
+codegen u64 cg_exec_funcid = 0;
+
+/*
+    @cgexec myCodegenFunction
+*/
+
+@mkbldr [
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        cgexec
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    cgstr qq
+	cgstrll* retval
+	cgstrll* rwalk
+	
+	if(1)
+        cgstr qq2
+        char[128] buf
+    	qq:fromstr("parsehook_cg_exec_temporary_function_");
+    	__builtin_utoa(buf, cg_exec_funcid++);
+    	qq2.s = buf;
+    	qq:add(qq2);
+	end
+	
+	
+	
+	retval =      (cg_qtok("fn")); rwalk = retval;
+	rwalk:push_end(cg_qtok("codegen")); rwalk = retval.right;
+	//
+	rwalk:push_end(cg_qtok(qq.s));rwalk = rwalk.right;
+	rwalk:push_end(cg_qtok("("));rwalk = rwalk.right;
+	rwalk:push_end(cg_qtok(")"));rwalk = rwalk.right;
+	rwalk:push_end(cg_qtok(":"));rwalk = rwalk.right;
+    	rwalk:push_end(inlist:dupe());rwalk = rwalk.right;
+    	rwalk:push_end(cg_qtok("("));rwalk = rwalk.right;
+    	rwalk:push_end(cg_qtok(")"));rwalk = rwalk.right;
+    	rwalk:push_end(cg_qtok(";"));rwalk = rwalk.right;
+	rwalk:push_end(cg_qtok("end"));rwalk = rwalk.right;
+	
+	rwalk:push_end(cg_qtok("@"));rwalk = rwalk.right;
+	rwalk:push_end(cg_qtok(qq.s + 10));
+	
+	qq:free();
+
+	return retval;
+]
+

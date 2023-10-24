@@ -1,0 +1,181 @@
+
+
+AFTER SEABASS, I WILL MAKE THE SOFTWARE TOOLS OF KAGRENAC.
+
+Before I get there, I want to have done a few DSLs in seabass
+so that I know what I want to make.
+
+With the blessing and answered prayer of the Lord Jesus, it should
+be possible.
+
+I have to remember that this is all founded in reality. I'm not
+dreaming.
+
+I also have to stay motivated- Seabass is the right stepping stone.
+
+It is the right thing to do to work on seabass.
+
+
+SEABASS PLANS GOING FORWARD- OCT 2023
+
+1. Implement the complete `toc` translator.
+
+    I need to be able to compile to C, and I need to be able to wrap
+    APIs in C so that they can be accessed from Seabass.
+    
+    This will make Seabass the most powerful programming language I
+    know how to use.
+    
+2. Work on the ASTbuilder tool
+
+    This will allow me to quickly design new programming languages and implement
+    them as libraries for seabass.
+    
+3. Start making DSLs.
+
+    This will give me experience and also build a powerful toolkit for me to use
+    for the creation of the tools of kagrenac. Seabass will also become way
+    more powerful (much more powerful than C++) and I'll be able to play around
+    with new syntax styles quickly.
+    
+4. Begin designing the new language.
+
+    Seabass must be superceded by a superior, more elegant language. In order to discover
+    what the optimal implementation is, I need more data. I can get that data and start
+    rapidly prototyping only if I have the tools to do so...
+    
+5. When I have a design for the "ToK" language, implement it.
+
+    Once Seabass is powerful enough, able to compile to native, and
+    I know what the ToK language will look like, I want to write it.
+
+    This language will be high level enough for me to work comfortably
+    but also have all the low-level stuff I need to work with arbitrary
+    targets.
+    
+    It'll feel like programming javascript and lua at the same time, but
+    way way easier and with arbitrary metaprogramming abstractions.
+    
+    It'll be the norm to never ever use pointers (if they aren't completely
+    eliminated from the language) while also allowing interop with C code
+    that uses pointers.
+    
+    
+    
+    
+~~IDEAS ABOUT WHAT THE ToK language will look like- 1~~
+
+    1. Very high level, but also very low level. Notably with Memory.
+    
+        It will be possible to use pointers, but it will be easy to work with
+        extremely high level abstractions. The pointers will be a well-kept
+        secret.
+        
+        The norm will be to NOT use pointers AT ALL. EVER.
+        
+        It will feel like javascript but without the pain of a garbage collector
+        and an interpreter.
+        
+        The memory management model will be very easy to work with and not painful like
+        it is in C, yet also do the heavy lifting of doing malloc and free for you.
+        
+        If you just don't use pointers but instead included a `vector` in the language,
+        it might just be way better.
+        
+    2. Parsehooks.
+    
+        Parsehooks are the source of power for Cbas's metaprogramming. Arbitrary
+        compiletime execution PLUS total control over the AST and token list.
+        
+        Wow! We're definitely not throwing that away.
+        
+    3. Fully retargetable.
+    
+        Everything required by the language to operate (From basic ops to
+        malloc/free) should be able to be mapped to something on arbitrary
+        targets.
+        
+        I want the ToK language to support systems which don't have malloc and
+        free too (In fact, I'd like to come up with a scheme for supporting
+        languages like javascript that don't even have pointers at all) but
+        
+        
+    4. Smart syntax
+    
+        Maximum inference for minimal syntax.
+        
+    5. Customizable Contexts.
+    
+        I'd like a way to be able to design my own contexts in a more "integratable"
+        way than parsehooks. Parsehooks cannot access the local variables of a function
+        that is in the middle of being parsed (Unless you use active_function... hmmm...
+        does that work?)
+        
+    6. Creative use of ASCII.
+    
+        I want to have cool arrows and stuff like rust. I already did something
+        like that for function return types.
+        
+    7. A pointer replacement scheme.
+    
+        I figure we'll do something sort of like C++. 
+    
+    8. Constructors and Destructors by default.
+    
+        I want MORE hidden control flow, not less. The more I can
+        have control flow done for me, the better.
+        
+        In fact, I should come up with new ways to hide control flow
+        and have it done for me which are baked into the language...
+        stuff which is 
+        
+    9. Move vs Copy when transferring a struct to new memory
+    
+        The distinction is only important if the struct has internal
+        linkages to itself. This is inevitable when doing something
+        that has callbacks...
+        
+        How do I solve this problem?
+        
+        
+
+    
+
+
+~~FLAWS WITH SEABASS~~
+
+    1. Lack of cross-platform development integration from the start.
+
+        It was at least thought about during development, but ultimately
+        not taken seriously. `u64` has to be the pointer type for the
+        current implementation, which means a 32 bit platform that has
+        64 bit registers will have those registers inaccessible from
+        Cbas.
+    
+    This is mostly fine, but it's annoying to think about.
+    
+    2. Syntax dissimilarities with C.
+    
+        Most of seabass's syntax changes are positive, but some
+        are intrinsically negative. Mostly having to do with increased
+        pointer strictness.
+        
+    3. Lack of object orientation.
+    
+        Seabass has methods as a syntax sugar, which is nice, but not complete.
+        
+        I should have designed it from the bottom-up with OOP in mind.
+        
+    4. Pointers & memory management.
+    
+        The C-style memory management model is necessary for interop with
+        C and operating on hardware, however I really don't want to work
+        at that level in my normal code.
+        
+        In Seabass I'd like to design a higher level "OOPsy" language which
+        will exist entirely within seabass which will likely be a foreshadowing
+        of the ToK language...
+        
+        I would like the memory management to feel more like C++.
+        
+    5. 

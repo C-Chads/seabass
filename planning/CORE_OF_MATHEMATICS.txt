@@ -1,0 +1,109 @@
+
+DISCRETE LOGIC / REASONING IS (semi) FUNDAMENTAL.
+
+The LORD is, of course, the true fundamental truth (THE truth) underlying
+all things (Amen). We know that he is The beginning and the ending, the
+first and the last. Those are terms which only make sense in discrete
+logic.
+
+Even when examining infinities, their underlying nature (i.e. how we
+reason about them) is still discrete- We are using discrete units of
+reasoning in order to reason about "infinities". I.e., "infinities" are,
+themselves, discrete elements.
+
+Real non-fractional numbers are reached through discrete reasoning by
+defining operators (such as square root) and operations on rationals,
+which are related to the strictly discrete by their origin in the integers,
+which are strictly generated from the discrete set of rules defining
+the naturals and the successor function.
+
+"The reals" is a system which was reached through discrete logic by
+advancing through discrete systems.
+
+HOW WERE PI AND THE CIRCUMFERENCE OF A CIRCLE REACHED BY DISCRETE LOGIC?
+
+An intersection with another field of discrete logic.
+
+GODEL'S THEOREM: A SHADOW OF THE HALTING PROBLEM AND "THIS STATEMENT IS FALSE"?
+
+"This Statement is false" is incoherent in that it implicitly relies on something
+which does not exist (A universal boolean truthiness evaluator for statements).
+
+ALL CONCEPTS WHICH RELY ON "INFINITY" ARE (?I believe?) EXPRESSIBLE WITHOUT THE CONCEPT.
+
+Because whenever we work with "infinity" it is, itself, a discrete element of the system.
+
+I believe it is possible to "detach" infinity from any system which involves it and make
+an analogous system of rules which does not contain an infinity.
+
+https://plato.stanford.edu/entries/goedel-incompleteness/
+
+HOW CAN WE REMOVE INFINITY FROM THE INTEGERS/NATURALS (THE SUCCESSOR FUNCTION)?
+
+I believe we'd have to separate all the different "constituent parts"
+of "what are integers" that doesn't involve infinity.
+
+the integers are defined by 0 and a "successor function" which makes
+"the next one".
+
+Zero is easy, it is a discrete thing already, the hard part is the successor function.
+
+The basic rule of the successor function is thus:
+1. Successive calls of the successor function return a unique answer, and never result in a previously-seen output.
+
+this contains the concept of infinity, however we must acknowledge:
+	1. It is not actually possible to perform 
+
+This is a successor function:
+```
+fn successor(string a)->string:
+	return a+"a";
+end
+```
+
+Any implementation of this on a real computer will eventually reach a point of failure, and this is true
+no matter how you define the successor function, so while the concept may exist, the successor
+function itself cannot have any real implementation.
+
+So any real implementation must violate the "no repeats" rule, thereby meaning that for practical computer science, the
+successor function does not exist.
+
+We can replace the successor function with a factually computable equivalent...
+
+1. the function never returns its input. F(A) != A
+2. Successive calls of the function wrap-around only after an incredibly large number
+	of successive calls
+	
+Thus, we have defined "the integers" without infinity.
+
+WHAT IF WE WANT TO SIMULATE ALEPH NUMBERS, INFINITY AND SUCH?
+
+We add a new cardinality, a new system. We can also make the successor function eventually return
+some "special value" which represents infinity (say, after 2^128, we say the answer is always +inf)
+
+These systems should perfectly represent the "underlying reasoning" of the math we do.
+
+DOES THIS MEAN INFINITY DOES NOT EXIST?
+
+No. the scripture saith we shall have eternal everlasting life. Eternal means infinite. Everlasting
+means infinite. Infinity is _real_. What we have to recognize is that any actual intellectual labor
+we do doesn't actually require infinity, it only requires an object with the properties of infinity 
+as is relevant to the analysis.
+
+"THE MOST CONCISE WAY TO EXPRESS A FUNCTION"
+> To be researched.
+
+ALL OF MATH... IS ACTUALLY PROGRAMMING
+
+Devising discrete sets of rules and thingies which follow those rules is
+the core of what computer programming is.
+
+STATE RENAMING AND ANALOGOUS TRANSITION FUNCTIONS
+
+If two state machine transition functions are identical except
+that the names of the states are different (the numbers, the
+bits used to represent them) then they are fundamentally the
+same system, just written differently. However, due to the
+relationship between the numbers, it may be more efficient
+to represent them that way.
+

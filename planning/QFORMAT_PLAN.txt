@@ -1,0 +1,284 @@
+QFORMAT- THE ADVANCED TEMPLATING LANGUAGE
+
+Imagine being able to do complex logic with
+templates. Conditional or repeated actions,
+for instance, and even variable (and checked!)
+numbers of arguments.
+
+All fields are anonymous and have to be received
+in order. All required fields must be filled.
+
+Everything in qformat is turned into seabass code
+which does what the qformat code specifies.
+
+This means for instance that I don't have to
+write an expression parser in seabass to verify
+the correctness of expressions, I just
+turn them into seabass code.
+
+
+Definitions
+    ~~FIELD~~
+    one or more tokens (more than one requires brackets) comprising
+    a "text" argument, which can be decoded into an int.
+    ~~INT~~
+    i64
+    ~~INPUT~~
+    as provided to the qformat program by virtue of it being a
+    builder.
+    ~~
+
+PARTS OF A QFORMAT PROGRAM FROM AN IMPLEMENTATION PERSPECTIVE:
+1. the name.
+2. the input scanning portion- the number and value of the inputs
+must be determined.
+3. the variable specification portion.
+4. the template specification portion.
+5. the output portion.
+
+PROBLEMS TO SOLVE FOR QFORMAT.
+
+1. How to I generate output?
+
+    It can seem daunting from a top-down perspective, but
+    from a bottom up one, it's very simple.
+    
+    Whenever we encounter a token, we add it to the output, unless
+    it is a dollar sign, in which case we have to do some evaluation.
+    
+    $$ is an "escaped" dollar sign and gets emitted.
+    
+    $myField will take that field input and dupell-emit it.
+    $myFields[13*2] will find the 27th entry 
+        (zero indexed!) in `myFields` and dupell-emit it.
+    $myInt will turn that integer into a token and add it to the output.
+    
+2. What "tough cookie" language constructs are there?
+
+    1. Variables, which are either scanned in from the input or are
+        created afterward. 
+    2. Variably sized arrays of fields. When the time comes to define a field, we calculate its
+        size dynamically and allocate it.
+    3. Conditionally scanned inputs. We define the variable either way, but if it isn't received,
+        it is zero-initialized. Usage of an uninitialized field is an error!
+    4. Accessing arrays of fields. Has to be separate from (but will include) expressions.
+    5. Templates: what are they?
+        - a higher-order code than seabass. Every template can be decoded
+        directly into seabass code. it being "emitted" means that it is
+        executed. For things like $repeat and $loop that means we are wrapping
+        that code inside of a scope.
+    6. How do I expand templates?
+        Template references are expanded in-place
+        when they are emitted, but if they are part of a 
+        repeat command or loop, they are inside the body
+        of a for or while loop.
+3. Special rules.
+
+    1. You can't edit fields or move them- they are constant. They
+        can't appear in expressions either. Their only purpose
+        is to appear in the output or not.
+    2. the only possible types for variables are "int", "int[]","field" and "field[]"
+    3. You can't define field variables outside of the input.
+    4. all required fields must be initialized.
+    5. usage of uninitialized fields is an error.
+    6. out-of-bounds access on a field array is an error.
+    7. You may not reference a template unless it is defined.
+    8. templates and fields may not share names.
+4. Considerations...
+    Q: Shall I allow default values for fields?
+    A: No. I don't like it.
+    
+    Q: Do I need a parser generator to make qformat?
+    A: No. I want Qformat around when I make the parser generator.
+    
+    Q: Will this actually save me time?
+    A: YES! YES! YEEEES!!!
+5. $ commands.
+    1. $myvar - emit int or field.
+        for fields:
+            retval:push_end(fieldarg:dupell());
+        for ints:
+            __builtin_itoa(buf, intvar);
+            retval:push_end(cg_qtok(buf));
+    2. $myvars[expr] - emit field from array of fields. You could also use an int.
+        for fields:
+            i64 the_expr = (expr);
+            if(the_expr >= myvars_length || the_expr < 0)
+                //print some error... exit...
+            end
+            retval:push_end(myvars[the_expr]:dupell());
+        for ints:
+            i64 the_expr = (expr);
+            if(the_expr >= myvars_length || the_expr < 0)
+                //print some error... exit...
+            end
+            __builtin_itoa(buf, myvars[the_expr]);
+            retval:push_end(cg_qtok(buf));
+    3. $(expr) - evaluate expression
+        for these we just do
+        (expr);
+    4. $?(expr)[] - conditional expansion
+        if(expr)
+            //whatever we generate for the stuff in the brackets...
+        end
+    5. $repeat templatename (expr) - repeatedly emit templatename
+        if(1)
+            i64 count_
+            i64 end_
+            end_ = (expr);
+            for(count_=0, count_ < end_, count_++)
+                //put body of template here.
+            end
+        end
+    6. $loop templatename (expr) - repeatedly emit templatename until expr is not satisfied.
+        while(expr)
+            //put body of template here.
+        end
+    7. ?(expr)myvar:type - conditionally scan an input.
+        strll* myvar //or int myvar
+        if(expr)
+            //or convert to int first.
+            myvar = input_fields[current_fields];
+        else
+            myvar = cast(cgstrll*)0; //or not casting
+        end
+        
+    8. $mytemplate - emit template.
+        if(1)
+            //code for template goes here...
+        end
+    9. $exit "message"
+        __builtin_puts("message");
+        __builtin_exit(1);
+    10. $[seabass_code();]
+        - literally just embed this code in that spot.
+
+
+@qformat[
+    ifchain //template name
+    
+    input
+    [
+        b:int                 //b is taken in as an integer.
+        haselse:int
+        
+        //once the first field is received, we process it.
+        //its value can now be used from here-on out.
+        //the 
+        
+        ifstuff:field[(b*2)]  //Expect 2*b fields.
+        
+        
+        ?(haselse)elsebody:field           //conditionally required field.
+    ]
+    
+    //after input is handled, we define variables...
+    vars[
+        id:u64 //this is what will keep track of 
+    ]
+    
+    //template definitions
+    template if_part[
+        if($ifstuff[0])
+            $ifstuff[1]
+        /*
+            ^ we recognize the dollar sign, see the variable,
+            then see that it's an array of fields and not actually
+            a field, so we need an index. Check for brackets...
+            yep... got 'em... inside is an expression. We generate
+            seabass code to evaluate the expression.
+        */
+        //increment id.
+        $(id++)
+    ]
+    template elseif_part[
+        elif(
+            $ifstuff[id*2] /*take the field and put it here.*/
+        
+        )
+            $ifstuff[id*2+1]
+        $(id++)
+    ]
+    template else_part[
+        else
+            $elsebody
+    ]
+    
+    //output program.
+    
+    output [
+        $(id = 0)
+        $?(b != 0)[
+            $if_part
+            $repeat elseif_part (b-1)
+            $?(haselse)[
+                else_part
+            ]
+        ]
+    ]
+    
+]
+
+fn codegen myfunc():
+
+    @ifchain[
+        1 //1 test
+        0 //no else
+        [2 == (1+1)] 
+        [
+            __builtin_puts("What an amazing fact!");
+        ]
+    ]
+    
+    @ifchain[
+        2 //two tests
+        0 //no else
+        [3 == (1+1)]
+        [
+            __builtin_puts("How?!?!");
+        ]
+        [2 == (1+1)]
+        [
+            __builtin_puts("The truth at last!");
+        ]
+    ]    
+    @ifchain[
+        2 //two tests
+        1 //has else
+        [3 == (1+1)]
+        [
+            __builtin_puts("How?!?!");
+        ]
+        [4 == (1+1)]
+        [
+            __builtin_puts("What?!?!");
+        ]
+        //else!
+        [
+            __builtin_puts("Alas! Lost at sea!");
+        ]
+    ]
+end
+
+
+WHAT DO I NEED TO MAKE QFORMAT?
+
+I want to write a bunch of builders to automate
+the work I usually do by hand when writing builders.
+
+notably, the process of taking pre-made strings and
+pushing them onto a list of strings.
+
+I would also like to automate the choice between
+push_end or assignment to retval, as well as
+using rwalk.
+
+For my own sake, though, I think I can probably
+manage without writing a DSL specifically for this
+purpose (before I write Qformat).
+
+(Would it actually be better to implement qformat
+in terms of this higher order work?)
+
+
+

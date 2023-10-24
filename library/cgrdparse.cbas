@@ -1,0 +1,74 @@
+
+#include "cgrdparse.hbas"
+
+
+@cgrdparser [
+    Declare_An_Integer
+    [
+        cgstr int_name
+    ]
+    head [
+        this.int_name.s = cast(u8*)0;
+        while(tok_not_null)
+            char* p
+            p = "(";
+            match [["Here_is_the_name"]
+                eat
+                if(tok_null)
+                    __builtin_puts(">:( THERE IS NO NAME HERE GRRRRRR");
+                    __builtin_exit(1);
+                end
+                do set_ident
+                break
+            ]
+            match[ [p]
+                __builtin_puts("Nice opening parentheses!");
+            ] 
+            match[ [")"]
+                __builtin_puts("Nice closing parentheses!");
+            ]  
+            match[ [";"]
+                __builtin_puts("semicolon???");
+            ]            match[ [","]
+                __builtin_puts("COMMA???");
+            ]
+            stringlit[
+                __builtin_puts("A string? Oh, I can print that for you!");
+                __builtin_puts(tok.text);
+            ]
+            if(tok_null) break; end
+            eat
+        end
+    ]
+    set_ident [
+        this.int_name:fromstr(tok.text);
+    ]
+    finish [
+        if(this.int_name.s != cast(u8*)0)
+            emitq "codegen"
+            emitq "int"
+            emitq [this.int_name.s]
+            emitq ";"
+            this.int_name:free();
+            finish
+        else
+            __builtin_puts("ERROR!");
+            __builtin_puts("You didn't tell me what to call the integer!");
+            __builtin_exit(1);
+        end
+    ]
+]
+
+@Declare_An_Integer [
+    data data char;;;,,,, (char) "Yes, I want this printed" if if Here_is_the_name my_int_name
+]
+
+
+fn codegen codegen_main():
+    __builtin_exit(0);
+    my_int_name = 3;
+    if(my_int_name == 3)
+        __builtin_puts("Hello from autocoding!");
+    end
+    ;
+end

@@ -1,0 +1,34 @@
+
+A NEW HIGH LEVEL LANGUAGE ON TOP OF MASM
+
+Masm will be capable of representing anything I want to do- especially given
+that it doesn't really have struct types, it just has compounds (which are equivalent but untyped).
+
+However, I want to be able to work at a higher level, with methods and whatnot.
+
+I will create an equivalent - but higher level- syntax, with new control flow abstractions.
+
+Importantly- I will write it in MASM.
+
+It will have types and type checking and type safety, expressions, etcetera, and convert
+cleanly to MASM.
+
+Because of the limitations of MASM, I think I will not have type checking for functions
+
+outside the current module, and instead we will rely on MASM's type checking (which can't
+tell the difference between f64 and i64, they're both r64).
+
+It should be good enough to catch most errors.
+
+HOW ARE SYMBOLS IMPORTED ACROSS MODULES IN MASM?
+
+the sme_module system already keeps track of functions and global variables and their
+types.
+
+We simply reference them by name.
+
+Modules themselves also have names, and they are unique per module, along with their ids, which are
+their positions in the list.
+
+As detailed in "gui_audio_api.txt" a full rebuild of all higher-level mods is necessary
+any time that the module list is modified, which involves closing them.

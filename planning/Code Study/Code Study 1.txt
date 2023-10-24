@@ -1,0 +1,220 @@
+
+1. I could really use something that automatically
+makes long sequences of __builtin_puts statements
+for me including embedding custom strings
+and integers.
+
+Like, printf but bigger.
+
+Perhaps if I wrote meta-code which could evaluate the
+types of expressions, I could write an anonymous variadic
+printf-style debug interface.
+
+I would want to use `.` at the end of a string instead
+of comma because it's "less noise".
+
+@dbgprint(
+	"ERROR!".
+	"You messed up!".
+	myint
+	my
+);	
+
+Examples:
+
+cgstrll* qq
+qq = dummy:cg_token_foldout_arglist();
+if(qq.right.d == CG_TOK_CBRACK)
+	__builtin_puts("RDPARSER_ERROR");
+	__builtin_puts("match with empty string expression!");
+	__builtin_puts("The syntax is:");
+	__builtin_puts("match [ [my_charpointer_expr()] code(); ]");
+	__builtin_exit(1);
+end
+qq = cg_tok_arglist_remove_brackets(qq);
+
+
+fn codegen cg_rd_parse_fail_stringlit_syntax(char* msg, char* langname, char* rulename):
+    __builtin_puts("RDPARSER_ERROR!");
+    __builtin_puts("stringlit's syntax was wrong.");
+    __builtin_puts("The syntax is:");
+    __builtin_puts("stringlit[ mycode(); ]");
+    __builtin_puts(msg);
+    __builtin_puts("Language name is");
+    __builtin_puts(langname);
+    __builtin_puts("Rule's name is");
+    __builtin_puts(rulename);
+    __builtin_exit(1);
+end
+
+2. I could use something which lets me quickly do
+a whole lot of pushqtok work all at once. I already
+sort of have this with worksheet.
+
+Example:
+@mkbldr[
+    cg_rd_parse_is_stringlit
+    
+    @dupell_inlist ;
+    @initqtok "if"
+    @pushqtok "("
+        @pushqtok "this"
+        @pushqtok "."
+        @pushqtok "tok"
+        @pushqtok "."
+        @pushqtok "d"
+        @pushqtok "=="
+        @pushqtok "cast"
+        @pushqtok "("
+        @pushqtok "u8"
+        @pushqtok "*"
+        @pushqtok ")"
+        @pushqtok "2"
+    @pushqtok ")"
+    @pushtok inlist_dupe
+    @rwalk_skip ;
+    @pushqtok "end"
+    return retval;
+]
+
+3. It's awkward how after I push a large number of
+tokens I have to do rwalk_skip.
+
+Example:
+
+@mkbldr[
+    cg_rd_parse_is_stringlit
+    
+    @dupell_inlist ;
+    @initqtok "if"
+    @pushqtok "("
+        @pushqtok "this"
+        @pushqtok "."
+        @pushqtok "tok"
+        @pushqtok "."
+        @pushqtok "d"
+        @pushqtok "=="
+        @pushqtok "cast"
+        @pushqtok "("
+        @pushqtok "u8"
+        @pushqtok "*"
+        @pushqtok ")"
+        @pushqtok "2"
+    @pushqtok ")"
+    @pushtok inlist_dupe
+    @rwalk_skip ;
+    @pushqtok "end"
+    return retval;
+]
+
+
+4. I very commonly have this pattern where I want to
+pull out sequential arguments (either bracket-delimited
+or not) and then remove brackets. I should come up with a way to
+make this faster.
+
+Example:
+
+cgstrll* qq
+qq = dummy:cg_token_foldout_arglist();
+if(qq.right.d == CG_TOK_CBRACK)
+__builtin_puts("RDPARSER_ERROR");
+__builtin_puts("match with empty string expression!");
+__builtin_puts("The syntax is:");
+__builtin_puts("match [ [my_charpointer_expr()] code(); ]");
+__builtin_exit(1);
+end
+qq = cg_tok_arglist_remove_brackets(qq);
+
+5. I generally need better tools for manipulating cgstrlls, especially
+breaking them into pieces. I have pushing down pat (although
+mixing up initqtok and pushqtok is a problem).
+
+6. It would be nice if I could automate the whole "dummy" thing.
+
+I have cg_bldr_initvars_dummy but well that's a hacky macro.
+
+
+
+DESIGN THOUGHTS
+
+* It is nice when the amount of code is really small, especially
+per line, so that the text can be really big on my screen and easy
+to read.
+
+* lines can have "noise" on them. My __builtin_puts lines for example.
+
+	The function name makes the code look visually ugly. It's easy to tell
+	what it's doing, but it's not pleasing to the eye.
+
+	The at signs in front of `pushqtok` also make it look quite bad.
+
+	I could alleviate that by writing a dedicated parsed language for
+	cgstrll manipulation- which would be cool and good if I just had
+	good tools for creating new languages.
+
+	Part of the reason I dont like C++ is that it is
+	very visually confusing and unfriendly. So many angle brackets
+	and curly braces. 
+	
+* The colors of gedit are bad. - fixed, dont use grey
+
+* I wish my code looked the way I imagine it. Printing debug statements is
+	just strings. If anything, I might want some special symbol, such
+	as > to be used for string printing.
+
+	@prettyprinter
+	>	"ERROR"
+	>	"You messed up!"
+	>	"See this:"
+	>	myInt
+	>	"That's an integer. Pay attention to it."
+	
+	Preferably I'd want a character that is not critical to my syntax or rarely needed
+	in print statements.
+	
+	@pprint
+	/	"ERROR"	
+	/	"You messed up!"
+	/	"Check this out:"
+	/	myInt
+	/	"That's an integer. Pay attention to it."
+
+	This is actually a huge gain- the code looks WAY cleaner!
+	
+	it might actually be an advantage to have a keyword "itoa" or something
+	to annotate that this is happening rather than have the int raw.
+	
+		@pprint
+	/	"ERROR"	
+	/	"You messed up!"
+	/	"Check this out:"
+	/itoa	myInt
+	/	"That's an integer. Pay attention to it."
+	
+	we could go even further...
+	
+		@pprint
+	/		"ERROR"	
+	/		"You messed up!"
+	/		"Check this out:"
+	/itoa		myInt
+	/		"That's an integer. Pay attention to it."
+	/		"And this is an expression:"
+	/itoa		(myInt + 3)
+	
+	pprint only ever takes one token unless there is a keyword
+	or parentheses.
+	
+	This is an excellent syntax and I want it in the language.
+	
+	PARSING
+	
+	pretty simple to parse. you just go until you find two tokens
+	after a slash (except for rules like itoa and parenthesized
+	expressions).
+	
+	
+	
+	
+

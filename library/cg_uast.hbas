@@ -1,0 +1,428 @@
+
+#guard Compiletime_Universal_AST_DMHSW
+//ALL GLORY TO THE LORD JESUS CHRIST OF NAZARETH, FORMER OF ALL THINGS, FOR EVER. AMEN.
+//This work would be impossible without his blessings.
+//Thank you, Lord Jesus.
+
+/*
+    THE UNIVERSAL ABSTRACT SYNTAX TREE / UNRAS - REPRESENT ANY LANGUAGE (OR COMPUTER PROGRAM, OR SET
+    OF CONCEPTS) USING THIS SYSTEM!
+    
+    This is a derivative of the NRS/NRAS system I have been working on for so long in my head-
+    
+    In order to explain what this is, I need to explain what the NRS and NRAS are.
+    
+    ~~~~~~~~~~THE NRS~~~~~~~~~~~~
+    
+    The "Networked Relationship/Reasoning Solver"
+    
+    This system was devised by me as a generalization of "property propagation"
+    in the analysis of complex systems. It mimicks the process of inferencing,
+    and in fact exists to abstract it, so I called it the Networked Relationship Solver.
+    
+    It works by keeping a list of "nouns" and a list of "relationships".
+    
+    Nouns have integer attributes (a vector of integers) with positive and negative
+    being 'contradictions' of the same idea, i.e. if "1" represent "is_integer"
+    then -1 means "not is_integer".
+    
+    Relationships in the NRS were originally thought up as being simple asymmetric
+    pipes, but I realized this was insufficient (or at least, not very good) for
+    modelling more complicated relationships. I reasoned that what we really need
+    is to be able to model any relationship between nouns as a spatial coordinate
+    system- with individual nouns having coordinates within the space, defining
+    what their relationship to the other nodes was.
+    
+    I spent quite a while thinking about how the NRS could propagate properties
+    through the network and simulate complex logic (especially if you dynamically
+    added or removed nodes) but I eventually came to conclude this system was
+    insufficient (or at least unwieldy) for modelling concepts and reasoning.
+    
+    I wanted to do things which were too complex to do effectively by
+    property propagation alone. Thus, came...
+    
+    ~~~~~~~~~THE NRAS~~~~~~~~~~~~~~~~~~~
+    
+    The "Networked Reasoning/Relationship Automata solver"
+    
+    Instead of merely having property propagation system, the NRAS would have
+    finite automata that continuously analyzed the set of nodes, applying
+    transformation rules, creating and destroying nodes, etcetera.
+    
+    This is more powerful than simple property propagation (a superset!) while
+    still being fully compatible; property propagation is simply _one kind_
+    of automata.
+    
+    I planned to implement this system after cg_astbuilder, until October 20th
+    of 2023, when I was scheming AST modelling and I started thinking about
+    the NRAS again. I devised the Universal AST, or UNRAS...
+    
+    
+    ~~~~~~THE UNRAS~~~~~~~~~~~~~~~~~~~
+    
+    The "Universal Networked Reasoning Automata solver"
+    
+     I realized that it was possible to merge the "noun" and
+    "relationship" struct into a single "node" struct by giving the "node" a
+    single set of coordinates (representing position "relative" to the indirection
+    which brought you to the node) and that this was actually potentially much more 
+    powerful because a "noun" could then have children.
+    
+    Furthermore, it is possible to model arbitrary concept maps. The exact relationship
+    between any two nodes can be perfectly modeled.
+    
+    
+    
+    As the final bit of icing on the cake, I have realized that none of this requires
+    any code templating. Function pointers and byte pointers perfectly allow arbitrary
+    definition of automata which traverse and analyze the UAST.
+    
+    I could write the UNRAS without any fancy compiletime polymorphism or metaprogramming.
+    
+    Thus, we have reached the UNRAS- the State of the art in Concept modelling and
+    computer program language analysis.
+    
+    
+    
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                THEORY / UNDERLYING NATURE
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    The UNRAS models relationships as "local coordinate
+    systems". For instance, a house might have "rooms"
+    so you would assign a unique coordinate for the
+    "room of house" relationship, as well as the
+    "room is part of house" relationship.
+    
+    The house keeps a list of rooms in the house, and
+    the room keeps a list (of length 1) of houses it is
+    inside of.
+    
+    If a single set of coordinates is not enough, or
+    the relationship is more than two-way, or is itself
+    a complex structure, then it can be modelled as its
+    own node.
+    
+    This allows you to model arbitrary sets of relationships.
+        
+    If this explanation did not help you understand, I have
+    made a drawing and put it in the top level of the
+    repository, called "UNRAS_data_structure.png" which
+    tries to explain the fundamentals of the the UNRAS
+    system with arrows and boxes.
+    
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                DOCUMENTATION / USAGE
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    TODO
+    
+
+*/
+
+
+
+class cg_uastnode
+
+    
+    u64 coord
+    byte* udata //child data of the node
+    
+    /*
+        Relative placement
+    */
+        u64* rel
+        u64 n_rel
+        u64 cap_rel
+    
+    //universal properties- lots/most ASTs will want these...
+    
+    u64 sysid //what "system of analysis" does this node exist in?
+    byte is_dead //is this node dead? I.e., should it be processed anymore?
+    byte is_error //Has this node reached an error state (All possible interpretations are dead)?
+    
+    
+    
+    noexport
+end
+
+
+
+class cg_uast
+    cg_uastnode* nodes
+    u64 n_nodes
+    u64 cap_nodes
+    byte** analyzers //what analyzers are operating on this ast?
+    byte** analyzer_inputs //state machine storage pointers for the analyzers...
+    byte* err_text //if an error has occurred, this will be set to an owning pointer...
+    u64 n_analyzers
+    u64 cap_analyzers
+    u64 uuid_gen
+    
+    noexport
+end
+
+
+
+/*
+    OOP
+    
+    Ctors and dtors
+*/
+
+method codegen cg_uastnode.ctor():
+    this.rel = 0;
+    this.n_rel = 0;
+    this.cap_rel = 0;//rel is a pointer!
+    this.sysid = 0;
+    this.udata = 0;
+    this.is_dead = 0;
+    this.coord = 0;
+end
+
+method codegen cg_uastnode.dtor():
+    if(this.rel != 0)
+        __builtin_free((u8*)this.rel);
+    end
+end
+
+method codegen cg_uast.ctor():
+    this.nodes = 0;
+    this.n_nodes = 0;
+    this.analyzers = 0;
+    this.analyzer_inputs = 0;
+    this.n_analyzers = 0;
+    this.cap_analyzers = 0;
+    this.cap_nodes = 0;
+    this.err_text = 0;
+    this.uuid_gen = 1; //zero is a special value...
+end
+
+method codegen cg_uast.dtor():
+    if(this.nodes != 0)
+        i64 i
+        for(i = 0, i < this.n_nodes; i++)
+            (this.nodes + i).dtor()
+        end
+        __builtin_free((u8*)this.nodes);
+    end
+    if(this.analyzers != 0)
+        __builtin_free((u8*)this.analyzers);
+    end
+    if(this.analyzer_inputs != 0)
+        __builtin_free((u8*)this.analyzer_inputs);
+    end
+    if(this.err_text != 0)
+        __builtin_free((u8*)this.err_text);
+    end
+end
+
+
+/*
+    Node pushes...
+*/
+method codegen cg_uast.push_node(cg_uastnode p)->u64:
+    if(this.cap_nodes >= this.n_nodes + 1)
+        this.cap_nodes = this.cap_nodes * 2 + (this.cap_nodes == 0)*512;
+        this.nodes = (cg_uastnode*)__builtin_realloc((u8*)this.nodes, sizeof(cg_uastnode) * this.cap_nodes)
+    end
+    (this.nodes + this.n_nodes) := p;
+    return this.n_nodes++;
+end
+
+method codegen cg_uast.push_analyzer(byte* analyzer, byte* sm)->u64:
+    if(this.cap_analyzers >= this.n_analyzers + 1)
+        this.cap_analyzers = this.cap_analyzers * 2 + (this.cap_analyzers == 0);
+        this.analyzers = (u8**)__builtin_realloc((u8*)this.analyzers, sizeof(u8*) * this.cap_analyzers);
+        this.analyzer_inputs = (u8**)__builtin_realloc((u8*)this.analyzer_inputs, sizeof(u8*) * this.cap_analyzers);
+    end
+    this.analyzers[this.n_analyzers] = analyzer;
+    this.analyzer_inputs[this.n_analyzers] = sm;
+    return this.n_analyzers++;
+end
+
+
+
+method codegen cg_uastnode.push_rel(u64 p)->u64:
+    if(this.cap_rel >= this.n_rel + 1)
+        this.cap_rel = this.cap_rel * 2 + (this.cap_rel == 0)*512;
+        this.rel = (u64*)__builtin_realloc((u8*)this.rel, sizeof(u64) * this.cap_rel)
+    end
+    this.rel[this.n_rel] = p;
+    return this.n_rel++;
+end
+
+/*
+    ANALYZER PROTOTYPE
+    
+    Inputs are the state machine storage for the analyzer, and the AST.
+    
+    return value is a 2-bit code, indicating the following:
+    0- Analyzer did nothing, "nothing to do".
+    !0 - Analyzer did something of some sort
+    1- Analyzer did something, but no errors.
+    2- Analyzer encountered an error- Generate an error code.
+    3- Analyzer reached the end state (Don't call me any more!)
+    
+    
+*/
+
+codegen byte CG_UAST_DIDNOTHING = 0;
+codegen byte CG_UAST_DIDSOMETHING = 1;
+codegen byte CG_UAST_ERR = 2;
+codegen byte CG_UAST_END = 3;
+codegen i64 CG_UAST_PUSHNODE_FAIL = ~0;
+
+fn codegen cg_uast_analyzer_proto(byte* self,cg_uast* ast)->byte: end
+
+method codegen inline cg_uast.call_analyzer(u64 id)->byte:
+    return callfnptr[cg_uast_analyzer_proto](this.analyzers[id])(this.analyzer_inputs[id],this)
+end
+
+/*
+    UTILITY FUNCTIONS
+*/
+method codegen cg_uast.gen_uuid()->u64:
+    return this.uuid_gen++
+end
+
+method codegen cg_uast.add_link(u64 daddy, u64 child):
+    if(daddy >= this.n_nodes || child >= this.n_nodes)
+        return 
+    end
+    (this.nodes + daddy).push_rel(child);
+end
+
+
+
+method codegen cg_uast.push_node_as_linked_under(u64 daddy, cg_uastnode p)->i64:
+    if(daddy >= this.n_nodes)
+        return -1
+    end
+    i64 retval = this.push_node(p);
+    
+    this.add_link(daddy, retval);
+    
+    return retval
+end
+
+method codegen cg_uast.push_node_as_linked_circle2(u64 daddy, cg_uastnode p)->i64:
+    if(daddy >= this.n_nodes)
+        return -1
+    end
+    i64 retval = this.push_node(p);
+    
+    this.add_link(daddy, retval);
+    this.add_link(retval, daddy);
+    
+    return retval
+end
+
+method codegen cg_uast.push_node_inbetween(u64 daddy, cg_uastnode p, u64 child)->i64:
+    if(daddy >= this.n_nodes || child >= this.n_nodes)
+        return -1 
+    end
+    i64 retval = this.push_node(p);
+    
+    this.add_link(daddy, retval);
+    this.add_link(retval, child);
+    
+    return retval
+end
+
+
+
+
+/*
+*   PATTERN MATCHING METHODS
+*/
+
+//"I want the fifth thing with these coordinates..."
+
+method codegen cg_uastnode.get_rel_ind(cg_uast ast, u64 coord, u64 which)->i64:
+    i64 i
+    which++ //convert from zero-indexing to 1-indexing...
+    for(i = 0, i < this.n_rel, i++)
+        if((ast.nodes + this.rel[i]).coord == coord)
+            which--
+            if(which) continue end
+            return i
+        end
+    end
+    return -1
+end
+
+//"Start looking for a relationship from this point..."
+
+method codegen cg_uastnode.get_rel_skip(cg_uast ast, u64 coord, u64 skip)->i64:
+    u64 i
+    for(i = skip, i < this.n_rel, i++)
+        if((ast.nodes + this.rel[i]).coord == coord)
+            return i
+        end
+    end
+    return -1
+end
+
+/*
+*   If your node keeps a vector of nodes with some relationship to it
+*   such as "my parents" then you would use this to push onto that 
+*   vector... 
+*/
+method codegen cg_uastnode.push_rel_vector(cg_uast ast, u64 coord, u64 pushme)->byte:
+    i64 q = this.get_rel_ind(ast, coord, 0);
+    if(q == -1) return 0 end
+    
+    
+    //we found the thing we want to add a link to!
+    ast.add_link(q, pushme);
+    return 1;
+end
+
+/*
+*   THE CORE OF THE MACHINE
+*/
+method codegen cg_uast.analyze()->byte:
+
+    i64 i
+    u64 did_something
+    u64 ever_did_something = 0
+    byte retval = 0
+    byte* p = __builtin_malloc(this.n_analyzers);
+    
+    
+    //clear the buffer...
+    for(i = 0; i < this.n_analyzers; i++) 
+        p[i] = 0 
+    end
+    
+    //as long as analyzers are still running, keep calling them on the AST.
+    while(1)
+        did_something = 0;
+        for(i = 0, i < this.n_analyzers, i++)
+            if(p[i]) continue end
+            u64 rr = this.call_analyzer(i) & 3 //and 3 forces it to always be 0-3. 3 == 0b11
+            if(rr == 2)
+                retval = 2; //Propagate the error upward.
+                goto endplace 
+            elif(rr == 3) 
+                p[i] = 1;
+                did_something = 3;
+                continue 
+            end
+            did_something = did_something | rr;
+            ever_did_something = ever_did_something | rr;
+        end
+        if(did_something == 0)
+            retval = ever_did_something 
+            goto endplace 
+        end
+    end
+    
+    :endplace
+    __builtin_free(p)
+    return retval
+end
+

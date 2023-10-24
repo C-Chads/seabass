@@ -1,0 +1,28 @@
+
+Seabass itself will make a powerful addition to the programmer's toolbox.
+
+However, to truly reach the pinnacle of programming ease, the interface used must be overhauled.
+
+GOALS
+
+* Maximize the ability of the programmer to make meaningful input to the computer with minimal effort.
+* Be compatible with existing HID hardware (mouse, keyboard, touchscreen)
+* Make code easy to visualize
+* Use audio-visual cues and elements to increase usefulness
+
+IDEAS
+* "Right click -> explain" - view docs on clicked-on thing
+	* hover might also work
+* Green box in Editor Plan 1.png
+	* On hover over text (in code area)- display documentation
+		> "What is this?" 
+		> Don't obscure text
+* Settings
+	* Set expertise level or knowledge
+		* ? Configured per programming language / template?
+	* Where/how are preferences saved?
+		* Per language and per template
+		* Per project
+		* Don't make the user figure out where .config is
+		* Editor can edit your configs file
+			* Do we store settings for that too?

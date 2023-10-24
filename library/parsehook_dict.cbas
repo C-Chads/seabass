@@ -1,0 +1,18 @@
+
+#include "parsehook_dict.hbas"
+
+fn codegen pp(cgstrll* in)->cgstrll*:
+    @pprint[
+        /       "Hello!"
+        /       "I work!"
+    ]
+    return in;
+end
+
+
+fn codegen codegen_main():
+    //test retrieve symptr
+    byte* p
+    cg_call_contextual_parsehook("pp", cast(cgstrll*)0);
+
+end

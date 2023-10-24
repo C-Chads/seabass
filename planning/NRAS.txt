@@ -1,0 +1,22 @@
+
+THE NETWORKED REASONING AUTOMATA SOLVER
+
+Property propagation on a network of nodes with relationships
+and positions in those relationships, according to rules, is
+a specialized case of a Networked Reasoning Automata.
+
+More generally, you can have arbitrary automata which operate
+on the network, storing their own state, possibly creating
+new nodes and relationships, as well as modifying existing
+ones.
+
+NRAs can keep track of properties per node (thereby doing
+property propagation).
+
+NRAs can also create new NRAS systems, thereby allowing
+recursion of NRAS.
+
+This fully replaces and supersedes the NRS, FNRS, and VFNRS
+system.
+
+Now, how do I template these systems? (This will come after ASTbuilder)

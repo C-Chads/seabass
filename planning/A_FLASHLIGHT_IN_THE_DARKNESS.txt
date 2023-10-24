@@ -1,0 +1,192 @@
+
+Solving complex problems is much like flashing a light in the
+darkness.
+
+The light comes on. You see a vague shimmer. From that view,
+from that abstract way of looking at things, you are able to
+see something. You see something about its shape, something about
+its color, something about how it reflects the light.
+
+You move to another spot, you shine the light again.
+
+From that angle you see different colors, a different shape,
+a different reflectivity. Something about how it moves.
+
+It's still just a blob, though, and your battery is now dead.
+
+You rifle through your pocket and grab a laser pointer. You
+shine that on the thing.
+
+Your beam darts about the room, leaving red dots everywhere on
+the walls, outlining the shape of the object- You've found a
+useful way of looking at it.
+
+Solving engineering problems is much like this. Multiple angles,
+multiple ways of thinking, multiple ways of modelling, multiple
+grooves of thought are all relevant. Every avenue of reasoning
+is valuable, as it provides more light- more patterns to match
+and apply.
+
+Every bit of wisdom is worth a fortune and every new way of
+thinking is worth two kingdoms and their princesses. 
+
+To know the shape of logic and the texture of true reasoning,
+the color of truth and the flavor of an idea.
+
+This is what intellectual tools should aim to help a person do- 
+
+think about, model, visualize, hear, smell, taste their ideas.
+
+Try them, mold them, feel them. Rub up against them for warmth
+and comfort on a cold winter day.
+
+Every possible avenue for comprehension must be available for
+exploration, at a moment's notice, at the direction of the
+truth-seeker. Every way of modelling, every way of describing,
+every way of conveying.
+
+SEABASS enables a programmer to describe their own programming
+languages and mix-and-match them together. CBAS enables a person
+to use every available means of expressing solutions- including
+ones they have just devised themselves.
+
+The ultimate goal of SEABASS as a programming language, as well
+as all the work that stems from it, is to enable the most efficient
+and effective use of the mind of the intellectual laborer. To best
+utilize a person's God-given mind and god-given talents for their
+own advancement as well as the greater body of man as a whole.
+
+THE STAGES OF DEVELOPMENT:
+
+1. SEABASS's metaprogramming utilities-
+
+    Quickly and efficiently create new syntaxes and new programing language constructs
+    using both a powerful and flexible base language and hundreds of convenient and powerful
+    abstractions and abstraction-making-tools.
+    
+    Create new programs, tools, libraries, and full software suites quickly by building on
+    and using every piece of knowledge, every implementation, and every scrap of code available
+    on your system's drive.
+    
+    This project will be ongoing so long as I can get new ideas for possible abstractions or
+    ways of modelling problems in code.
+    
+2. SEABASS's code editor
+
+    Typing in a text file is not good enough. I use my imagination and mind's eye to understand
+    problems and solve them. I want code to look like how I think about it, and I want to be able
+    to choose different ways of thinking about code for different parts of the code- maybe even
+    the same code.
+    
+    SEABASS's code editor needs to have ways to model problems visually and auditorily, with
+    built-in facilities for quickly modelling your own ideas and tying them directly to SEABASS
+    code. It should be possible to have ten different ways of thinking about the same problem
+    and see all of them when looking at the SEABASS editor.
+    
+    The controls of the editor must also be customizable, so they can reflect any way of thinking
+    that is devised or desired by the programmer. Whatsoever model can be devised for drawing pixels 
+    to the screen or playing music on the speakers or vibrating a controller, it must be possible with
+    this code editor. Every avenue for intellectual stimulation must be available as a way to
+    work on, read, create and edit code. It all must be relevant.
+    
+3. A complete system implementation
+
+    Once SEABASS as a language has reached full maturity (or been replaced by one that has),
+    and a code editor which allows one to model his ideas and reason about them quickly has been
+    created, we need a complete system. A full operating system, from kernel to web browser, which
+    is designed entirely around metaprogramming and meta-engineering. Multi-tasking is not enough,
+    we need to have glue code between everything that exists on the computer, and the ability to make
+    new glue code quickly.
+    
+    Everything must be available for tinkering. Everything must be possible to visualize. Every
+    parenthesis and every curly brace needs to be at the fingertips of the user, able to be "plugged into"
+    anything else on the system.
+    
+    It all has to be open source. It all has to work with existing technologies and be capable
+    of designing new ones (more in-line with the meta-engineering scheme) to replace them.
+    
+    This will enable a single person to explore a topic, educate himself, reason on his own and
+    spawn new ideas at a rate that has never been possible at any other time in history.
+    
+    It will be the answer to my prayer to God for the ultimate set of tools. The ultimate computer.
+    
+    This system needs to be addictive. It must give dopamine bursts to the thinker for every new
+    idea he has and everything he makes. It must be quick and easy to use. It must be easy to make it
+    easier to use. It must teach the user how it works and how to improve it, how it can be iterated 
+    on so that the user will become the master and tweak every jot and tittle of the source code to be 
+    exactly what he wants.
+    
+    It must DISCOURAGE unthinking. It must discourage non-engagement. It must use every possible
+    way to hook the user, to entertain him and draw him into thinking. It must lull him, seduce
+    him with the sweet savour of a hard problem and the joy of solving it. The blunt force of
+    reality must be applied to the unthinking or lazy man's back, to save his mind from decay
+    and underutilization. 
+    
+    This system of designed addiction must be implemented in such a way that the addict hates
+    unthinking, hates poor reasoning, hates falsehood, and hates lying. They must be trained to
+    love the LORD our God as he truly is, not the idols.
+    
+    Every man must be encouraged in paths of advancement and discouraged in paths that lead to
+    rot and decay of the mind.
+    
+4. A new education system.
+
+    The education system in advanced nations must be re-designed to focus on deep analysis and
+    engineering. Facts must be taught in multiple ways to engage all the rivulets of thinking in
+    the students.
+    
+    It must be possible for teachers (and students) to quickly and efficiently create models and
+    representations of information. All data, all theories, all paths of reasoning must be made
+    to shine in the darkness by their full colors in all spectra, in a glorious God-created rainbow
+    of pure truth, revealing his character and his goodness through the things that are made.
+    
+    This education system must focus on training a THINKER and a DOER. Not someone who slacks off,
+    not someone who spends all his time browsing tiktok. Not someone who isn't interested in working
+    hard with his mind.
+    
+    Every individual must be encouraged to delve deeper. Don't just swim at the surface. Don the
+    swim suit and scuba gear, and when you've gotten beyond that, climb into the submarine, travel 
+    down to Marianna's trench. The snorkel gear is a waste of time, and the scantily clad women
+    on the beach, staring at their phones are not worth thinking about.
+    
+    Every diver into the waters of mystery must be equipped with a lantern that shines in all 
+    colors at once to tear back the black curtain that covers most of the deep.
+    
+    Once a treasure has been found, it must be made to shine brightly so the diver can retrieve it
+    and carry it to the surface, to make it well-known and easily accessible to everyone.
+    
+    This process will replace the existing system of universities and journals. People will not
+    trust some complicated magazine with big words to dictate truth, or a highly-paid professor
+    who smacks his lips for an hour and a half three days a week to teach you ideas that really
+    only take thirty seconds to explain.
+    
+    People will trust those who use the simple words to peal back the darkness of confusion 
+    and misunderstanding that dwell in the depths of that ocean. Those who can prove their ideas
+    in a way that all can understand- a loving demonstration and conveyance of intellectual 
+    dominance and power.
+    
+5. Greater Christianity
+
+    Once man is able to fully utilize his mental faculties, man's ability to comprehend the
+    scriptures will drastically increase. Analyses of scripture and scriptural teaching will
+    advance. The wrongness of heresies and the glory of truth will simultaneously shine their
+    true colors- one to condemnation, and the other to everlasting joy.
+    
+    The words of our Lord Jesus Christ, who is, who was, and who is to come, will shine brighter
+    than ever before. Every phrase of every paragraph will be able to be appreciated by men whose
+    minds have been carefully tuned for high-performance analysis and reasoning.
+    
+    Satan's powers to confuse and befuddle the minds of men shall be driven back. The church will
+    flourish in ways that it hasn't done since the first century, as recorded in Acts.
+    
+    My prayer will be answered. 
+    
+6. What shall befall this world?
+
+    Now that this plan is laid out, how do we understand its fulfillment, in light of
+    biblical prophecy and the end times?
+    
+    I suppose only time will tell.
+    
+    
+    

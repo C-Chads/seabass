@@ -1,0 +1,11 @@
+
+THOUGHTS ON LANGUAGE DEISNG
+
+"What are the goals of language design?"
+
+1. easy/concise to read
+2. easy/fast to type
+3. helps in thinking
+4. mimicks / represents thinking
+
+

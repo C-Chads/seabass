@@ -1,0 +1,62 @@
+
+
+My cohesive plan for constructing the SME-MASM, which is Kagrenac's tools for programming:
+
+1. Write the code generator for the inner language, the VM I made. Something that takes
+a non-text description of a program and then generates bytecode from it, along with
+function linkages.
+
+I am thinking we have a vector of `struct pcodeinsn` which can either represent
+a label or an instruction.
+
+the instruction struct can have a name (label or variable) as its argument, or it
+can have a number. names are just shorthands for numbers, and if we can't find the name,
+we assume it is zero.
+
+We do 2 passes and that generates us our bytecode.
+
+I want to be able to run tests on my VM using small snippets of code written by hand.
+
+    STAGES:
+    1. define the structs for the inner language. The insn struct.
+    
+    2. Define the enums or defines for it
+    
+    3. Create the ability to push onto a vector of these things.
+    
+    4. Take the vector and loop over it twice, keeping track of how much
+    space each insn took up on each pass.
+    
+    5. Be informed of what symbols we need to export and export them.
+    
+    6. profit
+
+
+
+
+2. Write a parser for SME-MASM into the AST I defined for it.
+
+I want this parser to operate directly on the text and not lex the whole unit at once, just like the assembly
+parsers I wrote in the past.
+
+Additionally, it will also allow invoking a parsehook just like Cbas, which will be able to manipulate the
+raw text of the input, or just consume it itself.
+
+We'll keep track of where we are in the file with a pointer and where the beginning is with another so we can
+realloc the whole string if we want to, or move the remaining part to a new string.
+
+3. Write the part which converts the SME-MASM ast into pcode instruction structs.
+
+This is not as hard as it seems. Indexing into structs(combos) is as trivial as counting
+the members before it. Functions which take combos as arguments must use the stack for
+passing arguments.
+
+We also need to make sure we get back where in the module our functions start- where the
+callsites are.
+
+4. Implement previous module invocation.
+
+Allow a module to use something from another already-loaded module by name. Functions, mainly.
+
+5. 
+

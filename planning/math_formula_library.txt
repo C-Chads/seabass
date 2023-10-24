@@ -1,0 +1,19 @@
+
+TO AID IN THE CONQUEST OF MYSTERIES?
+
+there should be a library of "common math formulas" which
+are encoded as inline functions.
+
+This library will use plaintext names and have documentation
+for the functions explaining what they mean and do.
+
+For instance, angular momentum should be a math formula in
+the library.
+
+This will mean that people can use and "play with" math formulas
+without having to understand weird greek symbols and all sorts
+of jargon.
+
+One of the things I should do when I get Seabass hooked up to
+a GUI is create visualizations for lots of these functions
+to make understanding them easier...

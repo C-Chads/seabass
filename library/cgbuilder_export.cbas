@@ -1,0 +1,46 @@
+
+# __CBAS_BAKE
+
+#include "cgbuilder.hbas"
+
+# __CBAS_TERMINATE
+
+@mkbldr [
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		make_cgints
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	@initqtok "codegen"
+	@pushqtok "int"
+	@pushtok [inlist:dupe()]
+	@pushqtok ";"
+	inlist = inlist.right;
+	//if(inlist == cast(cgstrll*)0) return retval; end
+	@ifnull inlist 
+	    return retval; 
+	end
+	goto top;
+	:top
+    	@pushqtok "codegen"
+    	@pushqtok "int"
+    	@pushtok [inlist:dupe()]
+    	@pushqtok ";"
+    	inlist = inlist.right;
+    	@ifnull inlist 
+    	    return retval; 
+    	end
+	goto top;
+	return retval;
+]
+
+
+@make_cgints [hairy cat dog meow]
+
+fn codegen codegen_main():
+    __builtin_exit(1);
+	hairy = 3; cat = hairy; dog = cat;
+	meow = cat + 1;
+	if(hairy) __builtin_puts("Hairy is real!"); end
+	if(dog == cat) __builtin_puts("So is dog and cat!"); end
+	if(meow == cat + 1) __builtin_puts("Mrow!"); end
+	__builtin_puts("Hello!");
+end

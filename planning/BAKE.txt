@@ -1,0 +1,14 @@
+Problem:
+The metaprogramming library is expensive to rebuild.
+
+I want to come up with some way to emit it as finalized code.
+
+Solution:
+Write a codegen_main which turns the metaprogramming library's
+AST back into seabass code.
+
+This can be used to "bake" (compile) code that doesn't need to be
+modified.
+
+If it does need to be modified, we just re-bake (recompile) it.
+

@@ -1,0 +1,163 @@
+
+#guard compiletime_knowledge_database_DMHSW
+
+#include "cgast.hbas"
+
+/*
+    THE COMPILETIME KNOWLEDGE DATABASE
+    
+    Used for keeping track of nouns and their properties.
+    
+    
+
+*/
+
+
+
+class cg_knowl_noun
+    cgstr name                  //name of this noun.
+    u8* nounptr                 //Where can I find this thing, if it has a home?
+    u8** props                  //What properties apply?
+    u64 nprops                  //how many?
+    u64 levelid                 //what abstraction level is this from? This also identifies what it is.
+end
+
+class cg_knowl_prop 
+    cgstr name                      //name of this property.
+    u64 levelid                     //what abstraction level is this from?
+end
+
+
+//A fact category- Managed by a particular "analysis system" and
+//everything that builds on it.
+class cg_knowl_fact_category
+    cg_knowl_noun* nouns
+    cg_knowl_prop* props
+    u64 n_nouns
+    u64 n_props
+end
+
+/*
+    Type metadata...
+
+*/
+
+
+codegen cg_knowl_fact_category traitsystem;
+/*
+    If these are too limiting, just expand them!
+*/
+#define __CG_TRAITSYSTEM_MAX_TRAITS 2048
+#define __CG_TRAITSYSTEM_MAX_TRAITS_PER_NOUN 1024
+
+fn codegen parsehook_cg_NOEXPORT_init_traitsystem():
+    traitsystem.nouns = cast(cg_knowl_noun*)__builtin_malloc(sizeof(cg_knowl_noun) * __CG_TRAITSYSTEM_MAX_TRAITS);
+    traitsystem.props = cast(cg_knowl_prop*)__builtin_malloc(sizeof(cg_knowl_prop) * __CG_TRAITSYSTEM_MAX_TRAITS);
+    traitsystem.n_nouns = 0;
+    traitsystem.n_props = 0;
+end
+
+fn codegen cg_trait_push_noun(
+    cgstr* name,
+    u8* nounptr,
+    u64 levelid
+)->u64:
+    cg_knowl_noun nn;
+    
+    nn.name:fromcgstr(name);
+    nn.nounptr = nounptr;
+    //just need to store pointers...
+    nn.props = cast(u8**)__builtin_malloc(sizeof(u8*) * __CG_TRAITSYSTEM_MAX_TRAITS_PER_NOUN);
+    nn.nprops = 0;
+    nn.levelid = levelid;
+    
+    //push noun...
+    
+    (traitsystem.nouns + traitsystem.n_nouns) := nn;
+    return traitsystem.n_nouns++;
+end
+
+fn codegen cg_trait_dupenoun(
+    cg_knowl_noun* noun_to_dupe,
+    cgstr new_name,
+    u8* nounptr,
+    u64 levelid
+)->u64:
+    cg_knowl_noun* nn;
+    nn = (traitsystem.nouns + traitsystem.n_nouns);
+    nn := noun_to_dupe;
+    nn.name:fromcgstr(new_name);
+    
+    nn.props = cast(u8**)__builtin_malloc(sizeof(u8*) * __CG_TRAITSYSTEM_MAX_TRAITS_PER_NOUN);
+    __builtin_memcpy(cast(u8*)nn.props, cast(u8*)noun_to_dupe.props, sizeof(u8*) * nn.nprops);
+    nn.nounptr = nounptr;
+    nn.levelid = levelid;
+end
+
+method codegen cg_knowl_noun:pushprop(cg_knowl_prop* p):
+    this.props[this.nprops] = cast(u8*)p;
+    this.nprops++;
+end
+
+method codegen cg_knowl_noun:hasprop(cg_knowl_prop p)->u64:
+    u64 i
+    u64 n
+    n = this.nprops;
+    for(i = 0, i < n, i++)
+        if(p == cast(cg_knowl_prop*)this.props[i])
+            return 1;
+        end
+    end
+    return 0;
+end
+
+fn codegen cg_trait_push_prop(cgstr* name, u64 levelid)->u64:
+    cg_knowl_prop p;
+    
+    p.name:fromcgstr(name);
+    p.levelid = levelid;
+    
+    (traitsystem.props + traitsystem.n_props) := p;
+    return traitsystem.n_props++;
+end
+
+
+//you probably should have stored this, but, hey...
+fn codegen cg_trait_findprop(cgstr name, u64 levelid)->i64:
+    i64 i
+    for(i = 0, i < traitsystem.n_props, i++)
+        cg_knowl_prop* qq
+        qq = (traitsystem.props+i);
+        
+        if(qq.levelid != levelid) continue end
+        if(qq.name.s streq name.s)
+            return i;
+        end
+    end
+    return -1;
+end
+
+fn codegen cg_trait_findnoun(cgstr name, u64 levelid)->i64:
+    i64 i
+    for(i = 0, i < traitsystem.n_props, i++)
+        cg_knowl_noun* qq
+        qq = (traitsystem.nouns+i);
+        
+        if(qq.levelid != levelid) continue end
+        if(qq.name.s streq name.s)
+            return i;
+        end
+    end
+    return -1;
+end
+
+
+
+//TODO: implement adding of types and type traits, as well as cloning props from
+//other types...
+
+@cg_NOEXPORT_init_traitsystem ;
+
+
+//end of unit...
+

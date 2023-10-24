@@ -1,0 +1,11 @@
+
+STATE MACHINE CONTROL FLOW
+
+The trick to making state machine control flow worth it is to
+be able to turn it into definite sets of already-existing
+programming language constructs (while, for, if, goto) as
+well as more complex schemes.
+
+Otherwise, it won't compile nice and neatly...
+
+

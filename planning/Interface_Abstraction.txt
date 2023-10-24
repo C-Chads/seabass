@@ -1,0 +1,31 @@
+
+It is often the case that the "interface" to something needs to be 
+chopped out of it and made its own thing.
+
+Additionally, how it interfaces with other code may also need to be abstracted.
+
+You need to come up with a "generic" way that some action is performed.
+
+Example out of : https://youtu.be/rQlMtztiAoA
+
+The "saverJson" class was originally written to save Json files, but then XML file support is added.
+
+However, upon further examination, it's possible you might not want to save to a file, but to memory.
+
+There are multiple concepts at play here:
+
+* Serialization- doing the work of turning data structures into a contiguous byte stream.
+	* Possibly different formats
+	* the genericized "Some Serializer"
+		* Code that uses a serializer is what needs to be abstracted and not any particular serializer.
+* Byte-Stream Sending- such as writing to a file handler or copying to an area of memory.
+	* Possibly different destinations
+	* It's conceivable that you'd do this asynchronously or synchronously
+		* Something similar to the "data harvester" from my notes can be used to
+			abstract away the async vs sync split. We write code for the worst case
+			and the compiletime implementation will use the best case.
+	
+	
+
+I believe that the video is WRONG (you should not have abstractions here) but instead, the abstractions
+chosen do not correctly divide the work.

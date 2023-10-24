@@ -1,0 +1,50 @@
+
+A huge part of computer programming is converting data
+from one format to another.
+
+Between differently-structured trees.
+
+Combo mapping, which I created for SME's abstract assembly language,
+perfectly mimics this and was a style of solution, however
+
+it doesn't allow you to, for instance, unroll a linked list
+into an array.
+
+I need to devise a language for mapping elements stored in
+one datastructure into another, with conversions between pseudo-primitive
+data types.
+
+Fundamentally, a data structure transition is just drawing
+a bunch of arrows from where in the source you're getting
+information, and where in the destination you want to put
+it, with some transformation applied.
+
+How do I create useful abstractions for this purpose?
+
+I need something like Scanf() but for arbitrarily spec'd data
+formats... hmmmm....
+
+1. LEAF CONVERSIONS
+
+All "leaves" (like non-compound key/value pairs in a json) in the
+source and the target need a scheme for conversion. These are
+always extremely easy to do, having predictable conversions.
+
+2. COMPOUND NODE TYPE CLASSIFICATION
+
+All types of intermediate nodes need to be classified into categories,
+
+in both the source and the target.
+
+3. COMPOUND REMAP SCHEME
+
+    For each compound node, a right-recursive definition
+    can be written for converting it from the source to the target.
+    
+
+Q: WHAT ABOUT DYNAMICALLY TYPED COMPOUND NODES?
+    
+    A static system can be drafted which performs
+    the conversions. Mapping the set of types to the set
+    of integers is always the solution.
+

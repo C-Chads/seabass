@@ -1,0 +1,130 @@
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        ON THE PATH TO MAKING KAGRENAC'S TOOLS
+        
+          THE MOST POWERFUL TOOLS EVER MADE
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+DESIRED GOAL: MAKE WRITING CUSTOM PROGRAMMING LANGUAGES AND NOTATIONS EASY
+
+    This includes the parser, the AST, and the code generator.
+    
+    The first step- cgrdparse- is done, or at least as done as I can tell
+    for now.
+    
+    In order to write the NRS system for ASTs, I need templated data structures
+    and type traits.
+    
+    Data structures are going to be templated code. You'll get to name every
+    type created with the template but it'll still be registered as from that
+    template, so that algorithms can auto-detect the data structure
+    
+    and change accordingly.
+    
+[X] - CGRDPARSE - Quick and dirty template for recursive descent parsers, mostly
+    for myself.
+    
+[X] - MKSIMPLEANONWKSHT - Quick and dirty way to make bldrn's with shove-in parameters.
+
+        @mksimplewksht [
+            //name
+            qfor
+            code [
+                for(begin, test, incr)
+                    body
+                end
+            ]
+            params [
+                begin test incr body
+            ]
+        ]
+
+        //later...
+        @qfor [i = 0] [i < 50] [i++] [
+            //code...
+        ]
+        
+        It'll basically just automate the stupid @pushqtok nonsense
+        i've been doing this whole time.
+        
+        EDIT:
+        It has now been completed as "wksht", however I would like to add the
+        optional code processing step to it, and I'd like to make it work so
+        that it serializes properly.
+        
+        I may write a totally separate version that serializes, because I suspect
+        the serializing version will be much slower
+        
+        Another TODO is to add error checking to mkbldrn.
+                
+    
+[ ] - TYPE TRAIT SYSTEM
+
+        Data types (including generic typeclasses) need "traits". This just means
+        strings.
+        
+        So I need to store a string (the datatype's name) and a list of strings that
+        apply to it... a vector of strings.
+        
+        I think I might also want a "libid" for what library added the type trait.
+    
+[ ] - MKTEMPLATE - Template code with named or anonymous fields. I think I also
+        want to add a "code" section that takes the templated code as a parameter.
+
+        so, like, you have a giant macro, and then once the fill-ins have been
+        filled in, it's passed as an argument to a codegen function, which
+        is supposed to return the real code. It can also do "stuff". This is
+        how I'm going to do the data structure metadata stuff.
+        
+        This system should make writing new builders WAY easier and hopefully
+        save me tons of time. exponential gains!!!!!
+
+[ ] - MKTYPECLASS - Used to template a datatype with methods and fns. The args
+        and return type are explicitly provided (possibly based on template parameters). 
+        
+        It then gets turned into a template plus associated variables (for keeping track 
+        of the specific implementations of the typeclass).
+        
+        You'll get to name every implementation of a typeclass. So, like,
+        once you've defined the pair template, you can invoke it like
+        this:
+        
+        @typeclass pair [
+            left [int]
+            right [int]
+            name my_int_pair
+        ]
+
+        and the implementation would be called "my_int_pair"
+        
+        Arguments to a typeclass template can be data types or integers
+        
+        MKTYPECLASS will, itself, not be a template, it will generate a template
+        as an output, with the code section filled with stuff that registers
+        instances to the typeclass's instance database.
+        
+        I was originally planning to make another thing on top of this called
+        "MKDATASTRUCTURE" but, well, no, I don't need that.
+        
+        What I need is type traits on typeclasses.
+        
+        Code snippets are too hard, instead, anything needed for a typeclass
+        to be manipulated should be written as part of the typeclass's
+        template- there will have to be a special part for code snippets.
+        
+        Snippets will be stored in the database for the typeclass and requested
+        with a reference to a specific implementation's name- if you're working
+        on my_int_pair then you ask for...
+        
+        @typeclassdb [ snippet get my_int_pair traversal ]
+        
+        HOW DO I DO METHODS/FNS FOR A TYPECLASS?
+        
+        I think the best way is to just have that be part of the template.
+        
+        HOW DO I HANDLE CODEGEN/TARGET?
+        
+        every typeclass should require something that specifies
+        whether it is compiletime-only or for the target.
+        
+        

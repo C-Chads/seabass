@@ -1,0 +1,22 @@
+
+#include "cg_astbuilder.hbas"
+
+@cgastbuilder_defnode myAstnode [
+    noexport
+    myAstnode** myWalkables
+    u64 n_myWalkables;;;;
+    u64 myWalkables_cap
+    myAstnode* myChild
+    myAstnode* myOtherChild
+    int a
+] [
+    myWalkables[n_myWalkables myWalkables_cap] 
+    myChild 
+    myOtherChild
+]
+
+
+fn codegen codegen_main():
+    //TODO
+end
+

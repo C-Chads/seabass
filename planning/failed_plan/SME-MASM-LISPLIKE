@@ -1,0 +1,40 @@
+
+
+1. COMBOS ALWAYS MAP TO REGISTERS (PCODE)
+
+2. FUNCTIONS USE SHARED VARIABLES AT THE MASM LEVEL
+
+    any function call using () can be translated into [] syntax easily.
+
+3. FUNCTION POINTER ACCESS REQUIRES ABSENCE OF BRACKETS
+
+    because the shared variable calling syntax uses [].
+    
+    For the sanctity of syntax readability, I should probably preserve the `getfnptr` system.
+
+4. FUNCTIONS CAN BE INLINED JUST BY OFFSETING REGISTER REFERENCES.
+
+    instead of register 0, you access register 12.
+    
+5. WE CAN AVOID USING POINTERS FOR METHODS JUST BY USING PASS-BY-VALUE.
+
+    Combo mapping is done.
+    
+
+
+HOW DOES MYTYPE.MYMETHOD WORK IF TYPES ARE ANONYMOUS AND DUCK-TYPED?
+
+    > we can preserve typedecl names through the name property of the sme_type
+    > struct, and use that to search for mytype__mtd__mymethod
+    > we check to see if the type is a member of the shared variable list.
+        >Violates my principles...
+    >...Hash it?
+    >...come up with a scheme for generations unique names for types?
+    
+    [r32 r32] -> _combo_c_r32_r32_C_
+    
+    [r32 [r32 r32]] -> _combo_c_r32_c_r32_r32_C_C_
+    
+    BAM! Problem solved!
+    
+    

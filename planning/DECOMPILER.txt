@@ -1,0 +1,13 @@
+
+Code can be divided into linear blocks and nonlinear blocks.
+
+Nonlinear blocks contain a branch at the end.
+
+Linear blocks are comprised entirely of a linear sequence of instructions.
+
+Linear blocks, by virtue of containing a function call, may still have
+branching in them, in which case inlining should be done and the block should
+be divided.
+
+(how to keep track of what blocks come from where?)
+

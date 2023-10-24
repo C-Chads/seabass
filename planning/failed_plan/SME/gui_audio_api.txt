@@ -1,0 +1,134 @@
+
+
+WHAT INTERFACE DO WE PROVIDE FOR DRAWING AND AUDIO TO PROGRAMS RUNNING IN THE SME?
+
+1. how client code is called by the SME system
+
+    .modinit() - initialize the module, called only after a rebuild.
+    .modclose() - called when removing the module from the loaded set of modules. This
+                  happens when a module is rebuilt, for instance. It is not guaranteed to be
+                  called before the SME stops running, because the SME could crash or close
+                  unexpectedly. This means that any file modifications need to be `fflush`'d regularly.
+    .moddraw() - module draw
+    .modtick() - mod tick
+    .modsave() - save to global variables and GBOs, serialize state.
+    .modload() - called immediately after loading the SME, for restoring state. This is different from modinit.
+    .modopenactive() - Make the module an active program- i.e. more than just a loaded library.
+                       From here, the client can ask for a render pane and begin being rendered.
+    .modcloseactive() - End the module's gui/audio activity, so it is no longer ticked or drawn.
+                        If the module used OpenGL it also has to clean up anything it did in the OpenGL
+                        context. This is always called on an active module before modclose.
+    .modpaneresize(r32 x, r32 y) - called when its pane is resized.
+                                This will force the module to re-grab its
+                                render target information or its software pane.
+                                
+                                if the new size is (0,0), then rendering is disabled
+                                
+    .modpaneclosed()             - called when the pane is closed
+    .modpanehidden()             - called when the pane is hidden. Rendering should already have been disabled
+                                by a previous paneresize event.
+    .modpaneshown()              - called when the pane is shown.
+    
+2. How do graphics calls work?
+
+    Each module has render panes (software or opengl) which they can render to. These render panes
+    are either software (You get a pointer to a buffer of memory) or OpenGL (You are given a render
+    target).
+
+3. How does audio work?
+
+    I think I will have a "sound effect and music" system. You can play arbitrary sound effects
+    or music samples. There will have to be a program written in SME-MASM to modify the list of
+    active music or sound effect samples.
+    
+4. What does the "base level" gui system look like?
+
+    A windowing system with some utility tabs to enable changing settings and saving/loading
+    the SME, as well as importing modules (from source or from binaries).
+    
+    There's no code editor because I want that to be written IN SME-MASM.
+    
+    
+5. The module builder
+    
+    The default pipeline for compilation will be into a module in the editor- parsehooks and all finally
+    resulting in an SME ast which is then turned into pcode.
+    
+    There will be another pipeline which is the "export" pipeline, in which the SME AST is handed to a
+    code generator other than the built-in one. This will make SME-MASM a retargetable language from
+    the very beginning.
+    
+    The module builder will have the ability to do parsehooks just like CBAS, to enable custom syntaxes.
+    
+6. Initial programs needed to be written in SME-MASM
+
+    1. A high level language parsehook.
+    
+    I need the ability to work in terms of loops, if statements, etcetera. Working in terms of
+    instructions is incredibly painful. I want to have a replacement for CBAS up-and-running inside
+    the SME system quickly.
+    
+    2. A code editor.
+    
+    I need to make a GUI code editor in SME-MASM. it needs to be able to create new text documents,
+    edit them, save them, export them, edit existing module code, etcetera. I also need it to be able
+    to run the module builder either producing a P-code module, or output code to be written to a file.
+    
+    This code editor needs to be configurable, I want to be able to change its rendered font or colors
+    and have the settings save.
+    
+    3. A module manager.
+    
+    I need a graphical tool for managing the loaded modules.
+    
+    4. A graphics style manager.
+    
+    I want to allow changing the style in which render panes and their windows are drawn. They are all
+    OpenGL stuff. As long as a shader can be written, it should be possible to change how it draws.
+
+7. Modules as Programs.
+
+    Modules are effectively open-source fully-editable programs.
+    
+    HOW ARE MODULES DUPLICATED (multiple instances)?
+    
+        By duplicating the source code and giving a new name to the module.
+        
+    HOW ARE MODULES COMPILED INTO P-CODE?
+    
+        First by translating into P-code assembly, and then running a two-pass assembler.
+    
+    HOW DO MODULES LOAD STUFF FROM OTHER MODULES?
+    
+        In masm by name, and in P-code by module ID, which is assigned by position in the list of modules.
+        
+    WHAT IF I REMOVE A MODULE IN THE MIDDLE?
+    
+        All modules above the change must be rebuilt from source, in order.
+        
+    CAN I REBUILD A LOWER LEVEL MODULE TO USE FEATURES FROM A HIGHER ONE?
+        
+        No. You must make lower level modules than the one you wish to edit which have the features you want.
+        
+        You can, however, use dependency injection. Pass function pointers.
+        
+    CAN I REBUILD THE KERNEL?
+    
+        Once the kernel has been ported into SME as a program which exports to C, then yes.
+        
+        This will allow a true, full rebuild.
+        
+    ARE MODULES+SOURCE STORED IN A SINGLE FILE, OR MULTIPLE?
+    
+        I think in a single file. This file format will be standardized by the kernel source.
+        
+    DOES REBUILDING A MODULE MEAN ALL HIGHER LEVEL MODULES MUST BE REBUILT?
+    
+        Yes, and a module cannot be rebuilt if it is active.
+        
+    HOW CAN THE CODE EDITOR OR MODULE MANAGER REBUILD THEMSELVES?
+    
+        They schedule a rebuild. Once the tick has finished, all modules are closed,
+        the whole system is rebuilt, and everything is initialized again.
+    
+    

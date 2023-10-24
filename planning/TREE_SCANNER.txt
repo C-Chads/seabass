@@ -1,0 +1,11 @@
+
+IDEA: Specify a recursive descent parser by describing a tree.
+
+
+Programming languages, in their purest form, are trees.
+
+If I could come up with a notation for the patterns of those
+trees, I could automatically generate parsers for those trees.
+
+I might even be able to have it design programming languages for me!!!
+

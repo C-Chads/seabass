@@ -1,0 +1,57 @@
+
+EAG- MY MASTERCLASS PROGRAMMING LANGUAGE.
+
+a context-oriented, extremely ambiguous grammar which is parsed by
+iterative inferencing and pattern matching.
+
+It will, at its base level, be a mirror to Seabass's base-level
+functionality, but be capable of defining new inferencing rules
+within itself.
+
+It will work by concept modelling. i.e., you define concepts
+(patterns) to apply and match. It will also be pretty much
+entirely words for most things, meaning that you barely
+ever (if at all) need to press shift.
+
+all the symbols will be lowercase letters and things
+you can type without 
+
+DISAMBIGUATING STATEMENTS AND PHRASES:
+
+Semicolons, periods, and commas, as well as square brackets.
+
+
+
+//defining a funciton in eag
+context funnybones
+
+
+function myfunction a,b is int,c,d;
+
+    local alias puts is __builtin_puts
+    
+    a is int
+    b is int
+    c is int
+    d is int
+    
+    a is neg 1;
+    
+    i is int
+    for i is 0, i less than b, incr i;
+        a is b plus c plus d plus a;
+        
+        char[50] buf
+        
+        puts "Hello world!"
+        
+    end
+    
+    return a
+end
+
+hardstop funnybones
+
+
+
+

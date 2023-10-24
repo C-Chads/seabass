@@ -1,0 +1,10 @@
+
+A LINTER LIBRARY- MAKE SEABASS SAFER THAN RUST?
+
+Could I make Seabass code safer than rust by writing
+linters within Seabass's metaprogramming library?
+
+This is something I'd want to do AFTER I have the NRAS
+system implemented...
+
+1. I could check borrows/lifetimes like rust.

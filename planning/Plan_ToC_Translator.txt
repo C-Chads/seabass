@@ -1,0 +1,95 @@
+TLDR GOAL: Allow Seabass to compile seamlessly to GCC x64 compatible C code, with Gnu optimizations.
+
+DESCRIPTION:
+I want Seabass to be compile-able to C, which is then compiled to target-specific machine code.
+
+This will be the first time that Seabass becomes an actually useful tool.
+
+Doing this will enable all future software written in Seabass to be compiled to native.
+
+Once this is completed, the C language will be effectively outmoded.
+The code of the compiler should be migrated into itself, to allow for maximum
+efficiency.
+
+New users will simply take C code output from the compiler and compile it with a C compiler
+to bootstrap their implementation.
+
+I can then begin the process of working on Seabass in itself and taking advantage
+of its advanced metaprogramming techniques.
+
+Seabass's metaprogramming will make it possible to do complicated macro templating
+and programmatic code generation like no other language... ever.
+
+
+
+
+NEEDED CONFIGURATION OPTIONS:
+* Seabass's switch statement: it either decays into goto labels (pure) or switch-case (impure).
+* How large are int and unsigned? What sizes are the types and is char signed?
+	* for char, always use "signed char" or "unsigned char" where appropriate.
+		* Seabass's char is always unsigned.
+	* For int and unsigned, allow providing the names of the 32 bit int and unsigned-int types.
+		* Default to int and unsigned.
+	* similar for 64 bit
+		* default to "long long" and "unsigned long long"
+	* float is assumed to always be 32 bit.
+		* double always 64.
+* Output prefix and suffix
+* What filetype the output is put in (including filename)
+
+DESIRED OUTPUT:
+* roughly human-readable C code.
+* function and variable names from the original seabass code should be identical
+* method names will not be identical as methods are not a feature of C.
+
+DESIRED USAGE:
+
+Within a seabass code file, you simply do this:
+
+~~~~~~~~~~~~~~~~~~~~~~~~~
+#include <to_c.hbas>
+
+#include "my_program.cbas"
+
+proc codegen codegen_main():
+	__builtin_open_ofile("out.c");
+	//put any header stuff here.
+	//for instance, you might want to have defines
+	//which define SIGNED8 or UNSIGNED8 type names.
+	to_c_codegen_main();
+	__builtin_close_ofile();
+end
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This way it'll be easy for the user to do their own "fancy stuff" with seabass's code generation.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+STEPS OF PLAN
+1. Write some utility functions in cbas which grab and manipulate the AST to our liking.
+2. Write string manipulation utility functions for usage by the to-c translator.
+3. Begin writing code to convert expressions to C code...
+	* Every operation needs to include explicit casts.
+	* Every signed integer add/sub/mul needs to be explicitly cast to the equivalent unsigned type and then back again
+		to avoid C's undefined behavior of signed integer over/underflow.
+4. Begin converting whole statements into C equivalents.
+	* Things like while and for are pretty much verbatim.
+	* if-elseif-else should be properly nested.
+	* Continue and break are also identical.
+	* return is identical.
+	* switch-case is the real kicker
+		* Use goto labels
+		* Provide an option to use C switch-cases as well.
+5. Convert data statements to global arrays. Do global variables.
+6. Convert methods into functions (Should be pretty easy).
+	* Name mangling must be respected. Line 956 of parser.c is where the name mangling is done on declarations,
+		and 872 in code_validator.c is where the name mangling on invocations is done (myInstance:myMethod())
+7. Emit local variable declarations at the beginning of each scope
+8. Begin formatting output
+	* Keep track of tab level and etcetera
+	* Insert comments.
+9. Begin testing against gcc
+10. Insert stuff I forgot
+11. publish
+12. declare to the world that C is dead
+13. huge party

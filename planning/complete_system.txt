@@ -1,0 +1,29 @@
+
+AN IMAGINATION I HAD
+
+* Qgui- tree-based gui renderer. Uses a tree system based on rendering
+    rectangles and text. 
+    ? How to determine size of elements in forms?
+    ? How to abstract text rendering properly (bold-italic-underline/
+    size/whatever) ?
+    
+* Fake OS- API abstraction layer for the target system. All programs
+    are compiled to a bytecode which is compiled to native at runtime.
+    ? How to do pre-emption ?
+        * Baked into programs at runtime when translated?
+    ? How to abstract graphical rendering ?
+    
+* ActionRecorder-
+    If FakeOS could change the screen resolution exposed to programs
+    inside of itself, it would be possible to record mouse clicks and
+    keyboard strokes and simply "play them back" even on other peoples'
+    machines.
+* lib_C_Compiler-
+    For FakeOS to compile Seabass programs to native- necessary
+    to rebuild the OS.
+    Could be mapped to tinycc, gcc, clang, etc.
+    
+    Lib_C_Compiler is an essential piece of software for allowing
+    public domain systems to be implemented, so it should be written
+    soon.
+* 

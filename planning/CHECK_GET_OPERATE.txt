@@ -1,0 +1,13 @@
+
+It is an extremely common pattern in code that you
+want to check if something exists, and if it does,
+you want to do something on it. If it doesn't
+exist, you want to emit an error.
+
+[get a from myvec[57]] => [action();][fail();]
+
+[get a from *myptr] => [action();][fail();]
+
+If "a" cannot be "gotten" then we do fail.
+
+This is a safe way to prevent memory errors.

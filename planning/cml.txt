@@ -1,0 +1,32 @@
+
+CONCEPT MODELLING LANGUAGE
+
+Similar to my idea for the EAG, but far more general purpose.
+
+works by defining nouns and relationships, and transformations of
+nouns and relationships into final token sequences.
+
+You define nouns, verbs, and etcetera with grave statements.
+
+
+//new, good idea
+
+`new noun object.
+`noun object has relationships [
+    ismemberof aliases [has]
+    ispropertyof
+].
+
+
+//old, bad idea
+`define object [
+    struct name
+        structmodifiers
+        structmembers
+    end
+] with info [
+    `structmodifiers is a list of structmodifier.
+    `structmembers is a list of structmember.
+    `name is an identifier. //'is a' and 'is an' are equivalent.
+    `exists no type with name name. // exists ?no? 
+].

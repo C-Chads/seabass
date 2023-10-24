@@ -1,0 +1,59 @@
+
+
+THE TYPECLASS SYSTEM- I AM NOW HERE.
+
+I need a system which allows me to represent generic data types,
+algorithms to execute on them, and methods that operate on them.
+
+@typeclass_create mytree [
+    //custom arguments passed to the typeclass...
+    //they can either be integers or types.
+    //additionally, all qualifiers for methods are provided.
+    //arguments can of course be bracketed, which allows
+    //datatype here to be a pointer or even an array.
+    args[
+        int maxchildren
+        type datatype
+    ]
+    structdef[
+        //NAME is the name of the particular instantiation-
+        //the struct type itself.
+        NAME*[maxchildren] children
+        datatype d
+        int nchildren
+    ]
+    methods[
+        //QUALIFIERS is replaced by the qualifier list
+        //passed to the template.
+        method QUALIFIERS NAME:push_child(NAME* new_child)
+            if(this.nchildren >= maxchildren)
+                return;
+            end
+            this.children[this.nchildren++] = new_child;
+        end
+    ]
+    //what traits are applicable to all instances of this typeclass?
+    traits[
+        "Is_Ptree" TRAIT_LEVEL_DATASTRUCTURE_METADATA
+    ]
+    //what snippets are relevant to this typeclass?
+    //the typeclass system will allow adding these progressively, not just
+    //here...
+    //they are just worksheets templates.
+    snippets[
+        //a depth-first traversal.
+        //at least two of the worksheet fields must be provided, but
+        //the post-processor can be omitted.
+        traversal_DF[
+            //My brain is not working well enough to write this now, especially
+            //considering it would have to be recursive
+            //and use a stack...
+        ][
+            ARG1 ARG2 ARG3
+        ][
+            return result;
+        ]
+    ]
+    
+
+]

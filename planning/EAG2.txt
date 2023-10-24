@@ -1,0 +1,58 @@
+
+The EAG concept needs refinement.
+
+The idea of inferencing to generate program structure
+is a good one, however it needs to follow a consistent scheme
+for intermediate interpretations and rules.
+
+I would like OOPSY to be an EAG.
+
+~~~~~
+OOPSY PLANNING
+~~~~~
+
+OOPSY will be an object-oriented programming language with 
+advanced templating and automatic control flow generation.
+
+It will have a high-level contextual grammar.
+
+At its base level, it will be like my idea for Sunderscript,
+but with "real" references.
+
+It will mirror most of SEABASS but with rust-style borrowing.
+
+
+@oopsy [
+
+object myObject //begin is implied.
+    data                             //attribute of the object
+    `object is copyable and cloneable. //speaking of the current object.
+                                       //[metanoun] is [attribute] <and [atrribute]>*.
+                                       //grave indicates we are speaking
+                                       //directly to the inferencer.
+                                       //grave notations are allowed anywhere,
+                                       //except of course inside of string and char literals
+                                       //or comments.
+                                       //grave notations are always terminated with a period.
+    //members
+    int             myint
+    float           myfloat
+    myObject ref    myfriend
+end
+
+
+fn main a b c begin //colon can replace begin here.
+    `function is public. //the function we're modifying is publically visible.
+    `function has retval int. //the `has` clause assigns a value to a named property.
+                              //all `is` statements should be expressible as `has`.
+                              //`function has visibility_modifier public.
+                              //is equivalent to the previous line.
+    `a,b,c are int. //you can list multiple metanouns and use `are` instead of `is`.
+    
+    
+
+    
+end
+
+
+] //eof oopsy

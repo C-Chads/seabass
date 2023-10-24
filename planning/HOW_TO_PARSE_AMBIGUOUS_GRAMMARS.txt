@@ -1,0 +1,280 @@
+
+1. Parallel stacks
+
+Like with GLR, you can literally maintain multiple interpretations
+of the parse. It's very complicated and while I could probably
+devise a scheme for writing them, I'm not a fan.
+
+I believe this is the incorrect solution...
+
+2. Intermediate ASTs.
+
+For any ambiguous sequence of tokens, an "ambiguous state" can be
+defined which is either one or the other of the definite states.
+
+That ambgiuous state can be analyzed post-parse to produce a definite
+interpretation or an error.
+
+As you are parsing, if you find something that proves that what you
+are parsing could only have been one of the forms, then you can
+immediately transform the ambiguous form into a definite one, or
+"tag" the form as requiring that interpretation.
+
+
+Let us suppose that you define a grammar which allows the
+declaration of functions and structs using the same syntax:
+
+name
+{
+    contents
+}
+
+You can generalize "name" and "contents" to allow anything from
+either interpretation, but, for instance, if you encounter anything
+which is not a variable declaration, you know it must be a function....
+
+myStruct
+{
+    int arg1
+    int arg2
+    int arg3
+    int retval
+}
+//^ the above did not contain any statements. A function without any statements in its
+//body can be defined as being impossible, and is in fact, a struct declaration.
+
+
+myFunction
+{
+    int arg1
+    int arg2
+    int arg3
+    int return_value
+    //Only once reaching the following line is it possible to discern
+    //that this is a function, and not a struct called "myFunction"
+    return_value = arg1+arg2+arg3;
+}
+
+Both  of these would be interpreted initially as
+
+Ambiguous_ContentItemList
+
+and then each be resolved to
+
+Structdecl
+
+FnDecl
+
+This enables you to keep only one parser stack while also
+having ambiguous grammars.
+
+To demonstrate that this is actually general, let me describe how  you would
+parse a grammer that allowed nested types and method declarations, and functions
+inside of functions.
+
+We'll say that this is a Java-like, i.e., compilation units are comprised of a single class
+declaration (or function declaration) and nothing else.
+
+The following code defines a toy example, a top-level "myStructType" with three integer variables
+having initial values, as well as a subclass (mySubStructType) and a member variable of that type.
+
+mySubStructType has a method called "myMethod" but "myStructType" does too, each doing different things.
+
+The grammar is extremely ambiguous and it is not possible to discern the interpretation of top level
+nodes until all its children have been parsed. However, we can parse it perfectly into the ambiguous
+AST, and as we are parsing, we will gain the information necessary to perform the transformation 
+to a less ambiguous AST in the second pass.
+
+BEGIN_COMPILATION_UNIT
+
+myStructType{ //Begin our supertype
+    
+    //our supertype's primitive variables.
+    int a = 3;
+    int b = 57;
+    int return_value = 29; //a+b here would cause this to be interpreted as a fn, not a struct. Because it has a constexpr-
+                           //evaluatable initializer, it is not an expression, so return_value is a member of the struct,
+                           //and return_value is not the name of a variable inside a function.
+    mySubStructType{ //A subclass declaration! Contains two integer member variables with initial values and a method.
+        int a = 29;
+        int b = 57;
+        myMethod{ //this is the method...
+            int arg1; ///only one arg!
+            a = arg1; //a statement! Must be a function.
+            //no return_value variable defined, so this function returns void.
+        }
+    }
+    
+    //This is a variable defined as a member of myStructType
+    mySubStructType qq {14, 22}; //pattern is typename varname {initializer_list}
+    
+    //this is a method of myStructType
+    myMethod{
+        //here are the arguments to the method. We are saying
+        //that arguments to a method are always declared with the pattern argXX
+        //and that return values are actually stored in variables, called `return_value`.
+        int arg1;
+        int arg2;
+        mySubFunction{
+            int l_arg1; //avoid name shadowing....
+            int l_arg2;
+            int return_value = l_arg1 * l_arg2 + l_arg1 + l_arg2; //This is not trivially constexpr, so it must be a statement.
+        }
+        int return_value = mySubFunction(arg1, arg2);
+    }
+}
+
+
+END_COMPILATION_UNIT
+
+Here is how it would be interpreted, as a parse tree.
+
+Note that for brevity and clarity, I have cut-down the visualization of the more complex
+EXPR_NODEs representing complex expressions. I expect anyone familiar with compiler design
+to understand how an expression tree works, so I hope this does not cause any confusion...
+
+
+AMBIGUOUS_CONTAINER
+    name: "myStructType"
+    CONTENTS
+        AMBIGUOUS_INITIALIZER <TAGS: HAS_ASSIGNMENT TRIVIAL_CONSTEXPR>
+            type: int
+            name: "a"
+            ASSIGNMENT_PORTION
+                EXPR_NODE
+                    type: intlit
+                    value: 3
+                END_EXPR_NODE
+            END_ASSIGNMENT_PORTION
+        END_AMBIGUOUS_INITIALIZER
+        
+        AMBIGUOUS_INITIALIZER <TAGS: HAS_ASSIGNMENT TRIVIAL_CONSTEXPR>
+            type: int
+            name: "b"
+            ASSIGNMENT_PORTION
+                EXPR_NODE
+                    type: intlit
+                    value: 57
+                END_EXPR_NODE
+            END_ASSIGNMENT_PORTION
+        END_AMBIGUOUS_INITIALIZER
+        
+        AMBIGUOUS_CONTAINER
+            name: "mySubStructType"
+            CONTENTS
+                AMBIGUOUS_INITIALIZER <TAGS: HAS_ASSIGNMENT TRIVIAL_CONSTEXPR>
+                    type: int
+                    name: "a"
+                    ASSIGNMENT_PORTION
+                        EXPR_NODE
+                            type: intlit
+                            value: 29
+                        END_EXPR_NODE
+                    END_ASSIGNMENT_PORTION
+                END_AMBIGUOUS_INITIALIZER
+                
+                AMBIGUOUS_INITIALIZER <TAGS: HAS_ASSIGNMENT TRIVIAL_CONSTEXPR>
+                    type: int
+                    name: "b"
+                    ASSIGNMENT_PORTION
+                        EXPR_NODE
+                            type: intlit
+                            value: 57
+                        END_EXPR_NODE
+                    END_ASSIGNMENT_PORTION
+                END_AMBIGUOUS_INITIALIZER
+                AMBIGUOUS_CONTAINER <TAGS: CONTAINS_STMTS_MUST_BE_METHOD>
+                    name: "myMethod"
+                    CONTENTS
+                        AMBIGUOUS_INITIALIZER <TAGS: NO_INIT>
+                            type: int
+                            name: "arg1"
+                        END_AMBIGUOUS_INITIALIZER
+                        EXPR_STMT
+                            EXPR_NODE
+                                =
+                                    a
+                                    arg1
+                            END_EXPR_NODE
+                        END_EXPR_STMT
+                    END_CONTENTS
+                END_AMBIGUOUS_CONTAINER
+            END_CONTENTS
+        END_AMBIGUOUS_CONTAINER //eof mySubStructType
+        
+        //the following is inferrable from pure lookahead.
+        //it must be an initializer or an expression node from the fact it does not follow
+        //the container pattern, and we know it must be an initializer and not a statement,
+        //because it starts with two consecutive identifier tokens.
+        AMBIGUOUS_INITIALIZER <TAGS: HAS_CURLY_INITIALIZER>
+            type: mySubStructType
+            name: "qq"
+            CURLY_INITIALIZER
+                EXPR_NODE
+                    type: intlit
+                    value: 14
+                END_EXPR_NODE
+                EXPR_NODE
+                    type: intlit
+                    value: 22
+                END_EXPR_NODE
+            END_CURLY_INITIALIZER
+        END_AMBIGUOUS_INITIALIZER
+        
+        AMBIGUOUS_CONTAINER
+            name: "myMethod"
+            CONTENTS
+                AMBIGUOUS_INITIALIZER
+                    type: int
+                    name: "arg1"
+                END_AMBIGUOUS_INITIALIZER
+                AMBIGUOUS_INITIALIZER
+                    type: int
+                    name: "arg2"
+                END_AMBIGUOUS_INITIALIZER
+                AMBIGUOUS_CONTAINER
+                    name: "mySubFunction"
+                    CONTENTS
+                        AMBIGUOUS_INITIALIZER
+                            type: int
+                            name: "l_arg1"
+                        END_AMBIGUOUS_INITIALIZER
+                        AMBIGUOUS_INITIALIZER
+                            type: int
+                            name: "l_arg2"
+                        END_AMBIGUOUS_INITIALIZER
+                        AMBIGUOUS_INITIALIZER
+                            type: int
+                            name: "return_value"
+                            ASSIGNMENT_PORTION
+                                EXPR_NODE //Again, this is abbreviated for clarity...
+                                    =
+                                        return_value
+                                        +
+                                            l_arg2
+                                            +
+                                                l_arg1
+                                                *
+                                                    l_arg1
+                                                    l_arg2
+                                END_EXPR_NODE
+                            END_ASSIGNMENT_PORTION
+                        END_AMBIGUOUS_INITIALIZER
+                    END_CONTENTS
+                END_AMBIGUOUS_CONTAINER
+
+            END_CONTENTS
+        END_AMBIGUOUS_CONTAINER
+        
+    END_CONTENTS
+END_AMBIGUOUS_CONTAINER
+
+Study that example carefully. If you do, you will realize that
+this intermediate AST can be trivially analyzed (during parsing!) to
+determine what all the final interpretations should be (as fndecls,
+methoddecls, structdecls, etcetera).
+
+The existing nodes can either be transformed in-place, or new nodes can be crafted.
+
+
+

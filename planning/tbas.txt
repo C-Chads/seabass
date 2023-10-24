@@ -1,0 +1,96 @@
+
+TBAS- Template-Enabled Seabass
+
+"Write seabass code, but with C++ style
+templates"
+
+basically, you write seabass, but whenever
+you write the name of a template and give
+the template parameters, it will either create
+that templated type, or it will stick-in the
+proper name of that type.
+
+It will also do this for function invocations...
+
+myFunction[int](1+1, 2+3)
+
+
+
+it basically just brute-force searches the token
+stream for known template names.
+
+it will keep two separate "output" token streams-
+
+the "needed new definitions" stream- all the stuff
+needed to make the written code work. if you do
+vector[int] for instance, it will have to create
+__tbas_templated_type__codegen__vector__13__
+
+or whatever, which is "vector of int" with
+zero pointerlevel and zero arraysize.
+
+HOW DOES SEABASS ACCESS THE TEMPLATED TYPES?
+
+It'll have to retrieve them from TBas.
+
+WHY WOULD YOU WRITE TBAS OVER SEABASS?
+
+you don't have to insantiate a template
+before you use it. Automatically write
+code for usage immediately.
+
+WILL THIS ALLOW FOR MORE THAN JUST TYPES?
+
+I think so. I should be able to allow "templating"
+of pretty much anything. you'll be able to specify in
+TBAS what it is you're templating...
+
+//writing a template 
+@tbas mktemplates [
+    codegen //we are writing codegen code.
+    type myType [T A B][
+        //provide code to implement this type...
+        struct TBAS_
+    ]
+]
+
+@tbas mktemplates [
+    //if codegen is not specified, then this is for the target.
+    function myFunction[T T2][
+        //AUTONAME refers to the automatic name given to this
+        //symbol. If you need more names, you can use an integer
+        //after AUTONAME. AUTONAME1, AUTONAME2, etcetera for
+        //consecutive AUTONAMEs. AUTONAME0 is identical to AUTONAME
+        fn AUTONAME(T a)->u64:
+            return sizeof(T) + sizeof(T2);
+            //example of how you instantiate a template...
+            pair[[T][T2]] myPair;
+        end
+    ]
+    snippet mySnippet[T T2][
+        
+    ]
+]
+
+WHAT ABOUT CODEGEN/TARGET?
+
+I figure that when you are writing Tbas code,
+you will specifically state outright whether you are
+writing codegen or target code.
+
+Furthermore, you'll be able to have templates
+with the same names for both the codegen
+environment and the target- they will have
+separate symbol tables.
+
+HOW WILL THIS IMPROVE PROGRAMMING IN SEABASS?
+
+you'll be able to do C++ style templating.
+
+IS THIS BETTER THAN CGWKSHT?
+
+Cgwksht still requires you to use the worksheet before
+you use instances of whatever it was templating.
+
+
+

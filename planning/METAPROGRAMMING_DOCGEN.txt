@@ -1,0 +1,5 @@
+
+I use this tool to convert my metaprogramming library code into C strings..
+
+https://tomeko.net/online_tools/cpp_text_escape.php?lang=en
+

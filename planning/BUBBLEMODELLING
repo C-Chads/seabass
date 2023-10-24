@@ -1,0 +1,15 @@
+
+BUBBLE MODELLING- A 3D MODELLING IDEA
+
+You could do 3d modelling much more easily if you could
+outline the rough shape of your object using bubbles and
+boxes first, then "skin" the bubbles/boxes (generating a
+triangle mesh).
+
+You could even do stuff like specify how much each bubble, or
+vertex of a box was "puffy" and etc to modify how the skin was
+generated.
+
+You could use small bubbles/boxes to make tiny details.
+
+Boxes would likely be easier to implement.

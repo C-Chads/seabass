@@ -1,0 +1,17 @@
+
+What if you wanted the same struct to be both
+a linked list and a vector at the same time?
+
+It would have a right pointer and a data pointer.
+
+You can push onto a vector or push onto the linked list.
+
+if you do myStruct:push(3) (vec_int and linkedlist_int) what happens?
+
+1. choose a default- the vector is faster
+
+2. let the implementer pick- more tedious
+
+3. error undefined, there's push_vec and push_ll
+
+4. Problem for a higher level language.

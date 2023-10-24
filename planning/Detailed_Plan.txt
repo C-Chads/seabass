@@ -1,0 +1,73 @@
+
+IDEAS (Concrete- well established)
+[X] token stream manipulation tools
+	[X] duplicate a sequence of tokens
+		[X] cgstrll:dupe()->cgstrll*
+			* Duplicates only this node
+		[X] cgstrll:dupelen(u64 len)->cgstrll*
+			* Including root going to "len".
+				* len 0 returns NULL.
+		[X] dupeskip- does dupelen on peek()
+		[X] fetch arglist- fetch a sequence of tokens comprising a single argument for
+			a builder or worksheet.
+	[X] insert a series of tokens.
+		[X] Make new tokens.
+		[X] cgstrll:push_end
+			* Insert at end of string linked list
+		[X] cgtok_push_stream(cgstrll* new_right)
+			* Insert a token list onto the front of the token list.
+* AST manipulation tools
+	[X] just automate the token stream stuff
+* "the builder" (Tokens in, tokens out)
+	DESCRIPTION
+	"the builder" makes custom parsing hooks of a certain format.
+
+	
+	[X] parsehook_bldr(): /*code goes here*/ end
+	[X] mkbldr
+		* bldr but with a namespace for special parsehooks.
+* "Formatted Code" or "Worksheet Programming"
+	- similar to macro programming but with named fields.
+		- possibly typed fields (?)
+* Worksheet programming but with decisions
+	- notations for repetition, custom inclusion, etcetera
+	- can nest
+* Archetype / Concept programming (Problem-solution pairs)
+	EXPLANATION
+	Data structures (structs + variables + functions) have certain
+	operations that can be performed on them, and inherent attributes.
+	vector and linked lists are "iteratable".
+	dictionary and vector can both be "indexed" (one with a string, the other with a uint)
+	vector is "constant random access time" (O(1))
+	
+	For a particular system or data structure, there should be ways of expressing these
+	concepts in a way that can be meaningfully interacted with or examined, not only
+	by the programmer but by the computer.
+
+I DUNNO IDEAS (Fuzzy, may not be good, questionable, explorable)
+* Inverse expander- expand interior portions before outer in 
+	nested @ sequences.
+* 
+
+	
+	
+
+
+HOW TO IMPLEMENT IDEAS
+[#] - completed
+[.] - in progress
+[?] - Unknown how to progress
+[ ] - not started
+
+TOKEN STREAM MANIPULATION TOOLS
+[#] Create a token (strll)
+[.] Automatically detect what type of token some piece of text is
+[ ] Tokenize a string into tokens, effectively doing what ctok does.
+[ ] Decay tokens back into text
+
+AST MANIPULATION TOOLS
+[ ] Create various AST nodes
+[ ] Create AST nodes via text
+[ ] Manipulate existing AST nodes
+[ ] Re-validate functions
+[ ] 

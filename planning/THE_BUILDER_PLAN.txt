@@ -1,0 +1,36 @@
+
+THE BUILDER: THE ULTIMATE METAPROGRAMMING TOOL
+
+Usage:
+
+@bld new LoopBuilder {
+	//the function prototype looks like this:
+	//fn codegen cbas__bld__LoopBuilder(cgstrll* in)->cgstrll*
+
+	return generate_loop_based_on_criteria(in);
+}
+
+@bld LoopBuilder [
+	iterations 12
+	start 0
+	step 1
+	var i
+	body {
+		char[50] buf;
+		__builtin_itoa(buf, i*2);
+		__builtin_puts(buf);
+	}
+	//anything you want passed into the builder...
+]
+
+
+The use demonstrated is obviously pathetic, but really
+what you'd use this for is generating things like data structures
+and perhaps even whole programs.
+
+The kind of metaprogramming I actually want to do would probably involve writing
+specific kinds of builders (I cannot recall at the moment), often generating other builders
+in the process.
+
+THE BUILDER IS THE GOLDEN KEY TO SOLVING METAPROGRAMMING.
+

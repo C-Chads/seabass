@@ -1,0 +1,76 @@
+
+HOW CAN SEABASS REPRESENT SIMD OPERATIONS?
+
+I have been puzzling over this for a long time- You can't
+pass structs by value into functions. It would seem, then,
+that seabass cannot take advantage of x86_64's enormous
+simd registers. However, I  have realized...
+
+1. You can write a macro which does the same thing.
+
+    The whole point of simd functions is to trick the compiler
+    into writing exact assembly instructions for you.
+    
+    Why not just put the code in a macro?
+
+2. Just pass in multiple arguments. If the function is inline, it should
+be optimized exactly the same...
+
+3. Pass by pointer is actually better.
+
+    If you pass by pointer, you guarantee to the compiler that
+    all your modifications are on the same object.
+    
+    The compiler can discern that you don't actually care
+    about there actually being a pointer in the generated code.
+
+
+
+What about APIs in DLLs which require large arguments to be passed,
+which could potentially fit in a register, but can't be
+passed by register because the largest data type that can
+be passed is 64 bit?
+
+1. Again, the large argument can be divided into chunks.
+
+    Take the large object and divide it into 64 bit chunks.
+    
+    Feed the 64 bit chunks into registers.
+    
+    Bam, done.
+    
+2. Are ABIs even compatible with passing in SIMD registers?
+
+    From what I've seen? No.
+
+    It seems that Microsoft has developed a special calling
+    convention called "vectorcall" however, being a microsoft
+    product, I doubt it has much support...
+    
+    Nevertheless, the possibility exists, and I want it to work in Seabass.
+    
+3. Wrappers
+
+    Write a wrapper that does what 1 does, and then puts
+    the arguments into a SIMD register.
+
+4. Once again, optimizing compiler.
+
+    A single compilation unit with lots of inline functions?
+    
+    MAXIMUM OPTIMIZATION.
+5. ... DLL call optimization?
+
+    DLL calls are already basically bottom-of-the-barrel for
+    optimization. Why not statically link and get LTO?
+    
+6. Seabass doesn't need to fully represent the capabilities of all
+hardware to succeed.
+
+    It only needs to represent it "enough" to get "good enough"
+    performance. The goal is POWER, not performance.
+    
+    Performance is a PART of power, but it is not the same thing.
+    
+    
+    

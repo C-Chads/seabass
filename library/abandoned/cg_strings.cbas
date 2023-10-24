@@ -1,0 +1,198 @@
+
+#include "cg_strings.hbas"
+
+#define puts __builtin_puts
+
+
+proc codegen codegen_main():
+	puts("Hello!");
+
+
+#define scope if(1)
+	scope
+		cgstr f
+		cgstr*[1] fp
+		cgstr**[1] fpp
+		cgstr***[1] fppp
+
+		fp[0] = f;
+		fpp[0] = fp;
+		fppp[0] = fpp;
+		fpp[0][0]:fromstr("how?");
+		f:print();
+		f:free();
+	end
+#undef scope
+
+//scope end
+
+
+	if(1)
+		cgstr f
+		cgstr q
+
+		f:fromstr("bruh");
+		q:fromstr(" no");
+		f:add(q);
+		puts(f.s);
+		f:free();
+		q:free();
+	end
+	if(1)
+		cgstr f
+		cgstr q
+		f:fromstr("");
+		q:fromstr("!!NO!!!");
+		puts(q.s);
+		f:add(q);
+		puts(f.s);
+		
+		f:free();
+		q:free();
+	end
+	if(1)
+		cgstr f
+		cgstr q
+		sqword squidward
+		char[50] buf
+		f:fromstr("find the needle in the haystack");
+		q:fromstr("needle");
+		squidward = f:find(q);
+		__builtin_itoa(buf, squidward);
+		puts(buf);
+		if(squidward > -1)
+			puts(f.s + squidward);
+		else
+			puts("[Not found!]");
+		end
+		f:free();q:free();
+		
+		f:fromstr("find the needle in the haystack");
+		q:fromstr("find");
+		squidward = f:find(q);
+		__builtin_itoa(buf, squidward);
+		puts(buf);
+		if(squidward > -1)
+			puts(f.s + squidward);
+		else
+			puts("[Not found!]");
+		end
+		f:free();q:free();
+
+		f:fromstr("find the needle in the haystack");
+		q:fromstr("gold");
+		squidward = f:find(q);
+		__builtin_itoa(buf, squidward);
+		puts(buf);
+		if(squidward > -1)
+			puts(f.s + squidward);
+		else
+			puts("[Gold Not found in haystack!]");
+		end
+		f:free();q:free();
+
+		f:fromstr("find the needle in the haystack");
+		q:fromstr("he ha");
+		squidward = f:find(q);
+		__builtin_itoa(buf, squidward);
+		puts(buf);
+		if(squidward > -1)
+			puts(f.s + squidward);
+		else
+			puts("[Not found!]");
+		end
+		f:free();q:free();
+	end
+	if(1)
+		cgstr f cgstr q
+
+		f:fromstr("am I postfixed?");
+		q:fromstr("fixed?");
+		if(f:postfixed(q))
+			puts("Fixed indeed!");
+		else
+			puts("Not fixed!");
+		end
+		if(q:postfixed(f))
+			puts("[very bugged]");
+		end
+		f:free();q:free();
+	end
+
+	if(1)
+		cgstr f cgstr q
+
+		f:fromstr("Can you find something longer?");
+		q:fromstr("Can you find something longer? Much much longer.");
+		if(f:postfixed(q) == 0)
+			puts("Can't find it longer");
+		else
+			puts("We found it longer?");
+		end
+		if(q:postfixed(f))
+			puts("[very bugged]");
+		end
+		f:free();q:free();
+	end
+
+	if(1)
+		cgstr f
+		f:fromstr("I like it backwards!");
+		puts(f.s);
+		f:invert();
+		puts(f.s);
+		f:free();
+
+		f:fromstr("I liked it backwards!");
+		puts(f.s);
+		f:invert();
+		puts(f.s);
+		f:free();
+	end
+
+	if(1)
+		cgstr f cgstr q
+
+		f:fromstr("(capitalize all the letters!!)");
+		q:fromstr("[LOWERCASE ALL OF THESE!!]");
+		f:print();
+		q:print();
+		f:toupper();
+		q:tolower();
+		f:print();
+		q:print();
+		f:free();
+		q:free();
+	end
+
+	if(1)
+		cgstr f cgstr q
+
+		f:fromstr("Does D come before O?");
+		q:fromstr("Of Course!");
+		if(f:compare(q) < 0)
+			puts("Sorted Certainly.");
+		else
+			puts("Sorted uncertainly...");
+		end
+
+		if(q:compare(f) > 0)
+			puts("Sorted Even More Certainly.");
+		else
+			puts("Sorted uncertainly...");
+		end
+		f:free();
+		q:free();
+
+		f:fromstr("What about my equal?");
+		q:fromcgstr(f);
+		if(f:compare(q) == 0)
+			puts("Sorted Equally.");
+		else
+			puts("Equality was debunked...");
+		end
+		f:free();
+		q:free();
+	end
+	return;
+end

@@ -1,0 +1,86 @@
+
+
+#include "cgast.hbas"
+
+
+fn codegen parsehook_stream_pusher_test():
+	cgstrll* pushme;
+	cgstrll* buildout;
+
+	pushme = cg_qtok("@");
+	buildout = cg_qtok("test"); pushme:push_end(buildout);
+	buildout = cg_qtok("["); pushme:push_end(buildout);
+	buildout = cg_qtok("this"); pushme:push_end(buildout);
+	buildout = cg_qtok("text"); pushme:push_end(buildout);
+	buildout = cg_qtok("is"); pushme:push_end(buildout);
+	buildout = cg_qtok("not"); pushme:push_end(buildout);
+	buildout = cg_qtok("in"); pushme:push_end(buildout);
+	buildout = cg_qtok("the"); pushme:push_end(buildout);
+	buildout = cg_qtok("file"); pushme:push_end(buildout);
+	buildout = cg_qtok("]"); pushme:push_end(buildout);
+	cgtok_push_stream(pushme);
+end
+
+
+fn codegen parsehook_test():
+	cgstrll* r
+	int toks_to_skip
+	toks_to_skip = 5;
+
+//	__builtin_puts("Got here!");
+	//r = cg_token_dupe_skip(toks_to_skip);
+	r = cg_token_grab_arglist("parsehook_test failed!");
+
+    
+
+	if(1)
+		u64 i
+		cgstrll* c
+		c = 0;
+		c = constexpri(1+0);
+		c = r;
+		while(1)
+			if(cast(u64)c)
+				if(c.d === CG_TOK_IDENT)
+					__builtin_puts("~Identifier:");
+				end	
+				if(c.d === CG_TOK_KEYWORD)
+					__builtin_puts("~Keyword:");
+				end	
+				if(c.d === CG_TOK_OPERATOR)
+					__builtin_puts("~Operator:");
+				end
+				if(c.text != cast(char*)0)
+					__builtin_puts(c.text);
+				end
+				if(c.d === CG_TOK_OBRACK)
+					__builtin_puts("[");
+				end
+				if(c.d === CG_TOK_CBRACK)
+					__builtin_puts("]");
+				end
+				if(c.d === CG_TOK_COMMA)
+					__builtin_puts(",");
+				end
+			end
+			c = c.right;
+			if(c == cast(cgstrll*)0)
+				return;
+			end
+		end
+	end
+
+end
+
+@test #
+@test say_this
+@test [will stringequals be labelled as an identifier?]
+@test [yet more data, words to say -- viciously and seethingly]
+@test [a nested bracket[set of data thingies] to be handled by the function]
+
+@stream_pusher_test
+
+
+proc codegen codegen_main():
+	cgast_struct_size_test();
+end

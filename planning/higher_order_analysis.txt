@@ -1,0 +1,152 @@
+HIGHER ORDER ANALYSIS SYSTEMS
+
+"HOW DO I MAKE A MEANINGFUL NEW THING?"
+
+The step from loads/stores and operations to "variables" and
+"pointers" and "lvalue/rvalue" is one which saves the programmer
+intellectual effort solving details of a problem.
+
+I want to make the same sort of step upward in Seabass.
+
+HOW DO WE IDENTIFY A HIGHER ORDER ANALYSIS SYSTEM?
+
+Identifying any analysis system seems to be a start- but it is
+only higher order if it does intellectual labor the programmer
+would normally do themselves.
+
+An example of a higher order analysis system I commonly end up
+implementing interactions with is the Linked List, and Linked
+List traversals, merges, duplications, etcetera.
+
+One way you could solve this is just to write functions to
+perform these operations on a linked list, however really
+I want to define what a linked list is "from above" and have
+these operations "come out".
+
+DATA STRUCTURE ANALYSIS CASE STUDY - LINKED LISTS
+
+There are several atomic operations that can be performed
+on pretty much any worthwhile data structure I know of:
+
+* add/insert
+* remove
+* read
+* write
+* traverse (walk through all entries once)
+
+The exact way each one is implemented varies, but
+invariably these actions always seem to be present.
+
+The specifics of the particular data structure chosen
+will cause different operations to become more or less
+efficient and the exact way that they are done may become
+quite important to performance- for instance, repeatedly
+indexing from the root node in a linked list to access
+successive members causes an O(n^2) access time as
+opposed to "traversing" with a pointer which leads to O(1)
+for each access.
+
+Whenever I encounter one of these situations, I believe
+that there is some "higher order thing" I am baking into
+my code causing me to repeatedly solve the same problems
+over and over again.
+
+Really, I think I want to have a "suite" of tools
+for manipulating linked lists, which I can apply
+to any linked list. This would be fairly easy if
+"linked list" was a language construct (e.g. template).
+
+Any code written for a "linked list" could then be applied
+to any "linked list" and I wouldn't have to re-implement
+this garbage over and over.
+
+?SOLUTION 1? - Make a data structure template for linked lists.
+
+However, the principal cause of these encumberances is shared with
+other data structures (such as a tree). If I want to randomly access
+a member of a tree, I must navigate from the root node.
+
+I could assign a "type trait" to the "linked list" data structure
+template and use that trait when generating code.
+
+Something like "random_access_is_traversal".
+
+LINKED LIST COMMON PATTERN- FATHER AND SON
+
+It is ever-so-common that I am traversing a linked list
+to remove or replace something in the list, and for whatever
+reason, I need to keep track of the parent node of whatever
+I'm working on.
+
+This would also be true of a tree- if I have a tree like this:
+
+				0
+			   / \
+			  1   2
+			 / \ / \
+			3  4 5  6
+			       / \
+			      7   8
+
+and I wanted to find 6, and move its first child into its spot
+(7 moves to where 6 is) I'd have to keep track of 2, since it 
+is the parent of 6, and 2 would need to point to 7.
+
+You could broadly classify these sorts of problems by putting
+linked lists and trees under the same umbrella. Every memory
+cell has pointers to "next" or "lower" cells while none of them
+have pointers "up".
+
+I could make this its own template, the "ptree" (pointer tree) 
+structure and allow specification of how many child nodes
+a node could have.
+
+The version with two-directional pointer relationships would
+be the "dptree" for "dual-pointer tree".
+
+I could then have a higher level language where "ptree"
+is a foundational construct and operations on them are something
+baked into the syntax. The context of writing in that higher level
+DSL would then include the idea of a "ptree" and how to operate
+on them, perhaps even how to remove redundant work (for instance,
+pushing onto the end of a linked list ptree twice in a row from the
+root node);
+
+
+
+
+
+
+
+
+INTERFACE MATCHING ANALYSIS- CASE STUDY
+
+I found this piece of code from my work writing the buildder.
+
+```
+	if(1)
+		cgstr pre
+		pre:fromstr("cg_bldr_");
+
+		if(fname3:prefixed(pre) && (fname3.s strneq pre.s))
+			cgstr fakename;
+			
+			fakename:fromstr(fname3.s + 8);
+			builder_hook_namespace_add(fname3, fakename);
+			
+			fakename:free();
+		end 
+		pre:free();
+		fname3:free();
+	end
+```
+You can see here how the fact that I have these two systems (char* strings
+and cgstr strings) is causing me to have to write this boilerplate to
+meet the interface.
+
+This type of "data unwrapping" happens all the time and it would be nice
+if there was a way to do this efficiently
+
+
+
+

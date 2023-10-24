@@ -1,0 +1,31 @@
+
+
+class vec4
+	float x
+	float y
+	float z
+	float w
+end
+
+
+codegen predecl int myint;
+
+codegen int some_other_int = constexprf(255.0);
+
+method vec4:add(vec4 other):
+	this.x = other.x + this.x;
+	this.y = other.y + this.y;
+	this.z = other.z + this.z;
+	this.w = other.w + this.w;
+	return;
+
+	int q;
+	q = cast(i32)constexpri(some_other_int|7&3)+cast(i32)7;
+	uint a;
+	uint* bb;
+	a = cast(i8)(!!!!!!!!(~~~~~~~~(-a)))>=cast(i8)a;
+	a =  ~ -cast(f32)cast(i8)bb / cast(uint)bb;
+end
+
+codegen int myint;
+

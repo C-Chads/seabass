@@ -1,0 +1,54 @@
+
+THE WORKSHEET- NAMED OR ANONYMOUS FIELDS
+
+this is what the interface will look like:
+
+
+@wksht[
+	ifwksht //name of the worksheet
+
+	//pick named or anonymous.
+	//if you do not include this,
+	//it will default to named.
+	named
+	//write code to be formatted
+	[
+		if( arg1 )
+			body
+		end
+	]
+	//list what identifiers (and keywords and operators) to replace.
+	//you can't replace square brackets, obviously.
+	arg1 [1]
+	body [;]
+]
+
+@wksht[
+	ifwksht_anon //name of the worksheet
+	anonymous
+	[
+		if( arg1 )
+			body
+		end
+	]
+	arg1 [1]
+	body [;]
+]
+
+
+
+@ifwksht [
+	//for named, give a field name and then its definition
+	arg1 [(1+1)==2]
+	body [
+		puts("What an unbelievable fact!!!");
+	]
+]
+
+
+//if this were an anonymous worksheet...
+
+@ifwksht_anon [
+	[(1+1) == 2]
+	[puts("What an unbelievable fact!!!");]
+]

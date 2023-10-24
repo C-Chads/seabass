@@ -1,0 +1,340 @@
+
+I WANT TO ABSTRACT COMMON PATTERNS IN CONTROL FLOW.
+
+TODO: examine common control flow patterns and come up with
+ways that these can become "names" in the language of CBAS.
+
+CONTROL FLOW PATTERNS RELATING TO DATA STRUCTURES:
+    * Data structure traversals- walk a data structure until some point (or through all elements) optionally
+        changing elements along the way. Different traversals are needed when doing insertion
+        or deletion, and some traversal methods are more efficient than others for particular
+        use cases. Multiple traversals may be defined for a single data structure (forward, backward,
+        depth-first or breadth-first, etcetera).
+    * Data structure expansion. Repeatedly adding a bunch of stuff to a data structure.
+    * Data structure transfer- Transferring elements from one data structure to another.
+        Notably, mass insertion, but also sorted insertion.
+    * 
+    
+INTERFACE EXCHANGES- RECOGNIZE BY DATA TYPE
+
+    if I assign a char* to a cgstr, I could be trying to simply assign it, or do fromstr.
+    
+    Either way, having to type `.s =` or `:fromstr` is a hassle.
+    
+    I could have a system whereby I keep track of what operations are valid
+    on a type (operators or actions) and what the arguments are.
+    
+    I could even have symbols or shorthands for them.
+    
+WALKING A LINKED LIST OF TOKENS AND REPLACING ENTRIES WITH AN EXPANSION.
+
+    Needs to be something added to cgstrll. "Replacewith".
+    
+    The dummy token at the start prevents having to check the first node,
+    so I'm safe on that.
+
+CHECK IF NULL AND THEN CHECK MEMBER
+
+    I'm always having to check a pointer to see if it's null, and then check a member of the
+    struct. I wish I could do both at the same time, and not get the error on null.
+    
+    I could probably write a macro/template for this-
+    
+    @checkifmembernull [myPtr][mymember] [
+        @pprint[
+            /       "ERROR"
+            /       "You messed up!"
+            /       "myPtr or mymember was null!!!"
+        ]
+        __builtin_exit(1);
+    ]
+    
+    This would save me future keystrokes.
+    
+STRINGBUILDER
+    
+    It is often the case that I want to construct a string piecewise, out of smaller
+    char* expressions. I should come up with a language or notation specifically
+    for putting cgstr's together.
+    
+    This should also be streamlined so I can quickly shove them onto cgstrlls.
+    
+ERROR RETURNS / ERRNO / TRY CATCH
+
+    Most of the code for this codebase, and most code I write actually, assumes that
+    on failure, we simply exit the program. This works fine for this compiler, but
+    it is not viable for a lot of systems.
+    
+    I should come up with a scheme to automate returning either an error or a value
+    from a function, and having the error propagate upward into a try/catch.
+    
+    This would be a full, new inter-function system which used `errno` or the like
+    to automatically propagate errors upward- Every supported function call would
+    be wrapped.
+    
+EFFICIENTLY REALLOCED VECTORS.
+
+    I need a system to automate the process of making realloc-vectors. This would be
+    easiest with a dedicated `vector` generic typeclass, but I don't have that yet.
+    
+    A hashtable filled with pointers is a stopgap which shouldn't be used.
+    
+SCOPED MALLOCED MEMORY.
+
+    Constructors and destructors. This basically just requires me to rigorously define
+    a scope and the ways the scope exits, as well as the variables that belong to
+    that scope.
+    
+    This is easy as long as all jumps are INSIDE the scope and don't go outside-
+    e.g. an early goto.
+    
+    Wrapping an entire function body with it is an option, of course.
+    
+DEFINING CONTROL FLOW THROUGH AN AUTOMATA
+
+    I'm fascinated and obsessed with automata and state machines. What if we
+    could describe the control flow of a function as a state machine or
+    automata? Wouldn't that be awesome?
+    
+    Functions are frequently structured in this fashion, i.e. the basic operation
+    of the control flow is a series of states and defined transitions.
+    
+    By making explicit the states and the transitions as just that, it may be easier
+    to reason about how the control flow works and what it's doing.
+    
+    Furthermore, it may be possible to define multiple state machines at once and
+    have them work at the same time, such that the control flow of each of them is
+    happening interchangeably (multitasking within a single function).
+    
+    HOW DO YOU DEFINE ONE STATE MACHINE?
+    
+    A single state machine, as a function, is simply a set of if statements and gotos.
+    
+    Whenever a rule transition happens within this single state machine, we goto the rule.
+    
+    When the state machine reaches "die" it does whatever it needs to do to finish its
+    processing and returns.
+    
+    You could obviously nest state machines and this would be totally fine.
+    
+    WHY WOULD YOU WANT MULTIPLE STATE MACHINES FOR CONTROLLING A SINGLE FUNCTION?
+    
+        If you have multiple separate control flow paths that are interleaved.
+        
+        For instance, there may be a larger pattern in your function of a "quick end"
+        or "error". So you could have a main state machine which represents the main
+        control flow of the function, the "normal path" and then the second state machine
+        which represents the "hard path". 
+        
+        Each path could 
+        
+    STATE MACHINES AS A NESTED COMPUTATIONAL AUTOMATA.
+    
+        You can treat state machines like it is a complete computer. Pushing
+        and popping state IDs onto a stack lets you go even further and
+        pretend you're calling subroutines.
+        
+    
+    
+    HOW DO MULTIPLE STATE MACHINES INTERACT WITH EACH OTHER?
+    
+        Multiple possible schemes:
+        
+            1. Multitasking round-robin
+            
+                Once a state machine state  has reached the point of a state
+                transition, the next state machine in the chain can executes its
+                active rule. All state machines keep executing until they
+                eventually fall off the end of a state and go into the
+                "die" state, and become dead.
+                
+                After that, they no longer execute.
+                
+                so basically,  you do...
+                
+                //"Queue transition = qxn"
+                
+                main.qxn rule1
+                
+            2. Explicit control transfer.
+            
+                Two state machines can decide to pass control back and forth between
+                each other explicitly. A state machine can set its "next state" to a value,
+                and then explicitly pass control to the other state machine...
+                
+                sm_run mystatemachine2
+                
+                passes control from the current state machine to mystatemachine2. You better
+                have queued the next state! Use:
+                
+                sm_q_and_run rule1 mystatemachine2
+                
+                This means you can easily transition between states.
+            
+            3. Priority
+            
+                State machines are listed in a priority list. Instead of simply going to "the next one"
+                we ought to go to the highest priority still-living state machine.
+                
+            4. Flip-Flopping priority
+            
+                We may also have flip-flopping priority, where the transition of control from
+                one state machine to another means traversing the state machine list
+                in opposite directions.
+                
+                Imagine that there are ten state machines:
+                
+                0123456789
+                
+                And we start in 0. Now, what do we do 
+                
+            4. TODO: invent other schemes.
+            
+                The possibilities are endless!
+
+    DEFINING A STATE MACHINE SYSTEM
+    
+        An empty template with two state machines...
+    
+        @multi_sm_controlflowsystem[
+            //specify the pattern...
+            RoundRobin
+            //specify where the root is...
+            root main
+            //do shared variables...
+            vars[
+                //put variables here
+            ]
+            sm main[
+                vars[
+                    //put variables here, the names for these
+                    //are mangled.
+                ]
+                root[
+                    sm_xn rule1 //immediate transition.
+                ]
+                rule1[
+                    
+                    sm_qxn rule1
+                    //round robin to main2!
+                ]
+                rule2[
+                
+                ]
+                die[
+                
+                ]
+            ]
+            sm main2[
+                stack [1000] //this statae machine has a stack-
+                //instead of automatically dying if a "next state" is not defined,
+                //it tries to pop off the state stack
+                //and run that instead.
+                //this means that instead of simply having a "nextstate" variable,
+                //there is a stack pointer.
+                root[
+                    sm_qxn rule1
+                ]
+                rule1[
+                    sm_qxn rule1
+                ]
+                die[
+                    
+                ]
+            ]
+        ]
+        
+    AVAILABLE COMMANDS IN A MULTI-SM SYSTEM...
+    
+        1. sm_xn rulename
+        
+            transition immediately to a particular rule in the current state machine.
+        
+        2. sm_getruleid rulename
+        
+            get a rule's ID in the current state machine.
+            
+        3. sm_qxn rulename
+        
+            Schedule a transition. Basically, set the "next". For stack-based machines
+            this will push as well.
+            
+        4. sm_q_and_run
+            
+            queue the next state and run the other automata simultaneously.
+            
+        5. sm_run
+        
+            explicitly transfer control to another statemachine.
+        
+        6. sm_popxn
+            
+            pop a state from the state machine and run it. For stack-based machines only.
+        
+        7. sm_pop
+        
+            pop a state without running it, for stack-based machines only.
+            
+        8. sm_die
+        
+            Jump immediately to the death state.
+            
+        TODO: more commands. Notably, state machines should be able to manipulate each other.
+        
+    WHAT DOES THIS ALL LOOK LIKE IN SEABASS CODE?
+    
+        State code is each wrapped in its own scope (if(1) end).
+        
+        Each state is jumped to by using goto or a switch case.
+        
+        sm_xn is a goto.
+        
+        everything involving the queued next state or pus
+        
+        Explicit control flow transfers are easiest: as soon as any state machine
+        dies, the system is exited. We only have to keep track of the "next state"
+        and set it to "die" before any state is executed.
+        
+        Round robin is harder, we have to keep metadata on the state of each state machine,
+        and manage it accordingly.
+    ERRATA 1
+        
+        We can have stacks for state machines be allocated on the heap.
+        
+        We just need to have a `dieret` keyword which is followed by an expression so that
+        we can de-allocate that stack.
+        
+        Also, we could probably do ctor/dtor invocation at the state machine level...        
+        
+    ERRATA 2
+        WHAT HAPPENS WHEN WE TRANSFER CONTROL TO A DEAD STATE MACHINE?
+        
+        First of all, this never happens automatically. A user-defined `transition` function
+        or an explicit sm_xn caused this to happen.
+        
+        A `dead` state should be user-definable, but if control ever transfers to a dead state machine,
+        we default to...
+        
+        1. for single-sm state machines, we break out of the state machine system.
+        
+        2. for multi-sm systems, go to the transition code.
+        
+    ERRATA 3
+    
+        WHAT IS THE OVERALL STRUCTURE OF WHAT THIS LOOKS LIKE?
+        
+            >>>To be decided... I am still planning...        
+
+NEVERNEST AND FUNCTION-TOO-LONG
+
+    How can I make more of the outermost code fit onto the screen at once in large functions?
+    
+    1. Reduce amount of code in a function...
+    
+    2. Write the function more abstractly...
+        I.e. instead of manually traversing a linked list, use a pre-made traversal implementation...
+    
+    3. Restructure the function...
+    
+        A function could be structured wrong, so that it is inefficient or ineffective.
+    

@@ -1,0 +1,36 @@
+
+
+fn codegen fib(int n)->int:
+	if(n < 2)
+		return 1;
+	end
+	int a
+	int b
+	int c
+	a = 1;
+	b = 1;
+	c = 1;
+	n = n-2;
+	while(n)
+		c = a + b;
+		a = b;
+		b = c;
+		n--;
+	end
+	return c;
+end
+
+function codegen codegen_main():
+	char[500] buf
+	int mynum
+	if(__builtin_getargc() < 3)
+	    __builtin_puts("USAGE: cbas tests/fib_test.txt 3");
+	    __builtin_puts("replace 3 with whatever fib number you want.");
+	    __builtin_exit(1);
+	end
+	mynum = __builtin_atoi(__builtin_getargv()[2]);
+	__builtin_itoa(buf, fib(mynum));
+	__builtin_puts("The fibonacci number is:");
+	__builtin_puts(buf);
+	return;	
+end

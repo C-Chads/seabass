@@ -1,0 +1,15 @@
+
+I can use the metaprogramming library to rewrite
+parts of itself when the time comes by using dummy
+labels.
+
+I can even write comments by using string literal lines,
+
+"this is a comment";
+
+they'd be optimized out anyway, might as well emit them as comments!
+
+I COULD, PERHAPS, WRITE THE ENTIRE TOOLCHAIN IN ITSELF, MAYBE
+EVEN TEMPLATE IT, AND THEN EXPORT IT TO C CODE.
+
+That'd be awesome, wouldn't it?

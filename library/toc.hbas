@@ -1,0 +1,1898 @@
+
+
+#guard Compile_Cbas_To_C_DMHSW
+
+#include "cgtoken_manip_tools.hbas"
+
+
+/*
+    CONVERT THE CBAS AST INTO C CODE.
+    
+    This code takes all non-codegen symbols and typedecls
+    in the unit and emits them as C code.
+    
+    The conversion is _fairly_ seamless from what I can tell,
+    although indentation is not very pretty... it works.
+*/
+
+codegen u64 cg_Cemitter_Switch_DtableGen = 0;
+codegen u64 cg_Cemitter_indentlevel = 0;
+
+fn codegen cg_Cemitter_make_dtable_name()->char*:
+    cgstr retval
+    cgstr a
+    char[50] buf
+    retval:fromstr("__cbas_dispatchtable_switch__");
+    __builtin_itoa(buf, cg_Cemitter_Switch_DtableGen++);
+    a.s = buf;
+    retval:add(a);
+    a.s = "_____";
+    retval:add(a);
+    return retval.s;
+end
+
+
+
+
+fn codegen cg_quick_emit(char* str, u64 indent_level):
+    u64 i
+    for(i = 0, i < indent_level*4, i++)
+        __builtin_emit(" ",1);
+    end
+    cgstr q
+    q.s = str;
+    __builtin_emit(str, q:len());
+    __builtin_emit("\n",1);
+end
+
+method codegen cgtype:gen_code(cgast* ast)->char*:
+    u64 basetype
+    u64 pointerlevel
+    u64 arraylen
+    u64 structid
+    cgstr printme
+    cgstr t
+    basetype = this.basetype;
+    pointerlevel = this.pointerlevel;
+    arraylen = this.arraylen;
+    structid = this.structid;
+    
+    //these type choices are not entirely universal, for instance
+    //int is sometimes 16 bit on some platforms.
+    //for those platforms, `long` is usually 32 bit,
+    //but on linux x86_64, `long` is 64 bit. So we can't
+    //make that choice there. 
+    
+    if(basetype == CG_BASE_STRUCT)
+        printme:fromstr((ast.type_table[0]+structid).name);
+    elif(basetype == CG_BASE_VOID)
+        printme:fromstr("void");
+    elif(basetype == CG_BASE_U8)
+        printme:fromstr("unsigned char");
+    elif(basetype == CG_BASE_I8)
+        printme:fromstr("signed char");
+    elif(basetype == CG_BASE_U16)
+        printme:fromstr("unsigned short");
+    elif(basetype == CG_BASE_I16)
+        printme:fromstr("signed short");
+    elif(basetype == CG_BASE_U32)
+        printme:fromstr("unsigned");
+    elif(basetype == CG_BASE_I32)
+        printme:fromstr("int");
+    elif(basetype == CG_BASE_U64)
+        printme:fromstr("unsigned long long");
+    elif(basetype == CG_BASE_I64)
+        printme:fromstr("long long");
+    elif(basetype == CG_BASE_F32)
+        printme:fromstr("float");
+    elif(basetype == CG_BASE_F64)
+        printme:fromstr("double");
+    else
+        @pprint[
+            /       "ERROR!"
+            /       "cgtype with unrecognized type!"
+            /       "its type was:"
+            /itoa   (basetype)
+            /       "Which was not handled!"
+        ]
+        __builtin_exit(1);
+    end
+    t.s = "*";
+    i64 j
+    for(j = 0, j < pointerlevel, j++)
+        printme:add(t);
+    end
+    return printme.s;
+end
+
+fn codegen cg_Cemitter_gen_fnptr_cast(
+    cgtype* proto_retval_type,
+    cgtype** proto_fargs,
+    u64 proto_nargs,
+    cgast* ast
+)->char*:
+    cgstr retval
+    cgstr ff
+    i64 i
+    retval:fromstr("(");//BEGIN CAST
+        //do the cast...
+        ff.s = proto_retval_type:gen_code(ast);
+        retval:add(ff); ff:free();
+        
+        ff.s = "(*)("; //BEGIN ARGLIST
+            retval:add(ff);
+            for(i = 0; i < proto_nargs; i++)
+                ff.s = proto_fargs[i]:gen_code(ast);
+                retval:add(ff); ff:free();
+                //if this is not the last entry, we need a comma...
+                if(i != proto_nargs - 1)
+                    ff.s = ", ";
+                    retval:add(ff);
+                end
+            end
+        ff.s = ")";// END ARGLIST
+        retval:add(ff);
+    
+    ff.s = ")";// END CAST
+    retval:add(ff);
+    return retval.s;
+
+end
+
+method codegen cgtype:make_cast(cgast* ast)->char*:
+    cgstr type_str
+    cgstr retval
+    type_str.s = this:gen_code(ast);
+    retval:fromstr("(");
+    retval:add(type_str); type_str:free();
+    type_str.s = ")";
+    retval:add(type_str);
+    return retval.s;
+end
+
+
+
+method codegen cgexpr_node:gen_code(cgast* ast)->char*:
+    cgstr retval
+    char[2048] buf
+
+    if(this.kind == CG_EXPR_BUILTIN_CALL)
+        @pprint[
+            /               "C Emitter ERROR!"
+            /               "Bad expr_node kind!"
+            /               "Cannot emit a __builtin_ call!"
+            /               "This is not a valid node kind:"
+            /               "I will die now..."
+        ]
+        __builtin_exit(1);
+    elif((this.kind == CG_EXPR_FCALL) || (this.kind == CG_EXPR_METHOD))
+        cgstr ff
+        u64 symid
+        i64 i
+        i64 nargs
+        cgsymdecl* sym
+        symid = this.symid;
+        sym = ast.symbol_table[0] + symid;
+        retval.s = __builtin_strdup(this.symname);
+        ff.s = "("; retval:add(ff);
+            nargs = sym.nargs;
+            for(i = 0, i < nargs, i++)
+                ff.s = "("; retval:add(ff);
+                ff.s = this.subnodes[i]:gen_code(ast);
+                retval:add(ff);
+                ff:free();
+                if(i != nargs-1)
+                    ff.s = "),"; retval:add(ff);
+                else
+                    ff.s =/*(*/ ")"; retval:add(ff);
+                end
+            end
+            
+            
+        ff.s = ")"; retval:add(ff);
+        return retval.s;
+    elif(this.kind == CG_EXPR_SIZEOF)
+        retval.s = __builtin_strdup("sizeof(");
+        cgstr q
+        q.s = this.type_to_get_size_of:gen_code(ast);
+        retval:add(q); q:free();
+        q.s = ")";
+        retval:add(q);
+        return retval.s;
+    elif(this.kind == CG_EXPR_INTLIT)
+        __builtin_utoa(buf, cast(i64)this.idata);
+
+        retval.s = __builtin_strdup(buf);
+        return retval.s;
+    elif(this.kind == CG_EXPR_FLOATLIT)
+        __builtin_ftoa(buf, this.fdata);
+        retval.s = __builtin_strdup(buf);
+        return retval.s;
+    elif(this.kind == CG_EXPR_STRINGLIT)
+        cgstr ff
+        i64 i
+        u64 symid
+        char* str_text
+        symid = this.symid;
+        buf[1] = 0;
+        buf[2] = 0;
+        ff.s = buf;
+        str_text = (ast.symbol_table[0] + symid).cdata;
+        retval.s = __builtin_strdup("\"");
+        
+        for(0, str_text[0], str_text++)
+            char c 
+            c = str_text[0];
+            if(c == '\n')
+                buf[0] = '\\';
+                buf[1] = 'n';
+                buf[2] = 0;
+                retval:add(ff);
+            elif(c == '\a')
+                buf[0] = '\\';
+                buf[1] = 'a';
+                buf[2] = 0;
+                retval:add(ff);
+            elif(c == '\"')
+                buf[0] = '\\';
+                buf[1] = '\"';
+                buf[2] = 0;
+                retval:add(ff);
+            elif(c == '\b')
+                buf[0] = '\\';
+                buf[1] = 'b';
+                buf[2] = 0;
+                retval:add(ff);
+            elif(c == '\f')
+                buf[0] = '\\';
+                buf[1] = 'f';
+                buf[2] = 0;
+                retval:add(ff);
+            elif(c == '\e')
+                buf[0] = '\\';
+                buf[1] = 'e';
+                buf[2] = 0;
+                retval:add(ff);
+            elif(c == '\\')
+                buf[0] = '\\';
+                buf[1] = '\\';
+                buf[2] = 0;
+                retval:add(ff);
+            elif(c == '\r')
+                buf[0] = '\\';
+                buf[1] = 'r';
+                buf[2] = 0;
+                retval:add(ff);
+            elif(c == '\t')
+                buf[0] = '\\';
+                buf[1] = 't';
+                buf[2] = 0;
+                retval:add(ff);
+            elif(c == '\v')
+                buf[0] = '\\';
+                buf[1] = 'v';
+                buf[2] = 0;
+                retval:add(ff);
+            else
+                buf[0] = c;
+                buf[1] = 0;
+                retval:add(ff);
+            end
+        end
+        
+        ff.s = ("\"");
+        retval:add(ff);
+        return retval.s;
+    elif(this.kind == CG_EXPR_LSYM)
+        //local variable names are mangled...
+        cgstr ff
+        retval.s = __builtin_strdup("__cbas_local_variable_mangled_name_");
+        ff.s = this.symname;
+        retval:add(ff);
+        if(this.was_struct_var) //If this was a struct variable, we need to convert it to a pointer!
+            cgstr retval2
+            retval2:fromstr("(&");
+            retval2:add(retval); retval:free();
+            ff.s = ")";
+            retval2:add(ff);
+            return retval2.s;
+        end
+        return retval.s;
+    elif(this.kind == CG_EXPR_GSYM)
+        retval.s = __builtin_strdup(this.symname);
+        if(this.was_struct_var) //If this was a struct variable, we need the pointer!
+            cgstr retval2
+            
+            retval2:fromstr("(&");
+            retval2:add(retval); retval:free();
+            
+            retval.s = ")";
+            retval2:add(retval);
+            return retval2.s;
+        end
+        return retval.s;
+    elif(this.kind == CG_EXPR_SYM)
+        @pprint[
+            /               "C Emitter ERROR!"
+            /               "Bad expr_node, has CG_EXPR_SYM"
+            /               "This is probably because the validator was never run on this function..."
+            /               "I will die now..."
+        ]
+        __builtin_exit(1);
+    elif(this.kind == CG_EXPR_POST_INCR)
+        cgstr ff
+        retval:fromstr("(");
+            //retrieve our child node..
+            ff.s = this.subnodes[0]:gen_code(ast);
+            retval:add(ff); ff:free();
+
+        ff.s = ")++";
+        retval:add(ff);
+        return retval.s;
+    elif(this.kind == CG_EXPR_POST_DECR)
+        cgstr ff
+        retval:fromstr("(");
+            //retrieve our child node..
+            ff.s = this.subnodes[0]:gen_code(ast);
+            retval:add(ff); ff:free();
+
+        ff.s = ")--";
+        retval:add(ff);
+        return retval.s;
+    elif(this.kind == CG_EXPR_INDEX)
+        cgstr ff
+        retval:fromstr("(");
+                //retrieve the thing to index...
+            ff.s = this.subnodes[0]:gen_code(ast);
+            retval:add(ff); ff:free();
+        ff.s = ")[";
+        retval:add(ff);
+            //the index itself
+            ff.s = this.subnodes[1]:gen_code(ast);
+            retval:add(ff); ff:free();
+        ff.s = "]";
+        retval:add(ff);
+        return retval.s;
+    elif(this.kind == CG_EXPR_MEMBER)
+        cgstr ff
+        retval:fromstr("(");
+            //the expression which evaluates to a struct*
+            ff.s = this.subnodes[0]:gen_code(ast);
+            retval:add(ff); ff:free();
+        ff.s = ")->";
+        retval:add(ff);
+        ff.s = this.symname;
+        retval:add(ff);
+        return retval.s;
+    elif(this.kind == CG_EXPR_CAST)
+        cgstr ff
+        retval.s = this.type_to_get_size_of:make_cast(ast);
+        ff.s = "("; retval:add(ff);
+            ff.s = this.subnodes[0]:gen_code(ast);
+            retval:add(ff); ff:free();
+        ff.s = ")"; retval:add(ff);
+        return retval.s;
+    elif(this.kind == CG_EXPR_NEG)
+        cgstr ff
+        retval.s = __builtin_strdup("-(");
+            ff.s = this.subnodes[0]:gen_code(ast);
+            retval:add(ff); ff:free();
+        ff.s = ")"; retval:add(ff);
+        return retval.s;
+    elif(this.kind == CG_EXPR_COMPL)
+        cgstr ff
+        retval.s = __builtin_strdup("~(");
+            ff.s = this.subnodes[0]:gen_code(ast);
+            retval:add(ff); ff:free();
+        ff.s = ")"; retval:add(ff);
+        return retval.s;
+    elif(this.kind == CG_EXPR_NOT)
+        cgstr ff
+        retval.s = __builtin_strdup("!(");
+            ff.s = this.subnodes[0]:gen_code(ast);
+            retval:add(ff); ff:free();
+        ff.s = ")"; retval:add(ff);
+        return retval.s;
+    elif(this.kind == CG_EXPR_PRE_INCR)
+        cgstr ff
+        retval:fromstr("++(");
+            //retrieve our child node..
+            ff.s = this.subnodes[0]:gen_code(ast);
+            retval:add(ff); ff:free();
+
+        ff.s = ")";
+        retval:add(ff);
+        return retval.s;
+    elif(this.kind == CG_EXPR_PRE_DECR)
+        cgstr ff
+        retval:fromstr("--(");
+            //retrieve our child node..
+            ff.s = this.subnodes[0]:gen_code(ast);
+            retval:add(ff); ff:free();
+
+        ff.s = ")";
+        retval:add(ff);
+        return retval.s;
+    elif(this.kind == CG_EXPR_MUL)
+        cgstr ff
+        retval:fromstr("(");
+            ff.s = this.subnodes[0]:gen_code(ast);
+            retval:add(ff); ff:free();
+        ff.s = ") * ("; retval:add(ff);
+            ff.s = this.subnodes[1]:gen_code(ast);
+            retval:add(ff); ff:free();
+        ff.s = ")"; retval:add(ff);
+        return retval.s;
+    elif(this.kind == CG_EXPR_DIV)
+        cgstr ff
+        retval:fromstr("(");
+            ff.s = this.subnodes[0]:gen_code(ast);
+            retval:add(ff); ff:free();
+        ff.s = ") / ("; retval:add(ff);
+            ff.s = this.subnodes[1]:gen_code(ast);
+            retval:add(ff); ff:free();
+        ff.s = ")"; retval:add(ff);
+        return retval.s;
+    elif(this.kind == CG_EXPR_MOD)
+        cgstr ff
+        retval:fromstr("(");
+            ff.s = this.subnodes[0]:gen_code(ast);
+            retval:add(ff); ff:free();
+        ff.s = ") % ("; retval:add(ff);
+            ff.s = this.subnodes[1]:gen_code(ast);
+            retval:add(ff); ff:free();
+        ff.s = ")"; retval:add(ff);
+        return retval.s;
+    elif(this.kind == CG_EXPR_ADD)
+            cgstr ff
+        retval:fromstr("(");
+            ff.s = this.subnodes[0]:gen_code(ast);
+            retval:add(ff); ff:free();
+        ff.s = ") + ("; retval:add(ff);
+            ff.s = this.subnodes[1]:gen_code(ast);
+            retval:add(ff); ff:free();
+        ff.s = ")"; retval:add(ff);
+            
+        return retval.s;
+    elif(this.kind == CG_EXPR_SUB)
+        cgstr ff
+        retval:fromstr("(");
+            ff.s = this.subnodes[0]:gen_code(ast);
+            retval:add(ff); ff:free();
+        ff.s = ") - ("; retval:add(ff);
+            ff.s = this.subnodes[1]:gen_code(ast);
+            retval:add(ff); ff:free();
+        ff.s = ")"; retval:add(ff);
+        return retval.s;
+    elif(this.kind == CG_EXPR_BITOR)
+        cgstr ff
+        retval:fromstr("(");
+            ff.s = this.subnodes[0]:gen_code(ast);
+            retval:add(ff); ff:free();
+        ff.s = ") | ("; retval:add(ff);
+            ff.s = this.subnodes[1]:gen_code(ast);
+            retval:add(ff); ff:free();
+        ff.s = ")"; retval:add(ff);
+        return retval.s;
+    elif(this.kind == CG_EXPR_BITAND)
+        cgstr ff
+        retval:fromstr("(");
+            ff.s = this.subnodes[0]:gen_code(ast);
+            retval:add(ff); ff:free();
+        ff.s = ") & ("; retval:add(ff);
+            ff.s = this.subnodes[1]:gen_code(ast);
+            retval:add(ff); ff:free();
+        ff.s = ")"; retval:add(ff);
+        return retval.s;
+    elif(this.kind == CG_EXPR_BITXOR)
+        cgstr ff
+        retval:fromstr("(");
+            ff.s = this.subnodes[0]:gen_code(ast);
+            retval:add(ff); ff:free();
+        ff.s = ") ^ ("; retval:add(ff);
+            ff.s = this.subnodes[1]:gen_code(ast);
+            retval:add(ff); ff:free();
+        ff.s = ")"; retval:add(ff);
+        return retval.s;
+    elif(this.kind == CG_EXPR_LSH)
+        cgstr ff
+        retval:fromstr("(");
+            ff.s = this.subnodes[0]:gen_code(ast);
+            retval:add(ff); ff:free();
+        ff.s = ") << ("; retval:add(ff);
+            ff.s = this.subnodes[1]:gen_code(ast);
+            retval:add(ff); ff:free();
+        ff.s = ")"; retval:add(ff);
+        return retval.s;
+    elif(this.kind == CG_EXPR_RSH)
+        cgstr ff
+        retval:fromstr("(");
+            ff.s = this.subnodes[0]:gen_code(ast);
+            retval:add(ff); ff:free();
+        ff.s = ") >> ("; retval:add(ff);
+            ff.s = this.subnodes[1]:gen_code(ast);
+            retval:add(ff); ff:free();
+        ff.s = ")"; retval:add(ff);
+        return retval.s;
+    elif(this.kind == CG_EXPR_LOGOR)
+        cgstr ff
+        retval:fromstr("(");
+            ff.s = this.subnodes[0]:gen_code(ast);
+            retval:add(ff); ff:free();
+        ff.s = ") || ("; retval:add(ff);
+            ff.s = this.subnodes[1]:gen_code(ast);
+            retval:add(ff); ff:free();
+        ff.s = ")"; retval:add(ff);
+        return retval.s;
+    elif(this.kind == CG_EXPR_LOGAND)
+        cgstr ff
+        retval:fromstr("(");
+            ff.s = this.subnodes[0]:gen_code(ast);
+            retval:add(ff); ff:free();
+        ff.s = ") && ("; retval:add(ff);
+            ff.s = this.subnodes[1]:gen_code(ast);
+            retval:add(ff); ff:free();
+        ff.s = ")"; retval:add(ff);
+        return retval.s;
+    elif(this.kind == CG_EXPR_LT)
+        cgstr ff
+        retval:fromstr("(");
+            ff.s = this.subnodes[0]:gen_code(ast);
+            retval:add(ff); ff:free();
+        ff.s = ") < ("; retval:add(ff);
+            ff.s = this.subnodes[1]:gen_code(ast);
+            retval:add(ff); ff:free();
+        ff.s = ")"; retval:add(ff);
+        return retval.s;
+    elif(this.kind == CG_EXPR_GT)
+            cgstr ff
+        retval:fromstr("(");
+            ff.s = this.subnodes[0]:gen_code(ast);
+            retval:add(ff); ff:free();
+        ff.s = ") > ("; retval:add(ff);
+            ff.s = this.subnodes[1]:gen_code(ast);
+            retval:add(ff); ff:free();
+        ff.s = ")"; retval:add(ff);
+        return retval.s;
+    elif(this.kind == CG_EXPR_LTE)
+        cgstr ff
+        retval:fromstr("(");
+            ff.s = this.subnodes[0]:gen_code(ast);
+            retval:add(ff); ff:free();
+        ff.s = ") <= ("; retval:add(ff);
+            ff.s = this.subnodes[1]:gen_code(ast);
+            retval:add(ff); ff:free();
+        ff.s = ")"; retval:add(ff);
+        return retval.s;
+    elif(this.kind == CG_EXPR_GTE)
+        cgstr ff
+        retval:fromstr("(");
+            ff.s = this.subnodes[0]:gen_code(ast);
+            retval:add(ff); ff:free();
+        ff.s = ") >= ("; retval:add(ff);
+            ff.s = this.subnodes[1]:gen_code(ast);
+            retval:add(ff); ff:free();
+        ff.s = ")"; retval:add(ff);
+        return retval.s;
+    elif(this.kind == CG_EXPR_EQ)
+        cgstr ff
+        retval:fromstr("(");
+            ff.s = this.subnodes[0]:gen_code(ast);
+            retval:add(ff); ff:free();
+        ff.s = ") == ("; retval:add(ff);
+            ff.s = this.subnodes[1]:gen_code(ast);
+            retval:add(ff); ff:free();
+        ff.s = ")"; retval:add(ff);
+        return retval.s;
+    elif(this.kind == CG_EXPR_NEQ) 
+            cgstr ff
+        retval:fromstr("(");
+            ff.s = this.subnodes[0]:gen_code(ast);
+            retval:add(ff); ff:free();
+        ff.s = ") != ("; retval:add(ff);
+            ff.s = this.subnodes[1]:gen_code(ast);
+            retval:add(ff); ff:free();
+        ff.s = ")"; retval:add(ff);
+        return retval.s;
+    elif(this.kind == CG_EXPR_ASSIGN)
+        cgstr ff
+        retval:fromstr("(");
+            ff.s = this.subnodes[0]:gen_code(ast);
+            retval:add(ff); ff:free();
+        ff.s = ") = ("; retval:add(ff);
+            ff.s = this.subnodes[1]:gen_code(ast);
+            retval:add(ff); ff:free();
+        ff.s = ")"; retval:add(ff);
+        return retval.s;
+    elif(this.kind == CG_EXPR_MOVE)
+        /*
+            cgstr ff
+            cgtype t_t
+            retval:fromstr("memcpy(");
+                    ff.s = this.subnodes[0]:gen_code(ast);
+                    retval:add(ff); ff:free();
+                ff.s = ","; retval:add(ff);
+                    ff.s = this.subnodes[1]:gen_code(ast);
+                    retval:add(ff); ff:free();
+                
+                //Generate a sizeof command on the type being passed around...
+                ff.s = ",sizeof("; retval:add(ff);
+                    t_t := this.subnodes[0].t;
+                    t_t.pointerlevel--; //memcpy took two pointers, decrease pointer level
+                    ff.s = t_t:gen_code(ast);
+                    retval:add(ff); ff:free();
+            ff.s = "))"; retval:add(ff);
+            return retval.s;
+        */
+        cgstr ff
+        retval:fromstr("(*(");
+            ff.s = this.subnodes[0]:gen_code(ast);
+            retval:add(ff); ff:free();
+        ff.s = ") = *("; retval:add(ff);
+            ff.s = this.subnodes[1]:gen_code(ast);
+            retval:add(ff); ff:free();
+        ff.s = "))"; retval:add(ff);
+        return retval.s;
+    elif(this.kind == CG_EXPR_CONSTEXPR_FLOAT)
+        __builtin_ftoa(buf, this.fdata);
+        return __builtin_strdup(buf);
+    elif(this.kind == CG_EXPR_CONSTEXPR_INT)
+        __builtin_itoa(buf, this.idata);
+        return __builtin_strdup(buf);
+    elif(this.kind == CG_EXPR_STREQ)
+        cgstr ff
+
+        retval:fromstr("impl_streq((");
+            ff.s = this.subnodes[0]:gen_code(ast);
+            retval:add(ff); ff:free();
+            ff.s = "),(";
+            retval:add(ff);
+            ff.s = this.subnodes[1]:gen_code(ast);
+            retval:add(ff); ff:free();
+        ff.s = "))";
+        retval:add(ff);
+        return retval.s;
+    elif(this.kind == CG_EXPR_STRNEQ)
+        cgstr ff
+        retval:fromstr("!impl_streq((");
+            ff.s = this.subnodes[0]:gen_code(ast);
+            retval:add(ff); ff:free();
+            ff.s = "),(";
+            retval:add(ff);
+            ff.s = this.subnodes[1]:gen_code(ast);
+            retval:add(ff); ff:free();
+            
+        ff.s = "))";
+        retval:add(ff);
+        return retval.s;
+    elif(this.kind == CG_EXPR_MEMBERPTR)
+        cgstr ff
+        retval:fromstr("&((");
+                //part 1- get the thing to get the member pointer of...
+                ff.s = this.subnodes[0]:gen_code(ast);
+                retval:add(ff); ff:free();
+            ff.s = ")->";  retval:add(ff);
+            
+            //part 2: get the member
+            ff.s = this.symname;
+            retval:add(ff);
+        ff.s = ")"; //this closes out the greater parentheses...
+        retval:add(ff);
+        return retval.s;
+    elif(this.kind == CG_EXPR_GETFNPTR)
+        //Return the name 
+        retval:fromstr("(unsigned char*)&");
+        cgstr ff
+        ff.s = this.symname;
+        retval:add(ff);
+        return retval.s;
+    elif(this.kind == CG_EXPR_CALLFNPTR) 
+        //a c function pointer of that prototype, and call it with the arguments...
+        /*
+        ( //ptr cast part
+            (FN_POINTER_CAST)(POINTER_WE_GOT)
+        ) 
+        (//args!
+            (ARG1), (ARG2), ...
+        )
+        
+        */
+        
+        //C function pointer cast syntax is  ( RETURN_TYPE (*)(ARG1_TYPE, ARG2_TYPE) )
+        //               (void(*)())(expression)
+        //               (void(*)(int))(expression)
+        //               (unsigned char**(*)(int,int))(expression)
+        
+        
+        cgtype* proto_retval_type
+        cgtype** proto_fargs
+        cgsymdecl* sym_proto
+        u64 proto_nargs
+        u64 symid
+        cgstr the_cast
+        cgstr ff
+        i64 i
+        
+        
+        symid = this.symid;
+        sym_proto = (ast.symbol_table[0]+symid);
+        //proto_nargs = sym_proto.nargs;
+        proto_nargs = this.fnptr_nargs; //we already cached this from parser.c
+        proto_retval_type = sym_proto.t;
+        proto_fargs = sym_proto.fargs;
+        the_cast.s = cg_Cemitter_gen_fnptr_cast(
+            proto_retval_type, 
+            proto_fargs, 
+            proto_nargs,
+            ast
+        );
+        retval:fromstr("("); //BEGIN PTR CAST PART
+            retval:add(the_cast); the_cast:free();
+            ff.s = "("; // BEGIN OUR POINTER PART...
+            retval:add(ff);
+            
+                //recursively expand our first node...
+                ff.s = this.subnodes[0]:gen_code(ast);
+                retval:add(ff); ff:free();
+            
+            ff.s = ")"; // END OUR POINTER PART...
+            retval:add(ff);
+
+        
+        ff.s = ")"; // END PTR CAST PART
+        retval:add(ff);        
+        ff.s = "("; // BEGIN ARGLIST
+        retval:add(ff);
+        
+            for(i = 0, i < proto_nargs, i++)
+                ff.s = "("; // BEGIN ARG WRAPPER
+                retval:add(ff);
+                
+                    //recursively expand
+                    ff.s = this.subnodes[1+i]:gen_code(ast);
+                    retval:add(ff); ff:free();
+                
+                ff.s = ")"; // END ARG WRAPPER
+                
+                
+                retval:add(ff);
+                if(i != proto_nargs - 1)
+                    ff.s = ", ";
+                    retval:add(ff);
+                end
+            end
+        
+        ff.s = ")"; // END ARGLIST
+        retval:add(ff);
+        return retval.s;
+    elif(this.kind == CG_EXPR_GETGLOBALPTR)
+        //local variables have mangled names, so we don't need to worry
+        //about collisions!
+        u64 symid
+        cgstr ff
+        cgsymdecl* sym_to_get_pointer_of
+        symid = this.symid;
+        sym_to_get_pointer_of = (ast.symbol_table[0]+symid);
+        if(sym_to_get_pointer_of.t.arraylen || sym_to_get_pointer_of.is_data)
+            //simply strdup it...
+            retval:fromstr(this.symname);
+            return retval.s;
+        end
+        /*
+            We want to generate a cast so that if you getglobalptr on a data statement
+            you get the correct type...
+        */
+        retval:fromstr("");
+        ff.s = this.t:make_cast(ast);
+        retval.add(ff); ff:free();
+        ff.s = "&";
+        retval.add(ff);
+        ff.s = this.symname;
+        retval:add(ff);
+        return retval.s;
+    end
+    @pprint[
+        /               "C Emitter ERROR!"
+        /               "Bad expr_node kind!"
+        /               "This is not a valid node kind:"
+        /itoa           (this.kind)
+        /               "I will die now..."
+    ]
+    __builtin_exit(1);
+end
+
+method predecl codegen cgsymdecl:gen_code(cgast* ast, char is_local, u64 my_symid)->char*;
+method predecl codegen cgstmt:gen_code(cgast* ast, char* disptablename, u64 active_fun_symid)->char*;
+
+struct cg_cemitter_disptable
+    noexport
+    char** label_name_list
+    char* name
+    u64 nlabels
+    char is_superseded //do we emit this one?
+    cg_cemitter_disptable* earlier //correct entry...
+end
+
+//returns an owning pointer..
+fn codegen cg_cemitter_mangle_label_name(char* n)->char*:
+    cgstr ff
+    cgstr ff2
+    ff:fromstr("__cbas_mangled_label__");
+    ff2.s = n;
+    ff:add(ff2);
+    return ff.s;
+end
+
+method codegen cg_cemitter_disptable:iseq(cg_cemitter_disptable o)->byte:
+    i64 i
+    if(this.nlabels != o.nlabels) 
+        return 0; 
+    end
+    for(i = 0, i < o.nlabels, i++)
+        if(this.label_name_list[i] strneq o.label_name_list[i])
+            return 0;
+        end
+    end
+    
+    return 1;
+end
+
+method codegen cg_cemitter_disptable:emit_table(cgast* ast)->char*:
+    cgstr retval
+    cgstr ff
+    cgstr ff2
+    char[50] buf
+    retval:fromstr("const void* const ");
+    ff.s = this.name;
+    retval:add(ff);
+    ff.s = "[";
+    retval:add(ff);
+        //generate the number of entries as a string...
+        __builtin_utoa(buf, this.nlabels);
+        ff.s = buf;
+        retval:add(ff);
+    ff.s = "] = {\n    ";
+    retval:add(ff);
+        //emit labels...
+        i64 i
+
+        for(i = 0, i < this.nlabels, i++)
+            ff.s = __builtin_strdup("&&");
+            ff2.s = cg_cemitter_mangle_label_name(this.label_name_list[i]);
+            ff:add(ff2);
+            ff2:free();
+            if(i != (this.nlabels-1))
+                ff2.s = ", ";
+                ff:add(ff2);
+            end
+            if(i%8 == 7)
+                ff2.s = "\n    ";
+                ff:add(ff2);
+            end
+            //push onto retval...
+            retval:add(ff);
+            ff:free();
+        end
+    ff.s = "\n    };\n    ";
+    retval:add(ff);
+
+    return retval.s;
+end
+
+
+method codegen cgscope:gen_code(cgast* ast, u64 active_fun_symid)->char*:
+    cgstr retval
+    cg_cemitter_disptable* disptables
+    u64 nswitches
+    u64 switch_counter  //used when we are traversing the list of statements...
+    cgstmt* stmtlist
+    cgstmt* cur_stmt
+    stmtlist = cast(cgstmt*)this.stmts;
+    i64 i
+    i64 j
+    nswitches = 0;
+    retval:fromstr("\n    ");
+    for(i = 0, i < this.nstmts, i++)
+        cur_stmt = cast(cgstmt*)(this.stmts) + i;
+        if(cur_stmt.kind == CG_STMT_SWITCH)
+            nswitches++;
+        end
+    end
+    if(nswitches)
+        disptables = cast(cg_cemitter_disptable*)__builtin_malloc(sizeof(cg_cemitter_disptable) * nswitches);
+        //for each switch statement, generate a dispatch table...
+        j=0; //this counts how many switches we've encountered, so we know where in `disptables` to put stuff...
+        for(i = 0, i < this.nstmts, i++)
+            cur_stmt = cast(cgstmt*)(this.stmts)+i;
+            if(cur_stmt.kind == CG_STMT_SWITCH)
+                //Literally just use its original, don't allocate anything new...
+                (disptables+j).label_name_list = cur_stmt.switch_label_list;
+                (disptables+j).nlabels = cur_stmt.switch_nlabels;
+                (disptables+j).name = cg_Cemitter_make_dtable_name();
+                (disptables+j).is_superseded = 0;
+                j++;
+            end
+        end    
+        //check each disptable to see if there is one that precedes it....
+        for(i = nswitches-1; i >= 0; i--)
+            for(j = 0; j < i; j++)
+                //check to see if disptables[i] is superseded by disptables[j]...
+                if((disptables+i):iseq(disptables+j))
+                    //disptables[i] is superseded!
+                    (disptables+i).is_superseded = 1;
+                    (disptables+i).earlier = (disptables+j);
+                    
+                    //this guarantees we will never overwrite the supercession of a previously
+                    //superseded list...
+                    //because we always break out when we find the earliest match!
+                    break
+                end
+            end
+        end
+
+        //emit dispatch tables....
+        for(i = 0, i < nswitches, i++)
+            cgstr ff
+            if((disptables+i).is_superseded)
+                continue
+            end
+            //it is not superseded, emit the code!
+            ff.s = (disptables+i):emit_table(ast);
+            retval:add(ff); ff:free();
+        end
+    end
+    
+
+    switch_counter = 0;
+    for(i = 0; i < this.nsyms; i++)
+        cgstr ff
+        cgstr ff2
+        ff.s = (this.syms + i):gen_code(ast,1, 0); 
+        ff2.s = "\n    ";
+        ff:add(ff2);
+        retval:add(ff);
+        ff:free();
+    end
+
+    switch_counter = 0;
+    for(i = 0; i < this.nstmts; i++)
+        cgstr ff
+        cgstr ff2
+        cur_stmt = (stmtlist+i);
+
+        if(cur_stmt.kind == CG_STMT_SWITCH)
+            //do something related to the switch...
+            cg_cemitter_disptable* dd
+            dd = disptables + switch_counter;
+            if(dd.is_superseded)
+                dd = dd.earlier;
+            end
+            ff.s = cur_stmt:gen_code(
+                ast,
+                dd.name,
+                active_fun_symid
+            );
+            ff2.s = ";\n    "; //TODO: indenting...
+            ff:add(ff2);
+            retval:add(ff);
+            ff:free();
+            switch_counter++;
+        else
+            //do something with some other kind of statement...
+            ff.s = cur_stmt:gen_code(ast,"__ERROR__",active_fun_symid);
+            ff2.s = "\n    "; //TODO: indenting...
+            ff:add(ff2);
+            retval:add(ff);
+            ff:free();
+        end
+
+    end
+    
+    
+    for(i = 0; i < nswitches; i++)
+        __builtin_free((disptables + i).name);
+    end
+    if(nswitches)
+        __builtin_free(cast(u8*)disptables);
+    end
+    return retval.s;
+end
+
+
+method codegen cgstmt:gen_code(cgast* ast, char* disptablename, u64 active_fun_symid)->char*:
+
+    if(this.kind == CG_STMT_NOP)
+        return __builtin_strdup("\n");
+    elif(this.kind == CG_STMT_EXPR)
+        cgstr qq //us!
+        cgstr qq2 //the semicolon
+        cgexpr_node* enode
+
+        enode = cast(cgexpr_node*)(this.expressions[0]);
+        qq.s = enode:gen_code(ast);
+        qq2.s = ";";
+        qq:add(qq2);
+        return qq.s;
+    elif(this.kind == CG_STMT_LABEL)
+        cgstr qq
+        cgstr qq2
+        qq.s = cg_cemitter_mangle_label_name(
+            this.referenced_label_name
+        );
+        qq2.s = ":1;/*Statement with no effect generated for label...*/";
+        qq:add(qq2);
+        return qq.s;
+    elif(this.kind == CG_STMT_GOTO)
+        cgstr qq
+        cgstr qq2
+        qq:fromstr("goto ");
+        qq2.s = cg_cemitter_mangle_label_name(
+            this.referenced_label_name
+        );
+        qq:add(qq2);
+        qq2:free();
+        qq2.s = ";";
+        qq:add(qq2);
+        return qq.s;
+    elif(this.kind == CG_STMT_WHILE)
+        cgstr qq
+        cgstr qq2
+        cgexpr_node* enode
+        cgscope* myscope
+        myscope = this.myscope;
+        qq:fromstr("while(");
+            enode = cast(cgexpr_node*)this.expressions[0];
+            qq2.s = enode:gen_code(ast);
+            qq:add(qq2); qq2:free();
+        qq2.s = "){\n"; qq:add(qq2);
+            //
+            qq2.s = myscope:gen_code(ast, active_fun_symid);
+            qq:add(qq2); qq2:free();
+        qq2.s = "}\n"; qq:add(qq2);
+        return qq.s;
+    elif(this.kind == CG_STMT_FOR)
+        cgstr qq
+        cgstr qq2
+        cgexpr_node* enode
+        cgscope* myscope
+        myscope = this.myscope;
+        qq:fromstr("for(");
+            enode = cast(cgexpr_node*)this.expressions[0];
+            qq2.s = enode:gen_code(ast);
+            qq:add(qq2); qq2:free();
+        qq2.s = ";"; qq:add(qq2);
+            enode = cast(cgexpr_node*)this.expressions[1];
+            qq2.s = enode:gen_code(ast);
+            qq:add(qq2); qq2:free();
+        qq2.s = ";"; qq:add(qq2);
+            enode = cast(cgexpr_node*)this.expressions[2];
+            qq2.s = enode:gen_code(ast);
+            qq:add(qq2); qq2:free();
+        qq2.s = "){\n"; qq:add(qq2);
+            //
+            qq2.s = myscope:gen_code(ast, active_fun_symid);
+            qq:add(qq2); qq2:free();
+        qq2.s = "}\n"; qq:add(qq2);
+        return qq.s;
+    elif(this.kind == CG_STMT_IF)
+        cgstr qq
+        cgstr qq2
+        cgexpr_node* enode
+        cgscope* myscope
+        myscope = this.myscope;
+        qq:fromstr("if(");
+            enode = cast(cgexpr_node*)this.expressions[0];
+            qq2.s = enode:gen_code(ast);
+            qq:add(qq2); qq2:free();
+        qq2.s = "){\n"; qq:add(qq2);
+            //
+            qq2.s = myscope:gen_code(ast, active_fun_symid);
+            qq:add(qq2); qq2:free();
+        qq2.s = "}\n"; qq:add(qq2);
+        return qq.s;
+    elif(this.kind == CG_STMT_ELIF)
+        cgstr qq
+        cgstr qq2
+        cgexpr_node* enode
+        cgscope* myscope
+        myscope = this.myscope;
+        qq:fromstr("else if(");
+            enode = cast(cgexpr_node*)this.expressions[0];
+            qq2.s = enode:gen_code(ast);
+            qq:add(qq2); qq2:free();
+        qq2.s = "){\n"; qq:add(qq2);
+            //
+            qq2.s = myscope:gen_code(ast, active_fun_symid);
+            qq:add(qq2); qq2:free();
+        qq2.s = "}\n"; qq:add(qq2);
+        return qq.s;
+    elif(this.kind == CG_STMT_ELSE)
+        cgstr qq
+        cgstr qq2
+        cgscope* myscope
+        myscope = this.myscope;
+        qq:fromstr("else {");
+            qq2.s = myscope:gen_code(ast, active_fun_symid);
+            qq:add(qq2); qq2:free();
+        qq2.s = "}\n"; qq:add(qq2);
+        return qq.s;
+    elif(this.kind == CG_STMT_RETURN)
+        cgstr qq
+        cgexpr_node* enode
+        if(this.nexpressions)
+            cgstr qq2
+            qq:fromstr("\n    return");
+            enode = cast(cgexpr_node*)(this.expressions[0]);
+
+            qq2.s = enode:gen_code(ast); qq:add(qq2);
+
+            qq2:free();
+            qq2.s = ";"; qq:add(qq2);
+            return qq.s;
+        else
+            return __builtin_strdup("\n    return;");
+        end
+    elif(this.kind == CG_STMT_TAIL)
+        //Just do `return fn_name(arg0, arg1, arg2)`;
+        cgstr qq
+        cgstr qq2
+        cgstr name_mangler
+        i64 i
+        char is_void_return_type
+        i64 nargs
+        cgsymdecl* target_fn
+        cgsymdecl* this_fn
+        target_fn = ast.symbol_table[0] + this.symid;
+        this_fn = ast.symbol_table[0]+ active_fun_symid;
+        nargs = target_fn.nargs;
+        is_void_return_type = (this_fn.t.basetype == CG_BASE_VOID);
+        if(!is_void_return_type)
+            qq.s = __builtin_strdup("\n    return ");
+        else
+            qq.s = __builtin_strdup("\n    ");
+        
+        end
+        qq2.s = target_fn.name; qq:add(qq2);
+        
+        qq2.s = "(";            qq:add(qq2);
+        
+        //pass in our arguments...
+            for(i = 0, i < nargs, i++)
+                
+                name_mangler.s = __builtin_strdup("__cbas_local_variable_mangled_name_");
+                
+                qq2.s = this_fn.fargs[i].membername;
+                name_mangler:add(qq2);
+                qq2.s = "(";
+                qq:add(qq2);
+                qq:add(name_mangler);  name_mangler:free();
+                
+                if(i != nargs-1)
+                    qq2.s = ","; qq:add(qq2);
+                else
+                    qq2.s =/*(*/ ")"; qq:add(qq2);
+                end
+            end
+        if(!is_void_return_type)
+            //this is the end of a return statement.
+            qq2.s = ");"; qq:add(qq2);
+        else
+            //we must return immediately afterward...
+            qq2.s = ");return;"; qq:add(qq2);
+        end
+
+        return qq.s;
+    elif(this.kind == CG_STMT_ASM)
+        return __builtin_strdup(this.referenced_label_name); //HEHE
+    elif(this.kind == CG_STMT_CONTINUE)
+        return __builtin_strdup("continue;");
+    elif(this.kind == CG_STMT_BREAK)
+        return __builtin_strdup("break;");
+    elif(this.kind == CG_STMT_SWITCH)
+        cgstr qq
+        cgstr qq2
+        cgexpr_node* enode
+        qq:fromstr("goto *");
+        qq2.s = disptablename;
+        qq:add(qq2);
+        qq2.s = "[";
+        qq:add(qq2);
+            enode = cast(cgexpr_node*)(this.expressions[0]);
+           qq2.s = enode:gen_code(ast); qq:add(qq2);
+            qq2:free();
+        qq2.s = "];";
+        qq:add(qq2);
+        return qq.s;
+    else
+            @pprint[
+                /               "C Emitter ERROR!"
+                /               "Bad cgstmt kind!"
+                /               "This is not a valid node kind:"
+                /itoa           (this.kind)
+                /               "I will die now..."
+            ]
+            __builtin_exit(1);
+    end
+    
+    return cast(char*)0;
+end
+
+method codegen cgsymdecl:gen_code(cgast* ast, char is_local, u64 my_symid)->char*:
+    if(this.is_noexport)
+        return cast(char*)0;
+    end
+    if(this.t.is_function)
+        cgstr retval
+        cgstr ff
+        i64 i
+        retval:fromstr("");
+        //apply properties...
+        
+        if(this.is_incomplete)
+            ff.s = "extern ";
+            retval:add(ff);            
+        elif(!this.is_pub)
+            ff.s = "static ";
+            retval:add(ff);
+        end
+        if(this.is_inline)
+            ff.s = "inline ";
+            retval:add(ff);
+        end
+        
+        ff.s = this.t:gen_code(ast);
+        retval:add(ff);
+        ff:free();
+        ff.s = " ";
+        retval:add(ff);
+        ff.s = this.name;
+        retval:add(ff);
+        //now we do the arglist...
+        ff.s = "(";
+        retval:add(ff);
+        for(i = 0, i < this.nargs, i++)
+            ff.s = this.fargs[i]:gen_code(ast);
+            retval:add(ff);
+            ff:free();
+            ff.s = __builtin_strdup(" __cbas_local_variable_mangled_name_");
+            retval:add(ff);
+            ff:free();
+            ff.s = this.fargs[i].membername;
+            retval:add(ff);
+            if(i != this.nargs - 1)
+                ff.s = ",";
+                retval:add(ff);
+            end
+        end
+        ff.s = ")";
+        retval:add(ff);
+        
+        if(is_local || (this.fbody == cast(u8*)0)) //generating the prototype only?
+            ff.s = ";";
+            retval:add(ff);
+            return retval.s;
+        else
+            ff.s = "\n{";
+            retval:add(ff);
+                cgscope* p
+                p = cast(cgscope*)this.fbody;
+                ff.s = p:gen_code(ast,my_symid);
+                retval:add(ff); ff:free(); 
+            ff.s = "\n}";
+            retval:add(ff);
+            return retval.s;
+        end
+        return cast(char*)0;
+    elif(this.is_data && (this.cdata != cast(u8*)0) )
+        //it's a data statement!
+        
+        u64 arraylen
+        u64 typesize
+        u64 elemsz
+        char[2048] buf
+        //check to see if it's incomplete...
+        
+        this.t.pointerlevel = 0;
+        typesize = __builtin_type_getsz(cast(char*)this.t);
+        this.t.pointerlevel = 1;
+        elemsz = typesize;
+        //this is how big the array will be....
+        arraylen = this.cdata_sz / elemsz;
+        cgstr out
+        cgstr out2
+        cgstr ff
+        //initialize out...
+        out:fromstr("");
+        if(this.is_incomplete)
+            ff.s = "extern ";
+            out:add(ff);            
+        elif(!this.is_pub)
+            ff.s = "static ";
+            out:add(ff);
+        end
+        this.t.pointerlevel = 0;
+            ff.s = this.t:gen_code(ast);
+        this.t.pointerlevel = 1;
+        out:add(ff); ff:free();
+        ff.s = " ";
+        out:add(ff);
+        ff.s = this.name;
+        out:add(ff);
+        ff.s = "[";
+        out:add(ff);
+        __builtin_itoa(buf, arraylen);
+        ff.s = buf;
+        out:add(ff);
+        ff.s = "]";
+        out:add(ff);
+        ff.s = " = {\n";
+        out:add(ff);
+        //numbers go here...
+        i64 i
+        for(i = 0, i < arraylen, i++)
+            //Based on basetype...
+            u64 bt
+            u64 kind    //is this... 0=unsigned, 1=signed, 2=float, 3=double?
+            u64[1] uval
+            i64[1] ival
+            f64[1] dval
+            f32[1] fval
+            
+            bt = this.t.basetype;
+            if(bt == CG_BASE_U8)
+                kind = 0;
+                u8[1] t
+                __builtin_memcpy(cast(u8*)t, this.cdata + i * 1, 1);
+                uval[0] = t[0];
+            elif(bt == CG_BASE_I8)
+                kind = 1;
+                i8[1] t
+                __builtin_memcpy(cast(u8*)t, this.cdata + i * 1, 1);
+                ival[0] = t[0];
+            elif(bt == CG_BASE_U16)
+                kind = 0;
+                u16[1] t
+                __builtin_memcpy(cast(u8*)t, this.cdata + i * 2, 2);
+                uval[0] = t[0];
+            elif(bt == CG_BASE_I16)
+                kind = 1;
+                i16[1] t
+                __builtin_memcpy(cast(u8*)t, this.cdata + i * 2, 2);
+                ival[0] = t[0];
+            elif(bt == CG_BASE_U32)
+                kind = 0;
+                u32[1] t
+                __builtin_memcpy(cast(u8*)t, this.cdata + i * 4, 4);
+                uval[0] = t[0];
+            elif(bt == CG_BASE_I32)
+                kind = 1;
+                i32[1] t
+                __builtin_memcpy(cast(u8*)t, this.cdata + i * 4, 4);
+                ival[0] = t[0];
+            elif(bt == CG_BASE_U64)
+                kind = 0;
+                __builtin_memcpy(cast(u8*)uval, this.cdata + i * 8, 8);
+            elif(bt == CG_BASE_I64)
+                kind = 1;
+                __builtin_memcpy(cast(u8*)ival, this.cdata + i * 8, 8);
+            elif(bt == CG_BASE_F32)
+                kind = 2;
+                __builtin_memcpy(cast(u8*)fval, this.cdata + i * 4, 4);
+            elif(bt == CG_BASE_F64)
+                kind = 3;
+                __builtin_memcpy(cast(u8*)dval, this.cdata + i * 8, 8);
+            end
+            
+            //emit it as a string...
+            if(kind == 0)
+                __builtin_utoa(buf, uval[0]);
+            elif(kind == 1)
+                __builtin_itoa(buf, ival[0]);
+            elif(kind == 2)
+                __builtin_ftoa(buf, fval[0]);
+            elif(kind == 3)
+                __builtin_ftoa(buf, dval[0]);
+            end
+            ff.s = buf;
+            out:add(ff);
+            if(i < arraylen - 1)
+                //add a comma because there are more things to come...
+                ff.s = ", ";
+                out:add(ff);
+            end
+            //emit line endings...
+            if(i%8 == 7)
+                ff.s = "\n";
+                out:add(ff);
+            end
+        end
+        
+        ff.s = "\n}";
+        out:add(ff);
+        ff.s = ";";
+        out:add(ff);
+        return out.s;
+    else
+        //it's a variable!
+        u64 arraylen
+        u64 typesize
+        u64 elemsz
+        u64 was_atomic_thing = 0;
+        char[2048] buf;
+        arraylen = this.t.arraylen;
+        typesize = __builtin_type_getsz(cast(char*)this.t);
+        elemsz = typesize;
+        //if this is an array...
+        if(arraylen)
+            elemsz = elemsz / arraylen;
+        end
+        cgstr out
+        cgstr out2
+        cgstr ff
+        //handle qualifiers...
+        out.s = __builtin_strdup("");
+        if(!is_local)
+            if(this.is_incomplete)
+                ff.s = "extern ";
+                out:add(ff);   
+            elif(!this.is_pub)
+                ff.s = "static ";
+                out:add(ff);
+            end
+            
+            if(this.is_volatile)
+                ff.s = "volatile ";
+                out:add(ff);
+            elif(this.is_atomic)
+                //It must be atomic!
+                was_atomic_thing = 1;
+                ff.s = "_Atomic ";
+                out:add(ff);
+            end
+        end
+        ff.s = this.t:gen_code(ast);
+        out:add(ff); ff:free();
+        ff.s = " ";
+        out:add(ff);
+        if(is_local)
+            //local variables are always mangled!
+            cgstr gg
+            ff.s = __builtin_strdup("__cbas_local_variable_mangled_name_");
+            gg.s = this.name;
+            ff:add(gg);
+            out:add(ff);
+            ff:free();
+        else
+            ff.s = this.name;
+            out:add(ff);
+        end
+        if(arraylen)
+            
+            ff.s = "[";
+            out:add(ff);
+    
+                __builtin_itoa(buf, arraylen);
+                ff.s = buf;
+                out:add(ff);
+    
+            ff.s = "]";
+            out:add(ff);
+            if(this.cdata != cast(u8*)0 && !is_local )
+                ff.s = " = {\n";
+                out:add(ff);
+                i64 i
+                for(i = 0, i < arraylen, i++)
+                    u64 kind    //is this 0=unsigned, 1=signed, 2=float, 3=double
+                    u64[1] uval
+                    i64[1] ival
+                    f64[1] dval
+                    f32[1] fval
+                    kind = 10;
+                    if(this.t.pointerlevel || this.t.basetype == CG_BASE_U64)
+                        kind = 0;
+                        __builtin_memcpy(cast(u8*)uval, this.cdata + i * 8, 8);
+                    elif(this.t.basetype == CG_BASE_I64)
+                        kind = 1;
+                        __builtin_memcpy(cast(u8*)ival, this.cdata + i * 8, 8);
+                    elif(this.t.basetype == CG_BASE_U32)
+                        kind = 0;
+                        u32[1] t
+                        __builtin_memcpy(cast(u8*)t, this.cdata + i * 4, 4);
+                        uval[0] = t[0];
+                    elif(this.t.basetype == CG_BASE_I32)
+                        kind = 1;
+                        i32[1] t
+                        __builtin_memcpy(cast(u8*)t, this.cdata + i * 4, 4);
+                        ival[0] = t[0];
+                    elif(this.t.basetype == CG_BASE_U16)
+                        kind = 0;
+                        u16[1] t
+                        __builtin_memcpy(cast(u8*)t, this.cdata + i * 2, 2);
+                        uval[0] = t[0];
+                    elif(this.t.basetype == CG_BASE_I16)
+                        kind = 1;
+                        i16[1] t
+                        __builtin_memcpy(cast(u8*)t, this.cdata + i * 2, 2);
+                        ival[0] = t[0];
+                    elif(this.t.basetype == CG_BASE_U8)
+                        kind = 0;
+                        u8[1] t
+                        __builtin_memcpy(cast(u8*)t, this.cdata + i * 1, 1);
+                        uval[0] = t[0];
+                    elif(this.t.basetype == CG_BASE_I8)
+                        kind = 1;
+                        i8[1] t
+                        __builtin_memcpy(cast(u8*)t, this.cdata + i * 1, 1);
+                        ival[0] = t[0];
+                    elif(this.t.basetype == CG_BASE_F32)
+                        kind = 2;
+                        __builtin_memcpy(cast(u8*)fval, this.cdata + i * 4, 4);
+                    elif(this.t.basetype == CG_BASE_F64)
+                        kind = 3;
+                        __builtin_memcpy(cast(u8*)dval, this.cdata + i * 8, 8);
+                    else
+                        @pprint[
+                            /       "C CODE GENERATOR ERROR!"
+                            /       "Somehow, a variable with incompatible type has cdata (Constant data)!"
+                            /       "This should be impossible! Its name is:"
+                            /       (this.name)
+                            /       "Look for that in your source code!"
+                        ]
+                        __builtin_exit(1);
+                    end
+                    //emit it as a string...
+                    if(kind == 0)
+                        __builtin_utoa(buf, uval[0]);
+                    elif(kind == 1)
+                        __builtin_itoa(buf, ival[0]);
+                    elif(kind == 2)
+                        __builtin_ftoa(buf, fval[0]);
+                    elif(kind == 3)
+                        __builtin_ftoa(buf, dval[0]);
+                    end
+                    ff.s = buf;
+                    out:add(ff);
+                    if(i < arraylen - 1)
+                        //add a comma because there are more things to come...
+                        ff.s = ", ";
+                        out:add(ff);
+                    end
+                    //emit line endings...
+                    if(i%8 == 7)
+                        ff.s = "\n";
+                        out:add(ff);
+                    end
+                end
+                
+                ff.s = "\n}";
+                out:add(ff);
+            end //eof has array WITH cdata (previous indent level was checking arraylen to see if it was an array...) 
+        //arraylen == 0, but it has cdata...
+        elif
+        (
+            (this.cdata != cast(u8*)0) && 
+            !(
+                (
+                    this.t.basetype == CG_BASE_STRUCT
+                ) && (
+                    this.t.pointerlevel == 0
+                )
+            )
+            && !is_local
+        )
+            u64 kind    //is this... 0=unsigned, 1=signed, 2=float, 3=double ?
+            u64[1] uval
+            i64[1] ival
+            f64[1] dval
+            f32[1] fval
+            ff.s = " = ";
+            out:add(ff);
+            kind = 10;
+            if(this.t.pointerlevel || this.t.basetype == CG_BASE_U64)
+                kind = 0;
+                __builtin_memcpy(cast(u8*)uval, this.cdata, 8);
+            elif(this.t.basetype == CG_BASE_I64)
+                kind = 1;
+                __builtin_memcpy(cast(u8*)ival, this.cdata, 8);
+            elif(this.t.basetype == CG_BASE_U32)
+                kind = 0;
+                u32[1] t
+                __builtin_memcpy(cast(u8*)t, this.cdata, 4);
+                uval[0] = t[0];
+            elif(this.t.basetype == CG_BASE_I32)
+                kind = 1;
+                i32[1] t
+                __builtin_memcpy(cast(u8*)t, this.cdata, 4);
+                ival[0] = t[0];
+            elif(this.t.basetype == CG_BASE_U16)
+                kind = 0;
+                u16[1] t
+                __builtin_memcpy(cast(u8*)t, this.cdata, 2);
+                uval[0] = t[0];
+            elif(this.t.basetype == CG_BASE_I16)
+                kind = 1;
+                i16[1] t
+                __builtin_memcpy(cast(u8*)t, this.cdata, 2);
+                ival[0] = t[0];
+            elif(this.t.basetype == CG_BASE_U8)
+                kind = 0;
+                u8[1] t
+                __builtin_memcpy(cast(u8*)t, this.cdata, 1);
+                uval[0] = t[0];
+            elif(this.t.basetype == CG_BASE_I8)
+                kind = 1;
+                i8[1] t
+                __builtin_memcpy(cast(u8*)t, this.cdata, 1);
+                ival[0] = t[0];
+            elif(this.t.basetype == CG_BASE_F32)
+                kind = 2;
+                __builtin_memcpy(cast(u8*)fval, this.cdata, 4);
+            elif(this.t.basetype == CG_BASE_F64)
+                kind = 3;
+                __builtin_memcpy(cast(u8*)dval, this.cdata, 8);
+            else
+                @pprint[
+                    /       "C CODE GENERATOR ERROR!"
+                    /       "Somehow, a variable with incompatible type has cdata (Constant data)!"
+                    /       "This should be impossible! Its name is:"
+                    /       (this.name)
+                    /       "Look for that in your source code!"
+                ]
+                __builtin_exit(1);
+            end
+            
+            //emit it as a string...
+            if(kind == 0)
+                __builtin_utoa(buf, uval[0]);
+            elif(kind == 1)
+                __builtin_itoa(buf, ival[0]);
+            elif(kind == 2)
+                __builtin_ftoa(buf, fval[0]);
+            elif(kind == 3)
+                __builtin_ftoa(buf, dval[0]);
+            end
+            ff.s = buf;
+            out:add(ff);
+        end
+        ff.s = ";";
+        out:add(ff);
+        return out.s;
+    end
+    
+    return cast(char*)0;
+end
+
+
+method codegen cgtypedecl:emit_type(cgast* ast, u64 my_structid):
+    //emit ourselves.
+    cgstr f;
+    cgstr t;
+    char is_union
+    if(this.is_noexport)
+        return;
+    end
+    is_union = this.is_union;
+    if(is_union)
+        f:fromstr("typedef union ");
+    else
+        f:fromstr("typedef struct ");
+    end
+    t.s = this.name;
+    f:add(t);
+    t.s = "{";
+    f:add(t);
+    cg_quick_emit(f.s,0);
+    f:free();
+    //now emit our members...
+    u64 i
+    for(i = 0, i < this.nmembers, i++)
+        u64 basetype
+        u64 pointerlevel
+        u64 arraylen
+        u64 structid
+        basetype = (this.members+i).basetype;
+        pointerlevel = (this.members+i).pointerlevel;
+        arraylen = (this.members+i).arraylen;
+        structid = (this.members+i).structid;
+        cgstr printme;
+        if(basetype == CG_BASE_STRUCT)
+            //we must emit the name of the struct...
+            //if this is the same struct
+            if(structid == my_structid)
+                if(is_union)
+                    t.s = "union ";
+                else
+                    t.s = "struct ";
+                end
+                printme:fromstr(t.s);
+                t.s = (ast.type_table[0]+structid).name;
+                printme:add(t);
+            else
+                printme:fromstr((ast.type_table[0]+structid).name);
+            end
+        elif(basetype == CG_BASE_VOID)
+            printme:fromstr("void");
+        elif(basetype == CG_BASE_U8)
+            printme:fromstr("unsigned char");
+        elif(basetype == CG_BASE_I8)
+            printme:fromstr("signed char");
+        elif(basetype == CG_BASE_U16)
+            printme:fromstr("unsigned short");
+        elif(basetype == CG_BASE_I16)
+            printme:fromstr("signed short");
+        elif(basetype == CG_BASE_U32)
+            printme:fromstr("unsigned");
+        elif(basetype == CG_BASE_I32)
+            printme:fromstr("int");
+        elif(basetype == CG_BASE_U64)
+            printme:fromstr("unsigned long long");
+        elif(basetype == CG_BASE_I64)
+            printme:fromstr("long long");
+        elif(basetype == CG_BASE_F32)
+            printme:fromstr("float");
+        elif(basetype == CG_BASE_F64)
+            printme:fromstr("double");
+        else
+            @pprint[
+                /       "ERROR!"
+                /       "cgtypedecl with unrecognized type!"
+                /       "its type was:"
+                /itoa   (basetype)
+                /       "Which was not handled!"
+            ]
+            __builtin_exit(1);
+        end
+        t.s = "*";
+        i64 j
+        for(j = 0, j < pointerlevel, j++)
+            printme:add(t);
+        end
+        t.s = "  ";
+        printme:add(t);
+        //now the name.
+        t.s = (this.members+i).membername;
+        printme:add(t);
+        //now, if we have an arraylen...
+        if(arraylen)
+            t.s = "[";printme:add(t);
+            //emit it!
+            char[50] buf;
+            __builtin_itoa(buf, arraylen);
+            t.s = buf;printme:add(t);
+            t.s = "]";printme:add(t);
+        end
+        //emit a semicolon.
+        t.s = ";";
+        printme:add(t);
+        //emit it!
+        cg_quick_emit(printme.s, 1);
+        printme:free();
+    end
+    //emit a closing curly brace and then the name and semicolon
+    f:fromstr("} ");
+    t.s = this.name;
+    f:add(t);
+    t.s = ";";
+    f:add(t);
+    cg_quick_emit(f.s, 0);
+    f:free();
+end
+
+
+fn codegen cg_emitC(char* prefix):
+    //the entire unit has been parsed. Get the AST.
+    cgast* ast
+    char* ofname
+    ofname = "auto_out.c";
+    ast = cast(cgast*)__builtin_get_ast();
+    if(__builtin_getargc() > 2)
+        ofname = __builtin_getargv()[2];
+        if(!cast(uptr)ofname)
+            @pprint[
+                /   "ERROR!"
+                /   "argv[2] was null?!?!"
+                /   "How did that happen?!?!"
+            ]
+            __builtin_exit(1);
+        end
+        cgstr qq
+        qq.s = ofname;
+        if(qq:len() == 0)
+            @pprint[
+                /   "ERROR!"
+                /   "argv[2] was the empty string?!?!"
+                /   "How did that happen?!?!"
+            ]
+            __builtin_exit(1);        
+        end
+    end
+    //open the ofile...
+    if(1)
+        int a
+        a = __builtin_open_ofile(ofname);
+        if(!a)
+            @pprint[
+                /       "ERROR!"
+                /       "C emitter unable to open"
+                /       (ofname)
+                /       "We're exiting..."
+            ]
+            __builtin_exit(1);
+        end
+    end
+    if(prefix != cast(u8*)0)
+        cg_quick_emit(prefix,0);
+    end
+    cg_quick_emit("/*\nEXPORTED CODE FROM SEABASS METAPROGRAMMING LANGUAGE\nCode Generator written by DAVID MHS WEBSTER / KEGGEK\nLet all your things be done with charity\n*/",0);
+    //emit all of the types...
+    i64 i
+    cg_quick_emit("/*\nTYPEDECLS\n*/",0);
+    for(i = 0; i < ast.ntypedecls[0]; i++)
+        (ast.type_table[0] + i):emit_type(ast, i);
+    end
+    //emit all global variables and data statements...
+    
+    cg_quick_emit("/*\nGLOBAL VARIABLES\n*/",0);
+
+    u8* p
+    for(i = 0, i < ast.nsymbols[0]; i++)
+        if
+        (
+            (ast.symbol_table[0]+i).t.is_function ||
+            (ast.symbol_table[0]+i).is_codegen ||
+            (ast.symbol_table[0]+i).is_stringlit
+        )
+            continue
+        end
+        //it's not a function!
+            p = (ast.symbol_table[0]+i):gen_code(ast,0,i);
+        if(cast(uptr)p)
+            cg_quick_emit(p,0);
+            __builtin_free(p);
+        end
+    end
+    cg_quick_emit("/*\nFUNCTION PROTOTYPES\n*/",0);
+
+    //emit all function prototypes (except predecl inline without a body...)
+    for(i = 0, i < ast.nsymbols[0]; i++)
+        if
+        (
+            !(ast.symbol_table[0]+i).t.is_function ||
+            (ast.symbol_table[0]+i).is_codegen
+        )
+            continue
+        end
+        //it is a function! Generate prototype...
+        p = (ast.symbol_table[0]+i):gen_code(ast,1, i);
+        if(cast(uptr)p)
+            cg_quick_emit(p,0);
+            __builtin_free(p);
+        end
+    end    
+    
+    //emit all functions (bodies!)
+    cg_quick_emit("/*\nFUNCTION BODIES\n*/",0);
+
+    for(i = 0, i < ast.nsymbols[0]; i++)
+        if
+        (
+            !(ast.symbol_table[0]+i).t.is_function ||
+            (ast.symbol_table[0]+i).is_codegen
+        )
+            continue
+        end
+            p = (ast.symbol_table[0]+i):gen_code(ast,0, i);
+        if(cast(uptr)p)
+            cg_quick_emit(p,0);
+            __builtin_free(p);
+        end
+    end   
+    
+    cg_quick_emit("/*\nBlessed be the Lord Jesus Christ of Nazareth, forever. Amen.\n*/",0);
+
+    //close the ofile...
+    __builtin_close_ofile();
+end
+
+
+

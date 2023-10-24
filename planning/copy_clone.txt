@@ -1,0 +1,13 @@
+
+SEABASS STANDARD FOR DATA TYPES- 
+
+mytype:copy(mytype* p)
+
+    Make a deep-copy and put it at the memory pointed to by `p`.
+    
+mytype:clone()->mytype*
+
+    Make a deep-copy allocated on the heap and return it.
+    
+All data structures will rely on the existence of these things
+for anything they store which isn't a primitive.

@@ -1,0 +1,90 @@
+
+DATA STRUCTURE TEMPLATING
+
+In order to progress with CBAS's metaprogramming
+facilities, I need to be able to build arbitrary data
+structures from template.
+
+Furthermore, I have algorithms that are implemented
+in terms of data structure specifics (I.e. how a 
+structure is traversed, what its elements are) so
+I need to have a system that allows me to template
+those too.
+
+Data structures are just structs with some specific
+operations performed on them. They are, more generically,
+a "typeclass".
+
+Algorithms executed on data structures are templated
+too, taking in a completed data structure and operating
+on it.
+
+This whole system, of course, requires the metaprogramming
+facilities to detect that a template parameter is a
+"data structure" and determine its properties.
+
+TYPECLASS
+
+A struct template + methods + properties. 
+
+If a typeclass is filled out, it creates
+a struct (class) with methods, functions,
+and type traits applicable to it.
+
+EDIT: FULL REVERSE ON THE TYPECLASS GENERICIZATION.
+
+    I need data structures as their own thing, and it actually takes
+    higher precedence than typeclasses.
+    
+    I want to make a DSL for implementing data structures.
+
+
+HOW DO I STANDARDIZE CTOR/DTOR/COPY/CLONE/MOVE?
+
+    If you have a vector of int pointers, you have no idea if it only points
+    to a single int, or multiple. This principle applies to all variations
+    on this. We can assume it's always a single object, I guess...
+    
+
+1. IF A DATA STRUCTURE STORES THE OBJECT ITSELF AND NOT A POINTER, IT IS RESPONSIBLE
+    FOR DESTROYING IT.
+    
+    This is obvious- Vector of mytype must destroy all `mytype` objects in the vector.
+    
+2. ASSUME ALL DATA TYPES STORED ARE SAFE TO MOVE.
+
+    If a data structure contains information dependent on its position in memory, then it
+    shouldn't be stored literally in the data structure- it should be stored in a unique pointer.
+
+3. IF A DATA STRUCTURE STORES POINTERS, ASSUME THEY ARE NOT OWNING.
+
+    The memory is being managed elsewhere. They could have used a wrapper unique_ptr class...
+    
+    Speaking of which, that needs to be something in the metaprogramming library. Unique_ptr.
+    
+    TODO: make unique_ptr
+    
+4. DATA STRUCTURES CANNOT STORE ARRAYS.
+
+    If you want an array in a data structure, make it a member of a struct.
+    
+    This means that type template parameters for a data structure will always be an
+    identifier followed by some number of stars
+
+5. DATA STRUCTURES MUST SPECIFY AT INSTANTIATION TIME...
+        * The data type(s) being stored.
+        * Parameters relevant to the nature of the data structure.
+        * Whether it is for the target or "codegen".
+        * Method qualifiers. I think it's pretty reasonable to assume all data structures
+            will use `inline` and few if any will use `public`.
+        
+6. WE CAN GENERICIZE PRIMITIVE VERSUS STRUCT BY SWAPPING BETWEEN = AND :=
+
+    Due to 3, we can always know that anything stored in a data structure is safe to move. 
+    Movement and assignment are the exact same for primitives, so we just need `__move__` as a keyword
+    in our data-structure-templating DSL.
+    
+    Pointers shall be identical to primitives in that we can just copy the pointer and don't have
+    to deal with the memory it points to.
+    
+7. 

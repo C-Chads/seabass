@@ -1,0 +1,12 @@
+
+MAKE CBAS LISPY.
+
+I should take the SME idea I had for combo mapping and make it a 
+DSL in cbas
+
+
+[a [b c]] = [d [e f]];
+
+
+where letters can be arbitrary expressions.
+

@@ -1,0 +1,75 @@
+
+I have realized I have been thinking about abstraction all wrong.
+
+You don't want to think in terms of "building a house out of bricks"
+and then "making a neighborhood out of houses"
+
+you want to think about making tools to make brick placement easier,
+and tools for placing houses for you.
+
+You need to think not in terms of the progression from element to 
+compound, but work to worker.
+
+Progressing from element to compound is useful in its own right and
+can serve somewhat to save effort in my labor, but it is not itself
+the goal.
+
+I don't want to make classes out of variables, I want to make code
+that implements variables for me.
+
+having existing classes that have variables in them which I wrote,
+that I can use, does not actually change the problem of having to
+implement variables in the first place.
+
+I do not want to write a vector library, I want to make
+tools for automatically adding variables and writing the 
+methods/functions to operate on those variables, then
+use that to create a vector library.
+
+at some point, I actually want the computer to take over
+thinking out the finer details for me, not for me to solve them
+myself. The less I have to put in to get what I want, the better.
+
+After very little abstraction in this direction, I lose
+the ability to firmly grasp what it is I'm trying to do.
+
+It is easy enough to say "write a piece of code that writes code that
+writes code" but unless you can actually envision what that would look
+like, or how it would function, it's nonsense.
+
+Granted, for something as simple as a vector math library, you reach
+a point where you almost cannot express things more succintly.
+
+Going "higher" gets you nothing.
+
+You cannot go higher to implement a program that adds numbers.
+
+ChatGPT would almost seem to be the end-goal of this whole process,
+something which can straight up simulate some low form of cognition,
+but that isn't where the money is: it's not algorithmic. It's not 
+deterministic.
+
+I want something that I can control and harness that does exactly what
+it's told in a well-defined way. 
+
+THE CORE PROBLEM
+
+I want to go from idea to reality as fast as possible.
+
+the idea itself is a sort of "vision" of some piece of software
+or state of reality which I want.
+
+Work toward the idea is done within a space, using existing code and tools,
+with new code and tools potentially being constructed along the way.
+
+The goal of Seabass, then, should be to make the process of making
+new code and tools as efficient as possible.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~MAKE TOOLS, NOT LIBRARIES~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Seabass is "the ultimate programming tool" not "a database of every
+solution to every problem known to man".
+
+I will ponder this. I am tired.

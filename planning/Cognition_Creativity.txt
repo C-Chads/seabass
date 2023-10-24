@@ -1,0 +1,48 @@
+
+OUR CREATIVE IDEAS ARE REAL, BUT POORLY STRUCTURED.
+
+They are, often, poorly understood. We have vague notions
+and ephemeral ghosts of what we want to make, however
+we often don't have everything hammered out.
+
+This is true both in art and engineering.
+
+The simpler an idea is, the less "ghosty" it is.
+
+There are multiple strategies, then, for enabling greater
+creative output:
+
+1. Come up with ways that tools can work "in terms of"
+    the ephemeral ghosts of our creativity.
+    
+    Make computers understand our creative notions.
+    
+    This seems almost impossible, as, for one thing,
+    creativity is all about making _new_ ghosts...
+    
+2. Creating templates / frameworks for common ghosts and
+    patterns among ghosts (which are themselves ghosts).
+    
+    Common ideas can be templated and given tweakable
+    parameters to allow a person to express themselves
+    in those tweakables.
+    
+    This is actually what any implementation of 1 would
+    decay into (along with the ability to define new 
+    ghosts).
+    
+Resources:
+        https://design.tutsplus.com/articles/why-is-it-so-hard-to-draw-from-imagination-heres-how-to-do-it--cms-22967
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following goals are logically derived from my model of cognition:
+
+1. Make groking new patterns/ideas fast. Represent them in as many
+    ways as possible, approached from multiple angles. Make this process
+    easy and natural.
+    
+2. Make tools that allow creativity to be expressed in multiple
+    ways, quickly and easily.
+

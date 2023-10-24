@@ -1,0 +1,96 @@
+
+#include "cgtoken_manip_tools.hbas"
+
+@mkbldr [
+    test_pushtokens
+    
+    
+    @initqtok ";"
+    //now, push stuff
+    @tokmanip_push_strings[
+        if(1 > 0)
+            __builtin_puts("Hello!");
+        end
+    ]
+    
+    
+    return retval;
+]
+
+@mkbldrn receives_five_arguments 5 [
+    @dupell_inlist
+    cgstrll* arg1
+    cgstrll* arg2
+    cgstrll* arg3
+    cgstrll* arg4
+    cgstrll* arg5
+    
+    @foldout_arg arg1 inlist_dupe
+    @foldout_arg arg2 inlist_dupe
+    @foldout_arg arg3 inlist_dupe
+    @foldout_arg arg4 inlist_dupe
+    @foldout_arg arg5 inlist_dupe
+    
+    __builtin_puts("Here is the 3rd argument:");
+    arg3:debug_print();
+    __builtin_puts("Here is the 5th argument:");
+    arg5:debug_print();
+    __builtin_puts("~~~~~~~~~~~~~~~~~~~~~~~~~~");
+    
+    //free the arguments.
+    if(cast(u64)arg1)
+        arg1:freelist();
+    end
+    if(cast(u64)arg2)
+        arg2:freelist();
+    end
+    if(cast(u64)arg3)
+        arg3:freelist();
+    end
+    if(cast(u64)arg4)
+        arg4:freelist();
+    end
+    if(cast(u64)arg5)
+        arg5:freelist();
+    end
+    
+    @initqtok ";"
+    return retval;
+]
+
+fn codegen codegen_main():
+    @test_pushtokens;
+    __builtin_puts((" >Nice to see you!")+1);
+
+
+    @receives_five_arguments 
+        fish 
+        banana 
+        wadda 
+        caterpillars 
+        [angry hornets with teeth]
+        
+
+    @pprint [
+        /                   "Hello!"
+        /bar
+        /                   "LOOK HERE PROGRAMMER!!!"
+        /bar
+        /                   "These"
+        /                   "are"
+        /                   "Separately"
+        /                   "printed!"
+        /int                (3*9+5+1)
+        /                   "Did you like that?"
+    ]
+    
+    
+    if(1)
+        cgbuf mybuf
+        mybuf.req(512);
+        __builtin_itoa(mybuf.d, 37);
+        __builtin_puts(mybuf.d);
+    end
+
+
+end

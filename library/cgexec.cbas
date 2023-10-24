@@ -1,0 +1,18 @@
+
+
+#include "cgexec.hbas"
+
+
+fn codegen runme():
+    __builtin_puts("Hello!");
+end 
+
+@cgexec runme
+@cgexec runme
+@cgexec runme
+@cgexec runme
+
+fn codegen codegen_main():
+
+
+end

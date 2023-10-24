@@ -1,0 +1,88 @@
+
+WHAT IS THE VISION/ENDGOAL FOR CBAS?
+
+To be able to outline a high-level software architecture quickly and
+efficiently, with as much automation of the work as possible.
+
+Template everything, avoid work where-ever possible. Work in terms
+of higher-order definitions, filling in the details. Have the computer
+fill in the minutae for you.
+
+Implement an entire system in just a couple hours- only the time
+needed to describe all the unique quirks of the particular APIs
+being used and the "uniquenesses" of your particular system.
+
+If you understand your software architecture top-to-bottom, you
+should be able to implement it almost as easily as you can write it
+down on paper- maybe even easier.
+
+Cbas should provide a rich enough set of high level constructs and
+metaprogramming abstractions to allow arbitrarily complex programs
+to be written from the high place of software architecture design,
+
+rather than the minutae of writing subroutines and functions which
+you know from the greater context of your work must do a particular
+sort of task.
+
+WHAT ARE UNIQUENESSES?
+
+Patterns outside the 90% of most-used software archetypes which
+don't aren't entirely unique to a particular target API (such
+as SQL). Implementing SQL query generation might be interesting,
+but it's beyond the scope of the project.
+
+WHAT SORTS OF PATTERNS WILL CBAS CAPTURE?
+
+Any commonly recurring pattern which can be given a name and
+can be meaningfully abstracted. Coming up with names for these
+patterns is actually part of the difficulty.
+
+HOW WILL THIS SAVE WORK?
+
+Instead of having to implement something yourself, you simply
+fill in some details. The patterns by which details are filled
+out is, itself, a pattern that can be abstracted, of course.
+
+Every new implementation is, of course, something you can pull
+code from...
+
+HOW WILL THIS MAKE PROGRAMMING EASIER?
+
+The language pretty much designs the control flow, data structures,
+and overal structure of your library/program for you. You have to
+fill in the unique parts.
+
+WHAT SORTS OF PATTERNS WILL CBAS NOT CAPTURE?
+
+Anything tied to a particular API that I don't find essential
+to Cbas. It is essential to target the C programming language
+as an export language, so including that in the standard
+library is fine.
+
+I don't find it essential to retarget for D. I also don't
+find it particularly interesting to genericize OpenGL
+as part of the stdlib.
+
+I might do it anyway- for my own purposes- but it won't
+be part of Cbas's standard library.
+
+I think I will want to have some way of designing code for
+javascript, but I haven't designed that yet...
+
+AREN'T PATTERNS USE-CASE SPECIFIC?
+
+Yes and no. There are tons of use-case-specific things, but
+between different software architectures, there are commonly
+recurring themes. These commonly recurring themes are something
+I can sniff-out and make into language constructs.
+
+WHAT IS NEEDED TO ACCOMPLISH THIS VISION?
+
+* I need to reproduce most of C++'s featureset, or supercede it,
+    through my metaprogramming library.
+    
+* I need to do a lot of introspection while thinking about how
+    I would write a piece of software, or while reading software
+    written by other people.
+
+

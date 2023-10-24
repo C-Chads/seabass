@@ -1,0 +1,72 @@
+
+
+SHOULD I JUST ADD TEMPLATES TO SEABASS?
+
+I already sort of have them with cgwksht. All I'd have to do
+is make the automatic creation of new types and functions
+automatically during parsing explicit.
+
+Thinking about? No. It doesn't belong in the base level
+language.
+
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~
+WHAT WILL OOPSY BE?
+~~~~~~~~~~~~~~~~~~~~~~~~
+Oopsy will be an extension upon Seabass with templates,
+type inferencing, and automatic constructor/destructor
+authoring.
+
+It will still have pointers, but as we'll see later, that will
+turn out to be its strength, not its weakness.
+
+
+
+
+
+/*
+    Old idea- trying to do references.
+*/
+
+
+
+//templated class
+class linkedlist[type T]
+    owningptr[T] data
+    owningptr[linkedlist[T]] right
+    //here is the destructor definition
+    dtor:
+    while(1)
+        ref linkedlist[T] myReference; //reference to a linkedlist[T]
+        
+        //myReference is currently invalid!
+        
+        myReference = &this; //get the reference of this. it is now a reference to something valid.
+        
+        //walk all the way to the end of the list...
+        while(ref_valid myReference.right) //you can check the validity of a reference...
+            //myReference.right is known to be valid, so we can known that 
+            if(!ref_valid myReference.right.right)
+                break;
+            end        
+            //because this scope can only be entered if myReference.right is valid, we know
+            //myReference will always be valid entering this scope.
+            myReference isref myReference.right
+        end
+        if()
+        
+        //myReference is pointing at a node which has a right that needs to be free'd.
+        //We can call delete on any owning pointer.
+        delete myReference.right;
+        if(myReference == this)
+            return
+        end
+    end
+    end
+end
+
+
+
+

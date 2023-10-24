@@ -1,0 +1,434 @@
+
+TLDR AND THE NEW WORK
+
+I need to write a C program which lets me parse, compile, and run
+SME bytecode.
+
+The C program itself will be replaced by an SME program at a later date, and
+perhaps the entire C compiler, so that an SME can be totally self-bootstrapping.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SME-MASM DISCOURSE
+
+I have figured out what I need to make.
+
+I need to implement the SME- Saved Metaprogramming Environment.
+
+It will work by using a configurable abstract assembly language
+with a three letter code and special "hook" instructions for
+the APIs of the target.
+
+Data types will not exist, only register sizes. 8,16,32,64,128,256,512,
+bit, and special sizes such as `ptr`, `imax`,`umax` which alias to those
+sizes. Floating point or fixed types or whatever that don't perfectly
+fit this scheme can be represented as combinations of registers.
+
+"Register Combos" will be passable into functions as well,
+
+[r64, r32] myCombo1
+
+and you can use these for return types too.
+
+Function call syntax will look like this for a combo:
+
+
+fcall myFunc [reg1 reg2] (in1 in2 in3)
+
+for a function returning a combo which is then divided into multiple registers, or...
+
+fcall myFunc myCombo1_Var (in1 in2 in3)
+
+for mapping directly to a parallel combo.
+
+Brackets are required for creating combos, but function arguments don't require parentheses.
+
+fcall myFunc [reg1 reg2] in1 in2 in3
+
+This system will enable me to write code more
+flexibly than even C would, and I can map it to C
+perfectly.
+
+Combo combinatorics for things like fcall require
+that the members be exact matches, I.E.
+
+[r64 r32]
+
+cannot cleanly map to/from
+
+[r8 r8]
+
+However it is possible to cleanly map for things like `addi`.
+
+r8 a
+r8 b
+r64 c
+r64 d
+
+addi [a c] [a b] [c b]
+
+is semantically equivalent to:
+
+addi a a c
+addi c b b
+
+which is solvable because sign-extension is implied in `addi` it uses
+the `sign-extend-signed-integer` scheme for arguments.
+
+
+there will be instructions that operate on the register variables and what the opcode is
+will be determined by what register variables were used. The operation may have implicit
+sign extension or zero extension, but I think I will require explicit conversion from float
+to integer and back.
+
+```POINTER TYPE```
+ptr will just be an integer, but it will be unique that it is the only way to index memory.
+
+The exact size of a `ptr` will be implementation defined and it won't be guaranteed that it
+perfectly matches (or even fits in) any of the supported register sizes.
+
+
+
+
+OPS ON COMBOS
+
+operations between combo variables will be defined as operations on all their
+constituent members. I.E.
+
+[r64, r32] myCombo1
+[r8, r16] myCombo2
+
+movse myCombo1 myCombo2
+
+is identical too...
+
+movse myCombo1.0 myCombo2.0
+movse myCombo1.1 myCombo2.1
+
+This should enable me to simulate SIMD instructions fairly easily where needed.
+
+API functions on the target will be made into extern declarations,
+or special instructions where necessary.
+
+Some operations, like malloc and free, will likely be their own
+instructions, and I'll probably write instructions specifically
+for operating on integers and doing common operations like testing for zero.
+
+
+POWER
+
+Just like Seabass, the power of SME-MASM will be that you can write parsehooks
+that tie directly into parsing. This way, you'll be able to write higher
+level languages inside of SME. SME-MASM code can compile for the target or
+into bytecode which can be executed at compiletime. The compiletime language
+will use a bytecode executor and use global memory buffers and global variables
+to store state.
+
+
+Using Seabass, I will design a compiler which turns SEABASS code into SME-MASM
+code, and another compiler for SME-MASM into C. I'll use that to port my existing
+tools over to SME-MASM, where I can start designing the SME part in the language
+itself- the stuff that saves compiled functions and stores global variables and
+memory buffers.
+
+The SME runtime will be another program I write (first in SEABASS+C, and then in
+SME+C) which does the "SME" stuff.
+
+LANGUAGE PARSER DESIGN
+
+I will make SME's parser whitespace agnostic much like I did for seabass, and I will
+use a tokenizer. However, what I will do is allow loaded metaprogramming modules to
+hook into the tokenizer and change how all future modules are tokenized- this will
+allow the user to write their own tokenizer. Basically, there will be a hook for
+inserting your own code at the point where a token is parsed by inserting a special
+character combo, say "$$" followed by a function name, like "myModule.myFunction". This
+will force all code after that point to be tokenized by that function until it returns.
+
+Once it returns, the native tokenizer will resume tokenization.
+
+This will provide the user with the ability to define custom syntaxes that have whitespace
+importance or even unreadable character importance.
+
+A dangerous -but powerful- tool.
+
+MODULES
+
+Every "compilation unit" in SME-MASM will be a module, with a name. The module is a
+namespace as well as an object in memory which can be instantiated. This system will
+allow me to hot-reload code (I can rebuild a module that i've already built and reload
+it by simply deleting the old module and changing the name of the new module to the old
+one's name).
+
+Modules will serve to fully replace Seabass's clunky system of variable prefixes.
+
+ARRAYS
+
+You will be able to declare arrays like you can in seabass, and just like in 
+C and SEABASS, their names will decay into pointers which can be indexed.
+
+They are scoped and rest on the stack.
+
+r64[10] myArray
+r64 myVar
+
+ind_load myVar myArray 5 //load the 6th element (zero-indexed) from myArray into myVar.
+
+COMBO RULES
+
+"Combos" (typeless structs with numbered members) will not be addressable.
+
+If you want to call a function that takes a combo as one of its arguments and
+pass it back to itself, you can define a larger combo which includes the
+return value.
+
+
+fcall myModule.myStruct__myMethod [myCombo a] (myCombo b c d e [f g])
+
+or even...
+
+fcall myModule.myStruct__myMethod [[qq ff] a] (myCombo b c d e [f g])
+
+Mapping out combos to and from smaller variables like this will
+be a huge part of the language, and it's easy to do as it's
+all just chunks of memory/registers to copy.
+
+addi [a b] [a b] [c d]
+
+is valid.
+
+TWO-REGISTER OPCODES
+
+addi a b
+
+will be equivalent to
+
+addi a a b
+
+DYNAMIC DISPATCH/ SWITCH CASE
+
+It shall be possible in SME-MASM to have switch-cases
+
+in the style of SEABASS.
+
+switch myInt myLabel1 myLabel2 myLabel3 myLabel4
+
+Switch will not need to use a delimiter as it is
+never correct to have an identifier start a line unless
+it is a typename, and a typename can never be a label name.
+
+MODULES
+
+Modules are massive lexical scopes which "trap" typenames,
+global variable names, and function names.
+
+Codegen/target will be specified at the module level rather than
+at the function/symbol level to allow for maximum programming ease.
+
+SCOPING RULES
+
+Every function defines a scope with its body, but labels do not.
+
+Jumping into a scope is invalid, but jumping out of one is valid.
+
+Switch-case requires all the cases to be at the same scope as the statement.
+
+HOW WILL IT BE EASIER TO WORK WITH THAN SEABASS?
+
+Because there is no type information in variables (only in instructions)
+
+there is a whole lot less "glue code" to be written.
+
+The type checking work can be done by writing a higher level language compiler
+within SME-MASM which checks types.
+
+I figure that will be one of the first projects once I have SME-MASM working- to
+write a configurable C/CBAS-like which can map directly to the SME tokenstream.
+
+SME-MASM will require a whole lot less code to get running than Seabass did, because
+its syntax is principally much easier. The only complicated nested trees are the combo
+syntax and the scope system. There are no expressions. Type promotions are implemented
+at the instruction level.
+
+NEEDED INSTRUCTIONS?
+
+* Integer and float arithmetic. 
+    add,sub,mul,div,mod, 
+    and, or, xor, nand, nor, not, logor, logand
+* movse, movze, ftoi, itof, ftof
+* compare instructions. cmpu, cmpi, cmpf
+* fcall and return
+* immediate int, immediate float
+* pointer plus offset indexing instructions.
+
+    ind_load a myPtr b
+    
+POINTERS
+
+    It occurs to me that I want to have typed pointers.
+    
+    Pointers shall store a type. You'll be able to declare:
+    
+    r64* a
+    //later...
+    r64 b
+    ind_load b a 0
+    which will load the value from the location pointed to by a into b.
+    
+    This will also be possible with combos.
+    
+    It will not be possible to get the address of any variable other than
+    global variables in a module, and only if that global variable was not
+    declared `register`.
+    
+    Arrays of pointers will work the same way they did in Seabass.
+    
+    r64***[50] a
+    
+    a type specifier, some number of stars, a bracketed integer constexpr, and then a name.
+    
+TYPE DEFINITIONS
+
+    Combo types can be named or anonymous, but I think it is useful to be able to declare
+    aliases.
+    
+    typedef [r64 [r64 r32]] myCombo
+    
+    this will then be accessible as myModule.myCombo from any where in the SME.
+    
+WRITING THE KERNEL
+
+    The SME kernel will be comprised of a lexer, parser, bytecode generator, and
+    bytecode executor along with baked-in implementations of the base-level API.
+    
+    This base-level API will have all the facilities to interact with the wider system,
+    including graphics and sound, as well as the metaprogramming hooks into the lexer
+    and parser needed to allow arbitrary syntaxes.
+    
+    The SME kernel will also have an editor built-in which allows bytecode programs
+    to define new GUI elements and interact with the system- All you need to do is
+    make calls into the SME's saved bytecode functions and let it make the calls.
+    
+    These editor programs will be the key to intellectual stimulation using the SME.
+    
+FILE STORAGE
+
+    principally, you will have the types of files saved on your computer relevant
+    to the SME directly:
+    
+    * SME-MASM source code which can be imported into an SME-MASM environment as modules.
+    * the SME save state.
+    * The SME Kernel.
+    
+    The SME save state will contain all loaded modules, the global buffer objects
+    
+STATE STORAGE
+
+    Source code is stored separately from bytecode.
+
+    The bytecode functions are easy, and the global variables are equally easily.
+    
+    Global variables in a module are not saved. They are reset for every compilation.
+    Instead, we use GBOs to store persistent state.
+    
+    GBOs can be created or destroyed during SME-runtime and are accessed by API call.
+    
+    The editor will also be able to view the GBO list and you'll be able to delete them
+    or make new ones whenever you want.
+    
+TARGET CODE
+
+    We can take any module and turn it into target code. Imports from other modules
+    and usage of other modules can simply be re-mapped into extern declarations.
+    
+    in this way, the distinction between codegen and target code simply disappears at the
+    syntactic level, although some used operations in SME-MASM may be unavailable for a 
+    particular target.
+    
+    API calls or inter-module interaction within a module are re-mapped to being 
+    `extern` declarations.
+    
+    Global variables from other modules are also similarly turned into extern declarations
+    to be mapped to C.
+
+
+EXAMPLE SYNTAX- TO BE DECIDED
+
+//Global registers- can be mapped to real registers if possible for
+//the unit.
+
+r64 myGlobal:int -379
+
+/*
+
+    //matching C prototype
+    auto_generated_struct_57 QQ(u32 arg1, u32 arg2)
+    
+    the auto-generated struct here is something which returns registers.
+*/
+fn myFunc QQ(r32 arg1, r32 arg2)->[r64, r64]
+    //these register allocations can be anywhere
+    //in the body of the function, and they can be
+    //lexically scoped.
+    r32 a
+    r32 b
+    r64 c
+    r64 d
+    
+    r32 e
+    r64 f
+
+    imm_int a 57 //store immediate integer 57 into a.
+    imm_int b 22 
+    addi c a b //Type promotion occurs after the result is calculated.
+    modi d a b //it would also be possible to `modu`
+    imm_int e -33
+    movse f e //sign extend mov.
+    //Looks like this in C:
+    /*
+        int e = -33;
+        long long int f;
+        f = -33;
+    */
+    //a while loop here...
+    :myLoop:
+        cmpi a 0 //compare against literal zero, returns 0 for less than,
+                //1 for equals, 2 for gt
+                //this sets a register called "FLAGS" invisibly...
+        jmpiflte theret
+        //loop body
+        scope
+            r32 myVariable
+            addi myVariable f d //do some interesting math.
+            muli myVariable myVariable myVariable
+            addi d d myVariable
+            addi a -1 a //decrement a.
+        end //myVariable goes out of scope, it is now garbage.
+        
+        jmp myLoop
+        
+        
+    
+    :theret:
+        return [d f]//we return a compound of two registers.
+                    //I will disallow implicit type promotion in
+                    //places like this where the instruction does not
+                    //provide information on what the types are... because
+                    //I cannot choose between ftod, dtof, movse or movze.
+        
+
+
+

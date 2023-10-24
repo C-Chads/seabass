@@ -1,0 +1,14 @@
+THE PROBLEM:
+
+If I write a new language on top of seabass, how can I use parsehooks from the vanilla language in them?
+
+THE SOLUTION:
+
+
+1. record what token is at the start of the token stream.
+2. Push a dummy token on which is invalid in seabass, or perhaps some closing square brackets.
+3. Push everything after the parsehook invocation (@myparsehook ...) onto the token stream.
+4. call the parsehook
+5. Pull everything off the token stream from before the dummy token.
+6. eat the dummy token
+7. back to business!

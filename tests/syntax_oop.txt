@@ -1,0 +1,72 @@
+
+
+/*
+    Small program to demonstrate object oriented programming in Seabass.
+*/
+
+
+class myClass
+    noexport //fancy keyword that basically means this type is not meant for the target.
+    int a
+    char* b
+end
+
+codegen int a = 25;
+
+method codegen myClass.ctor():
+    this.a = a++;
+    char[500] buf
+    __builtin_itoa(buf, this.a);
+    this.b = __builtin_strdup(buf);
+    __builtin_puts("I have been constructed! My string is...");
+    __builtin_puts(this.b);
+end
+
+method codegen myClass.dtor():
+    __builtin_puts("Goodbye! My string was...");
+    __builtin_puts(this.b);
+    __builtin_free(this.b);
+    a--
+end
+
+method codegen myClass.print():
+    __builtin_puts(this.b)
+end
+
+
+
+
+fn codegen what(): if(1) end end
+
+fn codegen codegen_main():
+
+    i64 i
+    for(i = 0, i < 10; i++)
+        myClass qq
+        myClass qq2
+        myClass qq3
+        myClass qq4
+        qq3.print()
+        if(i == 3) continue end
+        qq2.print()
+    end
+    
+    if(1)
+        //demo move...
+        myClass qq
+        myClass qq2
+        __builtin_free(qq.b); //ensure we don't leak memory...
+        qq := qq2;
+        qq2.b = __builtin_strdup("I seem to have lost my old string...");
+        qq.print();
+        qq2.print();
+    end
+    
+    return
+	
+end
+
+
+
+
+

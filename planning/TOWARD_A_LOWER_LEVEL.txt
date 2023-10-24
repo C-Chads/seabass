@@ -1,0 +1,82 @@
+
+TOWARD A LOWER LEVEL METAPROGRAMMING EXPERIENCE
+
+Seabass is powerful, but I can do better.
+
+I need an abstract assembly language- something that lets me
+define my own assembly instructions and run assembly at compiletime.
+
+Furthermore, I need to be able to edit the raw text rather than just
+a list of tokens, to be able to do stuff like whitespace-based scoping
+which is used by Python and the like to achieve interesting and effective
+ways of visualizing the structure of code, which is inherently the very
+core of what SEABASS aims to do.
+
+For this purpose, I want to design my own assembly language which has a
+"base level" and then adds new instructions and registers.
+
+It can be extended arbitrarily and the conversion 
+between the "fake" assembly
+
+and the real one can be manipulated arbitrarily.
+
+This portable assembly language would have unique pointer integer types,
+the capability to represent arbitrary hardware capabilities and facilities
+for compiling sections of it to native during parsing.
+
+That way you could do the same parser injection we do in seabass, but
+with assembly language. It could go all the way up, just like seabass.
+
+You could even compile it into native machine code and use the native code
+instead of the assembly to save time spent re-compiling your metaprogramming
+tools.
+
+I think it is best to continue working on seabass to learn metaprogramming
+and then use it as a "springboard" for developing the meta-assembly.
+
+Q: CAN SEABASS BE THE META-ASSEMBLY?
+
+A: I don't think so, but maybe. Seabass does not support pass-by-value
+structs, which means that seabass functions do not represent the capabilities
+of hardware which can pass structs in a register. Getting around this could be...
+difficult.
+
+If we analyzed the code and looked at all the structs to see which ones could
+be in a register, perhaps it would be possible to generate code in such a way that
+the hardware capability is represented, but I do not see it.
+
+I believe it really does have to be an assembly language. Something with 'registers'
+and 'instructions' and 'branch'.
+
+Q: CAN THE META-ASSEMBLY BE WRITTEN IN SEABASS?
+
+A: Yes, and this is sort of the plan. I'll keep developing seabass, working on meta-tools
+so that I know what's valuable, and then when I have the ability to export C code, I will
+begin work on the meta-assembly language. All work will shift over to Meta-Assembly, and all
+the tools i've written will be converted (hopefully not by hand, because I will write tools
+to convert them or make new ones that are equivalent or better).
+
+Q: WHY DON'T YOU STOP WORKING ON SEABASS AND START WORKING ON META-ASSEMBLY?
+
+A: Because if I did right now, I'd have to write it in C or C++. C is painful compared to seabass.
+
+Furthermore, I don't understand metaprogramming well enough to design it well.
+
+Q: WHY WON'T FUTURE CHANGES IN HARDWARE NEGATIVELY AFFECT META-ASSEMBLY AS WELL?
+
+A: Because future revisions in hardware will be able to be modeled in Meta-Assembly.
+
+It will be fully forward-compatible with iterations of itself. You'll be able to define new
+instructions, what they do, how they change the state of the machine, etcetera as well as
+the size of a pointer, the size of memory cells and so-on.
+
+It'll have to be an extremely abstract machine and multiple levels of abstraction will have
+to rest on top of meta-assembly to enable programming work. You'll basically template a whole
+compiler and standard library based on a hardware description, and the binaries will be generated.
+
+That said, it is conceivable that models of computation I haven't thought of will come
+into existence (perhaps because of my own work!) and cause meta-assembly to become outdated.
+
+But I believe that meta-assembly will be sufficient for at least a few years.
+
+

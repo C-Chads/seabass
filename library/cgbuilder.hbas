@@ -1,0 +1,1148 @@
+
+#guard cg_builder_library_DMHSW
+
+#include "cgast.hbas"
+
+/*
+	THE BUILDER NAMESPACE
+
+	Parsehooks are sometimes used only for builders.
+
+	I want to have a special namespace system specifically for builder parsehooks
+	which only work for codegen code.
+*/
+
+
+struct cg_builder_hook_namespace_entry
+    noexport
+	cgstr real //how is it REALLY invoked, the stuff after @?
+	cgstr good //what is its fake name, the ?
+end
+
+codegen cg_builder_hook_namespace_entry* builder_hook_namespace_entries = 0;
+codegen uptr builder_hook_namespace_nentries = 0;
+
+
+fn codegen builder_hook_namespace_add(cgstr real, cgstr fake):
+	builder_hook_namespace_nentries++;
+
+
+	//push onto the vector.	
+	builder_hook_namespace_entries = cast(cg_builder_hook_namespace_entry*)
+	__builtin_realloc(
+		cast(u8*)builder_hook_namespace_entries, 
+		sizeof(cg_builder_hook_namespace_entry) * builder_hook_namespace_nentries
+	);
+	
+	//realloc never fails, remember?
+	(builder_hook_namespace_entries + (builder_hook_namespace_nentries-1)).real:fromstr(real.s);
+	(builder_hook_namespace_entries + (builder_hook_namespace_nentries-1)).good:fromstr(fake.s);
+end
+
+fn codegen builder_hook_namespace_query(cgstr fake)->cgstr*:
+	cgstr* retval
+	cgstr* testme
+	u64 i
+
+	//search the list
+	for(i = 0, i < builder_hook_namespace_nentries, i++)
+		testme = 
+		(
+			builder_hook_namespace_entries + 
+			i
+		).good;
+		retval = (
+			builder_hook_namespace_entries + 
+			i
+		).real;
+		if(fake.s streq testme.s)
+			return retval;
+		end
+	end
+	return cast(cgstr*)0;
+end
+
+
+//THE BUILDER
+//makes new parsehooks which take in a token stream and return a token stream.
+//it actually writes TWO codegen functions:
+//one of them is the thing which is actually invoked.
+
+fn codegen parsehook_bldr():
+	cgstrll* retval
+	cgstrll* rwalk
+	cgstr fname //the wrapper- which is what is invoked.
+	cgstr fname2 //the thing you actually wrote, which returns to the wrapper.
+	cgstr fname3 //the original version of the name..
+	cgstrll* arglist //the code for the thing you actually wrote.
+
+	u64 linenum
+	u64 colnum
+	char* filename
+
+	if(cast(uptr)cg_peek() == 0)
+		__builtin_puts("ERROR! bldr invoked at end of file.");
+		__builtin_exit(1);
+	end
+
+	filename = cg_peek().filename;
+	linenum = cg_peek().linenum;
+	colnum = cg_peek().colnum;
+	
+	retval = cast(cgstrll*)0;
+
+	if(cast(uptr)cg_peek().text == 0)
+		char[500] buf;
+		__builtin_puts("ERROR! bldr invoked on empty token.");
+		__builtin_puts("File:");
+		__builtin_puts(filename);
+		__builtin_puts("Linenum:");
+		__builtin_utoa(buf, linenum);
+		__builtin_puts(buf);
+		
+		__builtin_puts("Colnum:");
+		__builtin_utoa(buf, colnum);
+		__builtin_puts(buf);
+		__builtin_exit(1);
+	end
+	fname:fromstr(cg_peek().text);
+	fname3:fromstr(cg_peek().text);
+	__builtin_consume();
+	if(1)
+		cgstr f
+		f:fromstr("parsehook_");
+		f:add(fname);
+		fname:free();
+		fname := f;
+		fname2:fromstr("cg_inner_");
+		fname2:add(fname);
+	end
+	if(1)
+		cgstr pre
+		pre:fromstr("cg_bldr_");
+		//this is in the builder namespace.
+		if(fname3:prefixed(pre) && (fname3.s strneq pre.s))
+			//create builder namespace entry.
+			cgstr fakename
+			fakename:fromstr(fname3.s + 8);
+			builder_hook_namespace_add(fname3, fakename);
+			//__builtin_puts("Registered:");
+			//__builtin_puts(fakename.s);
+			fakename:free();
+		end 
+		pre:free();
+		fname3:free();
+	end
+	//get the arglist.
+	arglist = cg_token_grab_arglist("Invalid argument list passed to builder.");
+
+	//if this is a lone thing...
+	if(arglist.d != CG_TOK_OBRACK)
+		char[500] buf;
+		__builtin_puts("BLDR ERROR! No Arglist!");
+		__builtin_puts("File:");
+		__builtin_puts(filename);
+		__builtin_puts("Linenum:");
+		__builtin_utoa(buf, linenum);
+		__builtin_puts(buf);
+		
+		__builtin_puts("Colnum:");
+		__builtin_utoa(buf, colnum);
+		__builtin_puts(buf);
+		__builtin_exit(1);
+	end
+	
+	//pop the brackets off.
+	arglist = cg_tok_arglist_remove_brackets(arglist);
+
+	//define the initial function- the inner one.
+
+	retval = cg_qtok("fn");
+	rwalk = retval;
+	rwalk:push_end(cg_qtok("codegen"));rwalk = rwalk.right;
+	rwalk:push_end(cg_qtok(fname2.s));rwalk = rwalk.right;
+	rwalk:push_end(cg_qtok("("));rwalk = rwalk.right;
+		rwalk:push_end(cg_qtok("cgstrll"));rwalk = rwalk.right;
+		rwalk:push_end(cg_qtok("*"));rwalk = rwalk.right;
+		rwalk:push_end(cg_qtok("inlist"));rwalk = rwalk.right;
+	rwalk:push_end(cg_qtok(")"));rwalk = rwalk.right;
+	rwalk:push_end(cg_qtok("->"));rwalk = rwalk.right;
+	rwalk:push_end(cg_qtok("cgstrll"));rwalk = rwalk.right;
+	rwalk:push_end(cg_qtok("*"));rwalk = rwalk.right;
+	rwalk:push_end(cg_qtok(":"));rwalk = rwalk.right;
+		rwalk:push_end(arglist);
+		//walk to the end.
+		while(rwalk.right != cast(cgstrll*)0)
+		    rwalk = rwalk.right;
+		end
+	rwalk:push_end(cg_qtok("end"));rwalk = rwalk.right;
+
+	//define the wrapper.
+	rwalk:push_end(cg_qtok("fn"));rwalk = rwalk.right;
+	rwalk:push_end(cg_qtok("codegen"));rwalk = rwalk.right;
+	rwalk:push_end(cg_qtok(fname.s));rwalk = rwalk.right;
+	rwalk:push_end(cg_qtok("("));rwalk = rwalk.right;
+	rwalk:push_end(cg_qtok(")"));rwalk = rwalk.right;
+	rwalk:push_end(cg_qtok(":"));rwalk = rwalk.right;
+
+		
+				
+		//Some place to store the returned list.
+		rwalk:push_end(cg_qtok("cgstrll"));rwalk = rwalk.right;
+		rwalk:push_end(cg_qtok("*"));rwalk = rwalk.right;
+		rwalk:push_end(cg_qtok("writeme"));rwalk = rwalk.right;
+		//fetch the inlist
+		rwalk:push_end(cg_qtok("cgstrll"));rwalk = rwalk.right;
+		rwalk:push_end(cg_qtok("*"));rwalk = rwalk.right;
+		rwalk:push_end(cg_qtok("inlist"));rwalk = rwalk.right;		
+		rwalk:push_end(cg_qtok(";"));rwalk = rwalk.right;
+
+		//fetch the inlist
+		//
+		rwalk:push_end(cg_qtok("inlist"));rwalk = rwalk.right;		
+		rwalk:push_end(cg_qtok("="));rwalk = rwalk.right;		
+
+		//use the arglist grabber.
+		rwalk:push_end(cg_qtok("("));rwalk = rwalk.right;
+			rwalk:push_end(cg_qtok("cast"));rwalk = rwalk.right;
+			rwalk:push_end(cg_qtok("("));rwalk = rwalk.right;
+				rwalk:push_end(cg_qtok("cgstrll"));rwalk = rwalk.right;
+				rwalk:push_end(cg_qtok("*"));rwalk = rwalk.right;
+			rwalk:push_end(cg_qtok(")"));rwalk = rwalk.right;
+			
+			rwalk:push_end(cg_qtok("cg_token_grab_arglist"));rwalk = rwalk.right;
+			rwalk:push_end(cg_qtok("("));rwalk = rwalk.right;
+			if(1)
+				cgstr qq;
+				cgstr tt;
+				qq:fromstr("\"ERROR! Builder \"");
+					//parsehook_
+					tt.s = fname.s + 10; //skip parsehook_
+				qq:add(tt);
+				tt.s = "\" has received an invalid arglist\"";
+				qq:add(tt);
+				rwalk:push_end(cg_qtok(qq.s));rwalk = rwalk.right;
+				qq:free();
+			end
+			rwalk:push_end(cg_qtok(")"));rwalk = rwalk.right;
+		rwalk:push_end(cg_qtok(")"));rwalk = rwalk.right;
+		//end the assignment to inlist
+		rwalk:push_end(cg_qtok(";"));rwalk = rwalk.right;
+		
+		//remove brackets
+		/*
+			if(inlist.d == (cast(u8*)14))
+				inlist = cg_tok_arglist_remove_brackets(inlist);
+			end
+		*/
+		
+		rwalk:push_end(cg_qtok("if"));rwalk = rwalk.right;
+		rwalk:push_end(cg_qtok("("));rwalk = rwalk.right;
+			rwalk:push_end(cg_qtok("inlist"));rwalk = rwalk.right;
+			rwalk:push_end(cg_qtok("."));rwalk = rwalk.right;
+			rwalk:push_end(cg_qtok("d"));rwalk = rwalk.right;
+			rwalk:push_end(cg_qtok("=="));rwalk = rwalk.right;
+			rwalk:push_end(cg_qtok("("));rwalk = rwalk.right;
+				rwalk:push_end(cg_qtok("cast"));rwalk = rwalk.right;
+				rwalk:push_end(cg_qtok("("));rwalk = rwalk.right;
+					rwalk:push_end(cg_qtok("u8"));rwalk = rwalk.right;
+					rwalk:push_end(cg_qtok("*"));rwalk = rwalk.right;
+				rwalk:push_end(cg_qtok(")"));rwalk = rwalk.right;
+					rwalk:push_end(cg_qtok("14"));rwalk = rwalk.right; //the code for OBRACK.
+			rwalk:push_end(cg_qtok(")"));rwalk = rwalk.right;
+		rwalk:push_end(cg_qtok(")"));rwalk = rwalk.right;
+		
+			rwalk:push_end(cg_qtok("inlist"));rwalk = rwalk.right;
+			rwalk:push_end(cg_qtok("="));rwalk = rwalk.right;
+			rwalk:push_end(cg_qtok("cg_tok_arglist_remove_brackets"));rwalk = rwalk.right;
+			rwalk:push_end(cg_qtok("("));rwalk = rwalk.right;
+				rwalk:push_end(cg_qtok("inlist"));rwalk = rwalk.right;
+			rwalk:push_end(cg_qtok(")"));rwalk = rwalk.right;
+			rwalk:push_end(cg_qtok(";"));rwalk = rwalk.right;
+			
+		rwalk:push_end(cg_qtok("end"));rwalk = rwalk.right;
+		
+		//call the inner function. Store the result in a variable- writeme
+		rwalk:push_end(cg_qtok("writeme"));rwalk = rwalk.right;
+		rwalk:push_end(cg_qtok("="));rwalk = rwalk.right;
+		rwalk:push_end(cg_qtok(fname2.s));rwalk = rwalk.right;
+		rwalk:push_end(cg_qtok("("));rwalk = rwalk.right;
+		rwalk:push_end(cg_qtok("inlist"));rwalk = rwalk.right;
+		rwalk:push_end(cg_qtok(")"));rwalk = rwalk.right;
+		rwalk:push_end(cg_qtok(";"));rwalk = rwalk.right;
+
+		//free the inlist
+		rwalk:push_end(cg_qtok("inlist"));rwalk = rwalk.right;
+		rwalk:push_end(cg_qtok(":"));rwalk = rwalk.right;
+		rwalk:push_end(cg_qtok("freelist"));rwalk = rwalk.right;
+		rwalk:push_end(cg_qtok("("));rwalk = rwalk.right;
+		rwalk:push_end(cg_qtok(")"));rwalk = rwalk.right;
+		rwalk:push_end(cg_qtok(";"));rwalk = rwalk.right;
+
+		//push writeme
+		rwalk:push_end(cg_qtok("if"));rwalk = rwalk.right;
+		rwalk:push_end(cg_qtok("("));rwalk = rwalk.right;
+			rwalk:push_end(cg_qtok("cast"));rwalk = rwalk.right;
+			rwalk:push_end(cg_qtok("("));rwalk = rwalk.right;
+			rwalk:push_end(cg_qtok("uptr"));rwalk = rwalk.right;
+			rwalk:push_end(cg_qtok(")"));rwalk = rwalk.right;		
+			rwalk:push_end(cg_qtok("writeme"));rwalk = rwalk.right;
+		rwalk:push_end(cg_qtok(")"));rwalk = rwalk.right;		
+		
+			rwalk:push_end(cg_qtok("cgtok_push_stream"));rwalk = rwalk.right;
+			rwalk:push_end(cg_qtok("("));rwalk = rwalk.right;
+				rwalk:push_end(cg_qtok("writeme"));rwalk = rwalk.right;
+			rwalk:push_end(cg_qtok(")"));rwalk = rwalk.right;
+			rwalk:push_end(cg_qtok(";"));rwalk = rwalk.right;
+					
+		rwalk:push_end(cg_qtok("else"));rwalk = rwalk.right;
+			rwalk:push_end(cg_qtok("__builtin_puts"));rwalk = rwalk.right;
+			rwalk:push_end(cg_qtok("("));rwalk = rwalk.right;
+				//make something creative.
+				if(1)
+					cgstr qq;
+					cgstr tt;
+					qq:fromstr("\"ERROR! Builder \"");
+						//parsehook_
+						tt.s = fname.s + 10; //skip parsehook_
+					qq:add(tt);
+					tt.s = "\" has returned an invalid arglist, it cannot be pushed onto the token stream\"";
+					qq:add(tt);
+					rwalk:push_end(cg_qtok(qq.s));rwalk = rwalk.right;
+					qq:free();
+				end
+			rwalk:push_end(cg_qtok(")"));rwalk = rwalk.right;
+			rwalk:push_end(cg_qtok(";"));rwalk = rwalk.right;
+		rwalk:push_end(cg_qtok("end"));rwalk = rwalk.right;
+	rwalk:push_end(cg_qtok("end"));rwalk = rwalk.right;
+	fname:free();
+	fname2:free();
+	
+	cgtok_push_stream(retval);
+end
+
+
+fn codegen parsehook_bldrn():
+	cgstrll* retval
+	cgstrll* rwalk
+	cgstr fname //the wrapper- which is what is invoked.
+	cgstr fname2 //the thing you actually wrote, which returns to the wrapper.
+	cgstr fname3 //the original version of the name..
+	cgstrll* arglist //the code for the thing you actually wrote.
+
+	u64 linenum
+	u64 colnum
+	u64 nargs
+	char* filename
+
+	if(cast(uptr)cg_peek() == 0)
+		__builtin_puts("ERROR! bldr invoked at end of file.");
+		__builtin_exit(1);
+	end
+
+	filename = cg_peek().filename;
+	linenum = cg_peek().linenum;
+	colnum = cg_peek().colnum;
+	
+	retval = cast(cgstrll*)0;
+
+	if(cast(uptr)cg_peek().text == 0)
+		char[500] buf;
+		__builtin_puts("ERROR! bldr invoked on empty token.");
+		__builtin_puts("File:");
+		__builtin_puts(filename);
+		__builtin_puts("Linenum:");
+		__builtin_utoa(buf, linenum);
+		__builtin_puts(buf);
+		
+		__builtin_puts("Colnum:");
+		__builtin_utoa(buf, colnum);
+		__builtin_puts(buf);
+		__builtin_exit(1);
+	end
+	fname:fromstr(cg_peek().text);
+	fname3:fromstr(cg_peek().text);
+	__builtin_consume();
+	if(1)
+		cgstr f
+		f:fromstr("parsehook_");
+		f:add(fname);
+		fname:free();
+		fname := f;
+		fname2:fromstr("cg_inner_");
+		fname2:add(fname);
+	end
+	if(1)
+		cgstr pre
+		pre:fromstr("cg_bldr_");
+		//this is in the builder namespace.
+		if(fname3:prefixed(pre) && (fname3.s strneq pre.s))
+			//create builder namespace entry.
+			cgstr fakename
+			fakename:fromstr(fname3.s + 8);
+			builder_hook_namespace_add(fname3, fakename);
+			//__builtin_puts("Registered:");
+			//__builtin_puts(fakename.s);
+			fakename:free();
+		end 
+		pre:free();
+		fname3:free();
+	end
+    if(cg_peek().d != CG_TOK_INT_CONST)
+		char[500] buf;
+		__builtin_puts("BLDRN ERROR! No nargs!");
+		__builtin_puts("Syntax is @bldrn myBldr_with_3_args 3 [code();]");
+		__builtin_puts("File:");
+		__builtin_puts(filename);
+		__builtin_puts("Linenum:");
+		__builtin_utoa(buf, linenum);
+		__builtin_puts(buf);
+		
+		__builtin_puts("Colnum:");
+		__builtin_utoa(buf, colnum);
+		__builtin_puts(buf);
+		__builtin_exit(1);
+	end
+	
+	nargs = __builtin_atoi(cg_peek().text);
+	__builtin_consume(); //eat it.
+	//get the arglist.
+	arglist = cg_token_grab_arglist("Invalid argument list passed to builder.");
+
+	//if this is a lone thing...
+	if(arglist.d != CG_TOK_OBRACK)
+		char[500] buf;
+		__builtin_puts("BLDR ERROR! No Arglist!");
+		__builtin_puts("File:");
+		__builtin_puts(filename);
+		__builtin_puts("Linenum:");
+		__builtin_utoa(buf, linenum);
+		__builtin_puts(buf);
+		
+		__builtin_puts("Colnum:");
+		__builtin_utoa(buf, colnum);
+		__builtin_puts(buf);
+		__builtin_exit(1);
+	end
+	
+	//pop the brackets off.
+	arglist = cg_tok_arglist_remove_brackets(arglist);
+
+	//define the initial function- the inner one.
+
+	retval = cg_qtok("fn");
+	rwalk = retval;
+	rwalk:push_end(cg_qtok("codegen"));rwalk = rwalk.right;
+	rwalk:push_end(cg_qtok(fname2.s));rwalk = rwalk.right;
+	rwalk:push_end(cg_qtok("("));rwalk = rwalk.right;
+	if(nargs > 0)
+		rwalk:push_end(cg_qtok("cgstrll"));rwalk = rwalk.right;
+		rwalk:push_end(cg_qtok("*"));rwalk = rwalk.right;
+		rwalk:push_end(cg_qtok("inlist"));rwalk = rwalk.right;
+	end
+	rwalk:push_end(cg_qtok(")"));rwalk = rwalk.right;
+	rwalk:push_end(cg_qtok("->"));rwalk = rwalk.right;
+	rwalk:push_end(cg_qtok("cgstrll"));rwalk = rwalk.right;
+	rwalk:push_end(cg_qtok("*"));rwalk = rwalk.right;
+	rwalk:push_end(cg_qtok(":"));rwalk = rwalk.right;
+		rwalk:push_end(arglist);
+		//walk to the end.
+		for(0, rwalk.right != cast(cgstrll*)0, rwalk = rwalk.right)
+			;
+		end
+	rwalk:push_end(cg_qtok("end"));rwalk = rwalk.right;
+
+	//define the wrapper.
+	rwalk:push_end(cg_qtok("fn"));rwalk = rwalk.right;
+	rwalk:push_end(cg_qtok("codegen"));rwalk = rwalk.right;
+	rwalk:push_end(cg_qtok(fname.s));rwalk = rwalk.right;
+	rwalk:push_end(cg_qtok("("));rwalk = rwalk.right;
+	rwalk:push_end(cg_qtok(")"));rwalk = rwalk.right;
+	rwalk:push_end(cg_qtok(":"));rwalk = rwalk.right;
+
+		
+				
+		//Some place to store the returned list.
+		rwalk:push_end(cg_qtok("cgstrll"));rwalk = rwalk.right;
+		rwalk:push_end(cg_qtok("*"));rwalk = rwalk.right;
+		rwalk:push_end(cg_qtok("writeme"));rwalk = rwalk.right;
+		
+		if(nargs > 0)
+    		rwalk:push_end(cg_qtok("cgstrll"));rwalk = rwalk.right;
+    		rwalk:push_end(cg_qtok("*"));rwalk = rwalk.right;
+    		rwalk:push_end(cg_qtok("inlist"));rwalk = rwalk.right;
+    		if(nargs > 1)
+        		rwalk:push_end(cg_qtok("cgstrll"));rwalk = rwalk.right;
+        		rwalk:push_end(cg_qtok("*"));rwalk = rwalk.right;
+        		rwalk:push_end(cg_qtok("inlist2"));rwalk = rwalk.right;		
+    		end
+        end
+		//fetch the inlist
+		//
+		if(nargs > 0)
+    		rwalk:push_end(cg_qtok("inlist"));rwalk = rwalk.right;		
+    		rwalk:push_end(cg_qtok("="));rwalk = rwalk.right;		
+
+    		//use the arglist grabber.
+    		rwalk:push_end(cg_qtok("("));rwalk = rwalk.right;
+    			rwalk:push_end(cg_qtok("cast"));rwalk = rwalk.right;
+    			rwalk:push_end(cg_qtok("("));rwalk = rwalk.right;
+    				rwalk:push_end(cg_qtok("cgstrll"));rwalk = rwalk.right;
+    				rwalk:push_end(cg_qtok("*"));rwalk = rwalk.right;
+    			rwalk:push_end(cg_qtok(")"));rwalk = rwalk.right;
+    			
+    			rwalk:push_end(cg_qtok("cg_token_grab_arglist"));rwalk = rwalk.right;
+    			rwalk:push_end(cg_qtok("("));rwalk = rwalk.right;
+    			if(1)
+    				cgstr qq;
+    				cgstr tt;
+    				qq:fromstr("\"ERROR! Builder \"");
+    					//parsehook_
+    					tt.s = fname.s + 10; //skip parsehook_
+    				qq:add(tt);
+    				tt.s = "\" has received an invalid arglist\"";
+    				qq:add(tt);
+    				rwalk:push_end(cg_qtok(qq.s));rwalk = rwalk.right;
+    				qq:free();
+    			end
+    			rwalk:push_end(cg_qtok(")"));rwalk = rwalk.right;
+    		rwalk:push_end(cg_qtok(")"));rwalk = rwalk.right;
+    		//end the assignment to inlist
+    		rwalk:push_end(cg_qtok(";"));rwalk = rwalk.right;
+    		i64 nargs_left
+    		nargs_left = nargs-1;
+    		for(0, nargs_left, nargs_left--)
+                //grab an additional argument.
+                      //fetch the inlist
+                      rwalk:push_end(cg_qtok("inlist2"));rwalk = rwalk.right;		
+                      rwalk:push_end(cg_qtok("="));rwalk = rwalk.right;		
+
+                      //use the arglist grabber.
+                      rwalk:push_end(cg_qtok("("));rwalk = rwalk.right;
+                          rwalk:push_end(cg_qtok("cast"));rwalk = rwalk.right;
+                          rwalk:push_end(cg_qtok("("));rwalk = rwalk.right;
+                              rwalk:push_end(cg_qtok("cgstrll"));rwalk = rwalk.right;
+                              rwalk:push_end(cg_qtok("*"));rwalk = rwalk.right;
+                          rwalk:push_end(cg_qtok(")"));rwalk = rwalk.right;
+
+                          rwalk:push_end(cg_qtok("cg_token_grab_arglist"));rwalk = rwalk.right;
+                          rwalk:push_end(cg_qtok("("));rwalk = rwalk.right;
+                          if(1)
+                              cgstr qq;
+                              cgstr tt;
+                              qq:fromstr("\"ERROR! Buildern \"");
+                              //parsehook_
+                              tt.s = fname.s + 10; //skip parsehook_
+                              qq:add(tt);
+                              tt.s = "\" has received an invalid arglist\"";
+                              qq:add(tt);
+                              rwalk:push_end(cg_qtok(qq.s));rwalk = rwalk.right;
+                              qq:free();
+                          end
+                          rwalk:push_end(cg_qtok(")"));rwalk = rwalk.right;
+                      rwalk:push_end(cg_qtok(")"));rwalk = rwalk.right;
+                      //end the assignment to inlist2
+                      rwalk:push_end(cg_qtok(";"));rwalk = rwalk.right;
+                      //push inlist2 onto inlist.
+                      rwalk:push_end(cg_qtok("inlist"));rwalk = rwalk.right;
+                      rwalk:push_end(cg_qtok(":"));rwalk = rwalk.right;
+                      rwalk:push_end(cg_qtok("push_end"));rwalk = rwalk.right;
+                      rwalk:push_end(cg_qtok("("));rwalk = rwalk.right;
+                      rwalk:push_end(cg_qtok("inlist2"));rwalk = rwalk.right;
+                      rwalk:push_end(cg_qtok(")"));rwalk = rwalk.right;
+                      rwalk:push_end(cg_qtok(";"));rwalk = rwalk.right;
+            end
+
+        end
+
+		//call the inner function. Store the result in a variable- writeme
+		rwalk:push_end(cg_qtok("writeme"));rwalk = rwalk.right;
+		rwalk:push_end(cg_qtok("="));rwalk = rwalk.right;
+		rwalk:push_end(cg_qtok(fname2.s));rwalk = rwalk.right;
+		rwalk:push_end(cg_qtok("("));rwalk = rwalk.right;
+	    if(nargs > 0)
+		    rwalk:push_end(cg_qtok("inlist"));rwalk = rwalk.right;
+		end
+		rwalk:push_end(cg_qtok(")"));rwalk = rwalk.right;
+		rwalk:push_end(cg_qtok(";"));rwalk = rwalk.right;
+
+		//free the inlist
+		if(nargs > 0)
+    		rwalk:push_end(cg_qtok("inlist"));rwalk = rwalk.right;
+    		rwalk:push_end(cg_qtok(":"));rwalk = rwalk.right;
+    		rwalk:push_end(cg_qtok("freelist"));rwalk = rwalk.right;
+    		rwalk:push_end(cg_qtok("("));rwalk = rwalk.right;
+    		rwalk:push_end(cg_qtok(")"));rwalk = rwalk.right;
+    		rwalk:push_end(cg_qtok(";"));rwalk = rwalk.right;
+        end
+		//push writeme
+		rwalk:push_end(cg_qtok("if"));rwalk = rwalk.right;
+		rwalk:push_end(cg_qtok("("));rwalk = rwalk.right;
+			rwalk:push_end(cg_qtok("cast"));rwalk = rwalk.right;
+			rwalk:push_end(cg_qtok("("));rwalk = rwalk.right;
+			rwalk:push_end(cg_qtok("uptr"));rwalk = rwalk.right;
+			rwalk:push_end(cg_qtok(")"));rwalk = rwalk.right;		
+			rwalk:push_end(cg_qtok("writeme"));rwalk = rwalk.right;
+		rwalk:push_end(cg_qtok(")"));rwalk = rwalk.right;		
+		
+			rwalk:push_end(cg_qtok("cgtok_push_stream"));rwalk = rwalk.right;
+			rwalk:push_end(cg_qtok("("));rwalk = rwalk.right;
+				rwalk:push_end(cg_qtok("writeme"));rwalk = rwalk.right;
+			rwalk:push_end(cg_qtok(")"));rwalk = rwalk.right;
+			rwalk:push_end(cg_qtok(";"));rwalk = rwalk.right;
+					
+		rwalk:push_end(cg_qtok("else"));rwalk = rwalk.right;
+			rwalk:push_end(cg_qtok("__builtin_puts"));rwalk = rwalk.right;
+			rwalk:push_end(cg_qtok("("));rwalk = rwalk.right;
+				//make something creative.
+				if(1)
+					cgstr qq;
+					cgstr tt;
+					qq:fromstr("\"ERROR! Builder \"");
+						//parsehook_
+						tt.s = fname.s + 10; //skip parsehook_
+					qq:add(tt);
+					tt.s = "\" has returned an invalid arglist, it cannot be pushed onto the token stream\"";
+					qq:add(tt);
+					rwalk:push_end(cg_qtok(qq.s));rwalk = rwalk.right;
+					qq:free();
+				end
+			rwalk:push_end(cg_qtok(")"));rwalk = rwalk.right;
+			rwalk:push_end(cg_qtok(";"));rwalk = rwalk.right;
+		rwalk:push_end(cg_qtok("end"));rwalk = rwalk.right;
+	rwalk:push_end(cg_qtok("end"));rwalk = rwalk.right;
+	fname:free();
+	fname2:free();
+	
+	cgtok_push_stream(retval);
+end
+
+
+
+
+
+
+//format
+//@ifnull [ptr_expr]
+@bldr cg_bldr_ifnull [
+	cgstrll* retval
+	cgstrll* inlist_dupe
+
+	inlist_dupe = inlist:dupell();
+
+	retval =  (cg_qtok("if"));
+	retval:push_end(cg_qtok("("));
+
+		retval:push_end(cg_qtok("!"));
+		retval:push_end(cg_qtok("cast"));
+			retval:push_end(cg_qtok("("));
+				retval:push_end(cg_qtok("uptr"));
+			retval:push_end(cg_qtok(")"));
+
+		retval:push_end(cg_qtok("("));
+			retval:push_end(inlist_dupe);
+		retval:push_end(cg_qtok(")"));
+
+	retval:push_end(cg_qtok(")"));
+	//retval:debug_print();
+	return retval;
+]
+
+@bldr cg_bldr_ifnotnull [
+	cgstrll* retval
+	cgstrll* inlist_dupe
+
+	inlist_dupe = inlist:dupell();
+
+	retval =  (cg_qtok("if"));
+	retval:push_end(cg_qtok("("));
+
+		retval:push_end(cg_qtok("cast"));
+			retval:push_end(cg_qtok("("));
+				retval:push_end(cg_qtok("uptr"));
+			retval:push_end(cg_qtok(")"));
+
+		retval:push_end(cg_qtok("("));
+			retval:push_end(inlist_dupe);
+		retval:push_end(cg_qtok(")"));
+
+	retval:push_end(cg_qtok(")"));
+	//retval:debug_print();
+	return retval;
+]
+
+
+/*
+	Builder namespace wrapper.
+
+	used exactly like builder, but automatically detects
+	usage of stuff in the builder parsehook namespace.
+*/
+
+@bldr mkbldr [
+	cgstrll* retval
+	cgstrll* inlist_dupe
+	cgstrll* following
+	cgstrll* walker
+
+	inlist_dupe = inlist:dupell();
+	following = inlist_dupe.right;
+	inlist_dupe.right = cast(cgstrll*)0;
+
+	@cg_bldr_ifnull [following]
+		char[500] buf;
+		__builtin_puts("MKBUILDER_ERROR");
+		__builtin_puts("Invoked mkbldr with null body.");
+		__builtin_puts("Filename:");
+		__builtin_puts(following.filename);
+		__builtin_puts("Linenum:");
+		__builtin_utoa(buf, following.linenum);
+		__builtin_puts(buf);
+		__builtin_puts("Colnum:");
+		__builtin_utoa(buf, following.colnum);
+		__builtin_puts(buf);
+		__builtin_exit(1);
+	end
+
+	for(walker = following, 1, walker = walker.right)
+		//we definitely won't find anything if we're null, or our right
+		@cg_bldr_ifnull [walker] break end
+		@cg_bldr_ifnull [walker.right] break end
+		//we definitely won't find anything if our text or our right's text is null.
+		@cg_bldr_ifnull [walker.text] continue end
+		@cg_bldr_ifnull [walker.right.text] continue end
+		if(
+			(walker.d == CG_TOK_OPERATOR) && (walker.text streq "@")
+		)
+			//check if we have one!
+			cgstr* m
+			cgstr f
+			f.s = walker.right.text;
+			m = builder_hook_namespace_query(f);
+			@cg_bldr_ifnotnull [m]
+				//do the replacement.
+				f:free();
+				walker.right.text = __builtin_strdup(m.s);
+			end
+		end
+	end
+	
+
+	retval =  (cg_qtok("@"));
+	retval:push_end(cg_qtok("bldr"));
+	retval:push_end(inlist_dupe);
+	retval:push_end(cg_qtok("["));
+	retval:push_end(following);
+	retval:push_end(cg_qtok("]"));
+	return retval;
+]
+
+//TODO: mkbldrn
+
+
+//mkbldrn
+//actually somewhat simpler than mkbldr
+//it takes a number of arguments expected
+@bldrn mkbldrn 3 [
+	cgstrll* retval
+	cgstrll* inlist_dupe
+	cgstrll* following
+	cgstrll* walker
+	
+	cgstr name
+	
+
+	inlist_dupe = inlist:dupell();
+	following = inlist_dupe.right;
+
+	@cg_bldr_ifnull [following]
+		char[500] buf;
+		__builtin_puts("MKBUILDER_ERROR");
+		__builtin_puts("Invoked mkbldrn with null where the number of args should be");
+		__builtin_puts("Filename:");
+		__builtin_puts(following.filename);
+		__builtin_puts("Linenum:");
+		__builtin_utoa(buf, following.linenum);
+		__builtin_puts(buf);
+		__builtin_puts("Colnum:");
+		__builtin_utoa(buf, following.colnum);
+		__builtin_puts(buf);
+		__builtin_exit(1);
+	end
+
+	for(walker = following, 1, walker = walker.right)
+		//we definitely won't find anything if we're null, or our right
+		@cg_bldr_ifnull [walker] break end
+		@cg_bldr_ifnull [walker.right] break end
+		//we definitely won't find anything if our text or our right's text is null.
+		@cg_bldr_ifnull [walker.text] continue end
+		@cg_bldr_ifnull [walker.right.text] continue end
+		if(
+			(walker.d == CG_TOK_OPERATOR) && (walker.text streq "@")
+		)
+			//check if we have one!
+			cgstr* m
+			cgstr f
+			f.s = walker.right.text;
+			m = builder_hook_namespace_query(f);
+			@cg_bldr_ifnotnull [m]
+				//do the replacement.
+				f:free();
+				walker.right.text = __builtin_strdup(m.s);
+			end
+		end
+	end
+	
+
+	retval =  (cg_qtok("@")); walker = retval;
+	retval:push_end(cg_qtok("bldrn")); walker = walker.right;
+	retval:push_end(inlist_dupe);
+	return retval;
+]
+
+
+
+
+
+
+
+@bldrn cg_bldr_dupell_inlist 0 [
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	cgstrll* retval
+	cgstrll* inlist_dupe
+	cgstrll* rwalk
+
+	retval = cg_qtok("cgstrll");rwalk = retval;
+	rwalk:push_end(cg_qtok("*"));rwalk = rwalk.right;
+	rwalk:push_end(cg_qtok("inlist_dupe"));rwalk = rwalk.right;
+
+	rwalk:push_end(cg_qtok("inlist_dupe"));rwalk = rwalk.right;
+	rwalk:push_end(cg_qtok("="));rwalk = rwalk.right;
+	rwalk:push_end(cg_qtok("inlist"));rwalk = rwalk.right;
+	rwalk:push_end(cg_qtok(":"));rwalk = rwalk.right;
+	rwalk:push_end(cg_qtok("dupell"));rwalk = rwalk.right;
+	rwalk:push_end(cg_qtok("(")  );rwalk = rwalk.right;
+	rwalk:push_end(cg_qtok(")"));rwalk = rwalk.right;
+	rwalk:push_end(cg_qtok(";"));
+	return retval;
+]
+
+		
+@bldrn cg_bldr_dupe_inlist 0 [
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	cgstrll* retval
+	cgstrll* inlist_dupe
+	cgstrll* rwalk
+
+
+	retval = cg_qtok("cgstrll");rwalk = retval;
+	rwalk:push_end(cg_qtok("*"));rwalk = rwalk.right;
+	rwalk:push_end(cg_qtok("inlist_dupe"));rwalk = rwalk.right;
+
+	rwalk:push_end(cg_qtok("inlist_dupe"));rwalk = rwalk.right;
+	rwalk:push_end(cg_qtok("="));rwalk = rwalk.right;
+	rwalk:push_end(cg_qtok("inlist"));rwalk = rwalk.right;
+	rwalk:push_end(cg_qtok(":"));rwalk = rwalk.right;
+	rwalk:push_end(cg_qtok("dupe"));rwalk = rwalk.right;
+	rwalk:push_end(cg_qtok("(")  );rwalk = rwalk.right;
+	rwalk:push_end(cg_qtok(")"));rwalk = rwalk.right;
+	rwalk:push_end(cg_qtok(";"));
+	return retval;
+]
+
+//Tools for making builders..
+//TOOL 1: THE QTOK PUSHER
+//@pushqtok [expr]
+//expands to
+//rwalk:push_end(cg_qtok(";"));walker = walker.right;
+
+@mkbldr [
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	    cg_bldr_pushqtok
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	cgstrll* retval
+	cgstrll* rwalk
+
+	@dupell_inlist ;
+	
+	retval =       cg_qtok("rwalk");rwalk = retval;
+	rwalk:push_end(cg_qtok(":"));rwalk = rwalk.right;
+	rwalk:push_end(cg_qtok("push_end"));rwalk = rwalk.right;
+	rwalk:push_end(cg_qtok("("));rwalk = rwalk.right;
+	
+    	rwalk:push_end(cg_qtok("cg_qtok"));rwalk = rwalk.right;
+    	rwalk:push_end(cg_qtok("("));rwalk = rwalk.right;
+    	    rwalk:push_end(inlist_dupe);rwalk = rwalk.right;
+    	rwalk:push_end(cg_qtok(")"));rwalk = rwalk.right;
+	
+	rwalk:push_end(cg_qtok(")"));rwalk = rwalk.right;
+	rwalk:push_end(cg_qtok(";"));rwalk = rwalk.right;
+	
+	rwalk:push_end(cg_qtok("rwalk"));rwalk = retval;
+	rwalk:push_end(cg_qtok("="));rwalk = rwalk.right;
+	rwalk:push_end(cg_qtok("rwalk"));rwalk = retval;
+	rwalk:push_end(cg_qtok("."));rwalk = retval;
+	rwalk:push_end(cg_qtok("right"));rwalk = retval;
+	rwalk:push_end(cg_qtok(";"));rwalk = rwalk.right;
+	//retval:debug_print();
+	return retval;
+]
+
+
+@mkbldr [
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	    cg_bldr_initqtok
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	@dupell_inlist ;
+	
+	//automate this line.
+	cgstrll* retval
+	cgstrll* rwalk
+	retval = cg_qtok("cgstrll");rwalk = retval;
+	
+	@pushqtok "*"
+	@pushqtok "retval"
+	
+	@pushqtok "cgstrll"
+	@pushqtok "*"
+	@pushqtok "rwalk"
+	
+	@pushqtok "retval"
+	@pushqtok "="
+	@pushqtok "cg_qtok"
+	@pushqtok "("
+	 rwalk:push_end(inlist_dupe);rwalk = rwalk.right;
+	@pushqtok ")"
+	@pushqtok ";"
+	@pushqtok "rwalk"
+	@pushqtok "="
+	@pushqtok "retval"
+	@pushqtok ";"
+	return retval;
+]
+
+//same as above, but no variable declarations.
+@mkbldr [
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	    cg_bldr_initqtok_nodecl
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	
+	@initqtok "retval"
+	@pushqtok "="
+	@pushqtok "cg_qtok"
+	@pushqtok "("
+	 rwalk:push_end(inlist:dupe());rwalk = rwalk.right;
+	@pushqtok ")"
+	@pushqtok ";"
+	@pushqtok "rwalk"
+	@pushqtok "="
+	@pushqtok "retval"
+	@pushqtok ";"
+	return retval;
+]
+
+@mkbldr [
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	    cg_bldr_initvars
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	@initqtok "cgstrll"
+	@pushqtok "*"
+	@pushqtok "retval"
+	
+	@pushqtok "cgstrll"
+	@pushqtok "*"
+	@pushqtok "rwalk"
+	return retval;
+]
+
+
+@mkbldr [
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	    cg_bldr_initvars_dummy
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	@initqtok "cgstrll"
+	@pushqtok "*"
+	@pushqtok "retval"
+	
+	@pushqtok "cgstrll"
+	@pushqtok "*"
+	@pushqtok "rwalk"
+	@pushqtok "@"
+	@pushqtok "cg_bldr_initqtok"
+	@pushqtok "\"#\""
+	return retval;
+]
+
+@mkbldr [
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	    cg_bldr_initvars_dummy_var
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	@initqtok "cgstrll"
+	@pushqtok "*"
+	@pushqtok "retval"
+	
+	@pushqtok "cgstrll"
+	@pushqtok "dummy"
+	
+	@pushqtok "cgstrll"
+	@pushqtok "*"
+	@pushqtok "rwalk"
+	
+	@pushqtok "dummy"
+	@pushqtok "."
+	@pushqtok "text"
+	@pushqtok "="
+	@pushqtok "\"#\""
+	@pushqtok ";"
+    @pushqtok "dummy"
+	@pushqtok "."
+    @pushqtok "d"
+	@pushqtok "="
+	@pushqtok "\"0\""
+	@pushqtok ";"
+	@pushqtok "retval"
+	@pushqtok "="
+	@pushqtok "dummy"
+	@pushqtok ";"
+	return retval;
+]
+
+
+@mkbldr [
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	    cg_bldr_inittok
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    @dupell_inlist ;
+	@initqtok "cgstrll"
+	@pushqtok "*"
+	@pushqtok "retval"
+	
+	@pushqtok "cgstrll"
+	@pushqtok "*"
+	@pushqtok "rwalk"
+	
+	@pushqtok "retval"
+	@pushqtok "="
+	//not qtok!
+	//@pushqtok "cg_qtok"
+	@pushqtok "("
+	 rwalk:push_end(inlist_dupe);rwalk = rwalk.right;
+	@pushqtok ")"
+	@pushqtok ";"
+	@pushqtok "rwalk"
+	@pushqtok "="
+	@pushqtok "retval"
+	@pushqtok ";"
+	return retval;
+]
+
+@mkbldr [
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	    cg_bldr_inittok_nodecl
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    @dupell_inlist ;
+	
+	@initqtok "retval"
+	@pushqtok "="
+	@pushqtok "cg_qtok"
+	@pushqtok "("
+	 rwalk:push_end(inlist_dupe);rwalk = rwalk.right;
+	@pushqtok ")"
+	@pushqtok ";"
+	@pushqtok "rwalk"
+	@pushqtok "="
+	@pushqtok "retval"
+	@pushqtok ";"
+	return retval;
+]
+
+
+//rwalk:push_end(cg_qtok(";"));rwalk = rwalk.right;
+@mkbldr [
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	    cg_bldr_pushtok
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+	@initqtok "rwalk"
+	@pushqtok ":"
+	@pushqtok "push_end"
+	@pushqtok "("
+	    rwalk:push_end(inlist:dupell());rwalk = rwalk.right;
+	@pushqtok ")"
+	@pushqtok ";"
+	@pushqtok "rwalk"
+	@pushqtok "="
+	@pushqtok "rwalk"
+	@pushqtok "."
+	@pushqtok "right"
+	@pushqtok ";"
+	
+	return retval;
+]
+
+//push token even if you dont know
+//if you've initialized yet or not.
+
+@mkbldr [
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	    cg_bldr_initpushtok
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    @initqtok "if"
+    @pushqtok "("
+        @pushqtok "!"
+        @pushqtok "cast"
+        @pushqtok "("
+            @pushqtok "uptr"
+        @pushqtok ")"
+        @pushqtok "retval"
+    @pushqtok ")"
+        //we must init!
+        @pushqtok "@"
+        @pushqtok "cg_bldr_inittok_nodecl"
+        //the brackets were popped off...
+        @pushqtok "["
+            @pushtok [inlist:dupell()]
+        @pushqtok "]"
+    @pushqtok "else"
+        @pushqtok "@"
+        @pushqtok "cg_bldr_pushtok"
+        @pushqtok "["
+            @pushtok [inlist:dupell()]
+        @pushqtok "]"
+    @pushqtok "end"
+    return retval;
+]
+
+@mkbldr [
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    cg_bldr_rwalk_skip
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    @initqtok "while"
+    @pushqtok "("
+        @pushqtok "rwalk"
+        @pushqtok "."
+        @pushqtok "right"
+        @pushqtok "!="
+        @pushqtok "cast"
+        @pushqtok "("
+            @pushqtok "cgstrll"
+            @pushqtok "*"
+        @pushqtok ")"
+        @pushqtok "0"
+    @pushqtok ")"
+        @pushqtok "rwalk"
+        @pushqtok "="
+        @pushqtok "rwalk"
+        @pushqtok "."
+        @pushqtok "right"
+        @pushqtok ";"
+    @pushqtok "end"
+    return retval;
+]
+
+
+
+

@@ -1,0 +1,309 @@
+
+
+#guard compiletime_tokenlist_manipulation_tools_DMHSW
+
+#include "cgwksht.hbas"
+#include "cgrdparse.hbas"
+
+/*
+    TOOLS FOR MANIPULATING TOKENS AND STRINGS
+    
+    While writing tools for Seabass I have noticed
+    I spend a lot of time writing complex
+    manipulations of them. I believe I can write
+    a set of macros, templates, and syntaxes that
+    will make it much easier for me to work with them.
+    
+    tool 1: tokmanip_push_tokens
+    
+        Enables me to write code "normally" for sequential pushqtoks
+        after the first token.
+    
+    tool 2: foldout_arg
+    
+        Quickly grab an argument (bracketed or not) off of an argument list.
+        
+        This has previously been something I had to do by hand, manually.
+        
+    tool 3: pprint
+        
+        "Pretty printer". Printf's cooler older cousin.
+        
+    tool 4: cgbuf
+    
+        Dynamically allocated byte array.
+*/
+
+
+/*
+    Usage:
+    @cg_tokmanip_push_tokens[
+        fn codegen myfunc ( ):
+        
+        end
+    ]
+*/
+
+@mkbldr [ cg_bldr_tokmanip_push_strings
+    
+    
+    //INPUT...
+    cgstrll* in_walker
+    
+    in_walker = inlist;
+    //semicolons are safe.
+    @initqtok ";"
+    
+    
+
+    for(in_walker = inlist, in_walker != cast(cgstrll*)0, in_walker = in_walker.right)
+        char* text
+        text = in_walker:to_cstr();
+        //__builtin_puts("Converted a token to string:");
+        //__builtin_puts(text);
+        if(text == cast(char*)0)
+            char[50] buf
+            __builtin_puts("cg_tokmanip_push_strings ERROR");
+            __builtin_puts("Token was to-string'd and we got nothing!");
+            __builtin_puts("File is:");
+            __builtin_puts(in_walker.filename);
+            __builtin_puts("Line is:");
+            __builtin_itoa(buf, in_walker.linenum);
+            __builtin_puts(buf);
+            __builtin_puts("Col is:");
+            __builtin_itoa(buf, in_walker.colnum);
+            __builtin_puts(buf);
+            __builtin_puts("Go check that out!");
+            __builtin_exit(1);
+        end
+        @pushqtok "@"
+        @pushqtok "cg_bldr_pushqtok"
+        @pushqtok [text]
+        __builtin_free(text);
+    end
+    return retval;
+]
+
+
+/*
+    foldout_arg
+    
+    usage:
+    @dupell_inlist
+    cgstrll* my_arg
+    
+    @foldout_arg my_arg inlist_dupe
+    
+    //my_arg now contains the de-bracketed first argument.
+    //if inlist_dupe was NULL, or the first argument was
+    //an empty set of curly braces, then my_arg
+    //will also be null.
+    
+    this
+*/
+
+@wksht cg_bldr_foldout_arg [
+    [
+        if((ARG2) != cast(cgstrll*)0)
+            cgstrll foldout_arg_dummy
+            foldout_arg_dummy.right = (ARG2);
+            (ARG1) = foldout_arg_dummy:cg_token_foldout_arglist();
+            if((ARG1) != cast(cgstrll*)0)
+                if((ARG1).d == CG_TOK_OBRACK)
+                    ARG1 = cg_tok_arglist_remove_brackets((ARG1));
+                end
+            end
+            (ARG2) = foldout_arg_dummy.right;
+        end
+    ][
+        ARG1 ARG2
+    ]
+]
+
+@cgrdparser [
+    pprint
+    [
+        //variables
+        cgstrll* output_code;
+        cgstrll* rwalk;
+        cgstr print_command;
+        cgstr itoa_command;
+    ]
+    head[
+        //push stuff we need onto the front.
+        cgstrll* rwalk
+        this.output_code = cg_qtok(";");
+        rwalk = this.output_code;
+        @cg_bldr_tokmanip_push_strings[
+            if(1)
+                char[50] __pprint_local_buf
+        ]
+        finish_on_tok_null
+        if(tok.d == CG_TOK_IDENT)
+            this.print_command:fromstr(tok.text);
+            eat
+            finish_on_tok_null
+            if(tok.d == CG_TOK_IDENT)
+                this.itoa_command:fromstr(tok.text);
+                eat
+                finish_on_tok_null
+            end
+        else
+            this.print_command:fromstr("__builtin_puts");
+            this.itoa_command:fromstr("__builtin_itoa");
+        end
+        while(1)
+            finish_on_tok_null
+            if(tok.d != CG_TOK_OPERATOR) 
+                finish 
+            end
+            if(tok_has_text)
+                if(tok.text strneq "/")
+                    finish
+                end
+            end
+            eat
+            finish_on_tok_null
+            this.rwalk = rwalk;
+            do norm
+            rwalk = this.rwalk;
+        end
+    ]
+    norm[
+        match[["itoa"]
+            eat
+            finish_on_tok_null
+            do command_printintexpr
+            finish
+        ]
+        match[["int"]
+            eat
+            finish_on_tok_null
+            do command_printintexpr
+            finish
+        ]
+        match[["bar"]
+            do dobar
+            finish
+        ]
+        //this is a string expression.
+        do command_printstringexpr
+    ]
+    dobar[
+        cgstrll* rwalk
+        rwalk = this.rwalk;
+        eat 
+        //emit a bar...
+        @cg_bldr_pushqtok [this.print_command.s]
+        @cg_bldr_tokmanip_push_strings[
+            ("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+        ]
+        this.rwalk = rwalk;
+        finish_on_tok_null
+        
+    ]
+    command_printstringexpr[
+        cgstrll* rwalk
+        rwalk = this.rwalk;
+            @cg_bldr_pushqtok [this.print_command.s]
+            @cg_bldr_pushqtok "("
+                this.rwalk = rwalk;
+                    do getexpr
+                rwalk = this.rwalk;
+            @cg_bldr_pushqtok ")"
+            @cg_bldr_pushqtok ";"
+        this.rwalk = rwalk;
+    ]
+    command_printintexpr[
+        cgstrll* rwalk
+        rwalk = this.rwalk;
+            @cg_bldr_pushqtok [this.itoa_command.s]
+            @cg_bldr_pushqtok "("
+                    @cg_bldr_pushqtok "__pprint_local_buf"
+                @cg_bldr_pushqtok ","
+                    @cg_bldr_pushqtok "("
+                        this.rwalk = rwalk;
+                            do getexpr
+                        rwalk = this.rwalk;
+                    @cg_bldr_pushqtok ")"
+            @cg_bldr_pushqtok ")"
+            @cg_bldr_pushqtok ";"
+                @cg_bldr_pushqtok [this.print_command.s]
+                @cg_bldr_pushqtok "("
+                    @cg_bldr_pushqtok "__pprint_local_buf"
+                @cg_bldr_pushqtok ")"
+            @cg_bldr_pushqtok ";"
+        this.rwalk = rwalk;
+    ]
+    getexpr[
+        cgstrll* rwalk
+        rwalk = this.rwalk;
+        if(tok_null)
+            //emit an error
+            __builtin_puts("PPRINT ERROR!");
+            __builtin_puts("Expected an expression, but got NULL!");
+            __builtin_exit(1);
+        elif(tok.d == CG_TOK_OPAREN)
+            i64 pcount
+            pcount = 0;
+            for(
+                pcount = 0, 
+                tok_not_null,
+                tok = tok.right
+            )
+                if(tok.d == CG_TOK_OPAREN)
+                    pcount++;
+                elif(tok.d == CG_TOK_CPAREN)
+                    pcount--;
+                end
+                
+                @cg_bldr_pushtok[tok:dupe()]
+                if(pcount < 1) break end
+            end
+            if(pcount != 0)
+                __builtin_puts("PPRINT ERROR");
+                __builtin_puts("Unmatched Parentheses!");
+                __builtin_exit(1);
+            end
+            eat
+        else
+            @cg_bldr_pushtok [tok:dupe()]
+            eat
+        end
+        this.rwalk = rwalk;
+    ]
+    finish[
+        //push the last bit of what we need... we need to 
+        this.output_code:push_end(cg_qtok("end")); //close up the if statement.
+        this.print_command:free();
+        this.itoa_command:free();
+        return this.output_code;
+    ]
+]
+
+
+class cgbuf noexport
+
+    byte* d
+    u64 sz
+end
+
+method codegen cgbuf.ctor():
+    this.d = 0;
+    this.sz = 0;
+end
+method codegen cgbuf.dtor():
+    if(this.d != 0)
+        __builtin_free(this.d);
+    end
+end
+//require memory.
+method codegen cgbuf.req(u64 nsz)->u64:
+    if(this.sz >= nsz) return this.sz end
+    this.sz = nsz;
+    this.d = __builtin_realloc(this.d, nsz);
+    return nsz;
+end
+
+
+

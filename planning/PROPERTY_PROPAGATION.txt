@@ -1,0 +1,48 @@
+
+PROPERTY PROPAGATION AND INTERPRETATION TRACKING
+
+1. Type inference and other similar things can
+be modeled as propagating properties through
+a network of nodes- the AST. This propagation
+can be upward, downward, selectively upward/
+downward, or skipping over some nodes.
+
+As long as it is well defined what happens to a node and its neighbors when a
+property propagates into it, it is possible to model it.
+
+You can create new properties if a property propagates
+into a node to model "secondary effects".
+
+Modelling propagation upward in a pointer-tree AST does
+not require keeping pointers to parents, it only
+requires that the propagator be invoked with knowledge
+of parent nodes.
+
+Modelling propagation "skipping" can be done through
+secondary properties which only propagate one unit.
+
+            This node is of a type which is skipped.
+            we use the "Quiet Red" property instead
+            of "Red" to model this. Quiet Red never
+            propagates itself, only Red.
+                V
+Red->Red->Red->Quiet Red->Uncolored
+
+2. You can keep track of all possible interpretations
+of the parse as you are parsing, as a list of
+tree additions/transformations. You can literally
+keep separate ASTs. The scope of possible ambiguity
+(i.e. do you allow ambiguity once a function has finished
+parsing?) limits how much AST you need to duplicate.
+
+3. As you parse, you can eliminate interpretations for
+which there is no way to continue the parse despite
+there being remaining text. (it is a syntax error).
+
+4. As you parse, you can eliminate interpretations that violate
+rules, notably within the property propagation system.
+
+5. If a complete parse of some thing (such as a function, or perhaps
+the entire compilation unit) is still ambiguous, you can emit
+an error.
+

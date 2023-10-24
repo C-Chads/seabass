@@ -1,0 +1,128 @@
+
+THE AST DESIGNER- A SUPERTOOL TO BEAT CGRDPARSE?
+
+We need to be able to design ASTs, their traversals,
+and all their node structs quickly. I also need to be
+able to push onto the AST quickly.
+
+Traversals are the most interesting part
+
+ASTs are comprised of multiple different kinds of nodes.
+
+Nodes can have children of any type as well as non-owning
+pointers which should not be traversed.
+
+You might specify an AST node to the AST designer like this:
+
+@astbuilder mknode [
+    codegen //this is a codegen type... so it is flagged as noexport
+    myASTNode[
+        i64 type
+        myOtherAstNode* child
+        myOtherAstNode** children
+        u64 nchildren
+        u64 _children_cap //capacity of the children vector.
+        yetAnotherAstNode* my_reference
+    ][
+        child* //this pointer should be traversed!
+        children*[nchildren _children_cap] //this array of pointers should be traversed.
+        //my_reference* is omitted!
+    ]
+]
+You might then further specify a traversal by giving the names of the nodes in the
+AST....
+
+@astbuilder mktraversal[
+    traverse_my_little_ast //will define a type with this name, with a `do_traversal` method taking
+    //in a pointer to the root node to traverse...
+    Nodes[
+        //these nodes will be checked to see if they are flagged "codegen" and if
+        //they are, then the whole traversal is codegen code...
+        myOtherASTNode
+        yetAnotherAstNode
+        myASTNode
+    ]
+    root:myASTNode //the root of the traversal is from one of these..
+    stack:static[500] //What stack strategy should be used by this traversal?
+    vars[//variables global to the traversal....
+        i64 count
+    ]
+    //specify
+    traversal myAstNode[
+        entrance[
+            //code for what happens when we enter the node goes here...
+        ]
+        return[ //when returning from a child
+            //code for what happens when returning after retreating from a child...
+        ]
+        retreat[
+            //code for what happens when we retreat from the node, to return to our parent...
+        ]
+    ]
+    traversal yetAnotherAstNode[
+        
+        entrance[
+            //code for what happens when we enter the node goes here...
+        ]
+        return[ //when returning from a child
+            //code for what happens when returning after retreating from a child...
+        ]
+        retreat[
+            //code for what happens when we retreat from the node, to return to our parent...
+        ]
+    ]    
+    traversal myOtherASTNode[
+        
+        entrance[
+            //code for what happens when we enter the node goes here...
+        ]
+        return[ //when returning from a child
+            //code for what happens when returning after retreating from a child...
+        ]
+        retreat[
+            //code for what happens when we retreat from the node, to return to our parent...
+        ]
+    ]
+
+]
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+OLD STUFF, IRRELEVANT
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+@cgastdesigner[
+    //name of the struct to create, with methods.
+    //the name of the "builder" struct will be NAME_astbuilder
+    //and that's what you'll use to actually manipulate the
+    //AST, with its methods.
+    myAst
+    //member variables...
+    [
+      int nodetype
+      u64 typeid
+      int ival
+      float fval
+    ]
+    //pointers. These are for traversal.
+    [
+        right
+        child_right
+        child_left
+        body
+        fargs[64]
+    ]
+    //metadata
+    
+    //What is the maximum stack depth needed for traversing
+    //one of these ASTs, in terms of the size of a pointer?
+    traversal_stack_depth 65536
+    
+    //Do we keep a single root or multiple roots?
+    //single_root or multi_root
+    multi_root
+    
+
+]

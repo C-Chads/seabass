@@ -1,0 +1,53 @@
+IDEA: THE BOOTSTRAP CREATOR.
+
+If seabass is the future of programming, one of the key revelations
+needed is the ability to port it to new platforms.
+
+Advancement in metaprogramming will, I believe, eventually allow 
+the language to be "fit" to a platform (such as having a uptr and 
+iptr integers the size of a pointer, and umax and imax for maximum 
+integer sizes)
+
+I have realized that there is an easy way to allow seabass to be
+bootstrapped on any platform.
+
+I can define a "bootstrapping language" which, if all the
+elements can be translated into native code, can be used to
+execute a sequence of bootstrapping programs eventually resulting
+in a working SEABASS environment.
+
+Basically, I would write a fancy assembly language with syscalls
+that do specific things (like reading/writing files) and ask
+bootstrappers to implement all the elements.
+
+The elements implemented would be very small so that the amount
+of assembly language (or machine code) programming needed to be
+done by a programmer would be minimal.
+
+Furthermore, SEABASS itself might be used as a cross-compiler to
+generate an implementation for the target.
+
+Sort of like building GCC from x86 for Arm.
+
+If I was advanced enough, I might even be able to abstract the
+concept of a "machine specification" so that a seabass program
+could generate appropriate (i.e. efficient, optimized) code on
+the target.
+
+The first stepping stone I see toward this goal is writing an
+assembler in Seabass for my native hardware. I can then
+use it as the baseline target for Seabass's output instead of
+C or another high level language.
+
+After that, I can template the construction of an assembler given
+a system specification, and perhaps even optimization for a particular
+platform (both at the assembly level and the Seabass AST level).
+
+Before any of this can happen, though, Seabass needs a major revision
+to detach the compiletime environment from 64 bit dependency... which
+is already planned once I start implementing seabass inside of itself.
+
+Once this level of autonomy (a Self-porting compiler) is reached, seabass
+will become the defacto standard for systems implementation unmatched by
+any language or compiler in the world.
+

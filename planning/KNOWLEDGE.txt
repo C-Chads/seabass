@@ -1,0 +1,11 @@
+
+THE KNOWLEDGE SYSTEM- A SUCCESSOR TO TYPE TRAITS.
+
+Type traits require... a type! However, seabass revolves
+around defining higher order constructs and higher levels
+of abstraction.
+
+Nouns, verbs, and adjectives in Seabass of all kinds, from
+the least of them to the best of them, need traits.
+
+This is an idea which needs developing.

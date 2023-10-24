@@ -1,0 +1,105 @@
+
+I SAW OPTPARSE ON GITHUB AND IT GOT ME THINKING.
+
+When I think of parsing commandline arguments, I think of
+
+
+    if this argument is "--width" or "-w" then turn the next argument into a long and assign it to the variable.
+    
+However, instead of coding like that, I have to write like this:
+
+    i64 i
+    for(i = 1, i < argc-1, i++)
+    
+        //inside of a for loop iterating over arguments...
+        if(argv[i] streq "--width" || argv[i] streq "-w")
+            if((i+1) < argc)
+                WIDTH = strtoul(argv[i+1],0,0);
+            end
+        end
+    
+    end
+    
+How this should be rewritten is not entirely clear to me, however, I think of it like
+this:
+
+         1  2  grab these
+         V  V
+args    [ ][ ][ ][ ]
+
+if 1 is "-w", 2 gets converted to int and stored in WIDTH.
+
+It's like a "Caterpillar match" sort of thing. We grab pairs,
+incrementing by one, and if the first is "-w" we convert the second
+argument to int.
+
+It is sort of its own... automata thing. An algorithm.
+
+This sort of pattern actually comes up all the time in
+string processing, with linear sequences of strings or
+words.
+
+
+
+@argparser[ argc argv
+    "-w" XXX | "--width" XXX [
+        //code to handle -w, using XXX as a variable.
+    ]
+]
+
+^ The above conveys it well, however I would really
+want to reference a data structure and not just
+argc and argv.
+
+ARCHETYPING EMULATORS.
+
+CPU emulators and bytecode interpreters follow very similar structures.
+
+I could probably archetype them from the top-down.
+
+This would make writing new system emulators easy- I could probably
+even template the assemblers for them too.
+
+This would pair well with my state machine control flow idea...
+
+ARCHETYPING CODE REPETITIONS...?
+
+It's worth it if it works, but as soon as you need to change it, it's
+awful.
+
+Really, this needs to be an editor feature...
+
+API SPECING
+
+Once you've defined the core structure of what an API *does*, it shouldn't
+be so difficult to specify what all the parts of an API's implementation
+are.
+
+Yet... it seems to be. Why is it so hard, compared to specing the API's
+actual functionality?
+
+GENERATING ACTIONS ON DATA STRUCTURES AND STRUCTS AUTOMATICALLY BASED ON CONTEXT.
+
+The compiler should make data structures and structs for me. I also want it to
+write the API for manipulating those types too. How do I tell it how to do that?
+
+They're almost always fairly common things- there are parameters passed to the
+API which are needed for specific actions.
+
+Part of this is literally just templating data structures. Vector always has push.
+
+Another part is that there are *genera* of structs which always have certain
+operations able to be performed on them. Solved by struct archetype (in oop
+you'd use class inheritance).
+
+System archetypes seem to be the solution for this at the API level...
+
+TYPECLASS ARCHETYPING
+
+I want something like multiple inheritance- You pick and choose from a large set
+of available options to create your own data structure or what-have-you.
+
+This would enable me to, for instance, stack a hashmap on top
+of a hashmap on top of a linked list.
+
+Like legos but for computer dorks

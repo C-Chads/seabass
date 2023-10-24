@@ -1,0 +1,30 @@
+
+SME WILL BE TEN THOUSAND TIMES MORE POWERFUL THAN SEABASS
+
+but, well... it doesn't exist yet. I could begin work now,
+but seabass is incomplete and I need it to make the work on SME
+easier.
+
+I need to design the high level language (I'm thinking a straight
+redo of C, but with the metaprogramming operator).
+
+
+Here is my vision for taking Cbas and using it to make SME:
+
+1. Write a parser generator in Cbas which generates target code.
+
+    This basically just means taking `cgrdparse` and reworking it
+    into something for the target instead of codegen.
+    
+2. Write a converter for Cbas code to turn it into C.
+
+    Everything in Cbas maps totally to C, so this should be easy. The hard
+    part will be formatting the text output so that lines aren't ugly.
+    
+3. Design the new high level language in CBAS using my metaprogramming tools.
+
+4. Design the assembler for the P-code.
+
+5. Export both to C
+
+6. Put them into the SME project in the repository.

@@ -1,0 +1,52 @@
+SFORMAT- THE ULTIMATE CODE FORMATTING TOOL
+
+GOAL: represent arbitrary tree structures passed in
+via input and apply arbitrary transformations to them.
+
+(Old idea is scrapped methinks because it's tedious..)
+
+I don't really want sformat to be an entirely new
+language, I want it to be something that extends
+and wraps seabass code. It's basically just a
+quick way to make your own builders.
+
+
+
+@sformat [
+    new //command
+    
+    WrapInParentheses
+
+    //argument pattern
+    [
+        arg0 : toklist //receives one or more tokens, [1 2 3] would
+                        //be the input, and the received set would be
+                        //1 2 3
+                        //to keep it wrapped, you use
+                        //toklist_
+        arg1 : uint //receives a single token, an unsigned int.
+                    //signed int requires multiple tokens.
+    ]
+    
+    [
+        //this is seabass code, but with special keywords and
+        //whatnot.
+        if(arg1 == 0)
+            INIT_OUTPUT DUPE arg0 ; //dupe requires single tokens.
+                                
+            FINISH //turned into "return retval;"
+        end
+        
+        INIT_OUTPUT [Q[""]]; //NEWTOK must be followed by a char* expression.
+        u64 i
+        for(i = 1, i < arg1, i++)
+            PUSH_QTOK "("; //push a quick token
+        end 
+        PUSH[ $]
+        for(i = 0, i < arg1, i++)
+            PUSH_QTOK ")";
+        end
+        F
+        
+    ]
+]

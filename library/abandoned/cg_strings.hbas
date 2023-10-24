@@ -1,0 +1,300 @@
+
+/*
+	String library code for compiletime cbas code.
+*/
+
+#guard CompileTimeStringLibraryGuard_DMHSW
+
+class cgstr
+    noexport
+	char* s
+end
+
+fn codegen cgstrcpy(char* s, char* s1):
+	while(1)
+		s[0] = s1[0];
+		if(s1[0] == 0) return; end
+		s++;s1++;
+	end
+end
+
+fn codegen cgisdigit(char c)->u8:
+	if(c >= '0' && c <= '9') return 1; end
+	return 0;
+end
+
+fn codegen cgisalpha(char c)->u8:
+	if(c >= 'a' && c <= 'z') return 1; end
+	if(c >= 'A' && c <= 'Z') return 1; end
+	return 0;
+end
+
+method codegen pure cgstr:isempty()->u8:
+	if(this.s == cast(char*)0)
+		return 1; 
+	end
+	if(this.s[0] == 0)
+		return 1;
+	end
+	return 0;
+end
+
+method codegen pure cgstr:isnull()->u8:
+	if(this.s == cast(char*)0)
+		return 1; 
+	end
+	return 0;
+end
+
+method codegen pure cgstr:len()->u64:
+	u64 i
+	i = 0;
+
+	//necessary to prevent segfaults
+	if(this:isempty())
+		return 0; 
+	end
+
+	//count characters
+	for(i=0, this.s[i], i++) end
+	
+	return i;
+end
+
+
+
+method codegen cgstr:print():
+	__builtin_puts(this.s);
+end
+
+method codegen cgstr:start():
+	this.s = cast(char*)0;
+end
+
+
+
+method codegen cgstr:free():
+	__builtin_free(this.s);
+	this.s = cast(char*)0;
+end
+
+method codegen pure cgstr:prefixed(cgstr o)->u8: //is THIS prefixed by o?
+	int i
+	if(o:isempty()) return 1; end //yes, we are prefixed by the null string.
+	
+	if(this:isempty()) return 0; end //we are not prefixed by a non-empty string because we are empty.
+	
+	for(i = 0,o.s[i] neq 0,i++)
+		if(this.s[i] neq o.s[i]) //notice that this actually handles this.s[i] == 0....
+			return 0;
+		end
+	end
+	
+	//we are prefixed by this string because we reached the end of it!
+	return 1;
+end
+
+method codegen pure cgstr:postfixed(cgstr o)->u8: //is THIS postfixed by o?
+	sqword i
+	cgstr h
+	sqword tlen //I'm doing this over and over again... Note to self: automate the process of creating tlen and olen...
+	sqword olen
+	
+	if(o:isempty()) return 1; end //yes, we are postfixed by the null string.
+	if(this:isempty()) return 0; end //we are not postfixed by a non-empty string because we are empty.
+	tlen = this:len();
+	olen = o:len();
+	if(tlen < olen) return 0; end //we cannot be postfixed if we are shorter...
+	h.s = this.s + (tlen - olen); //skip the first part of the string
+
+	return h:prefixed(o);
+end
+
+method codegen cgstr:invert():
+	uqword e;
+	uqword i;
+	i = 0;
+	e = this:len()-1;
+	for(0, i < e, i++ | e--)
+		char f
+		f = this.s[i];
+		this.s[i] = this.s[e];
+		this.s[e] = f;
+	end
+end
+
+fn codegen pure cgislower(char a)->u8:
+	if(a <= 'z')
+		if(a >= 'a')
+			return 1;
+		end
+	end
+	return 0;
+end
+
+fn codegen pure cgisupper(char a)->u8:
+	if(a <= 'Z')
+		if(a >= 'A')
+			return 1;
+		end
+	end
+	return 0;
+end
+
+fn codegen pure cgtoupper(char a)->char:
+	u8 diff1
+	u8 diff2
+	u8 isl
+	isl = cgislower(a);
+	diff1 = isl * 'a';
+	diff2 = isl * 'A';
+	a = a - diff1;
+	a = a + diff2;
+	return a;
+end
+
+fn codegen pure cgtolower(char a)->char:
+	u8 diff1
+	u8 diff2
+	u8 ish
+	ish = cgisupper(a);
+	diff1 = ish * 'A';
+	diff2 = ish * 'a';
+	a = a - diff1;
+	a = a + diff2;
+	return a;
+end
+
+
+method codegen cgstr:transform(char* input_fun):
+	uqword i
+	uqword tlen
+	tlen = this:len();
+	for(i = 0, i < tlen, i++)
+		this.s[i] = callfnptr[cgtoupper](input_fun)(this.s[i]);
+	end
+	return;
+end
+
+method codegen cgstr:toupper():
+	uqword i
+	uqword tlen
+	tlen = this:len();
+	for(i = 0, i < tlen, i++)
+		this.s[i] = cgtoupper(this.s[i]);
+	end
+end
+
+method codegen cgstr:tolower():
+	uqword i
+	uqword tlen
+	tlen = this:len();
+	for(i = 0, i < tlen, i++)
+		this.s[i] = cgtolower(this.s[i]);
+	end
+end
+
+method codegen pure cgstr:compare(cgstr o)->i16: //- for lt, 0 for eq, + for gt
+	uqword i
+	uqword tlen
+	uqword olen
+	tlen = this:len();
+	olen = o:len();
+	if(this.s == o.s) return 0; end//they are the same string. Conveniently, this also tests for the null case.
+	
+	for(i = 0, 1, i++)
+		if(this.s[i] == 0)
+			if(o.s[i] == 0)
+				return 0;;; //equals!
+			end
+		end
+		if(this.s[i] != o.s[i])
+			return cast(i16)(cast(u16)this.s[i] - cast(u16)o.s[i]);
+		end
+	end
+
+	return 0;
+end
+
+method codegen pure cgstr:find(cgstr o)->i64:
+	u64 tlen 
+	u64 olen
+	u64 i
+
+	if(o:isempty()) return 0; end     //we can find the empty string in ourselves.
+	if(this:isempty()) return -1; end //we cannot find anything in ourselves because we are empty.
+
+	tlen = this:len(); olen = o:len();
+	if(olen > tlen) return -1; end    //we cannot find a longer string than ourselves in ourself.
+
+
+	for(i = 0, tlen >= olen, i++ | tlen--)
+		cgstr q
+		q.s = this.s + i;
+		if(q:prefixed(o))
+			return i;
+		end
+	end
+
+	//cannot find it!
+	return -1;
+end
+
+method codegen cgstr:add(cgstr* o):
+	
+	char* s_new
+	u64 tlen
+	u64 olen
+	tlen = this:len();
+	olen = o:len();
+
+	/*
+		__builtin_puts("I am:");
+		__builtin_puts(this.s);
+		__builtin_puts("o is:");
+		__builtin_puts(o.s);
+		__builtin_puts("______________");
+	*/
+	
+	s_new = __builtin_malloc(tlen + olen + 1);
+	
+	if(tlen)
+		__builtin_memcpy(s_new, this.s, tlen);
+	end
+	if(olen)
+		__builtin_memcpy(s_new + tlen, o.s, olen);
+	end
+	
+	s_new[tlen+olen] = 0;
+	this:free();
+	this.s = s_new;
+end
+
+//predeclaration being used?!?!
+method predecl codegen cgstr:fromstr(char* s);
+
+method codegen cgstr:fromcgstr(cgstr o):
+	this:fromstr(o.s);
+end
+
+method codegen cgstr:dupe()->cgstr*:
+    cgstr q;
+    q:fromcgstr(this);
+    return q;
+end
+
+method codegen cgstr:fromstr(char* s):
+	cgstr q
+	u64 l
+	
+	q.s = s;
+	l = q:len();
+	this.s = __builtin_malloc(l+1);
+	__builtin_memcpy(this.s, s, l+1);
+	//this.s[l] = 0; //this was done automatically above...
+	return;
+end
+
+
+
+

@@ -1,0 +1,121 @@
+
+
+#guard compiletime_parsehook_dictionaries_library_DMHSW
+
+#include "cgwksht.hbas"
+#include "cgtoken_manip_tools.hbas"
+
+/*
+    PARSEHOOK DICTIONARIES
+    
+    A solution to the problem of "Scoped Parsehooks"
+    
+    In a DSL or custom syntax, you'll want to have parsehooks
+    specific to that context. You don't want them to interfere
+    with each other.
+    
+    Furthermore, these parsehooks are within a custom syntax and must
+    be expanded inside that language before anything can happen.
+    
+    A contextual parsehook is just a function which takes in a set of
+    tokens
+*/
+
+@mkbldrn mk_contextual_parsehook 3 [ //name, prefix, body
+    cgstr contextual_parsehook_name
+    cgstr contextual_parsehook_prefix
+    cgstrll* contextual_parsehook_body
+    cgstrll* contextual_parsehook_body_notwrapped
+    cgstrll* inlist_walker
+    
+    inlist_walker = inlist;
+    if(inlist_walker.d != CG_TOK_IDENT)
+        @pprint[
+            /               "ERROR!"
+            /               "Contextual parsehooks requires an IDENTIFIER NAME"
+            /               "You may not use keywords from Cbas, or weird symbols!"
+        ]
+        __builtin_exit(1);
+    end
+    contextual_parsehook_name:fromstr(inlist_walker.text);
+    inlist_walker = inlist_walker.right; //move on to the prefix
+    if(inlist_walker.d != CG_TOK_IDENT)
+        @pprint[
+            /               "ERROR!"
+            /               "Contextual parsehooks requires a PREFIX"
+            /               "The name entered for this contextual parsehook was:"
+            /               (contextual_parsehook_name.s)
+            /               "This prefix is specific to the context of the parsehook you're writing."
+            /               "For instance, if you are writing a parsehook for `cgrdparse` you might"
+            /               "say the prefix is `cgrdparse`. Then you can use this parsehook inside"
+            /               "of cgrdparse's main body, and nowhere else."
+        ]
+        __builtin_exit(1);
+    end
+    contextual_parsehook_prefix:fromstr(inlist_walker.text);
+    inlist_walker = inlist_walker.right; //skip 
+    if(inlist_walker.d != CG_TOK_OBRACK)
+        @pprint[
+            /               "ERROR!"
+            /               "Contextual parsehook lacks code body!"
+            /               "The name entered for this contextual parsehook was:"
+            /               (contextual_parsehook_name.s)
+        ]        
+        __builtin_exit(1);
+    end
+    contextual_parsehook_body = inlist_walker:dupell();
+    if(cast(u8*)contextual_parsehook_body == cast(u8*)0)
+        @pprint[
+            /               "ERROR!"
+            /               "Contextual parsehook has EMPTY code body!"
+            /               "The name entered for this contextual parsehook was:"
+            /               (contextual_parsehook_name.s)
+        ]                
+    end
+    @foldout_arg [contextual_parsehook_body_notwrapped] [contextual_parsehook_body]
+    
+    if(1)
+        cgstr t
+        t.s = "_";
+        contextual_parsehook_prefix:add(t);
+        contextual_parsehook_prefix:add(contextual_parsehook_name);
+        t.s = "_contextual";
+        contextual_parsehook_prefix:add(t);
+        contextual_parsehook_name:free();
+    end
+    //
+    @initqtok "fn"
+    @pushqtok "codegen"
+    @pushqtok [contextual_parsehook_prefix.s] //now the complete name!
+    @tokmanip_push_strings[
+        (cgstrll* inlist)->cgstrll*:
+    ]
+    @pushtok [contextual_parsehook_body_notwrapped] @rwalk_skip ;
+    
+    @pushqtok "end"
+    return retval;
+]
+
+/*
+@mk_contextual_parsehook doSomething brotherly_love [
+    
+    return inlist:dupell();
+]
+*/
+
+//do an invocation...
+
+fn codegen cg_PROTOTYPE_DUMMY_NOEXPORT_CONTEXTUALPARSEHOOK(cgstrll* in)->cgstrll*:
+    return cast(cgstrll*)0;
+end
+
+fn codegen cg_call_contextual_parsehook(char* name, cgstrll* input)->cgstrll*:
+    byte* p;
+    p = __builtin_retrieve_sym_ptr(name);
+    
+    if(name == cast(byte*)0) 
+        return cast(cgstrll*)0; 
+    end
+    return callfnptr[cg_PROTOTYPE_DUMMY_NOEXPORT_CONTEXTUALPARSEHOOK](p)(input);
+end
+

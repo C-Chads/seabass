@@ -1,0 +1,86 @@
+THE SEABASS GRAND VISION
+
+In short:
+To write small amounts of code that express solutions as quickly and efficiently as possible,
+
+to have maximally re-usable and portable code,
+
+to have unlimited power in creating higher level or more specific tools,
+
+and to raise the productivity of the programmer.
+
+To provide the ultimate supertool for programming and computer science tasks.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[X] - Fully featured comptime string library.
+[ ] - Full library for manipulating the token list and AST
+	[ ] - Ability to easily create and add tokens to the token list (needed for the builder)
+	[ ] - Create new global or local symbols effortlessly
+	[ ] - modify existing global or local symbols
+	[ ] - unvalidate code and run the code validator again.
+	[ ] - Examples
+[ ] - "The Builder" (the supreme custom syntax creator)
+	> takes tokens off the token list and spits out a new sequence of tokens. Bread and butter metaprogramming.
+	[ ] - Templating- type in code with special identifiers that get replaced with other code.
+	[ ] - Builder templates- premade types of builders that you can quickly modify
+	[ ] - Solve the "Tweak" and "Puzzle mismatch" problems... Perhaps you could programmatically modify a builder?
+	[ ] - Display/dump tools- I need to be able to debug these things.
+	[ ] - Examples
+[ ] - Data structure templates
+	> basically just C++STL stuff.
+	[ ] - vector
+	[ ] - tree
+	[ ] - stretchy buffer
+[ ] - System designer
+	> data structures + algorithms mix-and-match
+[ ] - Parsing tools (for creating builders)
+	[ ] - Recursive Descent parsing builder
+		> define a recursive-descent parsing hierarchy and you get a parser which can generate the AST.
+
+DISTANTISH GOALS
+
+[ ] - Compiletime Domain Specific Language designer
+	> at some point we will be working so high level that we are no longer
+		working with code in seabass, but we are working in terms of
+		parsers that serve high level code to builders. The only time we write seabass
+		is to write tweaks in the weeds, and hopefully I come up with a solution
+		to that problem before that happens.
+[ ] - DSLs that make DSLs
+	> it will get so insane that we are literally writing DSLs to aid in creating new DSLs
+	> if I ever get here, this is when this little project will start to get attention, methinks
+[ ] - A full metaprogramming library
+	> go as high or as low as you want
+[ ] - A standard template and standard code library for Seabass
+	> like nothing the world has ever seen, everything you could ever need or want
+	> templates for things nobody has even thought of before
+	> like having a magic wand but for programming
+	> public domain
+	> all programmers lose their jobs (RIP)
+	> I become famous
+
+DISTANT GOALS 1
+[ ] - ToC Translator (Finally, let seabass compile to something!)
+	> Convert seabass code to C
+[ ] - Write examples demonstrating the power of seabass
+	> ...TO MAKE THE POWER KNOWN...
+	[ ] - a public domain C compiler
+	[ ] - a public domain C standard library
+	[ ] - a public domain operating system for x86_64
+	[ ] - a public domain video game engine
+
+DISTANT GOALS 2
+[ ] - Porting Seabass into itself
+	> people bootstrap from the latest c code output release
+		> this could end up being a nightmare tho
+[ ] - Write an editor for Seabass that implements those cool graphical editor features I thought of.
+	> pop-up editors for things like color, 3d models, maybe even opening random programs on your computer
+	> Perhaps hooking into seabass itself and letting you, for instance, expand metaprogramming code in-place.
+	> bro... if I ever got here...
+
+SUPER GOALS.....
+[ ] - use this technology to conquer the world
+	[ ] - make anime real life
+	[ ] - declare saint patricks day illegal
+	[ ] - achieve the wii sports speedrunning world record
+		
+	
