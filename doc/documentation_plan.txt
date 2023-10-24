@@ -1,0 +1,12 @@
+
+
+I would like to make 4 kinds of documentation:
+
+* Tutorials- Handhold users through writing seabass programs, for newbs
+
+* How-to guides- show how to do certain things in seabass for higher-level programmers
+
+* Reference- Dry technical docs for people who just need to know function prototypes
+
+* Explanation- Theory discussion for people who want to grok the tool. Experts.
+
