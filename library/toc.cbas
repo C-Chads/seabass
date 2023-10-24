@@ -106,7 +106,7 @@ end
 data int myintegers 3, 4, 5, 7, 9, 10, -133+134;
 
 data float myfloats 3.0, 3.14159, -14.7;
-data double mydoubles 3.57e20, 3.57e-20;
+//data double mydoubles 3.57e20, 3.57e-20;
 
 pub int myint = 3;
 int myint2 = 3;
