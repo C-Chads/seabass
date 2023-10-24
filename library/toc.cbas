@@ -1,5 +1,7 @@
 
 #include "toc.hbas"
+#include "bit32.hbas"
+#include "seabass_stdlib.hbas"
 /*
     Compile like this
     cbas toc.cbas
@@ -12,10 +14,6 @@
     ./a
 */
 
-
-
-#__CBAS_TARGET_WORDSZ 32
-#__CBAS_TARGET_MAX_FLOAT 32
 
 @wksht cpprint [
     [

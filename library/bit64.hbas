@@ -1,0 +1,12 @@
+
+
+
+#define TGT_UMAX u64
+#define TGT_IMAX i64
+#define TGT_FMAX double
+
+
+#__CBAS_TARGET_WORDSZ 64
+#__CBAS_TARGET_MAX_FLOAT 64
+
+

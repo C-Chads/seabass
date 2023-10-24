@@ -1,0 +1,11 @@
+
+
+#define TGT_UMAX u32
+#define TGT_IMAX i32
+#define TGT_FMAX float
+
+
+#__CBAS_TARGET_WORDSZ 32
+#__CBAS_TARGET_MAX_FLOAT 32
+
+
