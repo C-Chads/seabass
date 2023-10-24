@@ -64,11 +64,39 @@
     ][BODY]
 ]
 
+codegen qword a = 0;
+
+
+@wksht segfault [
+    [
+        if(1)
+            @segfault
+        end
+    ][
+    
+    ][
+        char[50] buf
+        __builtin_puts("MARCHING TOWARD A SEGMENTATION FAULT!");
+        __builtin_utoa(buf, a++);
+        __builtin_puts(buf)
+        return result;
+    ]
+
+]
+
+func codegen myfunc():
+    //@segfault
+end
+
+
 class bruhbruh
     int what
 end
 
 codegen bruhbruh[50] my_bruhbruhs;
+
+
+
 
 
 fn codegen codegen_main():
