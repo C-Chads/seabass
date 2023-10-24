@@ -380,6 +380,7 @@ void print_manpage(char* subject){
         o(switch_syntax)
         o(goto_labels)
         o(codegen)
+        o(metaprogramming)
         o(qualifier_order)
         o(short_circuiting)
         o(reflection)
@@ -998,15 +999,11 @@ void print_manpage(char* subject){
         l("TIP 1. USE SWITCH")
         ll("switch in Seabass uses pure unchecked dispatch tables, meaning it should")
         ll("generally be much faster than C's 'switch'.")
-        l("TIP 2. SPLIT LARGE STRUCTS INTO U64s")
-        ll("All function arguments in Seabass must be 8 bytes or less. This means that")
-        ll("if you want to pass something larger than 8 bytes, you either pass by pointer,")
-        ll("or split it into pieces. By pointer is generally superior for large objects,")
-        ll("but there are some cases where it is desirable to pass large objects by value.")
-        ll("If you find yourself in such a situation, divide your type into 8 byte chunks")
-        ll("and then pass the chunks as arguments to the function. This should generally be")
-        ll("about as fast as (perhaps even faster than) passing a single large argument by")
-        ll("value in C. For performance details on x86_64, see SystemV ABI 3.2.3")
+        l("TIP 2. SPLIT LARGE STRUCTS INTO U64s... IF YOU NEED TO")
+        ll("Note that from my testing, it is actually significantly faster to pass")
+        ll("pass by pointer (even for 8 byte structs) however if you 'know what you're doing'")
+        ll("you can take your struct and subdivide it into chunks to pass it by-value into")
+        ll("a function.")
         l("TIP 3. USE TAIL CALLS")
         ll("In seabass, it is possible to explicitly perform a tail call. When compiling")
         ll("C code at -O2 or higher, this should produce the proper tail call optimization.")
@@ -1031,7 +1028,8 @@ void print_manpage(char* subject){
         l("If 'expr' is evaluated to 0, it will go to the first label,")
         l("If 'expr' is evaluated to 1, it will go to the second label, etcetera")
         l("If 'expr' is greater than (or equal to) the number of labels, then it is undefined behavior.")
-        l("This usually means crashing/getting hacked. So don't do that!")
+        l("This usually means crashing.")
+        l("Switch in seabass is a pure dispatch table.")
         l(bar)
     };
     m(goto_labels){
@@ -1088,7 +1086,21 @@ void print_manpage(char* subject){
         ll("get hit with this one. It is very likely the cause of the aforementioned")
         ll("error message (Unexpected end of compilation unit).")
         l(bar)
-    }
+    };
+    m(metaprogramming){
+        b(metaprogramming)
+        l("Seabass's main 'power sources' are:")
+        ll("1. Parsehooks")
+        ll("2. Arbitrary Compiletime Execution")
+        ll("3. Compiletime Reflection")
+        ll("4. User-defined code generators")
+        l("All of these are metaprogramming features")
+        l(bar)
+        ll("PARSEHOOKS")
+        l(bar)
+        l("see the `parsehook` manpage for more information.")
+        l(bar)
+    };
     
     
     ;
@@ -1107,6 +1119,7 @@ void print_manpage(char* subject){
     r(constexpr)
     r(switch_syntax)
     r(goto_labels)
+    r(metaprogramming)
     r(codegen)
     r(undefined_behavior)
     r(function_pointers)
