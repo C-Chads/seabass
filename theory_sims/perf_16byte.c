@@ -23,20 +23,17 @@ mystruct byvalue(mystruct pp){
 
 int main(int argc, char** argv){
     srand(time(0));
-    if(argc == 1)
-    for(int i= 0; i < 100000; i++){
+    mystruct pp;
+    pp.p = atoi(argv[1]);
+    pp.p2 = atoi(argv[1]);
     
-        mystruct pp;
-        pp.p = rand();
-        pp.p2 = rand();
-        pp = byvalue(pp);
-    }
-    else{
-        for(int i= 0; i < 100000; i++){
-        
-            mystruct pp;
-            pp.p = rand();
-            pp.p2 = rand();
+    
+    if(argc == 2){
+        for(unsigned long long i= 0; i < (1<<25); i++){
+            pp = byvalue(pp);
+        }
+    }else{
+        for(unsigned long long i= 0; i < (1<<25); i++){
             bypointer(&pp);
         }
     }
