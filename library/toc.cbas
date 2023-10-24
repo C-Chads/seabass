@@ -5,6 +5,9 @@
     cbas toc.cbas
     cc -O3 -m32 auto_out.c -o a
     
+    
+    you will need gcc-multilib
+    
     run like this:
     ./a
 */
