@@ -598,6 +598,9 @@ proc codegen codegen_main():
 	if(returns1() || returns1())
 	    __builtin_puts("You should have seen one printout.")
 	end	
+	if(returns0() || returns0() || returns1())
+	    __builtin_puts("You should have seen three, 0,0,1");
+	end
 	return;
 end
 

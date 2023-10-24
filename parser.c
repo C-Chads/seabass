@@ -2763,39 +2763,60 @@ void expr_parse_logbool(expr_node** targ){
 	expr_node* c;
 	expr_node* a;
 	expr_node* b;
+	expr_node* chain = NULL;
 	expr_parse_compare(&a);
 	while(1){
 		if(peek()->data == TOK_OPERATOR){
-			if(streq(peek()->text, "||")){
-				consume();
-				c = c_allocX(sizeof(expr_node));
-				c->kind = EXPR_LOGOR;
-				expr_parse_compare(&b);
-				c->subnodes[0] = a;
-				c->subnodes[1] = b;
-				//fold it in...
-				a = c;
-				c = NULL;
-				b = NULL;
-				continue;
-			}
-			if(streq(peek()->text, "&&")){
-				consume();
-				c = c_allocX(sizeof(expr_node));
-				c->kind = EXPR_LOGAND;
-				expr_parse_compare(&b);
-				c->subnodes[0] = a;
-				c->subnodes[1] = b;
-				//fold it in...
-				a = c;
-				c = NULL;
-				b = NULL;
-				continue;
+		    if(!chain){
+    			if(streq(peek()->text, "||")){
+    				consume();
+    				c = c_allocX(sizeof(expr_node));
+    				c->kind = EXPR_LOGOR;
+    				expr_parse_compare(&b);
+    				c->subnodes[0] = a;
+    				c->subnodes[1] = b;
+    				chain = c;
+    				continue;
+    			}
+    			if(streq(peek()->text, "&&")){
+    				consume();
+    				c = c_allocX(sizeof(expr_node));
+    				c->kind = EXPR_LOGAND;
+    				expr_parse_compare(&b);
+    				c->subnodes[0] = a;
+    				c->subnodes[1] = b;
+    				chain = c;
+    				continue;
+    			}
+			} else {
+    			if(streq(peek()->text, "||")){
+    				consume();
+    				c = c_allocX(sizeof(expr_node));
+    				c->kind = EXPR_LOGOR;
+    				expr_parse_compare(&b);
+    				c->subnodes[0] = chain->subnodes[1];
+    				c->subnodes[1] = b;
+    				chain->subnodes[1] = c;
+    				continue;
+    			}
+    			if(streq(peek()->text, "&&")){
+    				consume();
+    				c = c_allocX(sizeof(expr_node));
+    				c->kind = EXPR_LOGAND;
+    				expr_parse_compare(&b);
+    				c->subnodes[0] = chain->subnodes[1];
+    				c->subnodes[1] = b;
+    				chain->subnodes[1] = c;
+    				continue;
+    			}
 			}
 		}
 		break;
 	}
 	*targ = a;
+	if(chain){
+	    *targ = chain;
+	}
 }
 
 void expr_parse_assign(expr_node** targ){
