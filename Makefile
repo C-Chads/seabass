@@ -40,6 +40,11 @@ toc_test:
 	cc -m32 -O3 auto_out.c library/companion.c -o toc_test
 
 	
+toc_gnuc_test:
+	cbas library/toc_gnuc.cbas
+	cc -m32 -O3 auto_out.c library/companion_gnuc.c -o toc_test
+
+	
 
 uninstall:
 	rm -f /usr/local/bin/cbas

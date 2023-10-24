@@ -12,7 +12,9 @@
 
 
 //change these according to your target...
-data codegen string SEABASS_STDLIB_PREFIX "\n\n";
+
+data codegen string SEABASS_STDLIB_PREFIX "#define mcpy __builtin_memcpy\n#define mem_alloc __builtin_malloc\n#define mem_free __builtin_free\n#define mem_realloc __builtin_realloc\n";
+
 
 fn predecl openfile(char* fname, char* mode)->TGT_UMAX; //returns a handle...
 fn predecl closefile(TGT_UMAX p)->int;
@@ -37,15 +39,15 @@ fn predecl get_errno()->int;
 
 
 //memcpy...
-fn predecl mcpy(char* dst, char* src, TGT_UMAX sz);
+fn predecl noexport mcpy(char* dst, char* src, TGT_UMAX sz);
 
 
 fn predecl println(char* s);
 
 //this is needed to get proper compiler optimization...
-fn predecl mem_alloc(TGT_UMAX amt)->char*;
-fn predecl mem_free(char* p);
-fn predecl mem_realloc(char* p, TGT_UMAX amt)->char*;
+fn predecl noexport mem_alloc(TGT_UMAX amt)->char*;
+fn predecl noexport mem_free(char* p);
+fn predecl noexport mem_realloc(char* p, TGT_UMAX amt)->char*;
 
 /*
     TODO: Fill out the full feature set of
