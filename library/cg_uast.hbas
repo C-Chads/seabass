@@ -117,7 +117,30 @@
                 DOCUMENTATION / USAGE
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    TODO
+    You should use the UAST as a way to implement
+    parsers and inferencers. It can also be used for
+    concept modelling (and potentially logical proofs
+    as well).
+    
+    It works by having "analyzers" which run on the
+    AST and attempt to apply transformations/rules.
+    These analyzers are invoked in a cycle each
+    attempting to apply an inferencing rule until
+    eventually no inferencing rules can be applied.
+    
+    Think of it like "Consulting experts". You ask
+    different experts to do "work" on your "project"
+    (the AST) round-robin until eventually you do
+    a cycle where none of them can come up with
+    anything to do. Once that happens, you know
+    that the analysis is finished, and the
+    AST you have is finalized.
+    
+    This ultimately does something similar to recursive
+    descent but is far more flexible, allowing for
+    arbitrary AST transformations rather than
+    simply minimal-context or context-free
+    ones.
     
 
 */
@@ -127,11 +150,11 @@
 class cg_uastnode
 
     
-    u64 coord
+    u64 coord //"Relative position"
     byte* udata //child data of the node
     
     /*
-        Relative placement
+        Relative nodes...
     */
         u64* rel
         u64 n_rel
@@ -139,7 +162,7 @@ class cg_uastnode
     
     //universal properties- lots/most ASTs will want these...
     
-    u64 sysid //what "system of analysis" does this node exist in?
+    u64 sysid //what "system of analysis" owns this node?
     byte is_dead //is this node dead? I.e., should it be processed anymore?
     byte is_error //Has this node reached an error state (All possible interpretations are dead)?
     
@@ -290,7 +313,7 @@ end
 
 method codegen cg_uast.add_link(u64 daddy, u64 child):
     if(daddy >= this.n_nodes || child >= this.n_nodes)
-        return 
+        return
     end
     (this.nodes + daddy).push_rel(child);
 end
