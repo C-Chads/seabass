@@ -1,5 +1,15 @@
 
 #include "toc.hbas"
+/*
+    Compile like this
+    cbas toc.cbas
+    cc -O3 -m32 auto_out.c -o a
+    
+    run like this:
+    ./a
+*/
+
+
 
 #__CBAS_TARGET_WORDSZ 32
 #__CBAS_TARGET_MAX_FLOAT 32
