@@ -46,7 +46,7 @@ fn predecl println(char* s);
 fn predecl mem_alloc(TGT_UMAX amt)->char*;
 fn predecl mem_free(char* p);
 fn predecl mem_realloc(char* p, TGT_UMAX amt)->char*;
-
+fn predecl sys_exit(int a);
 /*
     TODO: Fill out the full feature set of
     the C standard library...

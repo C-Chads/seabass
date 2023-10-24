@@ -78,6 +78,8 @@ void println(char* s){
     puts(s);
 }
 
-
+void sys_exit(int a){
+    exit(a);
+}
 
 

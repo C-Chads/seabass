@@ -62,5 +62,7 @@ void println(char* s){
 }
 
 
-
+void sys_exit(int a){
+    exit(a);
+}
 

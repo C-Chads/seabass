@@ -32,6 +32,27 @@ struct bbb
 end
 
 
+struct membuf
+    char* d
+end
+
+method membuf.ctor():
+    this.d = 0
+end
+method membuf.dtor():
+    if(this.d != 0)
+        mem_free(this.d)
+    end
+end
+method membuf.req(u32 sz):
+    this.d = mem_alloc(sz)
+    if(this.d == 0)
+        println("mem_alloc failed!");
+        sys_exit(1);
+    end
+end
+
+
 
 
 bbb[60] my_bbbs;
@@ -331,11 +352,12 @@ fn pub main()->int:
     
     //test readbytes
     if(1)
-        char[5] buf
-        println("Enter 5 characters");
-        read_bytes(get_stdin_handle(), buf, 5);
+        membuf buffer
+        buffer.req((1<<10));
+        println("Enter 10 characters");
+        read_bytes(get_stdin_handle(), buffer.d, 10);
         println("Here are your characters back:");
-        write_bytes(get_stdout_handle(), buf, 5);
+        write_bytes(get_stdout_handle(), buffer.d, 10);
     end
     
     :real_end
