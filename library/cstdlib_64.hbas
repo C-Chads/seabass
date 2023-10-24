@@ -1,0 +1,401 @@
+
+
+/*
+    MIRROR OF COMMON FUNCTIONS FROM THE C STANDARD LIBRARY
+    FOR PROGRAMS THAT WISH TO COMPILE TO C.
+    
+    YOU MAY HAVE TO MODIFY IT FOR YOUR TARGET!!!!!
+    
+    READ THE DOCS ON YOUR C STANDARD LIBRARY IMPLEMENTATION!!!
+    
+    FOR 64 BIT TARGETS ONLY.
+*/
+
+
+data codegen string C_STDLIB_INCLUDES "\n#define __STDC_WANT_LIB_EXT1__ 1\n#include <ctype.h>\n#include <errno.h>\n#include <time.h>\n#include <string.h>\n#include <stdlib.h>\n#include <math.h>\n#include <stdio.h>";
+
+
+noexport atomic int errno;
+
+noexport atomic int EDOM;
+noexport atomic int EILSEQ;
+noexport atomic int ERANGE;
+noexport atomic int TIME_UTC;
+
+fn noexport isalnum(int c)->int;
+fn noexport isalpha(int c)->int;
+fn noexport islower(int c)->int;
+fn noexport isupper(int c)->int;
+fn noexport isdigit(int c)->int;
+fn noexport isxdigit(int c)->int;
+fn noexport iscntrl(int c)->int;
+fn noexport isgraph(int c)->int;
+fn noexport isspace(int c)->int;
+fn noexport isblank(int c)->int;
+fn noexport isprint(int c)->int;
+fn noexport ispunct(int c)->int;
+fn noexport tolower(int c)->int;
+fn noexport toupper(int c)->int;
+
+//NOTE: You may have to change these...
+#define time_t u64
+#define clock_t i64
+#define errno_t int
+#define size_t u64
+#define ssize_t i64
+#define rsize_t u64
+#define float_t float
+#define double_t double
+
+noexport atomic clock_t CLOCKS_PER_SEC;
+noexport atomic float NAN;
+noexport atomic float INFINITY;
+
+fn noexport difftime(time_t time_end, time_t time_beg)->double;
+fn noexport time(time_t *arg)->time_t;
+fn noexport clock()->clock_t;
+
+struct tm noexport
+    int tm_sec
+    int tm_min
+    int tm_hour
+    int tm_mday
+    int tm_mon
+    int tm_year
+    int tm_wday
+    int yday
+    int tm_isdst
+end
+
+struct timespec noexport
+    time_t tv_sec
+    i64 tv_nsec //it's 'long' which is 64 bit in C on *nix
+end
+
+struct FILE noexport
+    int __dummy__
+end
+
+
+struct fpos_t noexport
+    int __dummy__
+end
+
+noexport FILE* stdin;
+noexport FILE* stdout;
+noexport FILE* stderr;
+noexport u64 BUFSIZ;
+noexport int EOF;
+noexport u64 FOPEN_MAX;
+noexport u64 FILENAME_MAX;
+noexport u64 TMP_MAX;
+noexport u64 TMP_MAX_S;
+noexport u64 L_tmpnam;
+noexport u64 L_tmpnam_s;
+noexport int _IOFBF;
+noexport int _IOLBF;
+noexport int _IONBF;
+noexport int SEEK_SET;
+noexport int SEEK_CUR;
+noexport int SEEK_END;
+fn noexport fopen(schar* fname, schar* mode)->FILE*;
+fn noexport fopen_s(FILE** streamptr, schar* fname, schar* mode)->errno_t;
+fn noexport freopen(schar* fname, schar* mode, FILE* stream)->FILE*;
+fn noexport freopen_s(FILE** new_streamptr, schar* fname, schar* mode, FILE* stream)->errno_t;
+fn noexport fclose(FILE* stream)->int;
+fn noexport fflush(FILE* stream)->int;
+fn noexport setbuf(FILE* stream, schar* buffer);
+fn noexport setvbuf(FILE* stream, schar* buffer, int mode, size_t sz)->int;
+fn noexport fwide(FILE* stream, int mode)->int;
+fn noexport fread(byte* buffer, size_t sz, size_t cnt, FILE* stream)->size_t;
+fn noexport fwrite(byte* buffer, size_t sz, size_t cnt, FILE* stream)->size_t;
+fn noexport fgetc(FILE* stream)->int;
+fn noexport getc(FILE* stream)->int;
+fn noexport fgets(schar* str, int count, FILE* stream)->schar*;
+fn noexport fputc(int ch, FILE* stream)->int;
+fn noexport putc(int ch, FILE* stream)->int;
+//TODO: finish the rest of this...
+
+
+fn noexport timespec_get(timespec* t, int b)->int;
+fn noexport asctime(tm* tp)->schar*;
+fn noexport asctime_s(schar* b, rsize_t bsz, tm* tp)->errno_t;
+fn noexport ctime(time_t* tr)->schar*;
+fn noexport ctime_s(schar* b, rsize_t bsz, time_t* tr)->errno_t;
+fn noexport strftime(schar* str, size_t cnt, schar* fmt, tm* tp)->size_t;
+fn noexport gmtime(time_t* timer)->tm*;
+fn noexport gmtime_s(time_t* timer, tm* buf)->tm*;
+fn noexport localtime(time_t* timer)->tm*;
+fn noexport localtime_s(time_t* timer, tm* buf)->tm*;
+
+
+/*
+    STRING.H
+*/
+
+fn noexport strcpy(schar* dest, schar* src)->schar*;
+fn noexport strcpy_s(schar* dest, rsize_t dsz, schar* src)->errno_t;
+fn noexport strncpy(schar* dest, schar* src, size_t count)->schar*;
+fn noexport strncpy_s(schar* dest, rsize_t dsz, schar* src, size_t count)->errno_t;
+fn noexport strcat(schar* dest, schar* src)->schar*;
+fn noexport strcat_s(schar* dest, rsize_t dsz, schar* src)->schar*;
+
+fn noexport strncat(schar* dest, schar* src, size_t count)->schar*;
+fn noexport strncat_s(schar* dest, rsize_t dsz, schar* src, size_t count)->schar*;
+fn noexport strxfrm(schar* dest, schar* src, size_t count)->size_t;
+fn noexport strdup(schar* src)->schar*;
+fn noexport strndup(schar* src, size_t sz)->schar*;
+
+fn noexport strlen(schar* s)->size_t;
+fn noexport strnlen_s(schar* s, size_t sz)->size_t;
+fn noexport strcmp(schar* l, schar* r)->int;
+fn noexport strcoll(schar* l, schar* r)->int;
+fn noexport strchr(schar* str, int ch)->schar*;
+fn noexport strspn(schar* dst, schar* src)->size_t;
+fn noexport strcspn(schar* dst, schar* src)->size_t;
+fn noexport strpbrk(schar* dst, schar* brkst)->schar*;
+fn noexport strstr(schar* str, schar* substr)->schar*;
+fn noexport strtok(schar* str, schar* delim)->schar*;
+fn noexport strtok_s(schar* str, rsize_t* strmax, schar* delim, schar** ptr)->schar*;
+
+fn noexport strncmp(schar* l, schar* r, size_t count)->int;
+fn noexport memchr(byte* ptr, int ch, size_t count)->byte*;
+fn noexport memcmp(byte* l, byte* r, size_t count)->int;
+fn noexport memset(byte* d, int ch, size_t c)->byte*;
+fn noexport memset_s(byte* d, rsize_t dsz, int ch, rsize_t c)->errno_t;
+
+fn noexport memcpy(byte* d, byte* src, size_t c)->byte*;
+fn noexport memcpy_s(byte* d, rsize_t dsz, byte* src, size_t c)->errno_t;
+fn noexport memmove(byte* d, byte* src, size_t c)->byte*;
+fn noexport memmove_s(byte* d,rsize_t dsz,  byte* src, size_t c)->errno_t;
+fn noexport memccpy(byte* d, byte* s, int c, size_t count)->byte*;
+
+fn noexport strerror(int errnum)->schar*;
+fn noexport strerror_s(schar* buf, rsize_t bsz, errno_t errnum)->schar*;
+fn noexport strerrorlen_s(errno_t errnum)->size_t;
+
+fn noexport abort();
+fn noexport exit(int a);
+fn noexport quick_exit(int a);
+fn noexport _Exit(int a);
+//fn noexport atexit(byte* ff)->int;
+//fn noexport at_quick_exit(byte* ff)->int;
+
+//sensible defaults...
+noexport atomic int EXIT_SUCCESS = 0;
+noexport atomic int EXIT_FAILURE = 1;
+//more stuff...
+noexport atomic int SIGTERM;
+noexport atomic int SIGSEGV;
+noexport atomic int SIGINT;
+noexport atomic int SIGILL;
+noexport atomic int SIGABRT;
+noexport atomic int SIGFPE;
+noexport atomic int SIG_ERR;
+noexport atomic int SIG_DFL;
+noexport atomic int SIG_IGN;
+
+fn noexport system(schar* com)->int;
+fn noexport getenv(schar* name)->schar*;
+fn noexport getenv_s(size_t* len, schar* value, rsize_t valsz, schar* name)->errno_t;
+//signal is unusable...
+
+
+/*
+    MATH.H
+*/
+fn noexport abs(int n)->int;
+fn noexport labs(llong n)->llong; //long is 64 bit in C so this is needed...
+fn noexport llabs(llong n)->llong;
+
+fn noexport fabsf(float a)->float;
+fn noexport fabs(f64 a)->f64;
+fn noexport fmodf(f32 x, f32 y)->f32;
+fn noexport fmod(f64 x, f64 y)->f64;
+fn noexport remainderf(f32 x, f32 y)->f32;
+fn noexport remainder(f64 x, f64 y)->f64;
+fn noexport remquof(f32 x, f32 y, int* quot)->float;
+fn noexport remquo(f64 x, f64 y, int* quot)->double;
+fn noexport fmaf(f32 x, f32 y, f32 z)->f32;
+fn noexport fma(f64 x, f64 y, f64 z)->f64;
+
+fn noexport fmaxf(f32 x, f32 y)->f32;
+fn noexport fmax(f64 x, f64 y)->f64;
+
+fn noexport fminf(f32 x, f32 y)->f32;
+fn noexport fmin(f64 x, f64 y)->f64;
+
+fn noexport fdimf(f32 x, f32 y)->f32;
+fn noexport fdim(f64 x, f64 y)->f64;
+
+fn noexport nanf(schar* arg)->f32;
+fn noexport nan(schar* arg)->f64;
+
+fn noexport expf(f32 arg)->f32;
+fn noexport exp(f64 arg)->f64;
+
+fn noexport exp2f(f32 arg)->f32;
+fn noexport exp2(f64 arg)->f64;
+
+fn noexport expm1f(f32 arg)->f32;
+fn noexport expm1(f64 arg)->f64;
+
+fn noexport logf(f32 arg)->f32;
+fn noexport log(f64 arg)->f64;
+
+fn noexport log10f(f32 arg)->f32;
+fn noexport log10(f64 arg)->f64;
+
+
+fn noexport log1pf(f32 arg)->f32;
+fn noexport log1p(f64 arg)->f64;
+
+fn noexport sqrtf(f32 arg)->f32;
+fn noexport sqrt(f64 arg)->f64;
+
+
+fn noexport cbrtf(f32 arg)->f32;
+fn noexport cbrt(f64 arg)->f64;
+
+fn noexport sinf(f32 arg)->f32;
+fn noexport sin(f64 arg)->f64;
+
+fn noexport cosf(f32 arg)->f32;
+fn noexport cos(f64 arg)->f64;
+
+fn noexport tanf(f32 arg)->f32;
+fn noexport tan(f64 arg)->f64;
+
+
+fn noexport asinf(f32 arg)->f32;
+fn noexport asin(f64 arg)->f64;
+
+fn noexport acosf(f32 arg)->f32;
+fn noexport acos(f64 arg)->f64;
+
+fn noexport atanf(f32 arg)->f32;
+fn noexport atan(f64 arg)->f64;
+
+//hyperbolics...
+
+fn noexport sinhf(f32 arg)->f32;
+fn noexport sinh(f64 arg)->f64;
+
+fn noexport coshf(f32 arg)->f32;
+fn noexport cosh(f64 arg)->f64;
+
+fn noexport tanhf(f32 arg)->f32;
+fn noexport tanh(f64 arg)->f64;
+
+
+fn noexport asinhf(f32 arg)->f32;
+fn noexport asinh(f64 arg)->f64;
+
+fn noexport acoshf(f32 arg)->f32;
+fn noexport acosh(f64 arg)->f64;
+
+fn noexport atanhf(f32 arg)->f32;
+fn noexport atanh(f64 arg)->f64;
+
+
+fn noexport errff(f32 arg)->f32;
+fn noexport errf(f64 arg)->f64;
+
+fn noexport errfcf(f32 arg)->f32;
+fn noexport errfc(f64 arg)->f64;
+
+fn noexport tgammaf(f32 arg)->f32;
+fn noexport tgamma(f64 arg)->f64;
+
+
+
+fn noexport lgammaf(f32 arg)->f32;
+fn noexport lgamma(f64 arg)->f64;
+
+
+fn noexport ceilf(f32 arg)->f32;
+fn noexport ceil(f64 arg)->f64;
+
+fn noexport floorf(f32 arg)->f32;
+fn noexport floor(f64 arg)->f64;
+
+
+fn noexport truncf(f32 arg)->f32;
+fn noexport trunc(f64 arg)->f64;
+
+fn noexport roundf(f32 arg)->f32;
+fn noexport round(f64 arg)->f64;
+
+fn noexport lroundf(f32 arg)->llong;
+fn noexport lround(f64 arg)->llong;
+
+fn noexport llroundf(f32 arg)->llong;
+fn noexport llround(f64 arg)->llong;
+
+
+fn noexport nearbyintf(f32 arg)->f32;
+fn noexport nearbyint(f64 arg)->f64;
+
+fn noexport rintf(f32 arg)->f32;
+fn noexport rint(f64 arg)->f64;
+
+
+fn noexport lrintf(f32 arg)->llong;
+fn noexport lrint(f64 arg)->llong;
+
+
+fn noexport llrintf(f32 arg)->llong;
+fn noexport llrint(f64 arg)->llong;
+
+
+
+
+
+
+fn noexport powf(f32 x, f32 y)->f32;
+fn noexport pow(f64 x, f64 y)->f64;
+
+fn noexport frexpf(f32 x, int* pp)->f32;
+fn noexport frexp(f64 x, int* pp)->f64;
+
+
+fn noexport ldexpf(f32 x, int pp)->f32;
+fn noexport ldexp(f64 x, int pp)->f64;
+
+fn noexport hypotf(f32 x, f32 y)->f32;
+fn noexport hypot(f64 x, f64 y)->f64;
+
+fn noexport modff(f32 x, f32* iptr)->f32;
+fn noexport modf(f64 x, f64* iptr)->f64;
+
+fn noexport scalbnf(f32 x, int xp)->f32;
+fn noexport scalbn(f64 x, int xp)->f64;
+
+
+fn noexport scalblnf(f32 x, llong xp)->f32;
+fn noexport scalbln(f64 x, llong xp)->f64;
+
+
+
+fn noexport ilogbf(f32 x)->int;
+fn noexport ilogb(f64 x)->int;
+
+
+
+fn noexport atan2f(f32 x, f32 y)->f32;
+fn noexport atan2(f64 x, f64 y)->f64;
+
+
+
+fn noexport nextafterf(f32 from, f32 to)->f32;
+fn noexport nextafter(f64 from, f64 to)->f64;
+
+
+fn noexport nexttowardf(f32 from, f32 to)->f32;
+fn noexport nexttoward(f64 from, f64 to)->f64;
+
+
+fn noexport copysignf(f32 from, f32 to)->f32;
+fn noexport copysign(f64 from, f64 to)->f64;
+
+
