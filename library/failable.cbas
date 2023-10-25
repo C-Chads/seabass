@@ -7,8 +7,7 @@ fn codegen this_func_fails()->int:
 end
 
 fn codegen this_func_doesntfail()->int:
-    cg_set_errno(0);
-    return 1;
+    @throw 1
 end
 
 
@@ -29,7 +28,6 @@ end
 
 
 fn codegen codegen_main():
-    cg_set_errno(0);
     
     int a
     int this_function_uses_try_but_isnt_codegen

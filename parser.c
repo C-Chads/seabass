@@ -2154,13 +2154,7 @@ void expr_parse_terminal(expr_node** targ){
 		expr_parse_paren(targ);
 		return;
 	}
-	if(peek()->data == TOK_CPAREN){
-	    puts("A closing parentheses was found where an expression terminal was expected.");
-	    puts("This usually happens because you either didn't finish an expression, or you");
-	    puts("omitted it entirely. Try looking at the location I send you to for an unfinished");
-	    puts("expression...");
-		parse_error("Found a closing parentheses where an expression terminal was expected...");
-	}
+
 	
 	if(peek()->data == TOK_STRING){
 		expr_parse_stringlit(targ);
@@ -2207,6 +2201,32 @@ void expr_parse_terminal(expr_node** targ){
     	    puts("Seabass does not require arrows on pointers...");
 	        parse_error("Unknown expression terminal.\n");
 	    }
+    }
+    puts("Welcome back to the dark side of the language... expr_parse_terminal failed...");
+	if(peek()->data == TOK_CPAREN){
+	    puts("A closing parentheses was found where an expression terminal was expected.");
+	    puts("This usually happens because you either didn't finish an expression, or you");
+	    puts("omitted it entirely. Try looking at the location I send you to for an unfinished");
+	    puts("expression...");
+		parse_error("Found a closing parentheses where an expression terminal was expected...");
+	}
+    if(peek() && peek()->data == TOK_SEMIC){
+        puts("I was expecting an expression, not a semicolon!");
+        puts("You probably did something like `return;` when the function");
+        puts("has a return value.\nIn general, an expression was omitted.");
+    }
+
+    if(peek() && peek()->data == TOK_KEYWORD){
+        puts("I seem to have found a keyword!");
+        if(peek_is_typename())
+            puts("It is a typename!");
+        puts("Here's what I found, by the way:");
+        puts(peek()->text);
+        puts("It definitely doesn't belong here...");
+    }else if(peek_is_typename()){
+        puts("I found a typename that isn't a keyword...");
+        puts("Here's what we've got:");
+        puts(peek()->text);
     }
 	puts("expr_parse_terminal failed.");
 	if(peek()){

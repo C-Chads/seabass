@@ -11,6 +11,57 @@
 #include "cgwksht.hbas"
 #include "cgerrno.hbas"
 
+@wksht throw[
+    [
+        ;__TRY_____SETTERNO__(1);
+        return RETVAL;
+    ][
+        RETVAL
+    ][
+         /*
+            Depending on whether we are in a codegen function or not,
+            we have to do something different...
+        */
+        cgast* ast
+        u64 active_function
+        u64 is_in_codegen_fn
+        ast = (cgast*)__builtin_get_ast();
+        active_function = ast.active_function[0];
+        is_in_codegen_fn = (ast.symbol_table[0]+active_function).is_codegen;
+        
+        if((ast.symbol_table[0]+active_function).is_incomplete == 0)
+            __builtin_puts("THROW ERROR!!!");
+            __builtin_puts("You may not invoke throw at global scope!");
+            if(__builtin_peek() != 0)
+                /*Emit a helpful error message.*/
+                cgstrll* where_we_are = (cgstrll*)__builtin_peek();
+                __builtin_puts("Here is a dump of the entire unit from the current position:");
+                where_we_are.debug_print();
+            end
+            __builtin_exit(1);
+        end
+        cgstrll* pp = result;
+        while(pp != 0)
+            if(
+                pp.d == CG_TOK_IDENT &&
+                pp.text streq "__TRY_____SETTERNO__"
+            )
+                __builtin_free(pp.text);
+                if(is_in_codegen_fn)
+                    pp.text = __builtin_strdup("cg_set_errno")
+                else
+                    pp.text = __builtin_strdup("set_errno")
+                end
+            end
+            pp = pp.right
+        end
+        
+        //result:debug_print();
+        return result;
+    ]
+]
+
+
 @wksht try[
     [
         ;__TRY_____SETTERNO__(0);
