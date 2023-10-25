@@ -279,12 +279,8 @@ codegen u64 cg_rd_parse_match_temporary_id = 0;
                 @pushqtok "\"[\""
             @pushqtok ")"
         @pushqtok ")"
-            if(dummy.right == cast(cgstrll*)0)
-                @pushqtok ";"
-            else
-                @pushtok [dummy.right:dupell()]
-                @rwalk_skip;
-            end
+                @pushqtok "goto"
+                @pushqtok [temp_label_name.s]
 
         //CBRACK- 15
         @pushqtok "elif"
@@ -310,12 +306,8 @@ codegen u64 cg_rd_parse_match_temporary_id = 0;
                 @pushqtok "\"]\""
             @pushqtok ")"
         @pushqtok ")"
-            if(dummy.right == cast(cgstrll*)0)
-                @pushqtok ";"
-            else
-                @pushtok [dummy.right:dupell()]
-                @rwalk_skip;
-            end
+                @pushqtok "goto"
+                @pushqtok [temp_label_name.s]
 
         //OCB-10
         @pushqtok "elif"
@@ -341,12 +333,8 @@ codegen u64 cg_rd_parse_match_temporary_id = 0;
                 @pushqtok "\"{\""
             @pushqtok ")"
         @pushqtok ")"
-            if(dummy.right == cast(cgstrll*)0)
-                @pushqtok ";"
-            else
-                @pushtok [dummy.right:dupell()]
-                @rwalk_skip;
-            end
+                @pushqtok "goto"
+                @pushqtok [temp_label_name.s]
         //CCB-11
         @pushqtok "elif"
         @pushqtok "("
@@ -371,12 +359,8 @@ codegen u64 cg_rd_parse_match_temporary_id = 0;
                 @pushqtok "\"}\""
             @pushqtok ")"
         @pushqtok ")"
-            if(dummy.right == cast(cgstrll*)0)
-                @pushqtok ";"
-            else
-                @pushtok [dummy.right:dupell()]
-                @rwalk_skip;
-            end
+                @pushqtok "goto"
+                @pushqtok [temp_label_name.s]
         //OPAREN-12
         @pushqtok "elif"
         @pushqtok "("
@@ -401,12 +385,8 @@ codegen u64 cg_rd_parse_match_temporary_id = 0;
                 @pushqtok "\"(\""
             @pushqtok ")"
         @pushqtok ")"
-            if(dummy.right == cast(cgstrll*)0)
-                @pushqtok ";"
-            else
-                @pushtok [dummy.right:dupell()]
-                @rwalk_skip;
-            end
+                @pushqtok "goto"
+                @pushqtok [temp_label_name.s]
         //CPAREN- 13
         @pushqtok "elif"
         @pushqtok "("
@@ -431,12 +411,8 @@ codegen u64 cg_rd_parse_match_temporary_id = 0;
                 @pushqtok "\")\""
             @pushqtok ")"
         @pushqtok ")"
-            if(dummy.right == cast(cgstrll*)0)
-                @pushqtok ";"
-            else
-                @pushtok [dummy.right:dupell()]
-                @rwalk_skip;
-            end        
+                @pushqtok "goto"
+                @pushqtok [temp_label_name.s]     
             
         //SEMIC-16
         @pushqtok "elif"
@@ -462,12 +438,8 @@ codegen u64 cg_rd_parse_match_temporary_id = 0;
                 @pushqtok "\";\""
             @pushqtok ")"
         @pushqtok ")"
-            if(dummy.right == cast(cgstrll*)0)
-                @pushqtok ";"
-            else
-                @pushtok [dummy.right:dupell()]
-                @rwalk_skip;
-            end
+                @pushqtok "goto"
+                @pushqtok [temp_label_name.s]
             
             
         //COMMA-20
@@ -494,12 +466,8 @@ codegen u64 cg_rd_parse_match_temporary_id = 0;
                 @pushqtok "\",\""
             @pushqtok ")"
         @pushqtok ")"
-            if(dummy.right == cast(cgstrll*)0)
-                @pushqtok ";"
-            else
-                @pushtok [dummy.right:dupell()]
-                @rwalk_skip;
-            end
+                @pushqtok "goto"
+                @pushqtok [temp_label_name.s]
             
             
         //IDENT/KEYWORD/OPERATOR
@@ -563,14 +531,8 @@ codegen u64 cg_rd_parse_match_temporary_id = 0;
                 @pushqtok [temp_var_name.s] temp_var_name:free(); //our last usage.
                 @pushqtok ")"
             @pushqtok ")"
-
-                //push code here.
-                if(dummy.right == cast(cgstrll*)0)
-                    @pushqtok ";"
-                else
-                    @pushtok [dummy.right]
-                    @rwalk_skip;
-                end
+                @pushqtok "goto"
+                @pushqtok [temp_label_name.s]
             @pushqtok "end" //if the text matches
         @pushqtok "end"  //if ident, keyword, or operator
     @pushqtok "end" //if (1)
@@ -592,6 +554,9 @@ codegen u64 cg_rd_parse_match_temporary_id = 0;
     
     @pushqtok ":"
     @pushqtok [temp_label_name2.s]
+    
+    temp_label_name:free();
+    temp_label_name2:free();
     
     return retval;
 ]
