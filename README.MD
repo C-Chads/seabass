@@ -4,6 +4,66 @@ ______________________________________________________________
 
 ![logo](logo.png)
 
+# THE SEABASS METAPROGRAMMING LANGUAGE
+
+Seabass (or CBAS) is a small, portable, public domain general-purpose programming language.
+
+If that was the end of it, then seabass would be little more than an interesting toy. A syntax
+sugar for C.
+
+However, seabass has several "superfeatures" which place it firmly amongst the "heavyweights":
+
+1. Arbitrary compiletime execution. Seabass lets you write arbitrary code which runs at compiletime,
+    called "codegen" code.
+
+2. Compiler Reflection. Seabass lets compiletime ("codegen") code see the internal state of the compiler
+    and even manipulate it. Furthermore, you can define new state variables and data structures, meaning
+    you can effectively extend the compiler by writing code it understands, during compilation.
+
+3. Parsehooks, aka "Parser Hooks".
+    Seabass lets you write functions which temporarily "take over" parsing from the compiler, letting you
+    define totally new syntaxes. You can manipulate the input fed to the parser as well
+    as the internal representation of code which has already been parsed (The Abstract Syntax Tree,
+    or "AST").
+    
+4. Code generators. Seabass allows you to define how your code will compile into some target code.
+    This means that, unlike pretty much every other compiler, cross-compilation does not require
+    an entirely new toolchain. All you need is a new code generator. You don't have to compile
+    a totally new compiler just because you want to compile for the M68k- you just need
+    a new code generator.
+    
+Because of these "superfeatures" the following are all true with Cbas:
+
+* You can write software which is theoretically infinitely portable. If a particular computer
+    platform has the features necessary to implement the program (i.e. enough memory, network
+    access, a filesystem...) then the only "new" thing that needs to be written is a code
+    generator for that target, and once that is written, all you have to do is #include it
+    in your code!
+    
+* You can write totally new programming languages easily. If you want to write your own programming
+    language, all you have to do is write a parsehook in Seabass which compiles your language into
+    seabass (which is made much easier with the wide variety of metaprogramming tools available to
+    you). This isn't just restricted to DSLs either. If you want a new, higher-level general-purpose
+    programming language with features seabass doesn't have, you can write it in seabass.
+    
+* You can bypass almost any restriction seabass has.
+
+    If anything about seabass as a language or as a compiler bothers you, it is usually
+    possible to override or change it, from syntax annoyances to how commandline arguments
+    are parsed.
+    
+    The following restrictions are "hard":
+    
+    * It is not possible to create custom syntaxes within seabass which are whitespace-oriented.
+    
+    * All "codegen" code executes inside Seabass's "AST executor". 
+    
+    * the second element of `argv` is reserved by Seabass for the name of the main file
+        of the compilation unit.
+    
+    
+
+
 ## ***For the love of Programming and Programmers***
 
 In the public domain, so that your joy may be full.
