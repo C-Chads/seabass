@@ -2130,7 +2130,14 @@ void expr_parse_terminal(expr_node** targ){
 		expr_parse_intlit(targ);
 		return;
 	}
-	if(peek_is_fname()){
+	/*
+	    It must BOTH be an fname, AND be followed by a parentheses...
+	*/
+	if(
+	    peek_is_fname() &&
+	    peek()->right &&
+	    peek()->right->data == TOK_OPAREN
+	){
 		expr_parse_fcall(targ);
 		return;
 	}
