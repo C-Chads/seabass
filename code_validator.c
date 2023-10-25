@@ -756,7 +756,7 @@ static void propagate_types(expr_node* ee){
 		t.is_lvalue = 1; /*if it wasn't an lvalue before, it is now!*/
 		if(t.pointerlevel == 0){
 			if(t.basetype == BASE_STRUCT)
-				throw_type_error("Can't deref pointer to struct.");
+				throw_type_error("Can't deref pointer to struct. Try pointer arithmetic instead.");
 			if(t.basetype == BASE_VOID)
 				throw_type_error("Can't deref pointer to void.");
 		}
