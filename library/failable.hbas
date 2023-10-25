@@ -29,6 +29,9 @@
 #include "cgwksht.hbas"
 #include "cgerrno.hbas"
 
+#define try @_____try
+#define throw @_____throw
+
 @wksht _____throw[
     [
         ;__TRY_____SETTERNO__(1);
@@ -155,6 +158,5 @@
     ]
 ]
 
-#define try @_____try
-#define throw @_____throw
+
 
