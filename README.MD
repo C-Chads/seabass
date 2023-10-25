@@ -109,8 +109,8 @@ fn mutoa(char* dest, uint value):
 	if(1)
 	    uint pow
 	    pow = 1;
-		while(value/pow >= 10)
-		    pow = pow * 10; 
+        while(value/pow >= 10)
+            pow = pow * 10; 
         end
 		/*found the highest power of 10*/
 		while(pow)
