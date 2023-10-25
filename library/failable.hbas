@@ -3,7 +3,25 @@
 /*
     FAILABLE CONTROL FLOW ABSTRACTION - THE TRY BLOCK.
     
-    Using this, you can write 
+    The try block simulates exception handling- as long
+    as there are try blocks with repeated throws going
+    all the way up the call stack to the proper
+    receiver, then try and throw will work correctly.
+    
+    Note that try-throw will NOT function correctly if you
+    do not put try-catch blocks surrounding all
+    your failable-functions all the way through the call stack...
+    
+    USAGE
+    
+    char* myvar
+    try[
+        myvar = myFunction()
+    ][
+        my_error_logger("<DBG> Caught exception from myFunction");
+        //pass the exception upward another level...
+        throw (my_retval_type)0;
+    ]
     
     
 */
@@ -139,5 +157,4 @@
 
 #define try @_____try
 #define throw @_____throw
-
 
