@@ -1939,9 +1939,8 @@ int main(int argc, char** argv){
 	    puts(" May your adventures be as grand as your");
 	    puts(" imagination can entail.");
 	    puts(bar);
-	    puts("May your dreams be fulfilled by your own ");
-	    puts("hand, and the desires of your heart");
-	    puts("satisfied. Amen.");
+	    puts("May this software increase and multiply");
+	    puts("your joy in the labor of your hands.");
 	    puts(bar);
 	    puts("                                         ");
 	    puts("         ***               ***           ");
