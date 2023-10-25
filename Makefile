@@ -44,6 +44,10 @@ toc_gnuc_test:
 	cbas library/toc_gnuc.cbas
 	cc -m32 -O3 -s auto_out.c library/companion_gnuc.c -o toc_test
 
+example_fib:
+	cbas library/toc_fib_example.cbas
+	cc -O3 -s auto_out.c library/companion.c -o fib
+	
 	
 
 uninstall:
@@ -58,4 +62,4 @@ push: clean
 	git push
 
 clean:
-	rm -f *.exe *.out *.bin *.o cbas cbas_dbg cbas_clean cbas_tcc auto_out.c toc_test
+	rm -f *.exe *.out *.bin *.o cbas cbas_dbg cbas_clean cbas_tcc auto_out.c toc_test fib

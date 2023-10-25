@@ -136,7 +136,7 @@
         rwalk = this.output_code;
         @cg_bldr_tokmanip_push_strings[
             if(1)
-                char[50] __pprint_local_buf
+                char[250] __pprint_local_buf
         ]
         finish_on_tok_null
         if(tok.d == CG_TOK_IDENT)

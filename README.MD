@@ -8,6 +8,134 @@ ______________________________________________________________
 
 Seabass (or CBAS) is a small, portable, public domain general-purpose programming language.
 
+Here is a minimal complete example program, which you can find under `library/toc_fib_example.cbas
+
+```
+
+/*
+    Written for the readme...
+*/
+
+#include "toc.hbas"
+#include "bit64.hbas"
+#include "seabass_stdlib.hbas"
+
+
+/*
+    Metaprogramming- Defining a custom syntax.
+    
+    We take the existing DSL for pretty-printing
+    called "pprint" and mutate it by dependency injection.
+*/
+
+@wksht prnt [
+    [
+        @pprint [println mutoa ARG1]
+    ][
+        ARG1
+    ]
+]
+
+
+fn predecl mutoa(char* dest, uint value);
+fn predecl matou(char* in)->uint;
+
+fn inline fib(uint n)->uint:
+	if(n < 2)
+		return 1;
+	end
+	uint a=1
+	uint b=1
+	uint c=1;
+	n = n-2
+	while(n)
+		c = a + b;
+		a = b;
+		b = c;
+		n--
+	end
+	return c
+end
+
+
+fn pub main(int argc, schar** argv)->int:
+    if(argc < 2)
+        @prnt[
+            /       "Usage: fib 13"
+        ]
+        sys_exit(1);
+    end
+    println("Welcome to the fibonacci number calculator!");
+    uint qq = matou((char*)argv[1]); //unsigned->signed conversion is fine here.
+    @prnt[
+        /*
+        /       "You asked for the fibonacci number..."
+        /int    (qq)*/
+        /       "That fibonacci number is:"
+        /int    (fib(qq))
+    ]
+    return 0;
+end
+
+/*
+    Our code generator...
+*/
+fn codegen codegen_main():
+    cg_emitC(SEABASS_STDLIB_PREFIX);
+end
+
+/*
+    EXAMPLE: Low level library code...
+*/
+fn matou(char* in)->uint:
+    /*
+        Decimal only...
+    */
+    uint retval = 0;
+    while(
+        (in[0] >= '0') && 
+        (in[0] <= '9')
+    )
+        retval = retval * 10;
+        retval = retval + (in[0]-'0');
+        in++
+    end
+    return retval;
+end
+
+
+fn mutoa(char* dest, uint value):
+	if(value == 0)
+	    dest[0] = '0';
+	    dest[1] = 0;
+	    return 
+	end
+	/*Determine the highest power of 10.*/
+	if(1)
+	    uint pow
+	    pow = 1;
+		while(value/pow >= 10)
+		    pow = pow * 10; 
+        end
+		/*found the highest power of 10*/
+		while(pow)
+			uint temp
+			temp = value/pow; /*if we had the number 137, we would have gotten
+			100 as our pow. We now divide by pow to get the highest digit.*/
+			dest[0] = (temp + ('0')); dest++;
+			value = value - temp * pow; /*Get rid of the highest digit.*/
+			pow = pow / 10 /*Divide pow by 10.*/
+		end
+	end
+
+	:ending
+	dest[0] = 0
+	
+	return;
+end
+
+```
+
 If that was the end of it, then seabass would be little more than an interesting toy. A syntax
 sugar for C.
 
@@ -52,11 +180,18 @@ Because of these "superfeatures" the following are all true with Cbas:
     possible to override or change it, from syntax annoyances to how commandline arguments
     are parsed.
     
-    The following restrictions are "hard":
+    There are some "hard" limitations of Seabass:
     
-    * It is not possible to create custom syntaxes within seabass which are whitespace-oriented.
+    * Obviously, seabass code is limited by the hardware it runs on. If you run seabass code on a slow
+        computer, it will run slowly.
     
-    * All "codegen" code executes inside Seabass's "AST executor". 
+    * It is not possible to create custom syntaxes within seabass which are whitespace-oriented-
+        at least, not without wrapping them in string literals. If your dream was to re-create python
+        inside of seabass, then... well... sorry!
+    
+    * All "codegen" code executes inside Seabass's "AST executor". This execution is not particularly
+        fast (it's significantly slower than python). This is only a real problem if you are trying
+        to write compiletime virtualization layers.
     
     * the second element of `argv` is reserved by Seabass for the name of the main file
         of the compilation unit.
