@@ -228,6 +228,12 @@ Yes. The `asm` statement allows you to write code inside of a string literal whi
 emitted directly to the target code file. In practice, this means you can write C code
 inside of a string literal and have it bake into your program.
 
+### Can I get syntax highlighting for it?
+
+I have written a syntax highlighting file for my editor of choice, micro, however
+you should be able to fairly trivially modify a syntax highlighting file written
+for C to highlight Cbas code.
+
 ### Are there any "gotchas"?
 
 Yes, however they are almost entirely bikeshedding. Seabass gives you enormous flexibility and
