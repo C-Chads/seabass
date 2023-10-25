@@ -9,7 +9,7 @@ ______________________________________________________________
 Seabass (or CBAS) is a small, portable, public domain general-purpose programming language which
 compiles into efficient C code.
 
-Here is a minimal complete example program, which you can find under `library/toc_fib_example.cbas
+Here is a minimal complete example program, which you can find under 'library/toc_fib_example.cbas'
 
 ```
 #include "toc.hbas"
