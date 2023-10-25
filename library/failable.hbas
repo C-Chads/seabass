@@ -58,7 +58,15 @@
         ast = (cgast*)__builtin_get_ast();
         active_function = ast.active_function[0];
         if(active_function > ast.nsymbols[0])
-            
+            __builtin_puts("THROW ERROR!!!");
+            __builtin_puts("You may not invoke throw at global scope!");
+            if(__builtin_peek() != 0)
+                /*Emit a helpful error message.*/
+                cgstrll* where_we_are = (cgstrll*)__builtin_peek();
+                __builtin_puts("Here is a dump of the entire unit from the current position:");
+                where_we_are.debug_print();
+            end
+            __builtin_exit(1);
         end
         is_in_codegen_fn = (ast.symbol_table[0]+active_function).is_codegen;
         
@@ -119,6 +127,17 @@
         u64 is_in_codegen_fn
         ast = (cgast*)__builtin_get_ast();
         active_function = ast.active_function[0];
+        if(active_function > ast.nsymbols[0])
+            __builtin_puts("TRY ERROR!!!");
+            __builtin_puts("You may not invoke try at global scope!");
+            if(__builtin_peek() != 0)
+                /*Emit a helpful error message.*/
+                cgstrll* where_we_are = (cgstrll*)__builtin_peek();
+                __builtin_puts("Here is a dump of the entire unit from the current position:");
+                where_we_are.debug_print();
+            end
+            __builtin_exit(1);
+        end
         is_in_codegen_fn = (ast.symbol_table[0]+active_function).is_codegen;
         
         if((ast.symbol_table[0]+active_function).is_incomplete == 0)

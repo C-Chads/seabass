@@ -9,30 +9,23 @@ for the following features:
     If a failable function is called, it will
     automatically be wrapped in a try-catch.
     
-    I figure the way failable functions will
-    work is that they will set `errno` to some
-    value (and return some garbage value).
+    this will work exactly the way try-throw
+    works in SEABASS, but it will automatically
+    generate the try[a = mycall();][return 0;]
+    blocks.
     
-    There will be a compiletime `errno` and
-    a runtime `errno`. I figure the convention
-    for accessing this variable will be:
-    
-    cg_get_errno()
-    cg_set_errno(int val)
-    get_errno()
-    set_errno()
-    
-    You will, of course, never actually _see_ this
-    in OOPSY code, it'll just be generated for you.
+    I would _really_ like it to capture possible exceptions from every
+    single call, but, well, this is most likely unrealistic...
 * Templates
     The need to be able to instantiate templated
     types (with methods and functions) anywhere
-    in your code is great.
-    
-    TBAS is not enough. I need this in a dedicated language.
+    in your code is great. this _should_ be as easy
+    as detecting name_of_template followed by an opening
+    angle bracket (or whatever I choose for templating...)
 * Borrow checking
     As much as I deeply resent Rust's syntax, the borrow checking
     system (or something equivalent) is necessary to prevent errors.
+* Metaprogramming
     
 
 
