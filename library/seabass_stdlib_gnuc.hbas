@@ -31,7 +31,7 @@ fn predecl write_bytes(TGT_UMAX fhandle, char* buf, TGT_UMAX nbytes)->TGT_UMAX;
 fn predecl read_bytes(TGT_UMAX fhandle, char* buf, TGT_UMAX nbytes)->TGT_UMAX;
 
 //get unix time...
-fn predecl get_utime()->TGT_UMAX;
+fn predecl pure get_utime()->TGT_UMAX;
 
 //realpath...
 fn predecl get_real_path(char* path)->char*;
@@ -41,15 +41,15 @@ fn predecl get_errno()->int;
 
 
 //memcpy...
-fn predecl noexport mcpy(char* dst, char* src, TGT_UMAX sz);
+fn predecl noexport pure mcpy(char* dst, char* src, TGT_UMAX sz);
 
 
 fn predecl println(char* s);
 
 //this is needed to get proper compiler optimization...
-fn predecl noexport mem_alloc(TGT_UMAX amt)->char*;
-fn predecl noexport mem_free(char* p);
-fn predecl noexport mem_realloc(char* p, TGT_UMAX amt)->char*;
+fn predecl noexport pure mem_alloc(TGT_UMAX amt)->char*;
+fn predecl noexport pure mem_free(char* p);
+fn predecl noexport pure mem_realloc(char* p, TGT_UMAX amt)->char*;
 fn predecl sys_exit(int a);
 /*
     TODO: Fill out the full feature set of
