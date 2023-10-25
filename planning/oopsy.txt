@@ -26,6 +26,7 @@ for the following features:
     As much as I deeply resent Rust's syntax, the borrow checking
     system (or something equivalent) is necessary to prevent errors.
 * Metaprogramming
-    
+    OOPSY should be able to define and use parsehooks just like SEABASS.
+* 
 
 

@@ -1,0 +1,34 @@
+
+PARSEHOOKS REQUIRE SOME DEGREE OF STANDARDIZATION.
+
+If you have nested parsehooks, is it safe to manipulate
+the code passed to the parsehook invocation just as much
+as the code around it?
+
+Do parsehooks passed into parsehooks have to be expanded for
+further processing before the parent parsehook can do its work?
+
+
+IT IS NOT SAFE TO ASSUME THAT YOU CAN MANIPULATE STUFF INSIDE
+    OF A PARSEHOOK (in the general case)
+    
+    Any code passed into a parsehook belongs to _that_ parsehook, not
+    the parent. It is not safe to assume in the general case that a parsehook
+    may "mess with" the internals of another.
+    
+    For parsehooks like `cgrdparse` which purely wrap a subset of seabass while also
+    providing its own extensions, it is fairly safe to assume that nothing inside the
+    parsehook will become an interference-- however even then, an escape ($) was needed.
+    
+    The $ escape pattern seems like a fairly robust solution to this problem for
+    seabass parsehooks- if something breaks, escape it with dollar signs.
+    
+    For the more general case, I think we can have parsehooks specific to a sub-language.
+    
+    If a particular syntax wants to have parsehooks inside of it, it can, in the general
+    case, implement its own parsehook system which provides access to the token
+    stream passed to that syntax.
+    
+
+
+

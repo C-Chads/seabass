@@ -147,6 +147,8 @@ codegen u64 cg_rd_parse_match_temporary_id = 0;
     dummy.right = inlist_dupe;
     
     cgstr temp_var_name;
+    cgstr temp_label_name;
+    cgstr temp_label_name2;
     
     @initqtok "if"
 
@@ -233,12 +235,16 @@ codegen u64 cg_rd_parse_match_temporary_id = 0;
         
         //generate a temporary name.
         temp_var_name:fromstr("__cg_rd_parse_temp_var_");
+        temp_label_name:fromstr("__cg_rd_parse_dothething_");
+        temp_label_name2:fromstr("__cg_rd_parse_skipahead_");
         if(1)
             char[50] buf
             cgstr t
             t.s = buf;
             __builtin_itoa(buf, cg_rd_parse_match_temporary_id++);
             temp_var_name:add(t);
+            temp_label_name:add(t);
+            temp_label_name2:add(t);
         end
         @pushqtok [temp_var_name.s]
         //expression statement.
@@ -568,6 +574,24 @@ codegen u64 cg_rd_parse_match_temporary_id = 0;
             @pushqtok "end" //if the text matches
         @pushqtok "end"  //if ident, keyword, or operator
     @pushqtok "end" //if (1)
+    
+    
+    @pushqtok "goto"
+    @pushqtok [temp_label_name2.s]
+    
+    @pushqtok ":"
+    @pushqtok [temp_label_name.s]
+    @pushqtok "if"
+    @pushqtok "("
+    @pushqtok "1"
+    @pushqtok ")"
+        //
+        @pushtok [dummy.right]
+        @rwalk_skip;
+    @pushqtok "end"
+    
+    @pushqtok ":"
+    @pushqtok [temp_label_name2.s]
     
     return retval;
 ]
