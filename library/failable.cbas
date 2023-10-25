@@ -32,6 +32,9 @@ fn codegen codegen_main():
     cg_set_errno(0);
     
     int a
+    int this_function_uses_try_but_isnt_codegen
+    this_function_uses_try_but_isnt_codegen = 37;
+    //this_function_uses_try_but_isnt_codegen();
     @try[
         (a = this_func_fails())
     ][
