@@ -11,7 +11,7 @@ compiles into efficient C code.
 
 Here is a minimal complete example program, which you can find under 'library/toc_fib_example.cbas'
 
-```
+```c
 #include "toc.hbas"
 #include "bit64.hbas"
 #include "seabass_stdlib.hbas"
