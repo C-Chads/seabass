@@ -1879,6 +1879,9 @@ static char* read_stdin_until_we_get_eof(FILE* f, unsigned long* len){
 	return buf;
 }
 
+
+void vm_allocate_needed_memory(size_t amt);
+
 int main(int argc, char** argv){
 	saved_argc = argc;
 	saved_argv = argv;
@@ -1982,6 +1985,7 @@ int main(int argc, char** argv){
 	fclose(ifile); 
 	ifile = NULL;
 	tokenized.text = entire_input_file;
+	vm_allocate_needed_memory(0x2000000);
 	{
 	    {
 		    t = realpath(infilename, NULL);

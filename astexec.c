@@ -13,8 +13,24 @@
 
 static uint64_t is_debugging = 1;    //only used in debug_print
 static uint64_t executing_function = 0; //the symbol (index into the symbol table) of the function where code is currently being executed.
-static scope* scope_executing_stack[0x1000000]; //stack of all scopes. every function, every if statement, etcetera add 
+static scope**scope_executing_stack; //stack of all scopes. every function, every if statement, etcetera add 
 static uint64_t n_scopes_executings = 0; //depth of the scope_executing_stack.
+
+typedef struct{
+	uint64_t pos;
+	uint64_t is_in_loop;
+	uint64_t is_else_chaining;
+}vm_scope_position_execution_info;
+
+
+static vm_scope_position_execution_info *scope_positions;
+
+void vm_allocate_needed_memory(size_t amt){
+    //allocate tons of memory
+    scope_positions = malloc(amt * sizeof(vm_scope_position_execution_info));
+    scope_executing_stack = malloc(amt * sizeof(scope*));
+}
+
 
 static inline void scope_executing_stack_push(scope* s){
 	//scope_executing_stack = realloc(scope_executing_stack, (++n_scopes_executings) * sizeof(scope*));
@@ -2486,14 +2502,7 @@ void do_expr(expr_node* ee){
 }
 
 
-typedef struct{
-	uint64_t pos;
-	uint64_t is_in_loop;
-	uint64_t is_else_chaining;
-}vm_scope_position_execution_info;
 
-
-vm_scope_position_execution_info scope_positions[0x1000000];
 
 void ast_execute_function(symdecl* s){
 	uint64_t which_stmt = 0;
