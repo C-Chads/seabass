@@ -11,11 +11,6 @@ Seabass (or CBAS) is a small, portable, public domain general-purpose programmin
 Here is a minimal complete example program, which you can find under `library/toc_fib_example.cbas
 
 ```
-
-/*
-    Written for the readme...
-*/
-
 #include "toc.hbas"
 #include "bit64.hbas"
 #include "seabass_stdlib.hbas"
@@ -133,7 +128,6 @@ fn mutoa(char* dest, uint value):
 	
 	return;
 end
-
 ```
 
 If that was the end of it, then seabass would be little more than an interesting toy. A syntax
