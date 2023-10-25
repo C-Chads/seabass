@@ -349,7 +349,7 @@ You are made in the Image of God, designed to have dominion over
 the works of God's hands. May this piece of software increase
 the joy you find in the labor of your hands.
 
-
+May your adventures be as grand as your imagination can entail.
 
 ________________________________________________________________________
 ________________________________________________________________________

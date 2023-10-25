@@ -1936,16 +1936,6 @@ int main(int argc, char** argv){
 	    puts("Please ask the Lord Jesus Christ to bless");
 	    puts("this project, and all fruit that it bears");
 	    puts(bar);
-	    puts(" To you, great men of passion, lovers of");
-	    puts(" ponderance, creative visionaries, the");
-	    puts(" sweet savour of my soul, I bestow the");
-	    puts(" sword and the sceptre worthy of your");
-	    puts(" wielding.\n");
-	    puts("   Ascend to your rightful place as a");
-	    puts("         Grand Master of Vision,");
-	    puts("                    &");
-	    puts("         Conqueror of Mysteries.");
-	    puts(bar);
 	    puts(" May your adventures be as grand as your");
 	    puts(" imagination can entail.");
 	    puts(bar);
