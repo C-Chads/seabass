@@ -6,7 +6,8 @@ ______________________________________________________________
 
 # THE SEABASS METAPROGRAMMING LANGUAGE
 
-Seabass (or CBAS) is a small, portable, public domain general-purpose programming language.
+Seabass (or CBAS) is a small, portable, public domain general-purpose programming language which
+compiles into efficient C code.
 
 Here is a minimal complete example program, which you can find under `library/toc_fib_example.cbas
 
@@ -189,7 +190,95 @@ Because of these "superfeatures" the following are all true with Cbas:
     * the second element of `argv` is reserved by Seabass for the name of the main file
         of the compilation unit.
     
+## Answers to common concerns people have about programming languages
+
+### Is CBAS fast?
+
+It depends on what you compile CBAS code into. Cbas is self-retargeting, you see.
+
+If you're compiling to C the answer is "Yes".
+
+Cbas translates virtually 1-to-1 to C. The higher level capabilities of the language that don't
+exist in C are compiled into equivalent C code (Assuming no compiler bugs).
+
+Lower-level capabilities that seabass has which C does not have (tail calls, dispatch tables) rely
+either on an optimizing compiler (for tail calls) or C compiler extensions (for dispatch tables).
+
+### Is this language portable?
+
+Yes. The compiler itself requires a 64 bit environment but programs written
+in the language could target anything from a microcontroller to a modern-day 
+x86_64, ARM, or RISC-V machine.
+
+### Does the language scale?
+
+Because Cbas is a metaprogramming language, it scales almost infinitely. If the base
+level language does not provide the set of abstractions needed for your work, you can
+write new ones.
+
+Writing large, long-lived maintainable codebases which require continual modification
+should be easier in CBAS than C, C++, or Rust.
+
+### Does the language have inline assembler?
+
+Yes. The `asm` statement allows you to write code inside of a string literal which will be
+emitted directly to the target code file. In practice, this means you can write C code
+inside of a string literal and have it bake into your program.
+
+### Are there any "gotchas"?
+
+Yes, however they are almost entirely bikeshedding. Seabass gives you enormous flexibility and
+power with what you can make.
+
+I know of the following real "gotchas" with seabass, mostly surrounding the current compiler implementation:
     
+    * The compiler itself assumes that the platform it is running on is a 64 bit system with byte-addressable
+        memory. So the compiler itself can't be compiled for retro computers.
+        
+    * The compiler implementation requires the `realpath` function, which comes from POSIX. This function
+        is not available on Windows, so either a supplementary implementation must be provided, or
+        the compiler itself must be modified to not require this function.
+        
+        It is used for handling include statements.
+        
+    * custom syntaxes in Seabass may not be whitespace-oriented... unless you want to write all your code
+        inside of a string literal.
+        
+    * `codegen` code in seabass is not very fast. it directly executes the AST, not even using a bytecode.
+    
+        I plan to implement a bytecode when I get around to making seabass self-hosting.
+    
+    * The compiler greedily over-allocates memory, especially at startup, reserving multiple megabytes.
+    
+        This shouldn't be a problem for any serious use, however I know it will drive software minimalists
+        absolutely bonkers.
+
+There are also some gotchas which are not really gotchas, but seem like they are:
+    
+    * there are no 128 bit integers or long doubles (10 byte floats). 
+
+        This is not really a gotcha, as it is still possible to write seabass code which uses
+        long doubles/128 bit integers by embedding their usage in the `asm` statement.
+        
+    * Structs/Unions are always passed by pointer, not by value, even if they are small.
+    
+        You optimization geeks might think this is a serious limitation, 
+        however my own testing has revealed that not only is this not true, but the opposite is
+        often the case- that seabass's pass-by-pointer convention can force your code
+        to be faster.
+        
+        It have found that it is sometimes faster to pass an 8 byte pointer to an 8 byte struct than
+        to pass the struct itself. Yeah.
+        
+        If you absolutely have to pass large objects by value, you can always subdivide your object
+        into 8 byte chunks and pass it as multiple arguments.
+        
+        (If you are writing a SIMD library, use 'inline')
+        
+        If seabass's AST (which requires pass-by-pointer conventions for structs) is
+        too limiting for you, you can write your own.
+        
+        So this is not really a gotcha.
 
 
 ## ***For the love of Programming and Programmers***
@@ -441,7 +530,7 @@ be easy for me to read and write).
 Seabass is on the war path, but I cannot yet say that it is more 
 powerful than the juggernauts.
 
-## THE WAR PATH
+## The War Path
 
 I am working on Seabass with the intent to make it more powerful than all
 other programming languages currently in large-scale production (even lisp).
@@ -482,6 +571,7 @@ Here's the general plan:
     
     This would make seabass truly viable for "mission critical" work, such as life support
     systems or aircraft system software.
+
     
 	
 # My Blessing to you
