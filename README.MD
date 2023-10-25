@@ -441,87 +441,48 @@ be easy for me to read and write).
 Seabass is on the war path, but I cannot yet say that it is more 
 powerful than the juggernauts.
 
-## Needed Design and Implementation work
+## THE WAR PATH
 
-The state of the project's planning has reached some semblance of stability,
-although beyond a few major feature milestones, I have yet to firmly decide what to make next.
+I am working on Seabass with the intent to make it more powerful than all
+other programming languages currently in large-scale production (even lisp).
 
-I have vague visions of "system archetypes" and "system composition languages" at extremely high levels
-of metaprogramming, but I have yet to devise how such things would work.
+Here's the general plan:
 
+1. Make metaprogramming in seabass easy
 
-```
-    1. THE UNIVERSAL ABSTRACT SYNTAX TREE - ?DONE?
+    It has to be possible to create new compilers and metaprogramming tools in seabass with little effort,
     
-        I have realized that I can write a universal AST using the NRAS system I previous devised, and save
-        myself an enormous amount of work making an "AST designer".
-        
-        Any AST can be represented by the UNRAS- the Universal Networked Reasoning Automata Solver.
-        
-    2. TBAS - CANCELLED
+    so that a person can have an idea and then implement it the same day.
     
-        I have decided to delay TBAS for a future time. Specifically when OOPSY is written.
-        
-    3. PARSER GENERATOR?
+2. Create new languages and tools within Seabass with abstractions that supersede those of
+    other languages.
     
-        It would be nice to have a dedicated parser generator for making language parsers. In fact,
-        I think I want a "language description language" that makes the whole process of defining
-        a language's syntactic elements and complete parse into an AST, and finally compilation
-        into a target code (could be seabass, could be anything) meaningful.
-        
-        cgrdparse + cg_astbuilder + cg_nras will be awesome, but the goal is to make writing new
-        programming languages EASY. So easy that you can do it when you're drowsy, in physical pain,
-        and feeling demotivated all at the same time.
-        
-        Once the abstraction layers I've described above have been created, I believe it will be
-        possible to plan out how this theoretical "language description language" will work. It
-        definitely has to be easier than the existing parser generator syntaxes, which are confusing
-        unless you already know them. I want to make languages that teach you how to write them as
-        you read them.
-        
-        Oh, and, credit where credit is due, Thanks to my Dad (Grant Webster) for the "language descriptor
-        language" idea.
-        
-    4. OOPSY
+    I have plans for meta-tools, libraries, and even entire programming languages (Such as OOPSY)
+    to write in/for Seabass, which should make using Seabass easy. This will make the language
+    more powerful than Rust.
     
-        The first of my masterclass abstraction layers- A complete JS-style programming language
-        with no garbage collection and a flexible light borrowing system. It'll basically be a
-        quicker way to write a subset of C/CBAS.
-        
-        It will be much cleaner than rust, probably about as safe, and far more enjoyable to write.
-        
-        This will hopefully make programming _way_ more fun for me.
-        
-        OOPSY will fully supersede C++ and Rust in its set of available abstractions, including
-        error handling (HA! TAKE THAT!) with a far more advanced linter than anything which
-        exists in Rust.
-        
-        It'll be a fantastic triumphal victory for the project once OOPSY is made. I am still
-        pondering what I'll do for it. Most of the ideas I have for it are left-over from
-        my ideas for "Sunderscript" (Which is what I was going to call the text editor's
-        metaprogramming-enabled scripting language).
-        
-    5. Write some cool programs with Seabass+OOPSY
+    I believe that once OOPSY is finished, i can truly say that seabass is more powerful than
+    the "juggernauts" of our time.
     
-        I think I want to write a set of example programs (probably using SDL2 for graphics/audio) to
-        demonstrate the power of SEABASS. It'll also give me time to write the SDL2 wrapper that
-        I need for SEABASS to talk to SDL2 in C (because Seabass does not allow passing structs by
-        value, but SDL2 requires it iirc).
-        
-        It should be possible using all the tools I've made at this point to write really awesome
-        programs which are provably correct by construction very quickly (TAKE THAT RUST!).
-        
-        I should be able to make some programs at this point which really "impress" people. Like,
-        I think I might be able to parse C++. That would be awesome.
-        
-    6. BEGIN WORK ON THE TEXT EDITOR AND METASCRIPT
+3. Write documentation and tools for working with Seabass (code and projects) 
+    to make it accessible and easy, even for beginners.
     
-        I have decided to abandon the Morrowind naming scheme (So it will no longer be called Wraithguard)
-        but the concept still applies. I want a text editor with a metaprogramming scripting language and
-        GUI/Audio stuff. It'll basically be like a game engine, but for programmers.
-        
-        
-```
+    Notably, I want to make my own text editor, build system, and probably a project manager.
+    
+    This will give me a proper IDE for development in Seabass.
+    
+4. Port Seabass into itself.
+
+    I want seabass and all tools written in it to be self-hosting. The current compiler is
+    the bootstrap compiler.
+    
+    Using the power of seabass's metaprogramming and arbitrary abstractions, I should be
+    able to formally verify the correctness of this implementation, whereas the C99
+    implementation is virtually impossible to prove anything about.
+    
+    This would make seabass truly viable for "mission critical" work, such as life support
+    systems or aircraft system software.
+    
 	
 # My Blessing to you
 
