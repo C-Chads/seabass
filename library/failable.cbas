@@ -7,7 +7,7 @@ fn codegen this_func_fails()->int:
 end
 
 fn codegen this_func_doesntfail()->int:
-    @throw 1
+    throw 1
 end
 
 
@@ -17,7 +17,7 @@ fn predecl set_errno(int a);
 
 
 fn this_function_uses_try_but_isnt_codegen():
-    @try[
+    try[
         ;;;;
     ][
         ;;;;;
@@ -33,7 +33,7 @@ fn codegen codegen_main():
     int this_function_uses_try_but_isnt_codegen
     this_function_uses_try_but_isnt_codegen = 37;
     //this_function_uses_try_but_isnt_codegen();
-    @try[
+    try[
         (a = this_func_fails())
     ][
         __builtin_puts("Uh oh! Something bad happened!");
@@ -41,7 +41,7 @@ fn codegen codegen_main():
         
     ]
     
-    @try[
+    try[
             (a = this_func_doesntfail())
     ][
         __builtin_puts("This function failed too?");
