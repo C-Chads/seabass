@@ -100,33 +100,36 @@ end
 
 
 fn mutoa(char* dest, uint value):
-	if(value == 0)
-	    dest[0] = '0';
-	    dest[1] = 0;
-	    return 
-	end
-	/*Determine the highest power of 10.*/
-	if(1)
-	    uint pow
-	    pow = 1;
+    if(value == 0)
+        dest[0] = '0';
+        dest[1] = 0;
+        return 
+    end
+    /*Determine the highest power of 10.*/
+    if(1)
+        uint pow
+        pow = 1;
         while(value/pow >= 10)
             pow = pow * 10; 
         end
-		/*found the highest power of 10*/
-		while(pow)
-			uint temp
-			temp = value/pow; /*if we had the number 137, we would have gotten
-			100 as our pow. We now divide by pow to get the highest digit.*/
-			dest[0] = (temp + ('0')); dest++;
-			value = value - temp * pow; /*Get rid of the highest digit.*/
-			pow = pow / 10 /*Divide pow by 10.*/
-		end
-	end
+        /*found the highest power of 10*/
+        while(pow)
+            uint temp
+            temp = value/pow; /*if we had the number 137, we would have gotten
+            100 as our pow. We now divide by pow to get the highest digit.*/
+            
+            dest[0] = (temp + ('0')); dest++;
+            
+            value = value - temp * pow; /*Get rid of the highest digit.*/
+            
+            pow = pow / 10 /*Divide pow by 10.*/
+        end
+    end
 
-	:ending
-	dest[0] = 0
-	
-	return;
+    :ending
+    dest[0] = 0
+
+    return;
 end
 ```
 
