@@ -10,6 +10,8 @@
     such as bit64.hbas or bit32.hbas
 */
 
+#guard SEABASS_STDLIB_GNUC
+
 
 //change these according to your target...
 

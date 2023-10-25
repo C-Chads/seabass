@@ -1,5 +1,5 @@
 
-
+#guard BIT64_TGT_CBAS
 
 #define TGT_UMAX u64
 #define TGT_IMAX i64

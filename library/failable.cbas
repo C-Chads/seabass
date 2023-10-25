@@ -2,12 +2,11 @@
 #include "failable.hbas"
 
 fn codegen this_func_fails()->int:
-    cg_set_errno(1);
-    return 1;
+    throw 1 47
 end
 
 fn codegen this_func_doesntfail()->int:
-    throw 1
+    return 1;
 end
 
 

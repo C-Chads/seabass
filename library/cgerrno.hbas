@@ -1,4 +1,6 @@
 
+#guard CBAS_COMPILETIME_ERRNO
+
 
 /*
     The Errno library for compiletime Seabass...

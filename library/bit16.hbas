@@ -1,4 +1,6 @@
 
+#guard BIT16_TGT_CBAS
+
 
 #define TGT_UMAX u16
 #define TGT_IMAX i16

@@ -1,4 +1,5 @@
 
+#guard BIT32_TGT_CBAS
 
 #define TGT_UMAX u32
 #define TGT_IMAX i32

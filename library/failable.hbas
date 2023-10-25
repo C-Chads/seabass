@@ -1,4 +1,5 @@
 
+#guard try_throw_library_CBAS
 
 /*
     FAILABLE CONTROL FLOW ABSTRACTION - THE TRY BLOCK.
@@ -24,6 +25,14 @@
     ]
     
     
+    TODO:
+    Create a parsehook metadata library which says
+    what parsehooks can or cannot be expanded at global scope.
+    
+    I would like to write a "failable" wrapper for Seabass functions
+    which 
+    
+    
 */
 
 #include "cgwksht.hbas"
@@ -37,7 +46,7 @@
         ;__TRY_____SETTERNO__(1);
         return RETVAL;
     ][
-        RETVAL
+        RETVAL THROWVAL
     ][
          /*
             Depending on whether we are in a codegen function or not,
@@ -48,6 +57,9 @@
         u64 is_in_codegen_fn
         ast = (cgast*)__builtin_get_ast();
         active_function = ast.active_function[0];
+        if(active_function > ast.nsymbols[0])
+            
+        end
         is_in_codegen_fn = (ast.symbol_table[0]+active_function).is_codegen;
         
         if((ast.symbol_table[0]+active_function).is_incomplete == 0)
