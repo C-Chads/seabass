@@ -33,19 +33,23 @@ fn codegen codegen_main():
     
     int a
     @try[
-        (a = this_func_fails());
+        (a = this_func_fails())
     ][
         __builtin_puts("Uh oh! Something bad happened!");
-        cg_set_errno(0);
+        goto bigfail
+        
     ]
     
     @try[
-            (a = this_func_doesntfail());
+            (a = this_func_doesntfail())
     ][
         __builtin_puts("This function failed too?");
         cg_set_errno(0);
     ]
+    __builtin_puts("All is Well!");
     
+    :bigfail
     
+        return
 end
 
