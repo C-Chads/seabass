@@ -63,9 +63,8 @@ fn pub main(int argc, schar** argv)->int:
     println("Welcome to the fibonacci number calculator!");
     uint qq = matou((char*)argv[1]); //unsigned->signed conversion is fine here.
     @prnt[
-        /*
         /       "You asked for the fibonacci number..."
-        /int    (qq)*/
+        /int    (qq)
         /       "That fibonacci number is:"
         /int    (fib(qq))
     ]
