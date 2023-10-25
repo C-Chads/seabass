@@ -1,0 +1,77 @@
+
+
+/*
+    FAILABLE CONTROL FLOW ABSTRACTION - THE TRY BLOCK.
+    
+    Using this, you can write 
+    
+    
+*/
+
+#include "cgwksht.hbas"
+#include "cgerrno.hbas"
+
+@wksht try[
+    [
+        ;__TRY_____SETTERNO__(0);
+        if(1)
+            CMD;
+        end
+        /*we take advantage of the standard here, it is always undefined behavior
+        to have five underscores in a row. So we make sure to force the programmer
+        to have done something truly egregious to cause an error...*/
+        if(__TRY_____GETTERNO__())
+            ONFAIL
+        end
+    ][
+        CMD ONFAIL
+    ][
+        /*
+            Depending on whether we are in a codegen function or not,
+            we have to do something different...
+        */
+        cgast* ast
+        u64 active_function
+        u64 is_in_codegen_fn
+        ast = (cgast*)__builtin_get_ast();
+        active_function = ast.active_function[0];
+        is_in_codegen_fn = (ast.symbol_table[0]+active_function).is_codegen;
+        
+        /*
+            Walk the token list and find the token with its
+            identifier...
+        */
+        
+        cgstrll* pp = result;
+        while(pp != 0)
+            if(
+                pp.d == CG_TOK_IDENT &&
+                pp.text streq "__TRY_____GETTERNO__"
+            )
+                __builtin_free(pp.text);
+                if(is_in_codegen_fn)
+                    pp.text = __builtin_strdup("cg_get_errno")
+                else
+                    pp.text = __builtin_strdup("get_errno")
+                end
+            elif(
+                    pp.d == CG_TOK_IDENT &&
+                pp.text streq "__TRY_____SETTERNO__"
+            )
+                __builtin_free(pp.text);
+                if(is_in_codegen_fn)
+                    pp.text = __builtin_strdup("cg_set_errno")
+                else
+                    pp.text = __builtin_strdup("set_errno")
+                end
+            end
+            pp = pp.right
+        end
+        
+        //result:debug_print();
+        return result;
+    
+    ]
+]
+
+

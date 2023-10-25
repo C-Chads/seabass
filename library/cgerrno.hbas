@@ -4,9 +4,9 @@
     The Errno library for compiletime Seabass...
 */
 
-codegen int __cg_errno__ = 0;
+codegen int __cg_____errno__ = 0;
 
-fn codegen get_errno()->int: return __cg_errno__ end
-fn codegen set_errno(int v): __cg_errno__ = v end
+fn codegen cg_get_errno()->int: return __cg_____errno__ end
+fn codegen cg_set_errno(int v): __cg_____errno__ = v end
 
 
