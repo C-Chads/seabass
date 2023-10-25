@@ -1,0 +1,8 @@
+
+MANY ERRORS IN PROGRAMMING ARE CAUSED BY "SKIPPING STEPS" IN ABSTRACTION.
+
+So much of the time, errors in programming are caused by people trying to
+implement something very high level using a very low level tool. They haven't
+built up the proper set of abstractions to make the work easy.
+
+Seabass's metaprogramming should help with that.

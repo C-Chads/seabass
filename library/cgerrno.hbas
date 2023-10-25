@@ -1,0 +1,12 @@
+
+
+/*
+    The Errno library for compiletime Seabass...
+*/
+
+codegen int cg_errno = 0;
+
+fn codegen get_errno()->int: return cg_errno end
+fn codegen set_errno(int v): cg_errno = v end
+
+
