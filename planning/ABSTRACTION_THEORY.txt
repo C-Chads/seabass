@@ -74,7 +74,11 @@ THEOREM 1: ACHIEVING A MAXIMAL ENCODING SCHEME EFFICIENCY
     10000111110110100010010010
     
     
-    This is our encoding.
+    This is our encoding for that number.
+    
+    
+    If we wanted to be more efficient, we could perform huffman coding given
+    a set of probabilities.
     
     
 Let a "Token" be a finite sequence of characters comprising an atom of meaning.
@@ -409,7 +413,7 @@ UNIVERSAL ASEIS
 
 Given...
 
-1. Compiler C (accepting pverse Ci and emitting pverse Co) is not error-free.
+1. Efficiently domain-complete compiler Compiler C (accepting pverse Ci and emitting pverse Co) is not error-free.
 
 2. There exists some IDCF U w/ respect to C (whose cost function is Ucf)
 
@@ -492,4 +496,24 @@ Then it is possible to construct a C' by creating a modified echo E on Ci,
 ~~~~~~
 NUMBERING AS A UNIVERSAL COMPRESSION SCHEME
 
+It is possible to assign each program in Ci on C a unique number
+by performing a breadth-first traversal of the space of all character sequences
+in the character encoding and assigning a natural number to each 
+program in Ci as they are visited. This natural number is then re-written
+according to Theorem 1 to produce an efficient representation.
+
+The "contiguousness" of the programs is how infrequently invalid documents are encountered
+during the traversal.
+
+For a non-error-free compiler with a non-finite or non-contiguous sequence of valid input programs,
+this is guaranteed to produce either a universal compression scheme or a scheme which is exactly
+as efficient as the original.
+
+This will also turn all non-finite languages into error-free ones.
+
+For efficiently domain-complete error-free compilers, no compression will occur.
+
+If the number of gaps encountered during the traversal is large enough, then
+it is certain that this will produce a universal compression scheme. I believe it has
+to do with the logarithm of how far we have traversed.
 
