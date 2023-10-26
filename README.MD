@@ -452,8 +452,6 @@ Notable core language syntax tidbits which make it "different" from C:
     
     Do not let the object oriented programming syntax sugars fool you, though. SEABASS is pretty much just C but friendlier.
 
-* The `codegen` environment does not do any short-circuiting for && or ||. It is not right to do pointer validity checks by taking advantage of short circuiting. It's difficult to follow.
-
 * Switch generates dispatch tables and doesn't do bounds checking, and uses labels.
 
     Like this:
