@@ -3,6 +3,7 @@
 #guard compiletime_recursive_descent_parser_library_DMHSW
 
 #include "cgbuilder.hbas"
+//#include "cgwksht.hbas"
 
 /*
     THE RECURSIVE DESCENT PARSER LIBRARY
@@ -11,10 +12,16 @@
     recursive descent parsers.
 */
 
+fn codegen cgrdparsehook_prototype_donotinvoke(cgstrll* in)->cgstrll*:
+    return in;
+end
+
 
 /*
     Rule code.
 */
+
+
 
 
 class cg_rd_parser_rule
@@ -55,6 +62,8 @@ end
 
 codegen cg_rd_parser_spec* cg_rd_parser_match_spec_passer = 0;
 
+
+
 //rule builder
 /*
     USAGE
@@ -76,6 +85,8 @@ codegen cg_rd_parser_spec* cg_rd_parser_match_spec_passer = 0;
         end
     end
 */
+
+
 
 fn codegen cg_rd_parse_fail_match_syntax(char* msg, char* langname, char* rulename):
     __builtin_puts("RDPARSER_ERROR!");
@@ -1245,6 +1256,124 @@ fn codegen cg_rd_parser_parse_spec(cgstrll* input)->cgstrll*:
         if(in_rwalk == 0)
             break;
         end
+            /*
+                TODO: support writing custom
+                parsehooks in cgrdparse...
+            */
+            
+        if(
+            in_rwalk.d == CG_TOK_OPERATOR &&
+            in_rwalk.text streq "@"
+        )
+            cgsymdecl* ss
+            u64 found = 0;
+
+            in_rwalk = in_rwalk.right;
+            if( //short circuiting!
+                in_rwalk == 0 ||
+                in_rwalk.text == 0 ||
+                in_rwalk.d != CG_TOK_IDENT
+            )
+                __builtin_puts("RDPARSER_ERROR");
+                __builtin_puts("expected identifer after @");
+                __builtin_puts("The language being parsed is...");
+                __builtin_puts(spec.name.s);
+                __builtin_exit(1);
+            end
+            char* ident_name = in_rwalk.text;
+            if(1)
+                cgstr tmp
+                cgstr tmp2
+                tmp.s = ident_name;
+                tmp2:fromstr("cgrdparsehook_");
+                tmp2:add(tmp);
+                ident_name = tmp2.s; //move
+            end
+            //Search for the parsehook...
+            if(1)
+                cgast* aa = (cgast*)__builtin_get_ast();
+                u64 i
+                u64 nsymbols = aa.nsymbols[0];
+                for(i = 0; i < nsymbols; i++)
+                if(ident_name streq (aa.symbol_table[0]+i).name)
+                    found = 1;
+                    ss = (aa.symbol_table[0]+i);
+                    //TODO: Call this function...
+                    if(ss.t.is_function == 0 ||
+                        ss.nargs != 1 ||
+                        ss.is_codegen == 0 ||
+                        ss.t.basetype != CG_BASE_STRUCT ||
+                        (ss.fargs+0).basetype != CG_BASE_STRUCT
+                    )
+                        __builtin_puts("RDPARSER_ERROR");
+                        __builtin_puts("cgrdparsehook has invalid prototype...");
+                        __builtin_puts("The correct prototype is as follows:");
+                        __builtin_puts("fn codegen cgrdparsehook_myparser_ext(cgstrll* in)->cgstrll*;");
+                        __builtin_puts("Take a look at the prototype at the top of cgrdparse.hbas...");
+                        __builtin_puts("The language being parsed is...");
+                        __builtin_puts(spec.name.s);
+                        __builtin_exit(1);
+                    end
+                    break
+                end //eof if ident_name streq....
+                end //eof for
+            end //eof searching for the parsehook...
+            if(!found)
+                __builtin_puts("RDPARSER_ERROR");
+                __builtin_puts("cgrdparsehook not found!");
+                __builtin_puts("Maybe you named it wrong? It should look like this:");
+                __builtin_puts("fn codegen cgrdparsehook_myparser_ext(cgstrll* in)->cgstrll*;");
+                __builtin_puts("Take a look at the prototype at the top of cgrdparse.hbas...");
+                __builtin_puts("The language being parsed is...");
+                __builtin_puts(spec.name.s);
+                __builtin_puts("I was searching for...");
+                __builtin_puts(ident_name);
+                __builtin_exit(1);
+            end
+            __builtin_free(ident_name); //recall that we have actually replaced ident name...
+            
+            /*We now have an identifier to call, which we will*/
+            if( //short circuiting!
+                in_rwalk.right == 0 ||
+                in_rwalk.right.d != CG_TOK_OBRACK
+            )
+                __builtin_puts("RDPARSER_ERROR");
+                __builtin_puts("expected '[' after cgrdparsehook invocation...");
+                __builtin_puts("The language being parsed is...");
+                __builtin_puts(spec.name.s);
+                __builtin_exit(1);
+            end
+            /*
+                Perform a delicate operation on in_rwalk to retrieve the bracketed argument...
+            */
+            cgstrll* qq;
+            cgstrll* qq2;
+            qq = in_rwalk.cg_token_foldout_arglist();
+            qq = cg_tok_arglist_remove_brackets(qq);
+            /*
+                We feed the input into the parsehook by using callfnptr...
+            */
+            qq = callfnptr[cgrdparsehook_prototype_donotinvoke]((char*)ss)(qq);
+            if(qq == 0)
+                //we have nothing to insert!
+                in_rwalk = in_rwalk.right;
+                continue
+            end
+            //perform an insertion....
+            if(1)
+                cgstrll* rold
+                rold = in_rwalk.right;
+                in_rwalk.right = qq;
+                cgstrll* tt = in_rwalk
+                while(tt.right != 0)
+                    tt = tt.right
+                end
+                tt.right = rold;
+                in_rwalk = in_rwalk.right;
+            end
+            continue
+        end //EOF parsehook handling...
+        
         if(in_rwalk.d != CG_TOK_IDENT)
             __builtin_puts("RDPARSER_ERROR");
             __builtin_puts("expected rulename, head, end,");

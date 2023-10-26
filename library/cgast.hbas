@@ -950,7 +950,7 @@ method codegen cgstrll:cg_token_foldout_arglist()->cgstrll*:
 	retval = cast(cgstrll*)0;
 	
 	//if our right is null...
-	if(!cast(uptr)this.right)
+	if(this.right == 0)
 		__builtin_puts("CODEGEN TIME ERROR");
 		__builtin_puts("cgstrll:cg_token_foldout_arglist() called on something");
 		__builtin_puts("Which has null on its right!");
