@@ -40,6 +40,7 @@ class cg_rd_parser_spec
     cgstrll* structcode         //code to define the struct. Variables.
     cg_rd_parser_rule* rules    //rules for the parser
     u64 nrules                  //number of rules
+    u64 is_targeting_cgrdparse  //is this targeting cgrdparse?
 end
 
 //find a rule in the rule list and return the index
@@ -60,31 +61,7 @@ method codegen cg_rd_parser_spec:get_rule_id(
     return -1;
 end
 
-codegen cg_rd_parser_spec* cg_rd_parser_match_spec_passer = 0;
 
-
-
-//rule builder
-/*
-    USAGE
-    match [
-        [myStringExpression()] //arglist 1
-        doSomething();
-    ]
-    //turns into...
-    @cg_rd_parse_match[
-        [myStringExpression()]
-        doSomething();
-    ]
-    //turns into...
-    if(this.tok.d != cast(u8*)2)
-        if(this.tok.text != cast(u8*)0)
-            if(this.tok.text streq (myStringExpression()))
-                doSomething();
-            end
-        end
-    end
-*/
 
 
 
@@ -143,7 +120,7 @@ codegen u64 cg_rd_parse_match_temporary_id = 0;
 
 /*
     TODO:
-    make this capable of handling
+    test if this is capable of handling
     
     match [["int"]->myrule]
 */
@@ -185,60 +162,6 @@ codegen u64 cg_rd_parse_match_temporary_id = 0;
             __builtin_exit(1);
         end
         qq = cg_tok_arglist_remove_brackets(qq);
-        
-        if(cast(u8*)dummy.right != cast(u8*)0)
-            if(dummy.right.d == CG_TOK_OPERATOR)
-                if(dummy.right.text != cast(u8*)0)
-                    if(dummy.right.text streq "->")
-                        //TODO: Handle rule transition...
-                        cgstrll* in_rwalk
-                        cg_rd_parser_spec* spec
-                        spec = cg_rd_parser_match_spec_passer;
-                        in_rwalk = dummy.right.right;
-                        if(in_rwalk == cast(cgstrll*)0)
-                            __builtin_puts("RDPARSER_ERROR!");
-                            __builtin_puts("match[[]->] requires a rule name...");
-                            __builtin_puts("Parser's name is:");
-                            __builtin_puts(cg_rd_parser_match_spec_passer.name.s);
-                            __builtin_exit(1);
-                        end
-                        if(in_rwalk.text == cast(char*)0)
-                            __builtin_puts("RDPARSER_ERROR!");
-                            __builtin_puts("match[[]->rulename] on rulename that has no text?");
-                            __builtin_puts("Parser's name is:");
-                            __builtin_puts(cg_rd_parser_match_spec_passer.name.s);
-                            __builtin_puts("Go investigate that!");
-                            __builtin_exit(1);
-                        end
-                        i64 ruleid
-                        ruleid = cg_rd_parser_match_spec_passer:get_rule_id(in_rwalk.text);
-                        if(ruleid == -1)
-                            __builtin_puts("RDPARSER_ERROR!");
-                            __builtin_puts("do on non-rule!");
-                            __builtin_puts("Parser's name is:");
-                            __builtin_puts(cg_rd_parser_match_spec_passer.name.s);
-                            __builtin_puts("And there is no rule called:");
-                            __builtin_puts(in_rwalk.text);
-                            __builtin_puts("defined yet. You may not use a rule");
-                            __builtin_puts("unless you have defined it!");
-                            __builtin_exit(1);
-                        end
-                        cgstrll* pushy
-                        cgstrll* pushywalker;
-                        pushy = cg_qtok((cg_rd_parser_match_spec_passer.rules+ruleid).fn_name.s);
-                        pushywalker = pushy;
-                        pushywalker:push_end(cg_qtok("("));   pushywalker = pushywalker.right;
-                        pushywalker:push_end(cg_qtok("this"));pushywalker = pushywalker.right;
-                        pushywalker:push_end(cg_qtok(")"));   pushywalker = pushywalker.right;
-                        pushywalker:push_end(cg_qtok(";"));
-                        
-                        
-                        dummy.right:freelist();
-                        dummy.right = pushy;
-                    end
-                end
-            end
-        end
         
         
         @pushqtok "char"
@@ -857,7 +780,7 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
                 end
                 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 if(in_rwalk.text streq "match")
-                    cg_rd_parser_match_spec_passer = spec;
+
                     //investigate syntactical correctness...
                     cgstrll* investigator
                     investigator = in_rwalk.right;
@@ -1164,6 +1087,8 @@ method codegen cg_rd_parser_spec:free():
 end
 
 
+
+
 /*
     TODO: parse the parser specification.
     
@@ -1188,6 +1113,7 @@ fn codegen cg_rd_parser_parse_spec(cgstrll* input)->cgstrll*:
     cgstrll* in_rwalk
     cgstrll* rwalk
     cg_rd_parser_spec spec
+    spec.is_targeting_cgrdparse = 0;
     
     //Note to self:
     //we don't need to pack retval with a dummy,
@@ -1384,6 +1310,12 @@ fn codegen cg_rd_parser_parse_spec(cgstrll* input)->cgstrll*:
             in_rwalk:debug_print();
             __builtin_exit(1);
         end
+        //check for this special case...
+        if(in_rwalk.text streq "cgrdparse")
+            spec.is_targeting_cgrdparse = 1;
+            in_rwalk = in_rwalk.right;
+            continue
+        end
         //this will be moved.
         current_rulename:fromstr(in_rwalk.text);
         
@@ -1449,7 +1381,6 @@ fn codegen cg_rd_parser_parse_spec(cgstrll* input)->cgstrll*:
     end
     retval = spec:gen_struct(); rwalk = retval; @cg_bldr_rwalk_skip ;
     
-    //
     u64 ruleid_head
     ruleid_head = spec:get_rule_id("head");
     u64 ruleid_finish 
@@ -1490,86 +1421,184 @@ fn codegen cg_rd_parser_parse_spec(cgstrll* input)->cgstrll*:
     input:freelist();
     
     
-    @cg_bldr_pushqtok "@"
-    @cg_bldr_pushqtok "mkbldr"
-    @cg_bldr_pushqtok "["
-        //name of bldr
-        @cg_bldr_pushqtok [spec.name.s]
-        
-        //vars
-        @cg_bldr_pushqtok [spec.realname.s]
-        @cg_bldr_pushqtok "the_struct"
-        
-        //assign inlist to the struct's root node.
-        @cg_bldr_pushqtok "the_struct"
-        @cg_bldr_pushqtok "."
-        @cg_bldr_pushqtok "tok_root"
-        @cg_bldr_pushqtok "="
+    if(spec.is_targeting_cgrdparse == 0)
+        @cg_bldr_pushqtok "@"
+        @cg_bldr_pushqtok "mkbldr"
+        @cg_bldr_pushqtok "["
+            //name of bldr
+            @cg_bldr_pushqtok [spec.name.s]
+            
+            //vars
+            @cg_bldr_pushqtok [spec.realname.s]
+            @cg_bldr_pushqtok "the_struct"
+            
+            //assign inlist to the struct's root node.
+            @cg_bldr_pushqtok "the_struct"
+            @cg_bldr_pushqtok "."
+            @cg_bldr_pushqtok "tok_root"
+            @cg_bldr_pushqtok "="
+            @cg_bldr_pushqtok "inlist"
+            @cg_bldr_pushqtok ":"
+            @cg_bldr_pushqtok "dupell"
+            @cg_bldr_pushqtok "("
+            @cg_bldr_pushqtok ")"
+            @cg_bldr_pushqtok ";"
+            @cg_bldr_pushqtok "the_struct"
+            @cg_bldr_pushqtok "."
+            @cg_bldr_pushqtok "tok"
+            @cg_bldr_pushqtok "="
+            @cg_bldr_pushqtok "the_struct"
+            @cg_bldr_pushqtok "."
+            @cg_bldr_pushqtok "tok_root"
+            @cg_bldr_pushqtok ";"
+            
+            //invoke head.
+            @cg_bldr_pushqtok [(spec.rules+ruleid_head).fn_name.s]
+            @cg_bldr_pushqtok "("
+            @cg_bldr_pushqtok "the_struct"
+            @cg_bldr_pushqtok ")"
+            @cg_bldr_pushqtok ";"
+            
+            //cleanup. We don't need the list any more.
+            @cg_bldr_pushqtok "the_struct"
+            @cg_bldr_pushqtok "."
+            @cg_bldr_pushqtok "tok_root"
+            @cg_bldr_pushqtok ":"
+            @cg_bldr_pushqtok "freelist"
+            @cg_bldr_pushqtok "("
+            @cg_bldr_pushqtok ")"
+            @cg_bldr_pushqtok ";"
+            
+            @cg_bldr_pushqtok "the_struct"
+            @cg_bldr_pushqtok "."
+            @cg_bldr_pushqtok "tok_root"
+            @cg_bldr_pushqtok "="
+            @cg_bldr_pushqtok "cast"
+            @cg_bldr_pushqtok "("
+            @cg_bldr_pushqtok "cgstrll"
+            @cg_bldr_pushqtok "*"
+            @cg_bldr_pushqtok ")"
+            @cg_bldr_pushqtok "0"
+            @cg_bldr_pushqtok ";"
+                    
+            @cg_bldr_pushqtok "the_struct"
+            @cg_bldr_pushqtok "."
+            @cg_bldr_pushqtok "tok"
+            @cg_bldr_pushqtok "="
+            @cg_bldr_pushqtok "cast"
+            @cg_bldr_pushqtok "("
+            @cg_bldr_pushqtok "cgstrll"
+            @cg_bldr_pushqtok "*"
+            @cg_bldr_pushqtok ")"
+            @cg_bldr_pushqtok "0"
+            @cg_bldr_pushqtok ";"
+            
+            //invoke finish.
+            @cg_bldr_pushqtok "return"
+            @cg_bldr_pushqtok [(spec.rules+ruleid_finish).fn_name.s]
+            @cg_bldr_pushqtok "("
+            @cg_bldr_pushqtok "the_struct"
+            @cg_bldr_pushqtok ")"
+            @cg_bldr_pushqtok ";"
+            
+        @cg_bldr_pushqtok "]"
+    else
+        //write a cgrdparsehook...
+        @cg_bldr_pushqtok "fn"
+        @cg_bldr_pushqtok "codegen"
+            //name of bldr
+        if(1)
+            cgstr a1
+            cgstr a2
+            a1.fromstr("cgrdparsehook_");
+            a2.s = spec.name.s;
+            a1:add(a2);
+            
+            @cg_bldr_pushqtok [a1.s]
+            a1:free();
+        end
+        @cg_bldr_pushqtok "("
+        @cg_bldr_pushqtok "cgstrll"
+        @cg_bldr_pushqtok "*"
         @cg_bldr_pushqtok "inlist"
-        @cg_bldr_pushqtok ":"
-        @cg_bldr_pushqtok "dupell"
-        @cg_bldr_pushqtok "("
         @cg_bldr_pushqtok ")"
-        @cg_bldr_pushqtok ";"
-        @cg_bldr_pushqtok "the_struct"
-        @cg_bldr_pushqtok "."
-        @cg_bldr_pushqtok "tok"
-        @cg_bldr_pushqtok "="
-        @cg_bldr_pushqtok "the_struct"
-        @cg_bldr_pushqtok "."
-        @cg_bldr_pushqtok "tok_root"
-        @cg_bldr_pushqtok ";"
-        
-        //invoke head.
-        @cg_bldr_pushqtok [(spec.rules+ruleid_head).fn_name.s]
-        @cg_bldr_pushqtok "("
-        @cg_bldr_pushqtok "the_struct"
-        @cg_bldr_pushqtok ")"
-        @cg_bldr_pushqtok ";"
-        
-        //cleanup. We don't need the list any more.
-        @cg_bldr_pushqtok "the_struct"
-        @cg_bldr_pushqtok "."
-        @cg_bldr_pushqtok "tok_root"
-        @cg_bldr_pushqtok ":"
-        @cg_bldr_pushqtok "freelist"
-        @cg_bldr_pushqtok "("
-        @cg_bldr_pushqtok ")"
-        @cg_bldr_pushqtok ";"
-        
-        @cg_bldr_pushqtok "the_struct"
-        @cg_bldr_pushqtok "."
-        @cg_bldr_pushqtok "tok_root"
-        @cg_bldr_pushqtok "="
-        @cg_bldr_pushqtok "cast"
-        @cg_bldr_pushqtok "("
+        @cg_bldr_pushqtok "->"
         @cg_bldr_pushqtok "cgstrll"
         @cg_bldr_pushqtok "*"
-        @cg_bldr_pushqtok ")"
-        @cg_bldr_pushqtok "0"
-        @cg_bldr_pushqtok ";"
-                
-        @cg_bldr_pushqtok "the_struct"
-        @cg_bldr_pushqtok "."
-        @cg_bldr_pushqtok "tok"
-        @cg_bldr_pushqtok "="
-        @cg_bldr_pushqtok "cast"
-        @cg_bldr_pushqtok "("
-        @cg_bldr_pushqtok "cgstrll"
-        @cg_bldr_pushqtok "*"
-        @cg_bldr_pushqtok ")"
-        @cg_bldr_pushqtok "0"
-        @cg_bldr_pushqtok ";"
+        @cg_bldr_pushqtok ":"
+        /*
+        *   We actually _own_ inlist, unlike the previous case. 
+        */
+        //assign inlist to the struct's root node.
+                    @cg_bldr_pushqtok "the_struct"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "tok_root"
+                    @cg_bldr_pushqtok "="
+                    @cg_bldr_pushqtok "inlist"
+                    @cg_bldr_pushqtok ";"
+                    @cg_bldr_pushqtok "the_struct"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "tok"
+                    @cg_bldr_pushqtok "="
+                    @cg_bldr_pushqtok "the_struct"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "tok_root"
+                    @cg_bldr_pushqtok ";"
+                    
+                    //invoke head.
+                    @cg_bldr_pushqtok [(spec.rules+ruleid_head).fn_name.s]
+                    @cg_bldr_pushqtok "("
+                    @cg_bldr_pushqtok "the_struct"
+                    @cg_bldr_pushqtok ")"
+                    @cg_bldr_pushqtok ";"
+                    
+                    //cleanup. We don't need the list any more.
+                    @cg_bldr_pushqtok "the_struct"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "tok_root"
+                    @cg_bldr_pushqtok ":"
+                    @cg_bldr_pushqtok "freelist"
+                    @cg_bldr_pushqtok "("
+                    @cg_bldr_pushqtok ")"
+                    @cg_bldr_pushqtok ";"
+                    
+                    @cg_bldr_pushqtok "the_struct"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "tok_root"
+                    @cg_bldr_pushqtok "="
+                    @cg_bldr_pushqtok "cast"
+                    @cg_bldr_pushqtok "("
+                    @cg_bldr_pushqtok "cgstrll"
+                    @cg_bldr_pushqtok "*"
+                    @cg_bldr_pushqtok ")"
+                    @cg_bldr_pushqtok "0"
+                    @cg_bldr_pushqtok ";"
+                            
+                    @cg_bldr_pushqtok "the_struct"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "tok"
+                    @cg_bldr_pushqtok "="
+                    @cg_bldr_pushqtok "cast"
+                    @cg_bldr_pushqtok "("
+                    @cg_bldr_pushqtok "cgstrll"
+                    @cg_bldr_pushqtok "*"
+                    @cg_bldr_pushqtok ")"
+                    @cg_bldr_pushqtok "0"
+                    @cg_bldr_pushqtok ";"
+                    
+                    //invoke finish.
+                    @cg_bldr_pushqtok "return"
+                    @cg_bldr_pushqtok [(spec.rules+ruleid_finish).fn_name.s]
+                    @cg_bldr_pushqtok "("
+                    @cg_bldr_pushqtok "the_struct"
+                    @cg_bldr_pushqtok ")"
+                    @cg_bldr_pushqtok ";"
         
-        //invoke finish.
-        @cg_bldr_pushqtok "return"
-        @cg_bldr_pushqtok [(spec.rules+ruleid_finish).fn_name.s]
-        @cg_bldr_pushqtok "("
-        @cg_bldr_pushqtok "the_struct"
-        @cg_bldr_pushqtok ")"
-        @cg_bldr_pushqtok ";"
-        
-    @cg_bldr_pushqtok "]"
+        @cg_bldr_pushqtok "end"
+    end
+    //emit a call...
+    //@cg_bldr_pushqtok "@"
+    //@cg_bldr_pushqtok "cg_rd_parser__internal__clean_match_spec_passer"
     spec:free();
     return retval;
 end
