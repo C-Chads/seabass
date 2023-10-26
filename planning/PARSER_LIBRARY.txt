@@ -108,5 +108,12 @@ I SHALL NOT SHY AWAY FROM COMPLICATED PROBLEMS...
 I need to confront this head-on as it's core to my entire infrastructure moving
 forward.
 
-I need to make cgrdparsergenerator.
+I need to make cgrdparsergenerator.'
+
+Oct 26th 2023
+~~~~~~~~~~~~~~~
+NOTE: This idea ultimately culminated in cgrdparse, however more work is needed.
+
+I still need to make it easier to write new languages in terms of recursive
+descent parsing.
 
