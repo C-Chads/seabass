@@ -397,15 +397,28 @@ end
 
 /*
 *   If your node keeps a vector of nodes with some relationship to it
-*   such as "my parents" then you would use this to push onto that 
-*   vector... 
+*   such as "my parents" for instance....
 */
+method codegen cg_uastnode.mk_rel_vector(cg_uast ast, u64 c)->u64:
+    cg_uastnode p
+    p.coord = c;
+    
+    u64 rr = ast.push_node(p);
+    this.push_rel(rr);
+    return rr;
+end
+
 method codegen cg_uastnode.push_rel_vector(cg_uast ast, u64 coord, u64 pushme)->byte:
     i64 q = this.get_rel_ind(ast, coord, 0);
-    if(q == -1) return 0 end
+    if(q == -1)
+        /*
+            The indirection vector doesn't exist! create it...
+        */
+        q = this.mk_rel_vector(ast, coord);
+    end
     
     
-    //we found the thing we want to add a link to!
+    //Add a link from the vector node to the thing we want in the vector.
     ast.add_link(q, pushme);
     return 1;
 end

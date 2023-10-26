@@ -1,0 +1,23 @@
+
+#guard compiletime_universal_ast_common_impl_patterns_DMHSW
+
+#include "cg_uast.hbas"
+
+/*
+    COMMON IMPLEMENTATION PATTERNS FOR THE UNIVERSAL AST
+    
+    Mostly just constants...
+*/
+
+codegen u64 cg_uast_coord_parent = (0xf<<(64-4)) | 0;
+codegen u64 cg_uast_coord_child = (0xf<<(64-4)) | 1;
+//if you have a system of analyzers, you need to be able to say
+//what analyzer created a node. This can be done with .sysid,
+//or you can represent it like this. This allows you to have
+//multiple authors.
+codegen u64 cg_uast_coord_author = (0xf<<(64-4)) | 2;
+//LOGICAL OPS
+codegen u64 cg_uast_coord_implies = (0xf<<(64-4)) | 3;
+codegen u64 cg_uast_coord_impliesnot = (0xf<<(64-4)) | 4;
+
+
