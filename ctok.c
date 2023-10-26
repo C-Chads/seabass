@@ -950,34 +950,35 @@ static void tokenizer(
 					streq(current_meta->text, "i8")|| //CHECK
 					streq(current_meta->text, "u16")|| //CHECK
 					streq(current_meta->text, "i16")|| //CHECK
-					streq(current_meta->text, "u32")|| /*Extension*/
-					streq(current_meta->text, "i32")|| /*Extension*/
-					streq(current_meta->text, "u64")|| /*Extension*/
-					streq(current_meta->text, "i64")|| /*Extension*/
-					streq(current_meta->text, "f32")|| /*Extension*/
-					streq(current_meta->text, "f64")|| /*Extension*/
-					streq(current_meta->text, "char")|| /*Extension*/
-					streq(current_meta->text, "uchar")|| /*Extension*/
-					streq(current_meta->text, "schar")|| /*Extension*/
-					streq(current_meta->text, "byte")|| /*Extension*/
-					streq(current_meta->text, "ubyte")|| /*Extension*/
-					streq(current_meta->text, "sbyte")|| /*Extension*/
-					streq(current_meta->text, "uint")|| /*Extension*/
-					streq(current_meta->text, "int")|| /*Extension*/
-					streq(current_meta->text, "sint")|| /*Extension*/
-					streq(current_meta->text, "long")|| /*Extension*/
-					streq(current_meta->text, "slong")|| /*Extension*/
-					streq(current_meta->text, "ulong")|| /*Extension*/
-					streq(current_meta->text, "llong")|| /*Extension*/
-					streq(current_meta->text, "ullong")|| /*Extension*/
-					streq(current_meta->text, "qword")|| /*Extension*/
-					streq(current_meta->text, "uqword")|| /*Extension*/
-					streq(current_meta->text, "uptr")|| /*Extension*/
-					streq(current_meta->text, "sqword")|| /*Extension*/
-					streq(current_meta->text, "noexport")|| /*Extension*/
-					streq(current_meta->text, "float")|| /*Extension*/
-					streq(current_meta->text, "double")|| /*Extension*/
-					streq(current_meta->text, "short")|| /*Extension*/
+					streq(current_meta->text, "u32")|| //CHECK
+					streq(current_meta->text, "i32")|| //CHECK
+					streq(current_meta->text, "u64")|| //CHECK
+					streq(current_meta->text, "i64")|| //CHECK
+					streq(current_meta->text, "f32")|| //CHECK
+					streq(current_meta->text, "f64")|| //CHECK
+					streq(current_meta->text, "char")|| //CHECK
+					streq(current_meta->text, "uchar")|| //CHECK
+					streq(current_meta->text, "schar")|| //CHECK
+					streq(current_meta->text, "byte")|| //CHECK
+					streq(current_meta->text, "ubyte")|| //CHECK
+					streq(current_meta->text, "sbyte")|| //CHECK
+					streq(current_meta->text, "uint")|| //CHECK
+					streq(current_meta->text, "int")|| //CHECK
+					streq(current_meta->text, "sint")|| //CHECK
+					streq(current_meta->text, "long")|| //CHECK
+					streq(current_meta->text, "slong")|| //CHECK
+					streq(current_meta->text, "ulong")|| //CHECK
+					streq(current_meta->text, "llong")|| //CHECK
+					streq(current_meta->text, "sllong")|| //CHECK
+					streq(current_meta->text, "ullong")|| //CHECK
+					streq(current_meta->text, "qword")|| //CHECK
+					streq(current_meta->text, "uqword")|| //CHECK
+					streq(current_meta->text, "uptr")|| //CHECK
+					streq(current_meta->text, "sqword")|| //CHECK
+					streq(current_meta->text, "noexport")|| //CHECK
+					streq(current_meta->text, "float")|| //CHECK
+					streq(current_meta->text, "double")|| //CHECK
+					streq(current_meta->text, "short")|| //CHECK
 					streq(current_meta->text, "ushort")|| /*Extension*/
 					streq(current_meta->text, "sshort")|| /*Extension*/
 					streq(current_meta->text, "break")||
