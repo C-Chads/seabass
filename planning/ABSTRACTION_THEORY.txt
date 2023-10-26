@@ -6,11 +6,76 @@ THE MATHEMATICS OF ABSTRACTION
 ~~~~~
 BASIC TERMINOLOGY
 Let a "Token" be a finite sequence of characters comprising an indivisible unit of meaning.
+
+    To explain this one, let's create a toy language which allows you to write
+    very large numbers, we will call it "Powlang"
+    
+    11^^3^^^^5
+    
+    The digits 0-9, minus sign, and caret are our operators.
+    
+    Let us say that combined sequences of digits comprise classical
+    base 10 integers, optionally prefixed by a - indicating negation
+    
+    2 (two)
+    
+    -491 (negative four hundred ninety one)
+    
+    placing a single caret between two integers represents exponentiation...
+    
+    -57^-49 == "negative fifty seven to the negative forty-ninth power"
+    
+    and placing multiple carets represents nested, repeated exponentiation, i.e.
+    if we were to use parentheses to express order of operations....
+    
+    57^^451 == 57^(451^(451))
+    3^^^3 == 3^(3^(3^(3)))
+    
+    and we interpret mixed sequences like this:
+    
+    3^3^3 == (3^(3))^3
+    45^^^3^^2 == (45^(3^(3^(3))))^(2^(2))
+    
+    then we could say that the characters of this language are the digits 0-9, - and ^.
+    
+    and we could call individual integers and caret sequences "tokens"
+    
+    (573) (^^^^^^^^) (-27) (^^^^) (21)
+    
+    
 Let a "grammar" be a set of rules which define whether a sequence of tokens is "allowed"
+    
+    So, for instance, in our previous language, these are all allowed:
+    
+    3
+    3^98
+    -3^-98^^^^27
+    
+    but these are not:
+    
+    a^3 (a is not an allowed character)
+    1.5^20 (. is not an allowed character)
+    300^ (a caret sequence must always be followed by an integer)
+
 Let a language be a set of tokens (possibly infinite) and a grammar which defines the validity of token sequences for that language
+    
+    Such as C, C++, Rust, Seabass, 6502 machine code, or Powlang.
+
 Let a "document" be a particular sequence of tokens in a language
+    
+    Such as a computer program, or the powlang examples.
+    
+    
 Let a "computational automata" be a deterministic automata whose actions are controlled by its interpretation of a document in a particular language
+
+    Such as a CPU, or a bytecode interpreter.
+    
 Let an "Abstract machine" be an imaginary (or real) computational automata which is defined by how it behaves in relation to the contents of a document in its language
+
+    Any real computational automata is an abstract machine, but so are theoretical
+    ones, like the turing machine.
+    
+    
 Let a program be a document which is interpretable by a particular abstract machine
 Let a Program-verse (Pverse) be the set of all programs for an abstract machine
 Let a compiler be a program which accepts programs from some Pverse and emits programs in another (possibly different) pverse
@@ -106,7 +171,7 @@ INVALID DOCUMENTS
 A document D is "invalid" with respect to some compiler C if it does not
 result in the compiler producing a valid program in its output domain B.
 
-D => C => !B
+D => C => ERROR
 
 In practice, this would generally be some form of syntax error.
 
@@ -116,15 +181,46 @@ ERROR-FREE COMPILER
 A Compiler is "error-free" if there are no invalid documents with respect
 to that compiler.
 
-I.e., if D is the set of all possible documents, and B is the set
-of all possible
+I.e., if D is the set of all possible documents, and B is the output
+domain...
 
 D => C => B
 ~~~
 INVALID DOCUMENT CREATION FUNCTION (IDCF)
 
-Let an Invalid Document Creation Function (IDCF) be a document
-transformation function which accepts all documents 
+Let an Invalid Document Creation Function (IDCF) with respect to a
+compiler C accepting pverse A and emitting Pverse B be a Dfunc such that...
+
+C: Compiler
+A, B: Pverse
+IDCF: a Dfunc
+
+A => C => B 
+
+A => IDCF => A' (A': a set of documents)
+
+and there is no document D in A' such that
+
+D => C => !ERROR
+~~~
+UNIQUE INVALID DOCUMENT CREATION FUNCTION (UIDCF)
+
+Let a Unique Invalid Document Creation Function (UICDF)
+with respect to a compiler C accepting pverse A and emitting
+pverse B be an IDCF where the following holds...
+
+* there are no documents D, D2, D3 such that...
+
+    
+    D3=> C => ERROR (D3 is an invalid document for C)
+    D => C =>!ERROR (D is a valid input for C)
+    D2=> C =>!ERROR (D2 is a valid input for C)
+    
+    D => UICDF => D3
+    D2=> UICDF => D3
+    
+    (D and D2 both generate D3 from the UICDF)
+
 
 ~~~
 ABSTRACTION SCHEME 1: ON SYNTAX ERROR
