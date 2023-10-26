@@ -44,7 +44,7 @@ toc_gnuc_test:
 	cbas library/toc_gnuc.cbas
 	cc -m32 -O3 -s auto_out.c library/companion_gnuc.c -o toc_test
 
-example_fib:
+fib:
 	cbas library/toc_fib_example.cbas
 	cc -O3 -s auto_out.c library/companion.c -o fib
 	
