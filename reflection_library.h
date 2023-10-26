@@ -1296,7 +1296,7 @@
 "\tif(text streq \"u16\") return 1; end\n"
 "\tif(text streq \"ushort\") return 1; end\n"
 "\t\n"
-"\tif(text streq \"s16\") return 1; end\n"
+"\tif(text streq \"i16\") return 1; end\n"
 "\tif(text streq \"short\") return 1; end\n"
 "\tif(text streq \"sshort\") return 1; end\n"
 "\n"
