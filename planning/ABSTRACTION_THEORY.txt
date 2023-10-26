@@ -1,0 +1,139 @@
+~~~~~
+THE MATHEMATICS OF ABSTRACTION
+
+    All Glory to the Lord Jesus Christ, who
+    created all things. Amen.
+~~~~~
+BASIC TERMINOLOGY
+Let a "Token" be a finite sequence of characters comprising an indivisible unit of meaning.
+Let a "grammar" be a set of rules which define whether a sequence of tokens is "allowed"
+Let a language be a set of tokens (possibly infinite) and a grammar which defines the validity of token sequences for that language
+Let a "document" be a particular sequence of tokens in a language
+Let a "computational automata" be a deterministic automata whose actions are controlled by its interpretation of a document in a particular language
+Let an "Abstract machine" be an imaginary (or real) computational automata which is defined by how it behaves in relation to the contents of a document in its language
+Let a program be a document which is interpretable by a particular abstract machine
+Let a Program-verse (Pverse) be the set of all programs for an abstract machine
+Let a compiler be a program which accepts programs from some Pverse and emits programs in another (possibly different) pverse
+~~~~
+"DOMAIN COMPLETENESS"
+A compiler is "Domain complete" if all programs in the destination pverse are possible outputs of the compiler.
+I.E.
+Given a compiler C which accepts programs in P-verse A and emits programs in Pverse B, then for any program 'p' in B, there exists at least one program 'q' in A such that...
+q => c => p
+~~~
+"EFFICIENT DOMAIN COMPLETENESS"
+A compiler is "efficiently domain complete" respective to a program-verse B if, for all programs q in B there exists a p in A for which the following is true:
+
+Length_in_characters(p) <= Length_in_characters(q)
+~~~
+DEFINITION OF "ECHO"
+Let the identity compiler on a given Pverse A be the compiler which performs no permutations on its input and emits its input verbatim, also known as "echo on A"
+~~~
+PROPERTIES OF ECHO
+* Echo is efficiently domain complete.
+* All programs in Echo are bprogs
+* Length of programs is always exactly equal
+* Echo is an error-free compiler
+~~~
+"BPROG"
+Let the "briefest program" (bprog) with respect to some efficiently domain-complete compiler C be a program where the following is true:
+
+bprog => C => q
+
+there is no program "p" such that...
+p=>C=>q and len(p) < len(bprog)
+~~~
+DOMAIN SPECIFIC COMPILERS
+
+Two efficiently domain complete compilers C1,C2 are said to be "domain specific" if there exists some programs p11, p12, p21, p22, q1, q2 where the following is true:
+
+p11 => C1 => q1
+p12 => C1 => q2
+p21 => C2 => q1
+p22 => C2 => q2
+
+p11,p12 are bprogs of C1
+p21,p22 are bprogs of C2
+
+len(p11) < len(p21)
+len(p22) < len(p12)
+~~~
+THE POSED QUESTION
+
+Is there a scheme for taking an efficiently 
+domain-complete compiler C with pverses A,B where
+
+A => C => B
+
+and creating a new compiler, C2, where
+
+A'=> C'=> B
+
+such that C and C' are not domain specific, and there are
+bprogs p1 and p2, where
+
+p1 => C => B
+p2 => C'=> B
+len(p2) < len(p1)
+~~~
+THE DOCUMENT TRANSFORMATION FUNCTION
+
+Let a "Document transformation function" Dfunc be a program which accepts
+a document D as input and performs some operation on the document, producing
+an output document D'
+
+D => Dfunc => D'
+
+(Note that it is irrelevant what the document transformation function actually
+runs on with respect to D and D')
+
+Per our definitions, compilers are document transformation functions
+~~~
+DOCUMENT TRANSFORMATION FUNCTION COST
+
+For a given Dfunc and D, let the "cost" of a transformation be
+
+len(D') - len(D)
+
+A positive cost meaning that the document increased in length, and
+a negative cost meaning that it decreased in length.
+
+An efficiently domain-complete compiler always has zero or negative
+cost.
+~~~
+INVALID DOCUMENTS
+
+A document D is "invalid" with respect to some compiler C if it does not
+result in the compiler producing a valid program in its output domain B.
+
+D => C => !B
+
+In practice, this would generally be some form of syntax error.
+
+~~~
+ERROR-FREE COMPILER
+
+A Compiler is "error-free" if there are no invalid documents with respect
+to that compiler.
+
+I.e., if D is the set of all possible documents, and B is the set
+of all possible
+
+D => C => B
+~~~
+INVALID DOCUMENT CREATION FUNCTION (IDCF)
+
+Let an Invalid Document Creation Function (IDCF) be a document
+transformation function which accepts all documents 
+
+~~~
+ABSTRACTION SCHEME 1: ON SYNTAX ERROR
+
+If C is not an errorless compiler
+    
+    
+    
+
+
+
+
