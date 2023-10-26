@@ -4,8 +4,80 @@ THE MATHEMATICS OF ABSTRACTION
     All Glory to the Lord Jesus Christ, who
     created all things. Amen.
 ~~~~~
-BASIC TERMINOLOGY
-Let a "Token" be a finite sequence of characters comprising an indivisible unit of meaning.
+Let a "Character" be any symbol or encoded unit of information.
+Let a "character set" be a finite grouping of symbols which comprise the units of
+    information conveyance.
+Let a "Character encoding" be a fashion in which some "virtual" 
+    character set is expressed using a lower level "basal" one.
+    
+    The "virtual" encoding scheme is implemented "in terms of" the "basal" encoding scheme.
+    
+Let len() be a function which accepts a sequence of characters in the basal
+    representation of character sequences, and returns the number of basal characters
+    in that sequence.
+    
+    For instance, if we are encoding 7-bit ascii bit-by-bit, then len('z!3') would
+    be 21, since it takes 21 bits to represent those characters. 
+    
+    On a machine with byte-addressable memory where each character is stored in a
+    separate byte, it would return "3" because the "basal character sequence" is not
+    the individual bits on the machine, but the bytes on the machine.
+    
+Let the "Encoding scheme efficiency" of a particular character encoding be the ratio
+    of possible states in a giving character sequence to the number of valid sequences
+    in the encoding. 
+    
+    For instance, with 7 bit ascii on a machine which stores each character in a separate
+    byte, there are 2^8 possible states in the basal level of encoding, and 2^7 possible
+    valid states in the encoded form. Thus, the ratio is...
+    
+    2^7
+    ___ = 1/2 (one half)
+    2^8
+
+    For Base64 on a byte-addressable machine (64 possible states per byte) it would 
+    be
+    
+    2^6
+    ___ = 1/4 (one quarter)
+    2^8
+
+THEOREM 1: ACHIEVING A MAXIMAL ENCODING SCHEME EFFICIENCY
+
+    It is possible to achieve a nearly perfect encoding scheme efficiency by treating a character
+    sequence as digits in a Base-N number where N is the number of characters in a character
+    set, and then converting that to Base-N2 where N2 is the number of characters in the
+    basal character set.
+    
+    Let us say we had two character sets: {abcde} {ab} and our goal
+    is to encode the former into the latter with efficiency eventually reaching
+    1 at the limit where the length of the sequence goes to infinity.
+    
+    We treat the characters as digits of a Base-5 number and then re-write that
+    number in Base-2.
+    
+    Let's say we want to encode "ddbaebaccdd"
+    
+    so first we create a mapping...
+    a=0
+    b=1
+    c=2
+    d=3
+    e=4
+    
+    Rewrite it as a number in base 5...
+    
+    ddbaebaccdd
+    33104102233
+    
+    Then rewrite the number in binary...
+    10000111110110100010010010
+    
+    
+    This is our encoding.
+    
+    
+Let a "Token" be a finite sequence of characters comprising an atom of meaning.
 
     To explain this one, let's create a toy language which allows you to write
     very large numbers, we will call it "Powlang"
@@ -61,30 +133,36 @@ Let a language be a set of tokens (possibly infinite) and a grammar which define
     
     Such as C, C++, Rust, Seabass, 6502 machine code, or Powlang.
 
-Let a "document" be a particular sequence of tokens in a language
+Let a "document" be a particular sequence characters, comprising a sequence of tokens, which
+    is part of the language of "all possible character sequences in all possible character
+    encodings"
     
     Such as a computer program, or the powlang examples.
     
     
 Let a "computational automata" be a deterministic automata whose actions are controlled by its interpretation of a document in a particular language
 
-    Such as a CPU, or a bytecode interpreter.
+    Such as a CPU, or a bytecode interpreter, or the AST executor of Seabass.
     
 Let an "Abstract machine" be an imaginary (or real) computational automata which is defined by how it behaves in relation to the contents of a document in its language
 
     Any real computational automata is an abstract machine, but so are theoretical
     ones, like the turing machine.
     
-    
 Let a program be a document which is interpretable by a particular abstract machine
 Let a Program-verse (Pverse) be the set of all programs for an abstract machine
+
+    "All possible C programs" is a pverse, for instance.
+    
 Let a compiler be a program which accepts programs from some Pverse and emits programs in another (possibly different) pverse
+
+    The input and output pverses could be identical, or entirely different, or intersect.
 ~~~~
 "DOMAIN COMPLETENESS"
 A compiler is "Domain complete" if all programs in the destination pverse are possible outputs of the compiler.
 I.E.
 Given a compiler C which accepts programs in P-verse A and emits programs in Pverse B, then for any program 'p' in B, there exists at least one program 'q' in A such that...
-q => c => p
+q => C => p
 ~~~
 "EFFICIENT DOMAIN COMPLETENESS"
 A compiler is "efficiently domain complete" respective to a program-verse B if, for all programs q in B there exists a p in A for which the following is true:
@@ -92,7 +170,7 @@ A compiler is "efficiently domain complete" respective to a program-verse B if, 
 Length_in_characters(p) <= Length_in_characters(q)
 ~~~
 DEFINITION OF "ECHO"
-Let the identity compiler on a given Pverse A be the compiler which performs no permutations on its input and emits its input verbatim, also known as "echo on A"
+Let the identity compiler or "echo" on a given Pverse A be the compiler which performs no permutations on its input and emits its input verbatim, for all programs P in A.
 ~~~
 PROPERTIES OF ECHO
 * Echo is efficiently domain complete.
@@ -120,26 +198,42 @@ p22 => C2 => q2
 p11,p12 are bprogs of C1
 p21,p22 are bprogs of C2
 
-len(p11) < len(p21)
+len(p11) < len(p21) 
 len(p22) < len(p12)
+
+That is to say...
+
+"q1 and q2 can both be expressed using C1 and C2"
+
+"only the most efficient expressions of q1 and q2 using C1 and C2 are considered."
+
+"q1 is more efficiently expressed using C1"
+"q2 is more efficiently expressed using C2"
+
 ~~~
-THE POSED QUESTION
+POSED MAJOR QUESTION 1: THE ASEIS
 
 Is there a scheme for taking an efficiently 
 domain-complete compiler C with pverses A,B where
 
 A => C => B
 
-and creating a new compiler, C2, where
+and creating a new compiler, C', where
 
 A'=> C'=> B
 
-such that C and C' are not domain specific, and there are
-bprogs p1 and p2, where
+such that C and C' are not domain specific relative to
+each other, and there are bprog p1 and program p2, where
 
 p1 => C => B
 p2 => C'=> B
 len(p2) < len(p1)
+
+Let such a scheme for creating new C' given C be called
+an "Arbitrary Syntax Efficiency Improvement Scheme" (ASEIS)
+
+
+
 ~~~
 THE DOCUMENT TRANSFORMATION FUNCTION
 
@@ -152,7 +246,10 @@ D => Dfunc => D'
 (Note that it is irrelevant what the document transformation function actually
 runs on with respect to D and D')
 
-Per our definitions, compilers are document transformation functions
+Per our definitions, compilers are document transformation functions. Dfuncs do not
+have to be defined all possible documents, but it is most useful if they are. For any
+Dfunc which is not defined for a given input, let us consider it as outputting
+some null, empty, or magic document (Perhaps the Constitution of the United States)
 ~~~
 DOCUMENT TRANSFORMATION FUNCTION COST
 
@@ -166,15 +263,81 @@ a negative cost meaning that it decreased in length.
 An efficiently domain-complete compiler always has zero or negative
 cost.
 ~~~
+DOCUMENT TRANSFORMATION FUNCTION COST FUNCTION
+
+Let the "cost function" Dcf of a Dfunc be a function which takes in
+a document and returns the total difference in size between the
+input and the output, i.e.
+
+if
+
+D => Dfunc => D'
+
+then...
+
+    Dcf(D) = len(D') - len(D)
+    
+EXAMPLE
+    Let us say that there is a Dfunc Dappenda which takes any
+    document and appends the character "a" to it. So...
+    
+    D => Dappenda => D + 'a'
+    
+    The cost function would be
+    
+    len(D + 'a') - len(D) =
+    len(D) + len('a') - len(D) =
+    len('a') =
+    1
+    
+    
+
+
+~~~
+DOCUMENT TRANSFORMATION FN COST FN COMPLEXITY FIRST ORDER
+
+D: Document
+Dfunc: Document Transformation Function
+Dcf: Dfunc Cost Function
+
+
+Let the derivative of Dcf(D) with respect to len(D)
+be the "cost function complexity" Dcfc of the transformation
+as D's length increases.
+
+EXAMPLE
+
+    For Dappenda, the first order complexity is zero, the length of
+    a document has a zero derivative, as shown here:
+    
+       d
+    __________ 1 = 0
+    d * len(D)
+    
+    Let us say that we have a document transformation function which
+    takes the original document and simply duplicates it, I.e....
+    
+    D => Ddup => D+D
+    
+    then the cost function would be
+    
+    len(D+D) - len(D) =
+    len(D) + len(D) - len(D) =
+    len(D)
+    
+    and the first-order complexity would be...
+    
+       d
+    __________ len(D) = 1
+    d * len(D)
+
+~~~
 INVALID DOCUMENTS
 
 A document D is "invalid" with respect to some compiler C if it does not
 result in the compiler producing a valid program in its output domain B.
 
 D => C => ERROR
-
-In practice, this would generally be some form of syntax error.
-
 ~~~
 ERROR-FREE COMPILER
 
@@ -205,31 +368,128 @@ D => C => !ERROR
 ~~~
 UNIQUE INVALID DOCUMENT CREATION FUNCTION (UIDCF)
 
-Let a Unique Invalid Document Creation Function (UICDF)
-with respect to a compiler C accepting pverse A and emitting
-pverse B be an IDCF where the following holds...
+Let a Unique Invalid Document Creation Function (UIDCF)
+with respect to a compiler C be an IDCF where
+there are no documents D, D2, D3 such that...
 
-* there are no documents D, D2, D3 such that...
-
-    
     D3=> C => ERROR (D3 is an invalid document for C)
     D => C =>!ERROR (D is a valid input for C)
     D2=> C =>!ERROR (D2 is a valid input for C)
     
-    D => UICDF => D3
-    D2=> UICDF => D3
+    D => UIDCF => D3
+    D2=> UIDCF => D3
     
-    (D and D2 both generate D3 from the UICDF)
-
-
+    (D and D2 both generate D3 from the UIDCF)
+    
 ~~~
-ABSTRACTION SCHEME 1: ON SYNTAX ERROR
+SYNTAX ERROR
 
-If C is not an errorless compiler
-    
-    
-    
+Let the "textual difference" between a document D entered into a UIDCF
+and the output D' be called a "Syntax error" SE
+
+Let the UIDCF itself be called a "Syntax Error Creator".
+~~~
+SYNTAX ERROR CREATION COSTS
+
+Note:
+    see DOCUMENT TRANSFORMATION FUNCTION COST
 
 
+cosnsider a UIDCF U with respect to some compiler C.
+
+Let us define these terms:
+
+"Syntax Error Creation Cost" SEc = Document transformation function cost of U
+"Syntax Error Creation Cost Function" SEcf = Dcf of U
+"Syntax Error Creation Complexity" SEcfc = Dcfc of U
+~~~
+THEOREM 2
+
+UNIVERSAL ASEIS
+
+Given...
+
+1. Compiler C (accepting pverse Ci and emitting pverse Co) is not error-free.
+
+2. There exists some IDCF U w/ respect to C (whose cost function is Ucf)
+
+3. There exists at least one program P and one bprog P2 in Ci such that...
+        
+    len(U(P)) < len(P2)
+
+THEN
+
+it is possible to create a compiler C' which compresses a bprog
+    P2 in Ci by defining a modified echo function E
+    on Ci where
+    
+    U(P) => E => P2
+    
+    We then define our C' as the composition of E with the
+    original compiler C.
+    
+    INPUT => E => C => OUTPUT
+    
+    This is trivially proven by the fact that P2 was a bprog of Ci, and U(P)
+    is shorter.
+    
+    (Note that if P and P2 are the same, then we consider this U to be a
+    compression Dfunc of P)
+~~~~~
+UNIVERSAL PROPERTIES OF U(P) and P2 IN THEOREM 2
+
+Let C'i be the input pverse of C'...
+
+* P2 is not a bprog of C', regardless of further discourse.
+
+* If the only new defined input was U(P), then U(P) is a bprog.
+    
+~~~~~
+EFFECTS OF SEQUENTIAL OR ALGORITHMIC APPLICATIONS OF THEOREM 2
+
+Let us say that a person (or computer) repeatedly applies the transformation
+described by Theorem 2, finding new U,P,P2 w/ respect to a previous C/C' where each 
+application only increases the pverse of all possible input programs by a single new 
+program, then...
+
+
+1. If it is never the case that a previous U(P) is chosen as P2, then each successive
+    application's U(P) is a bprog.
+
+~~~~~
+ASEIS BY UNIVERSAL COMPRESSION
+
+Given Compiler C accepting Ci emitting Co which is not error-free,
+
+with UIDCF U w/ respect to C
+
+and for all programs P in Ci it is the case that
+
+    len(U(P)) <= len(P)
+    
+    and it is the case that there is one bprog Pb such that
+    
+    len(U(Pb)) <= len(Pb)
+    
+Then it is possible to construct a C' by creating a modified echo E on Ci,
+     merging the inverse function of U with echo on Ci, i.e. create a 
+     function that obeys the following...
+    
+    for all P in Ci...
+    
+    P => E => P
+    
+    and
+    
+    U(P) => E => P (E is inverse of U for U(P))
+    
+    Which we then use to define C' as...
+    
+    (INPUT => E) => C => OUTPUT
+    
+    Once again proven by the fact that U(P) is shorter than P, while
+    equivalent to P.
+~~~~~~
+NUMBERING AS A UNIVERSAL COMPRESSION SCHEME
 
 
