@@ -15,18 +15,18 @@
 	@pushqtok ";"
 	inlist = inlist.right;
 	//if(inlist == cast(cgstrll*)0) return retval; end
-	@ifnull inlist 
-	    return retval; 
+	if(inlist == 0)
+	    return retval
 	end
-	goto top;
+	//goto top
 	:top
     	@pushqtok "codegen"
     	@pushqtok "int"
     	@pushtok [inlist:dupe()]
     	@pushqtok ";"
     	inlist = inlist.right;
-    	@ifnull inlist 
-    	    return retval; 
+    	if( inlist  == 0)
+    	    return retval
     	end
 	goto top;
 	return retval;

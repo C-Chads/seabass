@@ -622,55 +622,6 @@ end
 
 
 
-//format
-//@ifnull [ptr_expr]
-@bldr cg_bldr_ifnull [
-	cgstrll* retval
-	cgstrll* inlist_dupe
-
-	inlist_dupe = inlist:dupell();
-
-	retval =  (cg_qtok("if"));
-	retval:push_end(cg_qtok("("));
-
-		retval:push_end(cg_qtok("!"));
-		retval:push_end(cg_qtok("cast"));
-			retval:push_end(cg_qtok("("));
-				retval:push_end(cg_qtok("uptr"));
-			retval:push_end(cg_qtok(")"));
-
-		retval:push_end(cg_qtok("("));
-			retval:push_end(inlist_dupe);
-		retval:push_end(cg_qtok(")"));
-
-	retval:push_end(cg_qtok(")"));
-	//retval:debug_print();
-	return retval;
-]
-
-@bldr cg_bldr_ifnotnull [
-	cgstrll* retval
-	cgstrll* inlist_dupe
-
-	inlist_dupe = inlist:dupell();
-
-	retval =  (cg_qtok("if"));
-	retval:push_end(cg_qtok("("));
-
-		retval:push_end(cg_qtok("cast"));
-			retval:push_end(cg_qtok("("));
-				retval:push_end(cg_qtok("uptr"));
-			retval:push_end(cg_qtok(")"));
-
-		retval:push_end(cg_qtok("("));
-			retval:push_end(inlist_dupe);
-		retval:push_end(cg_qtok(")"));
-
-	retval:push_end(cg_qtok(")"));
-	//retval:debug_print();
-	return retval;
-]
-
 
 /*
 	Builder namespace wrapper.
@@ -689,7 +640,7 @@ end
 	following = inlist_dupe.right;
 	inlist_dupe.right = cast(cgstrll*)0;
 
-	@cg_bldr_ifnull [following]
+	if( following == 0)
 		char[500] buf;
 		__builtin_puts("MKBUILDER_ERROR");
 		__builtin_puts("Invoked mkbldr with null body.");
@@ -706,11 +657,11 @@ end
 
 	for(walker = following, 1, walker = walker.right)
 		//we definitely won't find anything if we're null, or our right
-		@cg_bldr_ifnull [walker] break end
-		@cg_bldr_ifnull [walker.right] break end
+		if( walker == 0) break end
+		if(walker.right == 0) break end
 		//we definitely won't find anything if our text or our right's text is null.
-		@cg_bldr_ifnull [walker.text] continue end
-		@cg_bldr_ifnull [walker.right.text] continue end
+		if( walker.text == 0) continue end
+		if( walker.right.text == 0) continue end
 		if(
 			(walker.d == CG_TOK_OPERATOR) && (walker.text streq "@")
 		)
@@ -719,7 +670,7 @@ end
 			cgstr f
 			f.s = walker.right.text;
 			m = builder_hook_namespace_query(f);
-			@cg_bldr_ifnotnull [m]
+			if(m != 0)
 				//do the replacement.
 				f:free();
 				walker.right.text = __builtin_strdup(m.s);
@@ -755,7 +706,8 @@ end
 	inlist_dupe = inlist:dupell();
 	following = inlist_dupe.right;
 
-	@cg_bldr_ifnull [following]
+	//@cg_bldr_ifnull [following]
+	if(following == 0)
 		char[500] buf;
 		__builtin_puts("MKBUILDER_ERROR");
 		__builtin_puts("Invoked mkbldrn with null where the number of args should be");
@@ -772,11 +724,15 @@ end
 
 	for(walker = following, 1, walker = walker.right)
 		//we definitely won't find anything if we're null, or our right
-		@cg_bldr_ifnull [walker] break end
-		@cg_bldr_ifnull [walker.right] break end
+		//@cg_bldr_ifnull [walker] break end
+		//@cg_bldr_ifnull [walker.right] break end
+		if(walker == 0) break end
+		if(walker.right == 0) break end
 		//we definitely won't find anything if our text or our right's text is null.
-		@cg_bldr_ifnull [walker.text] continue end
-		@cg_bldr_ifnull [walker.right.text] continue end
+		//@cg_bldr_ifnull [walker.text] continue end
+		//@cg_bldr_ifnull [walker.right.text] continue end
+		if(walker.text == 0) continue end
+		if(walker.right.text == 0) continue end
 		if(
 			(walker.d == CG_TOK_OPERATOR) && (walker.text streq "@")
 		)
@@ -785,7 +741,8 @@ end
 			cgstr f
 			f.s = walker.right.text;
 			m = builder_hook_namespace_query(f);
-			@cg_bldr_ifnotnull [m]
+			//@cg_bldr_ifnotnull [m]
+			if(m != 0)
 				//do the replacement.
 				f:free();
 				walker.right.text = __builtin_strdup(m.s);

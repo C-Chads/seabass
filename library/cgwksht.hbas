@@ -233,7 +233,8 @@ end
     code = dummy:cg_token_foldout_arglist();
     code = cg_tok_arglist_remove_brackets(code);
     //check that the code exists.
-    @cg_bldr_ifnull [code]
+    //    @cg_bldr_ifnull [code]
+    if(code == 0)
         char[500] buf
         __builtin_puts("WORKSHEET ERROR");
         __builtin_puts("CODE SECTION WAS EMPTY?!?! NANI?!?!");
@@ -305,7 +306,8 @@ end
         //assign wksht id
         wkshtid = ncg_worksheet_templates-1;
     end
-    @ifnotnull [dummy.right]
+    //@ifnotnull [dummy.right]
+    if(dummy.right != 0)
         //there is a ppcode section.
         has_ppcode = 1;
         if(dummy.right.d != CG_TOK_OBRACK)
@@ -324,7 +326,8 @@ end
         end
         ppcode = dummy:cg_token_foldout_arglist();
         ppcode = cg_tok_arglist_remove_brackets(ppcode);
-        @ifnull [ppcode]
+        //@ifnull [ppcode]
+        if(ppcode == 0)
             char[500] buf
             __builtin_puts("WORKSHEET ERROR");
             __builtin_puts("post processing code section is NULL after removing brackets!");
