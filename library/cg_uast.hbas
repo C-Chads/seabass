@@ -291,14 +291,15 @@ end
     
     
 */
+fn codegen cg_uast_analyzer_proto(byte* self,cg_uast* ast)->byte: end
 
 codegen byte CG_UAST_DIDNOTHING = 0;
 codegen byte CG_UAST_DIDSOMETHING = 1;
 codegen byte CG_UAST_ERR = 2;
 codegen byte CG_UAST_END = 3;
+
 codegen i64 CG_UAST_PUSHNODE_FAIL = ~0;
 
-fn codegen cg_uast_analyzer_proto(byte* self,cg_uast* ast)->byte: end
 
 method codegen inline cg_uast.call_analyzer(u64 id)->byte:
     return callfnptr[cg_uast_analyzer_proto](this.analyzers[id])(this.analyzer_inputs[id],this)
@@ -311,11 +312,15 @@ method codegen cg_uast.gen_uuid()->u64:
     return this.uuid_gen++
 end
 
-method codegen cg_uast.add_link(u64 daddy, u64 child):
+/*
+    Returns 0 on not error.
+*/
+method codegen cg_uast.add_link(u64 daddy, u64 child)->i64:
     if(daddy >= this.n_nodes || child >= this.n_nodes)
-        return
+        return -1
     end
     (this.nodes + daddy).push_rel(child);
+    return 0
 end
 
 
