@@ -14,8 +14,10 @@ for the following features:
     generate the try[a = mycall();][return 0;]
     blocks.
     
-    I would _really_ like it to capture possible exceptions from every
-    single call, but, well, this is most likely unrealistic...
+    I could have it trap every single possible failable
+    function, or just small groups.
+    
+    I prefer the former...
 * Templates
     The need to be able to instantiate templated
     types (with methods and functions) anywhere

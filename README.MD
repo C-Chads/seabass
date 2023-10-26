@@ -234,6 +234,14 @@ I have written a syntax highlighting file for my editor of choice, micro, howeve
 you should be able to fairly trivially modify a syntax highlighting file written
 for C to highlight Cbas code.
 
+### Is Seabass garbage collected or etc?
+
+No. The memory management scheme is identical to C, but with automatic constructors
+and destructors.
+
+You can implement your own memory management schemes in higher level languages if you
+wish.
+
 ### Are there any "gotchas"?
 
 Yes, however they are almost entirely bikeshedding. Seabass gives you enormous flexibility and
