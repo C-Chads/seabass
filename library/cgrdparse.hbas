@@ -701,6 +701,13 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
                     continue;
                 end
             end
+            
+            /*
+                TODO: Handle more special stuff for rules.
+                
+                It needs to be easier to write your own rules. I would like it
+                to be nice and quick to write programming languages...
+            */
             //Now that that's handled, let's deal with the elephant in the room, shall we?
             if(in_rwalk.d == CG_TOK_IDENT)
                 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -907,7 +914,7 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
                         @cg_bldr_pushqtok "!"
                         @cg_bldr_pushqtok "cast"
                         @cg_bldr_pushqtok "("
-                            @cg_bldr_pushqtok "uptr" //TODO: uptr
+                            @cg_bldr_pushqtok "uptr"
                         @cg_bldr_pushqtok ")"
                         @cg_bldr_pushqtok "("
                             @cg_bldr_pushqtok "this"
@@ -926,7 +933,7 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
                         @cg_bldr_pushqtok "!"
                         @cg_bldr_pushqtok "cast"
                         @cg_bldr_pushqtok "("
-                            @cg_bldr_pushqtok "uptr" //TODO: uptr
+                            @cg_bldr_pushqtok "uptr"
                         @cg_bldr_pushqtok ")"
                         @cg_bldr_pushqtok "("
                             @cg_bldr_pushqtok "this"
@@ -955,7 +962,7 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
                     @cg_bldr_pushqtok "("
                         @cg_bldr_pushqtok "cast"
                         @cg_bldr_pushqtok "("
-                            @cg_bldr_pushqtok "uptr" //TODO: uptr
+                            @cg_bldr_pushqtok "uptr"
                         @cg_bldr_pushqtok ")"
                         @cg_bldr_pushqtok "("
                             @cg_bldr_pushqtok "this"
@@ -1235,7 +1242,7 @@ fn codegen cg_rd_parser_parse_spec(cgstrll* input)->cgstrll*:
     while(1)
         cgstr current_rulename
         cgstrll* rule_icode
-        @cg_bldr_ifnull [in_rwalk]
+        if(in_rwalk == 0)
             break;
         end
         if(in_rwalk.d != CG_TOK_IDENT)
@@ -1311,7 +1318,6 @@ fn codegen cg_rd_parser_parse_spec(cgstrll* input)->cgstrll*:
         in_rwalk = in_rwalk.right;
         //continue...
     end
-    //TODO: gen_struct
     retval = spec:gen_struct(); rwalk = retval; @cg_bldr_rwalk_skip ;
     
     //
