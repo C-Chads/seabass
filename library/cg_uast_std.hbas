@@ -1,0 +1,12 @@
+
+#guard compiletime_universal_ast_common_impl_patterns_DMHSW
+
+#include "cg_uast.hbas"
+
+/*
+    COMMON IMPLEMENTATION PATTERNS FOR THE UNIVERSAL AST
+*/
+
+codegen u64 cg_uast_coord_parent = (0xf<<(64-4)) | 0x0000;
+codegen u64 cg_uast_coord_child = (0xf<<(64-4)) | 0x0001;
+

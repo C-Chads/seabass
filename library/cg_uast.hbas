@@ -301,6 +301,7 @@ codegen byte CG_UAST_END = 3;
 codegen i64 CG_UAST_PUSHNODE_FAIL = ~0;
 
 
+
 method codegen inline cg_uast.call_analyzer(u64 id)->byte:
     return callfnptr[cg_uast_analyzer_proto](this.analyzers[id])(this.analyzer_inputs[id],this)
 end
@@ -453,4 +454,12 @@ method codegen cg_uast.analyze()->byte:
     __builtin_free(p)
     return retval
 end
+
+/*
+    TODO- model the kinds of relationships one typically wants to model
+    in an AST, such as parent/child.
+
+*/
+
+
 
