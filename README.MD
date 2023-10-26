@@ -190,9 +190,6 @@ Because of these "superfeatures" the following are all true with Cbas:
         fast (it's significantly slower than python). This is only a real problem if you are trying
         to write compiletime virtualization layers.
     
-    * the second element of `argv` is reserved by Seabass for the name of the main file
-        of the compilation unit.
-    
 ## Answers to common concerns people have about programming languages
 
 ### Is CBAS fast?
