@@ -8,12 +8,13 @@ THE MATHEMATICS OF ABSTRACTION
     created all things. Amen.
 ~~~~~
 Let a "Character" be any symbol or encoded unit of information.
-Let a "character set" be a finite grouping of symbols which comprise the units of
+Let a "character set" be a finite countable grouping of symbols which comprise the units of
     information conveyance.
-Let a "Character encoding" be a fashion in which some "virtual" 
-    character set is expressed using a lower level "basal" one.
+Let a "Character encoding" or "Char Encoding scheme" be a fashion in which arbitrary
+    character sequences in some "virtual" character set are expressed using a lower level
+    "basal" one
     
-    The "virtual" encoding scheme is implemented "in terms of" the "basal" encoding scheme.
+    The "virtual" character set is implemented "in terms of" the "basal" character set.
     
 Let len() be a function which accepts a sequence of characters in the basal
     representation of character sequences, and returns the number of basal characters
@@ -26,35 +27,50 @@ Let len() be a function which accepts a sequence of characters in the basal
     separate byte, it would return "3" because the "basal character sequence" is not
     the individual bits on the machine, but the bytes on the machine.
     
-Let the "Encoding scheme efficiency" of a particular character encoding be the ratio
-    of possible states in a giving character sequence to the number of valid sequences
-    in the encoding. 
-    
-    For instance, with 7 bit ascii on a machine which stores each character in a separate
-    byte, there are 2^8 possible states in the basal level of encoding, and 2^7 possible
-    valid states in the encoded form. Thus, the ratio is...
-    
-    2^7
-    ___ = 1/2 (one half)
-    2^8
+Let lenv() and lenb() be functions which accept a character sequence as input, and the
+    former returns the number of virtal characters in the desired encoding and the
+    latter returns the number of basal characters in the sequence (i.e., len)
 
-    For Base64 on a byte-addressable machine (64 possible states per byte) it would 
-    be
+let nchars() be a function which takes in a character set (not a sequence of characters)
+    and returns the natural number of characters in the character set.
     
-    2^6
-    ___ = 1/4 (one quarter)
-    2^8
+Let the "Infinite General Encoding scheme efficiency" of a char encoding scheme be defined by this limit:
+
+    limit as lenv(seq) goes to infinity
+    ( 
+        nchars(virtual_charset)^lenv(seq)
+        __________________________________ 
+        nchars(base_charset) ^ lenb(seq)
+    )
+    
+    where seq is the sequence of characters.
+    
+    An infinite general encoding scheme efficiency of 1 being the theoretical
+    maximum.
+    
 
 THEOREM 1: ACHIEVING A MAXIMAL ENCODING SCHEME EFFICIENCY
 
-    It is possible to achieve a nearly perfect encoding scheme efficiency by treating a character
-    sequence as digits in a Base-N number where N is the number of characters in a character
-    set, and then converting that to Base-N2 where N2 is the number of characters in the
-    basal character set.
+    Given that the virtual and base charsets have
+    more than one character each... 
+    
+    We can encode a character sequence as digits in a Base-N 
+    number where N is the number of characters in a character
+    set, and then converting that to Base-N2 where N2 is the 
+    number of characters in the basal character set.
+    
+    Note that we must also encode leading zeroes to pack
+    the number to ceil(log base nB(nV^LVSEQ))
+    
+    where nB is the number of characters in the base character set
+    and nV is the number of characters in the virtual character set
+    
     
     Let us say we had two character sets: {abcde} {ab} and our goal
     is to encode the former into the latter with efficiency eventually reaching
     1 at the limit where the length of the sequence goes to infinity.
+    
+    
     
     We treat the characters as digits of a Base-5 number and then re-write that
     number in Base-2.
@@ -73,16 +89,64 @@ THEOREM 1: ACHIEVING A MAXIMAL ENCODING SCHEME EFFICIENCY
     ddbaebaccdd
     33104102233
     
-    Then rewrite the number in binary...
+    Then rewrite the number in binary (with leading zeroes)
     10000111110110100010010010
     
+    Note that we _must not_ omit leading zeroes in order
+    to preserve the number of original characters.
     
     This is our encoding for that number.
     
+    The infinite general encoding scheme of it is...
     
-    If we wanted to be more efficient, we could perform huffman coding given
-    a set of probabilities.
+    lim lenv(seq)->inf(
+        5 ^ lenv(seq)
+        _____________
+        2 ^ lenb(seq)
+    )
     
+    We will treat lenv(seq) as our input and rewrite lenb(seq) as a function of lenv(seq).
+
+
+    lim LVSEQ -> inf(
+        5 ^ LVSEQ
+        _____________
+        2 ^ lenb(seq)
+    )
+    
+    and lenb in terms of LVSEQ is
+    
+    ceil(
+        log2(5^LVSEQ)
+    )
+    
+    so
+    
+    lim LVSEQ -> inf(
+        5 ^ LVSEQ
+        _____________
+        2 ^ ceil(log2(5^LVSEQ))
+    )
+    
+    without ceil it would trivially be 1
+    
+    2 ^ (log2(5^LVSEQ)) = 5 ^ LVSEQ
+    
+    however due to ceil, answers approach the range 1-1/2
+    
+    The general formula for this encoding scheme's infinite general
+    encoding scheme efficiency is
+    
+    lim LVSEQ -> inf(
+            nchars_virt ^ LVSEQ
+            _____________________________________________________________
+            nchars_base ^ ceil(log(nchars_virt^LVSEQ) / log(nchars_base))
+        )
+        
+    The naive scheme of simply using the minimum number of basal characters
+    to represent a single character in the base sequence is of course wildly
+    inefficient, often resulting in infinite general encoding scheme efficiency
+    of zero.
     
 Let a "Token" be a finite sequence of characters comprising an atom of meaning.
 
