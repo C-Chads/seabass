@@ -1,3 +1,6 @@
+(This document unchecked, unverified. Please do not take as authoritative.
+Summary of my thoughts.)
+
 ~~~~~
 THE MATHEMATICS OF ABSTRACTION
 
@@ -496,10 +499,10 @@ Then it is possible to construct a C' by creating a modified echo E on Ci,
 ~~~~~~
 NUMBERING AS A UNIVERSAL COMPRESSION SCHEME
 
-It is possible to assign each program in Ci on C a unique number
+It is possible to assign each bprog in Ci on C a unique number
 by performing a breadth-first traversal of the space of all character sequences
 in the character encoding and assigning a natural number to each 
-program in Ci as they are visited. This natural number is then re-written
+bprog in Ci as they are visited. This natural number is then re-written
 according to Theorem 1 to produce an efficient representation.
 
 The "contiguousness" of the programs is how infrequently invalid documents are encountered
