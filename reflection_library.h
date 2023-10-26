@@ -950,7 +950,7 @@
 "\tretval = cast(cgstrll*)0;\n"
 "\t\n"
 "\t//if our right is null...\n"
-"\tif(!cast(uptr)this.right)\n"
+"\tif(this.right == 0)\n"
 "\t\t__builtin_puts(\"CODEGEN TIME ERROR\");\n"
 "\t\t__builtin_puts(\"cgstrll:cg_token_foldout_arglist() called on something\");\n"
 "\t\t__builtin_puts(\"Which has null on its right!\");\n"
