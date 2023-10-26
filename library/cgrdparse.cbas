@@ -29,7 +29,8 @@
             ]  
             match[ [";"]
                 __builtin_puts("semicolon???");
-            ]            match[ [","]
+            ]            
+            match[ [","]
                 __builtin_puts("COMMA???");
             ]
             stringlit[

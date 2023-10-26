@@ -1,6 +1,7 @@
 
 #guard compiletime_universal_ast_common_impl_patterns_DMHSW
 
+#include "cgtokenmaniptools.hbas"
 #include "cg_uast.hbas"
 
 /*
@@ -19,5 +20,14 @@ codegen u64 cg_uast_coord_author = (0xf<<(64-4)) | 2;
 //LOGICAL OPS
 codegen u64 cg_uast_coord_implies = (0xf<<(64-4)) | 3;
 codegen u64 cg_uast_coord_impliesnot = (0xf<<(64-4)) | 4;
+
+
+/*
+    RECURSIVE DESCENT INFIX NOTATION TEMPLATING SYSTEM
+    
+    (TODO) 
+    
+    I want to template out the construction of 
+*/
 
 
