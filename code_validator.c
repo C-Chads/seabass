@@ -2778,7 +2778,7 @@ static void walk_assign_lsym_gsym(){
 					symbol_table[active_function].fargs[j][0],
 					symbol_table[stmtlist[i].symid].fargs[j][0],
 					"Tail to function with non-matching function prototype.",
-					1
+					1 //basetypes must be identical
 				);
 			scopestack_push(current_scope);
 			assign_scopediff_vardiff(
