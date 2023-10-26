@@ -1296,7 +1296,7 @@ fn codegen cg_is_keyw(char* text)->u8:
 	if(text streq "u16") return 1; end
 	if(text streq "ushort") return 1; end
 	
-	if(text streq "s16") return 1; end
+	if(text streq "i16") return 1; end
 	if(text streq "short") return 1; end
 	if(text streq "sshort") return 1; end
 

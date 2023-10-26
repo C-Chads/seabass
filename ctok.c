@@ -940,16 +940,16 @@ static void tokenizer(
 			if(current_meta->text){
 				/*Recognize keywords*/
 				if(
-					streq(current_meta->text, "fn")|| /*Extension*/
-					streq(current_meta->text, "function")|| /*Extension*/
-					streq(current_meta->text, "func")|| /*Extension*/
-					streq(current_meta->text, "procedure")|| /*Extension*/
-					streq(current_meta->text, "proc")|| /*Extension*/
-					streq(current_meta->text, "cast")|| /*Extension*/
-					streq(current_meta->text, "u8")|| /*Extension*/
-					streq(current_meta->text, "i8")|| /*Extension*/
-					streq(current_meta->text, "u16")|| /*Extension*/
-					streq(current_meta->text, "i16")|| /*Extension*/
+					streq(current_meta->text, "fn")|| //CHECK
+					streq(current_meta->text, "function")|| //CHECK
+					streq(current_meta->text, "func")|| //CHECK
+					streq(current_meta->text, "procedure")|| //CHECK
+					streq(current_meta->text, "proc")|| //CHECK
+					streq(current_meta->text, "cast")|| //CHECK
+					streq(current_meta->text, "u8")|| //CHECK
+					streq(current_meta->text, "i8")|| //CHECK
+					streq(current_meta->text, "u16")|| //CHECK
+					streq(current_meta->text, "i16")|| //CHECK
 					streq(current_meta->text, "u32")|| /*Extension*/
 					streq(current_meta->text, "i32")|| /*Extension*/
 					streq(current_meta->text, "u64")|| /*Extension*/
