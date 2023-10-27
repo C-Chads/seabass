@@ -40,7 +40,8 @@ static inline void* lsthread_func(void* me_void);
 //function declarations
 
 static inline void init_lsthread(lsthread* t){
-	t->myMutex = (pthread_mutex_t)PTHREAD_MUTEX_INITIALIZER;
+	//t->myMutex = (pthread_mutex_t)PTHREAD_MUTEX_INITIALIZER;
+	pthread_mutex_init(&t->myMutex, NULL);
 	pthread_barrier_init(&t->myBarrier, NULL, 2);
 	t->isThreadLive = 0;
 	t->shouldKillThread = 0;

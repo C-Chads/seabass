@@ -62,22 +62,13 @@ I should come up with a scheme for explicitly defining state as shared between t
 
 THE AGENT MODEL
 
-I believe that the correct way to do multithreading for CBAS++ is to model each thread
-as an "agent". An agent is essentially a "thread of execution" which can be started or joined.
+Each thread of execution in CBAS++ will be modeled as a (static, global) set of objects which
+contain private state as well as immutable references, and mutable global references.
 
-It will be implemented using lockstepthread.
+Mutable global references will always involve inserting locks before access. 
 
-Each agent has the following:
+All of these agent members will be namespaced to the agent's functions, which prevent any
+external functions from violating the consistency of the agent.
 
-* Data structures it "owns", i.e., private to itself.
 
-* Immutable Data structures which it shares with other agents. Immutable for as long
-    as the thread runs.
-
-* Mutable data structures which it shares with other threads- all threads must use locks
-    to access these data structures
-
-* Global atomic variables (mutable) which this agent can access.
-
-* 
 
