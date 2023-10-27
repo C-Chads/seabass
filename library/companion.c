@@ -65,6 +65,9 @@ int get_errno(){
 void mcpy(unsigned char* dst, unsigned char* src, size_t sz){
     memcpy(dst, src, sz);
 }
+void mmove(unsigned char* dst, unsigned char* src, size_t sz){
+    memmove(dst, src, sz);
+}
 
 //these are provided for similar reasons...
 unsigned char* mem_alloc(size_t amt){

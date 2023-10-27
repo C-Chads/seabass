@@ -39,6 +39,8 @@ fn predecl get_errno()->int;
 
 //memcpy...
 fn predecl pure mcpy(char* dst, char* src, TGT_UMAX sz);
+fn predecl pure mmove(char* dst, char* src, TGT_UMAX sz);
+
 
 
 fn predecl println(char* s);

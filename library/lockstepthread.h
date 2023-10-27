@@ -26,8 +26,8 @@ typedef struct {
 	int isThreadLive;
 	int shouldKillThread;
 	int state;
-	void (*execute)(void*);
-	void* argument;
+	void (*execute)(unsigned char*);
+	unsigned char* argument;
 } lsthread;
 static inline void init_lsthread(lsthread* t);
 static inline void start_lsthread(lsthread* t);
