@@ -128,7 +128,8 @@
     <hr>
     <p>As I see it, this is the rough roadmap of the project at time of writing.</p>
     <ol>
-        <li>Language building tools- Write a bunch of tools for programmers to use when designing their own languages inside of Seabass. I'm particularly thinking we need a parser generator, but tools to implement languages using the universal AST are needed too. It needs to be downright simple to implement your own languages so that anyone can do it.</li>
+        <li>UAST manipulation tools- Everything you need to make/manipulate/traverse a UAST needs to be implemented. I need to plan what those are, because it's not clear right now what they are.</li>
+        <li>Parser templates- Now that cgrdparse has its very own parsehook system, I want to leverage it. I want stuff to automatically write all the code necessary to do a binary expression operator tree, and I want it to work with the UAST.</li>
         <li>OOPSY- A borrow-checked graceful error-handling programming language to beat Rust in terms of safety. I want it to feel like lua and javascript</li>
         <li>Standard library- I want Seabass to have a standard library for usermode C applications.</li>
         <li>I want to write some more example programs in Seabass/OOPSY. These will be used to demonstrate the power of the language.</li>
