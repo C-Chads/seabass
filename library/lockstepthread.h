@@ -35,7 +35,7 @@ static inline void kill_lsthread(lsthread* t);
 static inline void destroy_lsthread(lsthread* t);
 static inline void lock(lsthread* t);
 static inline void step(lsthread* t);
-static inline void* lsthread_func(void* me_void);
+static void* lsthread_func(void* me_void);
 
 //function declarations
 
@@ -56,25 +56,19 @@ static inline void destroy_lsthread(lsthread* t){
 static inline void lock(lsthread* t){
 	if(t->state == 1)return;//if already locked, nono
 	if(!t->isThreadLive)return;
-	//exit(1)
 	pthread_barrier_wait(&t->myBarrier);
-	//exit(1)
 	if(pthread_mutex_lock(&t->myMutex))
 		exit(1);
 	t->state = 1;
-	//exit(1)
 }
 
 static inline void step(lsthread* t){
 	if(t->state == -1)return; //if already stepping, nono
 	if(!t->isThreadLive)return;
-	//exit(1)
 	if(pthread_mutex_unlock(&(t->myMutex)))
 		exit(1);
-	//exit(1)
 	pthread_barrier_wait(&t->myBarrier);
 	t->state = -1;
-	//exit(1)
 }
 static inline void kill_lsthread(lsthread* t){
 	if(!t->isThreadLive)return;
@@ -84,13 +78,10 @@ static inline void kill_lsthread(lsthread* t){
 		//exit(1)
 	}
 	t->shouldKillThread = 1;
-	
 	step(t);
-	//exit(1)
+	
 	pthread_join(t->myThread,NULL);
-	//if(pthread_kill(t->myThread)){
-	//	exit(1)
-	//}
+	
 	t->isThreadLive = 0;
 	t->shouldKillThread = 0;
 }
