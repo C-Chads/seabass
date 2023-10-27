@@ -93,9 +93,9 @@ static inline void kill_lsthread(lsthread* t){
 	t->isThreadLive = 0;
 	t->shouldKillThread = 0;
 }
-static inline void* lsthread_func(void* me_void){
+static void* lsthread_func(void* me_void){
 	lsthread* me = (lsthread*) me_void;
-	int ret = 0;
+	//int ret = 0;
 	if (!me)pthread_exit(NULL);
 	while (1) {
 		//ret = pthread_cond_wait(&(me->myCond), &(me->myMutex));
