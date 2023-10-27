@@ -1,5 +1,5 @@
 
-/* Public Domain / CC0 3d Lock-Step Threading Implementation
+/* Public Domain / CC0 Lock-Step Threading Implementation
 
 
 Written by Gek (DMHSW) in 2020
@@ -72,10 +72,8 @@ static inline void step(lsthread* t){
 }
 static inline void kill_lsthread(lsthread* t){
 	if(!t->isThreadLive)return;
-	//exit(1)
 	if(t->state != 1){
 		lock(t);
-		//exit(1)
 	}
 	t->shouldKillThread = 1;
 	step(t);
@@ -87,29 +85,19 @@ static inline void kill_lsthread(lsthread* t){
 }
 static void* lsthread_func(void* me_void){
 	lsthread* me = (lsthread*) me_void;
-	//int ret = 0;
 	if (!me)pthread_exit(NULL);
 	while (1) {
-		//ret = pthread_cond_wait(&(me->myCond), &(me->myMutex));
 		pthread_barrier_wait(&me->myBarrier);
-		//exit(1)
 		pthread_mutex_lock(&me->myMutex);
-		//exit(1)
-		//if(ret)pthread_exit(NULL);
 		if (!(me->shouldKillThread) && me->execute)
 			me->execute(me->argument);
 		else if(me->shouldKillThread){
 			pthread_mutex_unlock(&me->myMutex);
-			//exit(1)
-			//pthread_barrier_wait(&me->myBarrier);
-			//exit(1)
 			pthread_exit(NULL);
 		}
-		//exit(1)
+
 		pthread_mutex_unlock(&me->myMutex);
-		//exit(1)
 		pthread_barrier_wait(&me->myBarrier);
-		//exit(1)
 	}
 	pthread_exit(NULL);
 }
