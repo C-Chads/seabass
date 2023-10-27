@@ -17,6 +17,8 @@
 
 codegen u64 cg_Cemitter_Switch_DtableGen = 0;
 codegen u64 cg_Cemitter_indentlevel = 0;
+codegen u64 cg_Cemitter_explicit_signed_char = 1;
+codegen u64 cg_Cemitter_long_32bit = 0;
 
 fn codegen cg_Cemitter_make_dtable_name()->char*:
     cgstr retval
@@ -70,15 +72,27 @@ method codegen cgtype:gen_code(cgast* ast)->char*:
     elif(basetype == CG_BASE_U8)
         printme:fromstr("unsigned char");
     elif(basetype == CG_BASE_I8)
-        printme:fromstr("signed char");
+        if(cg_Cemitter_explicit_signed_char)
+            printme:fromstr("signed char");
+        else
+            printme:fromstr("char");
+        end
     elif(basetype == CG_BASE_U16)
         printme:fromstr("unsigned short");
     elif(basetype == CG_BASE_I16)
         printme:fromstr("signed short");
     elif(basetype == CG_BASE_U32)
-        printme:fromstr("unsigned");
+        if(cg_Cemitter_long_32bit)
+            printme:fromstr("unsigned long");
+        else
+            printme:fromstr("unsigned int");
+        end
     elif(basetype == CG_BASE_I32)
-        printme:fromstr("int");
+        if(cg_Cemitter_long_32bit)
+            printme:fromstr("long");
+        else
+            printme:fromstr("int");
+        end
     elif(basetype == CG_BASE_U64)
         printme:fromstr("unsigned long long");
     elif(basetype == CG_BASE_I64)
