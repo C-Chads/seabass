@@ -12,9 +12,7 @@
     recursive descent parsers.
 */
 
-fn codegen cgrdparsehook_prototype_donotinvoke(cgstrll* in)->cgstrll*:
-    return in;
-end
+
 
 
 /*
@@ -41,6 +39,10 @@ class cg_rd_parser_spec
     cg_rd_parser_rule* rules    //rules for the parser
     u64 nrules                  //number of rules
     u64 is_targeting_cgrdparse  //is this targeting cgrdparse?
+end
+
+fn codegen cgrdparsehook_prototype_donotinvoke(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
+    return in;
 end
 
 //find a rule in the rule list and return the index
@@ -1226,10 +1228,14 @@ fn codegen cg_rd_parser_parse_spec(cgstrll* input)->cgstrll*:
                     ss = (aa.symbol_table[0]+i);
                     //TODO: Call this function...
                     if(ss.t.is_function == 0 ||
-                        ss.nargs != 1 ||
+                        ss.nargs != 2 ||
                         ss.is_codegen == 0 ||
                         ss.t.basetype != CG_BASE_STRUCT ||
-                        (ss.fargs+0).basetype != CG_BASE_STRUCT
+                        ss.t.pointerlevel != 1 ||
+                        (ss.fargs+0).basetype != CG_BASE_STRUCT ||
+                        (ss.fargs+0).pointerlevel != 1 ||
+                        (ss.fargs+1).basetype != CG_BASE_STRUCT ||
+                        (ss.fargs+1).pointerlevel != 1 
                     )
                         __builtin_puts("RDPARSER_ERROR");
                         __builtin_puts("cgrdparsehook has invalid prototype...");
@@ -1279,7 +1285,7 @@ fn codegen cg_rd_parser_parse_spec(cgstrll* input)->cgstrll*:
             /*
                 We feed the input into the parsehook by using callfnptr...
             */
-            qq = callfnptr[cgrdparsehook_prototype_donotinvoke]((char*)ss)(qq);
+            qq = callfnptr[cgrdparsehook_prototype_donotinvoke]((char*)ss)(qq, spec);
             if(qq == 0)
                 //we have nothing to insert!
                 in_rwalk = in_rwalk.right;
@@ -1518,9 +1524,13 @@ fn codegen cg_rd_parser_parse_spec(cgstrll* input)->cgstrll*:
             a1:free();
         end
         @cg_bldr_pushqtok "("
-        @cg_bldr_pushqtok "cgstrll"
-        @cg_bldr_pushqtok "*"
-        @cg_bldr_pushqtok "inlist"
+            @cg_bldr_pushqtok "cgstrll"
+            @cg_bldr_pushqtok "*"
+            @cg_bldr_pushqtok "inlist"
+        @cg_bldr_pushqtok ","
+            @cg_bldr_pushqtok "cg_rd_parser_spec"
+            @cg_bldr_pushqtok "*"
+            @cg_bldr_pushqtok "spec"
         @cg_bldr_pushqtok ")"
         @cg_bldr_pushqtok "->"
         @cg_bldr_pushqtok "cgstrll"

@@ -1,12 +1,12 @@
 
 #include "cgrdparse.hbas"
 
-fn codegen cgrdparsehook_myhook(cgstrll* in)->cgstrll*:
+fn codegen cgrdparsehook_myhook(cgstrll in, cg_rd_parser_spec spec)->cgstrll*:
     
     //return the inlist verbatim...
     //return in
     
-    //Append a rule!
+    //Append a rule! Yee haw!
     in.push_end(cg_qtok("RunInCircles"));
     in.push_end(cg_qtok("["));
         in.push_end(cg_qtok("__builtin_puts"));
@@ -16,7 +16,6 @@ fn codegen cgrdparsehook_myhook(cgstrll* in)->cgstrll*:
     in.push_end(cg_qtok("]"));
     
     return in
-    
 end
 @cgrdparser [
     Test_Nested[
