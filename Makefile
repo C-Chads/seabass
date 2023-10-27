@@ -1,6 +1,6 @@
 CC= gcc
 CFLAGS= -O3 -s -std=gnu99 -march=native -flto
-CFLAGS_DBG= -Og -g -std=gnu99 -DCOMPILER_CLEANS_UP -DUSE_PARSER_ECHO
+CFLAGS_DBG= -Og -g -fsanitize=address -std=gnu99 -DCOMPILER_CLEANS_UP -DUSE_PARSER_ECHO
 CFLAGS_CLEAN= -O3 -std=gnu99 -DCOMPILER_CLEANS_UP
 
 
