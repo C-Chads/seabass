@@ -1070,6 +1070,11 @@ method codegen cg_rd_parser_spec:gen_struct()->cgstrll*:
         @cg_bldr_pushqtok "cgstrll"
         @cg_bldr_pushqtok "*"
         @cg_bldr_pushqtok "tok_root"
+        if(this.is_targeting_cgrdparse)
+            @cg_bldr_pushqtok "cg_rd_parser_spec"
+            @cg_bldr_pushqtok "*"
+            @cg_bldr_pushqtok "tgt_spec"
+        end
     rwalk:push_end(cg_qtok("end"));
     return retval;
 end
@@ -1555,6 +1560,12 @@ fn codegen cg_rd_parser_parse_spec(cgstrll* input)->cgstrll*:
                     @cg_bldr_pushqtok "the_struct"
                     @cg_bldr_pushqtok "."
                     @cg_bldr_pushqtok "tok_root"
+                    @cg_bldr_pushqtok ";"
+                    @cg_bldr_pushqtok "the_struct"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "tgt_spec"
+                    @cg_bldr_pushqtok "="
+                    @cg_bldr_pushqtok "spec"
                     @cg_bldr_pushqtok ";"
                     
                     //invoke head.

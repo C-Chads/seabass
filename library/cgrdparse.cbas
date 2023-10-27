@@ -7,6 +7,12 @@ fn codegen cgrdparsehook_myhook(cgstrll in, cg_rd_parser_spec spec)->cgstrll*:
     //return in
     
     //Append a rule! Yee haw!
+    /*
+        Print out spec's name..
+    */
+    __builtin_puts("MYHOOK INVOKED ON SPEC WITH NAME:");
+    __builtin_puts(spec.name.s);
+    
     in.push_end(cg_qtok("RunInCircles"));
     in.push_end(cg_qtok("["));
         in.push_end(cg_qtok("__builtin_puts"));
