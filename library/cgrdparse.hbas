@@ -1529,6 +1529,8 @@ fn codegen cg_rd_parser_parse_spec(cgstrll* input)->cgstrll*:
         /*
         *   We actually _own_ inlist, unlike the previous case. 
         */
+            @cg_bldr_pushqtok [spec.realname.s]
+            @cg_bldr_pushqtok "the_struct"
         //assign inlist to the struct's root node.
                     @cg_bldr_pushqtok "the_struct"
                     @cg_bldr_pushqtok "."

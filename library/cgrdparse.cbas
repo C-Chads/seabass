@@ -17,6 +17,20 @@ fn codegen cgrdparsehook_myhook(cgstrll* in)->cgstrll*:
     return in
     
 end
+@cgrdparser [
+    Test_Nested[
+        cgstrll* in
+    ]
+    cgrdparse
+    @myhook[
+        head[
+            this.in = this.tok_root:dupell();
+        ]
+    ]
+    finish[
+        emit [this.in] finish
+    ]
+]
 
 
 @cgrdparser [
@@ -68,11 +82,12 @@ end
         whack_a_mole [
             __builtin_puts("Fin")
         ]
+    ]
+    @Test_Nested[
         set_ident [
             this.int_name:fromstr(tok.text);
         ]
     ]
-
     finish [
         if(this.int_name.s != cast(u8*)0)
             emitq "codegen"
