@@ -40,7 +40,18 @@ codegen u64 cg_uast_coord_impliesnot = (0xf<<(64-4)) | 4;
     RULE: RULE2(S) (i.e. list of statements)
     
     RULE: RULE2, RULE2, ... ';' (i.e. data stmt)
+    
+    
+    So for instance you might write
+    
+    binop_chain my_multiply_expr ("*") my_expr
+    
+    
+    to define "my_multiply_expr" as being a binop chain which uses my_expr as the "next level down".
+    
+    If you wanted multiple tokens to be used to define the binary operator (such as ** for exponentiation) you could do
 
+    binop_chain my_multiply_expr ("*" "*") my_expr
 
 */
 

@@ -1340,143 +1340,8 @@ strll* strll_replace_using_replacement_list(
 }
 
 
-//this code is never used.
-static void strll_remove_owning_operator_pointers(strll* original_passin){
-	strll* current_meta;
-	strll* father = NULL;
-	strll* replacement_list; /**/
-		for(current_meta = original_passin;current_meta != NULL; 
-		/*Increment. We use the comma operator to do multiple assignments in a single expression.*/
-		(father = current_meta),
-		(current_meta = current_meta->right)
 
-	){
-		if(current_meta->data == TOK_OPERATOR ||
-		current_meta->data == TOK_KEYWORD){
-			char* ident_types[] = {
-				"fn",
-				"function",
-				"func",
-				"procedure",
-				"proc",
-				"cast",
-				"char",
-				"byte",
-				"ubyte",
-				"uchar",
-				"schar",
-				"sbyte",
-				"u8",
-				"u16",
-				"u32",
-				"u64",
-				"ushort",
-				"i8",
-				"i16",
-				"i32",
-				"i64",
-				"f32",
-				"f64",
-				"short",
-				"sshort",
-				"uint",
-				"ulong",
-				"i32",
-				"int",
-				"sint",
-				"long",
-				"slong",
-				"ullong",
-				"sllong",
-				"llong",
-				"uqword",
-				"uptr",
-				"qword",
-				"sqword",
-				"noexport",
-				"float",
-				"double",
-				"break",
-				"data",
-				"string",
-				"end",
-				"if",
-				"else",
-				"while",
-				"goto",
-				"jump",
-				"return",
-				"tail",
-				"sizeof",
-				"static",
-				"pub",
-				"public",
-				"struct",
-				"class",
-				"union",
-				"asm",
-				"method",
-				"predecl",
-				"codegen",
-				"constexpri",
-				"constexprf",
-				"switch",
-				"for",
-				"elif",
-				"elseif",
-				"pure",
-				"inline",
-				"atomic",
-				"volatile",
-				"getfnptr",
-				"callfnptr",
-				"getglobalptr",
-				"@",
-				"%",
-				"*",
-				"/",
-				"+",
-				"++",
-				"-",
-				"--",
-				".&",
-				".",
-				"=",
-				":=",
-				":",
-				">>",
-				"<<",
-				"||",
-				"?",
-				"&&",
-				"&",
-				"|",
-				"==",
-				"!=",
-				"->",
-				"===",
-				"<",
-				"<=",
-				">",
-				">=",
-				"streq",
-				"strneq",
-				"neq",
-				"eq",
-				""
-			};
 
-			int i = 0;
-			for(i = 0; ident_types[i][0]; i++){
-				if(streq(current_meta->text, ident_types[i])){
-					free(current_meta->text);
-					current_meta->text = ident_types[i];
-					break;
-				}
-			}
-		}
-	}
-}
 
 void strll_handle_defines(strll* original_passin){
 	/*Generate define replacement lists.*/
@@ -1717,11 +1582,7 @@ static void strll_process_charliterals(strll* in){
 
 static void strll_process_stringliterals(strll* in){
 	strll* current;
-	unsigned long value = 0;
 	unsigned long i;
-	long len_after;
-	char* replacer_before;
-	char* replacer_after;
 
 	current = NULL;
 	for(current = in; current != NULL;
@@ -1838,7 +1699,7 @@ static void strll_concat_stringliterals(strll* in){
 
 static char hex_expansion[1024];
 //this is never done. see below.
-void strll_hexify_int_constants(strll* in){
+static void strll_hexify_int_constants(strll* in){
 	for(;in != NULL;in = in->right)
 		if(in->data == (void*)6){
 			unsigned long long s = strtoull(in->text,0,0);
@@ -1852,6 +1713,23 @@ void strll_hexify_int_constants(strll* in){
 			
 		}
 }
+
+//neither is this done
+static void strll_decify_int_constants(strll* in){
+	for(;in != NULL;in = in->right)
+		if(in->data == (void*)6){
+			unsigned long long s = strtoull(in->text,0,0);
+			mutoa(hex_expansion, s);
+			free(in->text);
+			in->text = strdup(hex_expansion);
+			if(!in->text){
+				puts("Malloc failed!");
+				exit(1);
+			}
+			
+		}
+}
+
 
 
 
