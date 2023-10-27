@@ -73,7 +73,8 @@ mutex.
 Global variables and non-reentrant functions will use their own mutex for preventing races.
 
 This will enable to write multithreaded code which, while not as fast as it could possibly be
-with hyper-optimized stuff, does let you take advantage of multiple cores on a system with
+with optimal usage of atomics, it does let you take advantage of multiple cores on a system with
 reasonable assuredness that you don't have any races.
 
+Which is more then enough for seabass.
 
