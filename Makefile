@@ -3,17 +3,20 @@ CFLAGS= -O3 -s -std=gnu99 -march=native -flto
 CFLAGS_DBG= -Og -g -std=gnu99 -DCOMPILER_CLEANS_UP -DUSE_PARSER_ECHO
 CFLAGS_CLEAN= -O3 -std=gnu99 -DCOMPILER_CLEANS_UP
 
-all: cbas_tcc cbas_cleanup cbas_dirtyfast cbas_debug
 
 cbas_dirtyfast:
 	$(CC) $(CFLAGS) ctok.c parser.c data.c constexpr.c metaprogramming.c code_validator.c astexec.c astdump.c reflection_library.c -o cbas -lm -g
+	
+all: cbas_tinycc cbas_cleanup cbas_dirtyfast cbas_debug
 	
 cbas_cleanup:
 	$(CC) $(CFLAGS_CLEAN) ctok.c parser.c data.c constexpr.c metaprogramming.c code_validator.c astexec.c astdump.c reflection_library.c -o cbas_clean -lm -g
 
 cbas_debug:
 	$(CC) $(CFLAGS_DBG) ctok.c parser.c data.c constexpr.c metaprogramming.c code_validator.c astexec.c astdump.c reflection_library.c -o cbas_dbg -lm -g
-cbas_tcc:
+
+
+cbas_tinycc:
 	tcc -s ctok.c parser.c data.c constexpr.c metaprogramming.c code_validator.c astexec.c astdump.c reflection_library.c -o cbas_tcc -lm
 	
 

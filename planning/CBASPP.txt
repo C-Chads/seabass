@@ -62,13 +62,18 @@ I should come up with a scheme for explicitly defining state as shared between t
 
 THE AGENT MODEL
 
-Each thread of execution in CBAS++ will be modeled as a (static, global) set of objects which
-contain private state as well as immutable references, and mutable global references.
+Agents will basically be special kinds of classes in Cbas++. They will have special
+reference pointers to shared mutable data as well as owning pointers to private, owned data which
+prevents memory errors.
 
-Mutable global references will always involve inserting locks before access. 
+All access to shared mutable data will be automatically guarded by mutex locks created for each
+of the mutable shared resources- that is, when you create a shared resource, you must also create a
+mutex.
 
-All of these agent members will be namespaced to the agent's functions, which prevent any
-external functions from violating the consistency of the agent.
+Global variables and non-reentrant functions will use their own mutex for preventing races.
 
+This will enable to write multithreaded code which, while not as fast as it could possibly be
+with hyper-optimized stuff, does let you take advantage of multiple cores on a system with
+reasonable assuredness that you don't have any races.
 
 

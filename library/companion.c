@@ -136,7 +136,7 @@ void thread_lock(unsigned char* tr){
 
 unsigned char* mutex_new(){
     pthread_mutex_t* m = malloc(sizeof(pthread_mutex_t));
-    pthread_mutex_init(m, 0);
+    pthread_mutex_init(m, NULL);
     return (unsigned char*)m;
 }
 
