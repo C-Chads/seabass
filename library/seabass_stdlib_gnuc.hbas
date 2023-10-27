@@ -75,6 +75,12 @@ fn predecl thread_lock(byte* tr);
 fn predecl thread_kill(byte* tr);
 fn predecl thread_delete(byte* tr);
 
+//mutex stuff
+fn predecl mutex_new()->byte*;
+fn predecl mutex_delete(byte* mtx);
+fn predecl mutex_lock(byte* mtx);
+fn predecl mutex_unlock(byte* mtx);
+
 
 
 

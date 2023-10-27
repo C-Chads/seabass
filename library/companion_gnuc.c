@@ -115,3 +115,23 @@ void thread_lock(unsigned char* tr){
     lock(p);
 }
 
+unsigned char* mutex_new(){
+    pthread_mutex_t* m = malloc(sizeof(pthread_mutex_t));
+    pthread_mutex_init(m, 0);
+    return (unsigned char*)m;
+}
+
+void mutex_delete(unsigned char* mtx){
+    pthread_mutex_t* m = (pthread_mutex_t*)mtx;
+	pthread_mutex_destroy(m);
+	free(m);
+}
+
+void mutex_lock(unsigned char* mtx){
+    pthread_mutex_t* m = (pthread_mutex_t*)mtx;
+	pthread_mutex_lock(m);
+}
+void mutex_unlock(unsigned char* mtx){
+    pthread_mutex_t* m = (pthread_mutex_t*)mtx;
+	pthread_mutex_unlock(m);
+}
