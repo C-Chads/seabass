@@ -55,7 +55,21 @@ fn predecl sys_exit(int a);
     I need stuff for controlling the terminal and
     doing 
 */
+/*
+    MULTITHREADING
+*/
 
+//allocate a thread object...
+fn predecl thread_new()->byte*;
+//assign the function that a thread uses.
+fn predecl thread_assign_fn(byte* tr, byte* funk);
+fn predecl thread_assign_arg(byte* tr, byte* arg);
+fn predecl thread_start(byte* tr);
+
+fn predecl thread_step(byte* tr);
+fn predecl thread_lock(byte* tr);
+fn predecl thread_kill(byte* tr);
+fn predecl thread_delete(byte* tr);
 
 
 

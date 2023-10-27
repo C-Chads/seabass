@@ -37,16 +37,16 @@ q: clean install
 
 toc_test:
 	cbas library/toc.cbas
-	$(CC) -m32 -O3 -s auto_out.c library/companion.c -o toc_test
+	$(CC) -m32 -O3 -lpthread -s auto_out.c library/companion.c -o toc_test
 
 	
 toc_gnuc_test:
 	cbas library/toc_gnuc.cbas
-	$(CC) -m32 -O3 -s auto_out.c library/companion_gnuc.c -o toc_test
+	$(CC) -m32 -O3 -lpthread -s auto_out.c library/companion_gnuc.c -o toc_test
 
 fib:
 	cbas library/toc_fib_example.cbas
-	$(CC) -O3 -s auto_out.c library/companion.c -o fib
+	$(CC) -O3 -lpthread -s auto_out.c library/companion.c -o fib
 	
 	
 
