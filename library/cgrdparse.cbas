@@ -9,9 +9,10 @@ fn codegen cgrdparsehook_myhook(cgstrll* in)->cgstrll*:
     //Append a rule!
     in.push_end(cg_qtok("RunInCircles"));
     in.push_end(cg_qtok("["));
-    in.push_end(cg_qtok("char"));
-    in.push_end(cg_qtok("*"));
-    in.push_end(cg_qtok("myvar"));
+        in.push_end(cg_qtok("__builtin_puts"));
+        in.push_end(cg_qtok("("));
+        in.push_end(cg_qtok("\"Running in Circles!!!!\""));
+        in.push_end(cg_qtok(")"));
     in.push_end(cg_qtok("]"));
     
     return in
@@ -25,6 +26,7 @@ end
     @myhook[
         head[
             this.in = this.tok_root:dupell();
+            do RunInCircles
         ]
     ]
     finish[
@@ -72,6 +74,8 @@ end
             if(tok_null) break; end
             eat
         end
+        do RunInCircles
+
         go whack_a_mole
         __builtin_puts("Wont print")
     ]
