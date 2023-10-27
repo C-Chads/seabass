@@ -1,0 +1,45 @@
+
+I WANT TO WRITE CBASPLUSPLUS.
+
+A C++-like language for Cbas with the following features:
+
+* Exceptions
+
+* Templates
+
+* Owning Pointers & References
+
+* Enums
+
+* A match statement which takes in an enum and requires all cases be handled
+
+* Some scheme for doing guaranteed memory-safe and data-race-safe programming, ala Rust
+
+    BUT BETTER THAN THE BORROW CHECKER...
+
+* Multithreading (Using stuff from the seabass stdlib)
+
+* Parsehooks (Just like Seabass)
+
+* Automatically written Ctors/Dtors
+
+HOW DO OWNING POINTERS / REFERENCES IN CBAS++ WORK?
+
+After some thought, the pointer system from CBAS
+can be used as "references" and a special owningptr
+type can be used for owning pointers.
+
+so a reference will be declared like this:
+
+myStruct* myReference
+
+and an owning pointer like this:
+
+owned myStruct* myVariable
+
+The only difference between them is that the CBAS++
+compiler will automatically generate a destructor
+call and a free() for the latter.
+
+
+
