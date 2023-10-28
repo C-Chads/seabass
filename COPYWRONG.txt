@@ -20,8 +20,8 @@ All font artwork was hand-drawn in GIMP. the .xcf file is provided.
 This was done so that the compiler (and all the libraries attached)
 may be properly _yours_.
 
-This compiler should not belong to any individual person, but rather
-to mankind as a whole.
+This compiler and its standard library should not belong to any 
+individual person, but rather to mankind as a whole.
 
 
 POSSIBLE COPYRIGHT ERRORS
@@ -36,7 +36,27 @@ NOTABLE SOURCES OF COPYRIGHT ERRORS
     While testing stuff I sometimes write small programs and compile them inside
     the repository's source tree. If there are any such binaries left in the repo,
     please note that they may not be fully public domain. You should delete them
-    and notify me on github/codeberg.
+    and notify me on github/codeberg. Do not consider any such works public domain.
     
-2. 
+    TO CLARIFY, LEGALLY:
+    
+    I am not a lawyer, but let any court of law know that it is my intent to release
+    all of my work into the public domain per the CC0 license. If I have the capacity
+    to release binaries into the public domain... I do. I do not know if I can, but
+    I never want anyone to be culpable to me for copyright.
+    
+2. ALLUSIONS TO COPYRIGHTED WORKS.
+
+    I do not know if it is illegal to talk about copyrighted works inside of a
+    public domain work. I have been working under the assumption that mere name
+    mentions (especially for technical reasons) are not. If this is in error, then
+    all allusions to trademarks and such need to be removed from the repository.
+    This may be somewhat difficult, as for instance, Seabass has a library specifically
+    optimizing its output code for "GnuC" compilers (GNU obviously being a trademark
+    or something).
+    
+3. PNG, XCF FILE FORMAT ENCODING
+
+    If either of these file formats implicitly use copyrighted work, then those
+    files cannot be considered public domain. I believe they are not
 
