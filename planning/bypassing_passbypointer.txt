@@ -1,0 +1,31 @@
+
+
+It is possible to bypass the pass-by-pointer requirement of Seabass by
+wrapping all API functions inside of pass-by-value ones, and then wrapping
+those inside of another wrapper for pass-by-pointer again.
+
+
+
+void myAPIcall__API(myStruct p); //C function wrapper for real impl
+
+fn inline myAPIcall__INTERN(myStruct* p); //real implementation
+
+fn inline myAPIcall(myStruct* p):
+    asm("myAPICall__API(*__seabass_mangled_variable_name_p);")
+end
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+WHAT ABOUT RETURNING A STRUCT FROM A FUNCTION?
+
+this, again, can be wrapped:
+
+myStruct myAPIcall__API(myStruct p); //C function wrapper for real impl
+
+fn inline myAPIcall__INTERN(myStruct* retval, myStruct* p); //real implementation
+
+fn inline myAPIcall(myStruct* retval, myStruct* p): //external wrapper
+    asm("*__seabass_local_variable_retval = myAPIcall_API(*__seabass_local_variable_p);");
+end
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In this way, any limitations of pass-by-pointer can be completely negated.
