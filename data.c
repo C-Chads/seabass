@@ -1014,7 +1014,7 @@ void print_manpage(char* subject){
         lll("fn inline myAPIcall__INTERN(myStruct* retval, myStruct* p); //real internal implementation")
         nl
         lll("fn inline myAPIcall(myStruct* retval, myStruct* p): //external wrapper")
-        lll("asm(\"*__seabass_local_variable_retval = myAPIcall_API(*__seabass_local_variable_p);\");")
+        lll("    asm(\"*__seabass_local_variable_retval = myAPIcall_API(*__seabass_local_variable_p);\");")
         lll("end")
         nl
         ll("would fully wrap myAPIcall as well as provide the standard interface to callers. all")
