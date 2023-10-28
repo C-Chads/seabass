@@ -6,6 +6,7 @@
 typedef struct{
     unsigned long long p;
     unsigned long long p2;
+    //unsigned long long p3;
 }mystruct;
 
 
@@ -27,6 +28,9 @@ int main(int argc, char** argv){
     pp.p = atoi(argv[1]) + rand();
     pp.p2 = atoi(argv[1]) + rand();
     
+    if(argc == 2)
+        puts("By value!");
+    else puts("By pointer!");
     
     if(argc == 2){
         for(unsigned long long i= 0; i < (1<<25); i++){
