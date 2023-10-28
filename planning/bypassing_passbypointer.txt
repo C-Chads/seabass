@@ -24,7 +24,7 @@ fn inline myAPIcall__INTERN(myStruct* retval, myStruct* p); //real implementatio
 
 fn inline myAPIcall(myStruct* retval, myStruct* p): //external wrapper
     asm("*__seabass_local_variable_retval = myAPIcall_API(*__seabass_local_variable_p);");
-end
+
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

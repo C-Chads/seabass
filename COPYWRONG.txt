@@ -1,0 +1,42 @@
+
+Copyright is wrong. You cannot own information.
+
+However, most of the world thinks this isn't true. So in order
+to obey the commandments of God while maintaining my vindication,
+I must avoid the use of any copyrighted works in my work.
+
+This entire repository, every single byte (insofar as I can tell)
+is given to you under the CC0 public domain license.
+
+This includes logos and artwork.
+
+LOGO ARTWORK
+
+The image of a fish is a stylized rendition of Duane Raver's Black Sea Bass,
+which according to wikimedia commons is a public domain work.
+
+All font artwork was hand-drawn in GIMP. the .xcf file is provided.
+
+This was done so that the compiler (and all the libraries attached)
+may be properly _yours_.
+
+This compiler should not belong to any individual person, but rather
+to mankind as a whole.
+
+
+POSSIBLE COPYRIGHT ERRORS
+
+if there are any copyright errors in the repository (even a single byte)
+please post an issue on github. 
+
+NOTABLE SOURCES OF COPYRIGHT ERRORS
+
+1. COMPILED BINARIES LEFT IN THE SOURCE TREE
+
+    While testing stuff I sometimes write small programs and compile them inside
+    the repository's source tree. If there are any such binaries left in the repo,
+    please note that they may not be fully public domain. You should delete them
+    and notify me on github/codeberg.
+    
+2. 
+
