@@ -3,6 +3,8 @@ CFLAGS= -O3 -s -std=gnu99 -march=native -flto
 CFLAGS_DBG= -Og -g -fsanitize=address,undefined,leak -std=gnu99 -DCOMPILER_CLEANS_UP -DUSE_PARSER_ECHO
 CFLAGS_CLEAN= -O3 -std=gnu99 -DCOMPILER_CLEANS_UP
 
+CFLAGS_CBAS= -O3 -fwrapv -s -lpthread
+
 
 cbas_dirtyfast:
 	$(CC) $(CFLAGS) ctok.c parser.c data.c constexpr.c metaprogramming.c code_validator.c astexec.c astdump.c reflection_library.c -o cbas -lm -g
@@ -40,16 +42,16 @@ q: clean install
 
 toc_test:
 	cbas library/toc.cbas
-	$(CC) -m32 -O3 -lpthread -s auto_out.c library/companion.c -o toc_test
+	$(CC) -m32 $(CFLAGS_CBAS) auto_out.c library/companion.c -o toc_test
 
 	
 toc_gnuc_test:
 	cbas library/toc_gnuc.cbas
-	$(CC) -m32 -O3 -lpthread -s auto_out.c library/companion_gnuc.c -o toc_test
+	$(CC) -m32 $(CFLAGS_CBAS) -lpthread auto_out.c library/companion_gnuc.c -o toc_test
 
 fib:
 	cbas library/toc_fib_example.cbas
-	$(CC) -O3 -lpthread -s auto_out.c library/companion.c -o fib
+	$(CC) $(CFLAGS_CBAS) auto_out.c library/companion.c -o fib
 	
 	
 
