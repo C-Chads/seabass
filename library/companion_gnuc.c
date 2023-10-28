@@ -9,8 +9,9 @@
 #include <time.h>
 #include <limits.h>
 #include <errno.h>
+#ifndef __APPLE__
 #include "lockstepthread.h"
-
+#endif
 
 #define uc unsigned char
 
@@ -71,7 +72,7 @@ void sys_exit(int a){
     exit(a);
 }
 
-//MULTITHREADING LIBRARY
+#ifndef __APPLE__
 unsigned char* thread_new(){
     lsthread* p = malloc(sizeof(lsthread));
     init_lsthread(p);
@@ -88,7 +89,6 @@ void thread_assign_fn(unsigned char* tr, unsigned char* funk){
     lsthread* p = (lsthread*)tr;
     void* fnk = funk;
     p->execute = fnk;
-    
 }
 
 void thread_assign_arg(unsigned char* tr, unsigned char* arg){
@@ -135,3 +135,51 @@ void mutex_unlock(unsigned char* mtx){
     pthread_mutex_t* m = (pthread_mutex_t*)mtx;
 	pthread_mutex_unlock(m);
 }
+#else
+unsigned char* thread_new(){
+    return NULL;
+}
+void thread_delete(unsigned char* tr){
+    free(tr);
+    return;
+}
+
+void thread_assign_fn(unsigned char* tr, unsigned char* funk){
+    return;
+}
+
+void thread_assign_arg(unsigned char* tr, unsigned char* arg){
+    return;
+}
+
+void thread_start(unsigned char* tr){
+    return;
+}
+void thread_kill(unsigned char* tr){
+    return
+}
+
+void thread_step(unsigned char* tr){
+    return;
+}
+
+void thread_lock(unsigned char* tr){
+    return;
+}
+
+unsigned char* mutex_new(){
+    return NULL;
+}
+
+void mutex_delete(unsigned char* mtx){
+	free(mtx);
+}
+
+void mutex_lock(unsigned char* mtx){
+    return;
+}
+void mutex_unlock(unsigned char* mtx){
+    return;
+}
+
+#endif
