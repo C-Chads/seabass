@@ -62,7 +62,6 @@ static inline char* strcatallocf1(char* s1, const char* s2){
 	if(d){
 		memcpy(d + ls1, s2, ls2+1);
 	}
-
 	return d;
 }
 
