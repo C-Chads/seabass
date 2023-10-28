@@ -9,12 +9,12 @@ typedef struct{
 }mystruct;
 
 
-void bypointer(mystruct* pp){
+__attribute__ ((noinline)) void bypointer(mystruct* pp){
     pp->p++;
     pp->p2++;
 }
 
-mystruct byvalue(mystruct pp){
+__attribute__ ((noinline)) mystruct byvalue(mystruct pp){
     pp.p++;
     pp.p2++;
     return pp;
@@ -24,8 +24,8 @@ mystruct byvalue(mystruct pp){
 int main(int argc, char** argv){
     srand(time(0));
     mystruct pp;
-    pp.p = atoi(argv[1]);
-    pp.p2 = atoi(argv[1]);
+    pp.p = atoi(argv[1]) + rand();
+    pp.p2 = atoi(argv[1]) + rand();
     
     
     if(argc == 2){
@@ -37,6 +37,7 @@ int main(int argc, char** argv){
             bypointer(&pp);
         }
     }
+    printf("%lld\n%lld", pp.p, pp.p2);
 
 }
 
