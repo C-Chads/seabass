@@ -41,39 +41,54 @@
 
 
 static inline char* strcatalloc(const char* s1, const char* s2){
-	char* d = NULL; d = STRUTIL_ALLOC(strlen(s1) + strlen(s2) + 1);
+    unsigned long ls1;
+    unsigned long ls2;
+    ls1 = strlen(s1);
+    ls2 = strlen(s2);
+	char* d = NULL; d = STRUTIL_ALLOC(ls1 + ls2 + 1);
 	if(d){
-		strcpy(d, s1);
-		strcat(d, s2);
+		memcpy(d, s1, ls1);
+		memcpy(d+ls1, s2, ls2+1);
 	}
 	return d;
 }
 
 static inline char* strcatallocf1(char* s1, const char* s2){
-	char* d = STRUTIL_REALLOC(s1, strlen(s1) + strlen(s2) + 1);
+    unsigned long ls1;
+    unsigned long ls2;
+    ls1 = strlen(s1);
+    ls2 = strlen(s2);
+	char* d = STRUTIL_REALLOC(s1, ls1 + ls2 + 1);
 	if(d){
-
-		strcat(d, s2);
+		memcpy(d + ls1, s2, ls2+1);
 	}
 
 	return d;
 }
 
 static inline char* strcatallocf2(const char* s1, char* s2){
-	char* d = NULL; d = STRUTIL_ALLOC(strlen(s1) + strlen(s2) + 1);
+    unsigned long ls1;
+    unsigned long ls2;
+    ls1 = strlen(s1);
+    ls2 = strlen(s2);
+	char* d = NULL; d = STRUTIL_ALLOC(ls1 + ls2 + 1);
 	if(d){
-		strcpy(d, s1);
-		strcat(d, s2);
+	    memcpy(d, s1, ls1);
+		memcpy(d + ls1, s2, ls2+1);
 	}
 	STRUTIL_FREE(s2);
 	return d;
 }
 
 static inline char* strcatallocfb(char* s1, char* s2){
-	char* d = NULL; d = STRUTIL_ALLOC(strlen(s1) + strlen(s2) + 1);
+    unsigned long ls1;
+    unsigned long ls2;
+    ls1 = strlen(s1);
+    ls2 = strlen(s2);
+	char* d = NULL; d = STRUTIL_ALLOC(ls1 + ls2 + 1);
 	if(d){
-		strcpy(d, s1);
-		strcat(d, s2);
+		memcpy(d, s1, ls1);
+		memcpy(d+ls1, s2, ls2+1);
 	}
 	STRUTIL_FREE(s1);
 	STRUTIL_FREE(s2);
