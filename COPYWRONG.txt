@@ -58,5 +58,5 @@ NOTABLE SOURCES OF COPYRIGHT ERRORS
 3. PNG, XCF FILE FORMAT ENCODING
 
     If either of these file formats implicitly use copyrighted work, then those
-    files cannot be considered public domain. I believe they are not
+    files cannot be considered public domain. I believe they are fine.
 
