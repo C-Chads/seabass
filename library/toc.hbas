@@ -19,6 +19,7 @@ codegen u64 cg_Cemitter_Switch_DtableGen = 0;
 codegen u64 cg_Cemitter_indentlevel = 0;
 codegen u64 cg_Cemitter_explicit_signed_char = 1;
 codegen u64 cg_Cemitter_long_32bit = 0;
+codegen char* cg_Cemitter_gasm = 0;
 
 fn codegen cg_Cemitter_make_dtable_name()->char*:
     cgstr retval
@@ -1837,7 +1838,11 @@ fn codegen cg_emitC(char* prefix):
     if(prefix != cast(u8*)0)
         cg_quick_emit(prefix,0);
     end
-    cg_quick_emit("/*\nEXPORTED CODE FROM SEABASS METAPROGRAMMING LANGUAGE\nCode Generator written by DAVID MHS WEBSTER / KEGGEK\nLet all your things be done with charity\n*/",0);
+    if(cg_Cemitter_gasm != 0)
+        cg_quick_emit("\n/*GASM_BLOCK*/\n",0);
+        cg_quick_emit(cg_Cemitter_gasm, 0);
+    end
+    cg_quick_emit("/*\nEXPORTED CODE FROM SEABASS METAPROGRAMMING LANGUAGE\nLet all your things be done with charity\n*/",0);
     //emit all of the types...
     i64 i
     cg_quick_emit("/*\nTYPEDECLS\n*/",0);
