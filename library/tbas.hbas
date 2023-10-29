@@ -42,7 +42,8 @@
     for the prefix and body expansions.
     
     Normally, for most things, I imagine that the prefix
-    is 
+    is not necessary to preserve. However, we might want to
+    keep it around...
     
 */
 
@@ -63,16 +64,14 @@ end
 
 //a templated "thingie"
 class cg_tbas_template noexport
-    cgstr name
-    cgstr internal_name //internal name of the template, which is name, but with extra sauce.
+    cgstr name //exposed api name
+    cgstr internal_name //name of the worksheet
     u64 nparams //how many parameters does it take?
     u64 template_type /*
         Is this thing a---
+        0. Unspecified?
         1. Type?
         2. Function?
-        3. Statement?
-        4. Expression?
-        5. Global Statement?
     */
     cg_tbas_template_instance* instances
     u64 ninstances
