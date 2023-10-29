@@ -1,0 +1,113 @@
+
+#guard templated_cbas_library_DMHSW
+
+/*
+    GENERIC ANYTHING FOR SEABASS
+    
+    Generic types? Generic functions? Generic control flow?
+    Generic generics?
+    
+    Can you imagine what it would mean to template it? We can
+    serve it!
+    
+    The goal with Tbas is to allow referencing within the body
+    of a function or inside of a class/struct BEFORE it is needed.
+    
+    SEMANTICS
+    
+    ? HOW ARE TYPE ALIASES HANDLED ?
+    Whenever a template is recognized, and it is being fed a "type"
+    parameter, we convert all primitive types in that sequence into their natural
+    aliases (e.g. uptr to u64, int to i32, etcetera).
+    
+    This ensures for instance that when we go to look for a template paramater, we don't
+    ever confuse vector[i32] as not being the same as vector[int], nor
+    vector[vector[i32]] not the same as vector[vector[int]].
+    
+    ? HOW DOES TBAS HANDLE COMPATIBILITY WITH NESTED DSLS ?
+    
+    It shouldn't ever be an issue, however, if it ever is, we'll
+    include the $ escape character to escape a token.
+    
+    ? WHAT DO TBAS TEMPLATES EXPAND INTO ?
+    
+    Code in the prefix and body. Each of these
+    two sections can be written to by a Tbas template.
+    
+    So every time that you have a worksheet written for
+    Tbas, it needs to consist of two bracketed sections...
+    
+    [][]
+    
+    for the prefix and body expansions.
+    
+    Normally, for most things, I imagine that the prefix
+    is 
+    
+*/
+
+#include "cgtoken_manip_tools.hbas"
+
+codegen u64 CG_TBAS_MAX_TEMPLATE_PARAMS = 64;
+
+
+//an instance of a template
+class cg_tbas_template_instance noexport
+    //what were the parameters? This is an array of cgstrlls
+    cgstrll*[CG_TBAS_MAX_TEMPLATE_PARAMS] params
+    cgstrll* prefix_once  //what gets written only once? (Usually the template expansion...)
+                          //theoretically, we could choose not to save this...
+    cgstrll* body //what gets put in the body? (Usually just a single identifier...)
+    u64 nparams
+end
+
+//a templated "thingie"
+class cg_tbas_template noexport
+    cgstr name
+    cgstr internal_name //internal name of the template, which is name, but with extra sauce.
+    u64 nparams //how many parameters does it take?
+    u64 template_type /*
+        Is this thing a---
+        1. Type?
+        2. Function?
+        3. Statement?
+        4. Expression?
+        5. Global Statement?
+    */
+    cg_tbas_template_instance* instances
+    u64 ninstances
+    u8[CG_TBAS_MAX_TEMPLATE_PARAMS] paramtypes /*
+        Are the parameters...
+        0. Types (arrays not allowed)
+        1. Types (arrays allowed)
+        2. Identifiers
+        3. Functions
+        4. Integers
+        5. Arbitrary token sequences?
+    */
+end
+
+
+codegen cg_tbas_template* cg_tbas_templates = 0;
+codegen u64 cg_tbas_ntemplates = 0;
+
+method codegen cg_tbas_template.ctor():
+    this.name.s = 0;
+    this.internal_name.s = 0;
+    this.nparams = 0;
+    this.instances = 0;
+    this.ninstances = 0;
+    //don't bother setting paramtypes...
+end
+//don't bother writing a dtor
+
+
+method codegen cg_tbas_template_instance.ctor():
+    u64 i
+    for(i = 0, i < CG_TBAS_MAX_TEMPLATE_PARAMS, i++)
+        this.params[i] = 0;
+    end
+    this.prefix_once = 0;
+    this.body = 0;
+    this.nparams = 0;
+end
