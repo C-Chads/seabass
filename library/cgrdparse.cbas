@@ -130,6 +130,10 @@ fn codegen codegen_main():
         @global
         fn codegen print_stuff2():
             __builtin_puts("Hello Again!");
+            @global
+                    fn codegen print_stuff3():
+                        __builtin_puts("Goodbye Again!");
+                    end
         end
         ;    
     end
@@ -137,6 +141,7 @@ fn codegen codegen_main():
     print_stuff();
 
     print_stuff2();
+    print_stuff3();
 
     ;
 end
