@@ -751,7 +751,7 @@ if(peek()->data == TOK_IDENT)
     						parse_error("Invalid target word size. Valid values are 64, 32, 16, and 8. 128 bit is not supported.");
     					}
     					peek_always_not_null = 0;
-    					continue;
+    					return;
     				} else if(streq(peek()->text, "__CBAS_TARGET_MAX_FLOAT")){
     					uint64_t a;
     					consume();
@@ -767,11 +767,11 @@ if(peek()->data == TOK_IDENT)
     						parse_error("Invalid target max float size. 64 and 32 bit are allowed- no 10 byte floats!");
     					}
     					peek_always_not_null = 0;
-    					continue;
+    					return;
     				} else if(streq(peek()->text, "__CBAS_TARGET_DISABLE_FLOAT")){
     					consume();
     					set_max_float_type(0);
-    					continue;
+    					return;
     				} else if(streq(peek()->text, "__CBAS_BAKE")){
     				    consume();
     				    parser_echo = 1;
