@@ -86,9 +86,21 @@ class cg_tbas_template noexport
     */
 end
 
+class cg_tbas_unit noexport
+    cgstrll* prefix
+    cgstrll* body
+end
+
 
 codegen cg_tbas_template* cg_tbas_templates = 0;
 codegen u64 cg_tbas_ntemplates = 0;
+
+codegen cg_tbas_unit cg_tbas_cur_unit;
+
+method codegen cg_tbas_unit.reset():
+    this.prefix = 0;
+    this.body = 0;
+end
 
 method codegen cg_tbas_template.ctor():
     this.name.s = 0;
@@ -187,3 +199,15 @@ fn codegen cg_tbas_replace_type_aliases(cgstrll* in):
         in = in.right;
     end
 end
+
+//meant to be in
+fn codegen cg_tbas_mktemplate(cgstrll* in):
+    //TODO: make a template...
+end
+
+
+fn codegen cg_tbas_instantiate_template(cgstrll* in, u64 tid):
+    //TODO: Instantiate template...
+end
+
+
