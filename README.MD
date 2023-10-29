@@ -598,7 +598,23 @@ a few months.
 
 ## ROADMAP (What order do I make things in?)
 
-1. Templated Seabass- TBAS
+
+1. Self hosting
+
+Seabass needs to be ported into itself so that work
+on the compiler is easier to verify as correct and
+easier to do.
+
+Once that occurs, all future development on Seabass
+will move to that repository and this compiler
+will be archived. Future bootstraps will use
+the latest build-to-C.
+
+This update should also remove Seabass's 64-bit-only
+requirement and possibly even add support for 128
+bit integers into the language.
+
+2. Templated Seabass- TBAS
 
 I require the ability to define custom high-level
 templated data structures such as vector[int] and
@@ -613,7 +629,7 @@ possible with `cgwksht`- namely, you could write
 entire new classes and functions to extend the control
 flow of a small part of a single function.
 
-2. Data structure templates
+3. Data structure templates
 
 I need common data structures such as `vector` and
 `list` and `map` available at my finger tips, and I
@@ -621,21 +637,6 @@ need it without any hassle. It's what I miss most from
 C++. I could theoretically already template any data
 structure I want by using `cgwksht` however this would
 not allow for inline usage ala `vector<int>`.
-
-3. Self hosting
-
-Seabass needs to be ported into itself so that work
-on the compiler is easier to verify as correct and
-easier to do.
-
-Once that occurs, all future development on Seabass
-will move to that repository and this compiler
-will be archived. Future bootstraps will use
-the latest build-to-C.
-
-This update should also remove Seabass's 64-bit-only
-requirement and possibly even add support for 128
-bit integers into the language.
 
 4. Cbas++
 
