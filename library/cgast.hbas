@@ -546,7 +546,7 @@ class cgast
 	u64* nloops
 end
 
-class cgparsecache noexport
+class cg_parser_cache noexport
     u64 active_function
     u64 nscopes
     u64 nloops
@@ -554,7 +554,7 @@ class cgparsecache noexport
     cgstmt** loopstack
 end
 
-method codegen cgparsecache.save():
+method codegen cg_parser_cache.save():
     cgast* ast = cast(cgast*)__builtin_get_ast();
     this.active_function = ast.active_function[0];
     this.nscopes = ast.nscopes[0];
@@ -569,7 +569,7 @@ method codegen cgparsecache.save():
     ast.active_function[0] = -1;
 end
 
-method codegen cgparsecache.load():
+method codegen cg_parser_cache.load():
     cgast* ast = cast(cgast*)__builtin_get_ast();
     if(ast.scopestack[0] != 0)
         __builtin_free((u8*)ast.scopestack[0]);
@@ -585,7 +585,7 @@ method codegen cgparsecache.load():
 end
 
 fn codegen parsehook_global():
-    cgparsecache pcache
+    cg_parser_cache pcache
     pcache.save();
     __builtin_parse_global();
     pcache.load();
