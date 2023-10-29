@@ -528,28 +528,43 @@ Notable base-level language syntax tidbits which make it "different" from C:
 
 (UPDATED OCTOBER 29th 2023)
 
-Seabass is advancing rapidly. If the blessings of God continue, the project
-should reach a "completed" state fairly soon
+Seabass is advancing rapidly. If the blessings of God continue, and I
+manage to avoid being lazy, the project should reach a "completed" state within
+a few months.
 
-### WHAT DOES COMPLETE MEAN?
+### PROJECT GOALS
 
-Seabass must have:
+ - [X] One complete implementation in C99 
+ 
+ - [X] A compiletime reflection library
+ 
+ - [X] A C code generator
+ 
+ - [ ] A standard library
 
- [X] One complete implementation in C99 
- 
- [X] A reflection library
- 
- [X] A C code generator
- 
- [ ] A standard library
- 
- [X] Syntax highlighting files
+ - [X] Syntax highlighting files
 
- [ ] A complete metaprogramming library
+ - [ ] A complete metaprogramming library
  
- [ ] Multiple custom high-level general-purpose languages to replace languages like C++ and Rust.
+    - [X] The Builder
+    
+    - [X] The Worksheet
+    
+    - [ ] Language design tools
+    
+        - [X] cgrdparse- compiletime recursive descent parser generator
+        
+        - [?] cg_uast- the Universal Abstract Syntax Tree
+        
+    - [ ] Tbas- Templated Seabass
+    
+ - [ ] A self-hosted implementation (MILESTONE- READY FOR PRODUCTION)
  
- [ ] A large set of domain specific languages
+ - [ ] Multiple custom high-level general-purpose languages to replace languages like C++ and Rust.
+ 
+ - [ ] A large set of domain specific languages for solving specific programming problems
+
+
 
 ## Project Vision
 
