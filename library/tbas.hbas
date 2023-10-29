@@ -110,3 +110,80 @@ method codegen cg_tbas_template_instance.ctor():
     this.body = 0;
     this.nparams = 0;
 end
+
+fn codegen cg_tbas_replace_type_aliases(cgstrll* in):
+    /*in-place modify in....*/
+    
+    while(in != 0)
+        if(in.d != CG_TOK_KEYWORD)
+            goto nextiter
+        end
+        if(
+            in.text streq "char" ||
+            in.text streq "byte" ||
+            in.text streq "ubyte" ||
+            in.text streq "uchar"
+        )
+            __builtin_free(in.text);
+            in.text = __builtin_strdup("u8");
+        elif(
+            in.text streq "sbyte" ||
+            in.text streq "schar"
+        )
+            __builtin_free(in.text);
+            in.text = __builtin_strdup("i8");
+        elif(
+            in.text streq "ushort"
+        )
+            __builtin_free(in.text);
+            in.text = __builtin_strdup("u16");
+        elif(
+            in.text streq "short" ||
+            in.text streq "sshort"
+        )
+            __builtin_free(in.text);
+            in.text = __builtin_strdup("i16");
+        elif(
+            in.text streq "uint" ||
+            in.text streq "ulong"
+        )
+            __builtin_free(in.text);
+            in.text = __builtin_strdup("u32");
+        elif(
+            in.text streq "int" ||
+            in.text streq "sint" ||
+            in.text streq "long" ||
+            in.text streq "slong"
+        )
+            __builtin_free(in.text);
+            in.text = __builtin_strdup("i32");
+        elif(
+            in.text streq "ullong" ||
+            in.text streq "uqword" ||
+            in.text streq "qword" ||
+            in.text streq "uptr"  //NOTE: PLATFORM DEPENDENT
+        )
+            __builtin_free(in.text);
+            in.text = __builtin_strdup("u64");
+        elif(
+            in.text streq "sllong" ||
+            in.text streq "llong" ||
+            in.text streq "sqword" 
+        )
+            __builtin_free(in.text);
+            in.text = __builtin_strdup("i64");
+        elif(
+            in.text streq "float" 
+        )
+            __builtin_free(in.text);
+            in.text = __builtin_strdup("f32");
+        elif(
+            in.text streq "double" 
+        )
+            __builtin_free(in.text);
+            in.text = __builtin_strdup("f64");
+        end
+        :nextiter
+        in = in.right;
+    end
+end
