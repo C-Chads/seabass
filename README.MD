@@ -192,9 +192,9 @@ Because of these "superfeatures" the following are all true with Cbas:
 
 * Seabass is "Domain Complete"
 
-    Disregarding memory limitations (You might have issues compiling a 3 Gigabyte program...)
-    and file size constraints, there is at least one seabass program which can generate a given
-    program in another language.
+    Disregarding memory limitations (You might have issues compiling a 3 Gigabyte program),
+    file size constraints, and implementation bugs, there is at least one seabass program 
+    which can generate a given program in another language.
     
 ## Answers to common concerns people have about programming languages
 
