@@ -10,8 +10,9 @@
     Can you imagine what it would mean to template it? We can
     serve it!
     
-    The goal with Tbas is to allow referencing within the body
-    of a function or inside of a class/struct BEFORE it is needed.
+    The goal with Tbas is to allow you to refer to templated code
+    inside of a function seamlessly, with the template parameters in-place.
+    
     
     SEMANTICS
     
@@ -45,6 +46,46 @@
     is not necessary to preserve. However, we might want to
     keep it around...
     
+    TEMPLATE SYNTAX
+    
+    mktemplate type myType[type T, typename T2, ident I, Q][
+        //prefix code....
+    ]
+    
+    //usage...
+    myType[int[3], int*, int, [int]]
+    
+    you can also use it for functions...
+    mktemplate fn myfn[type T, typename T2, ident I, Q][
+        //prefix code....
+    ]
+    
+    and you can omit "type" or "fn" and instead just write arbitrary code...
+    mktemplate myCode[type T, typename T2, ident I, Q][
+        //prefix code....
+    ]
+    
+    and you can specify body code as well (only for code...)
+    mktemplate myCode[type T, typename T2, ident I, Q][
+        //prefix code....
+    ][
+        //body code...
+    ]
+    
+    ?WHAT HAPPENS WHEN A TEMPLATE IS DEFINED?
+    * We check to see if a template by the same name exists- if it does,
+        that's an error.
+    * We create a worksheet for us to use internally, with a peculiarly mangled
+      name. This worksheet is used to perform templating.
+    
+    
+    ?WHAT HAPPENS WHEN A TEMPLATE IS INSTANTIATED?
+    
+    * Parse the parameter list and validate its correctness.
+    * Check the list of instantiations to see if the instance has already
+        been generated. If it has, we use it. Otherwise, we press onward...
+    * A unique name is generated according to the template parameters.
+    * we fill out the worksheet
 */
 
 #include "cgtoken_manip_tools.hbas"
@@ -94,6 +135,7 @@ end
 
 codegen cg_tbas_template* cg_tbas_templates = 0;
 codegen u64 cg_tbas_ntemplates = 0;
+codegen u64 cg_tbas_uuid_gen = 1; //start at 1
 
 codegen cg_tbas_unit cg_tbas_cur_unit;
 
@@ -200,12 +242,12 @@ fn codegen cg_tbas_replace_type_aliases(cgstrll* in):
     end
 end
 
-//meant to be in
+//how you add templates to Tbas...
 fn codegen cg_tbas_mktemplate(cgstrll* in):
     //TODO: make a template...
 end
 
-
+//How you 
 fn codegen cg_tbas_instantiate_template(cgstrll* in, u64 tid):
     //TODO: Instantiate template...
 end

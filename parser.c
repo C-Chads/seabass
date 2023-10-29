@@ -3515,18 +3515,11 @@ void* c_allocX(uint64_t sz){
 }
 
 //reduce memory allocations!
-#define DEFAULT_VECTOR_SIZE 1024*1024
+
 
 void* re_allocX(void* p, uint64_t sz){
-    if(p == 0){
-        sz = DEFAULT_VECTOR_SIZE; //give it a whole megabyte!
-	    p = realloc(p, sz);
-	    return p;
-    }
-    //Doesn't need to be resized!
-    if(sz > DEFAULT_VECTOR_SIZE) {
-	    p = realloc(p, sz);
-    } 
+    p = realloc(p, sz);
+
     return p;
 }
 
