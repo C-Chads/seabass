@@ -1994,16 +1994,17 @@ void do_expr(expr_node* ee){
 	*/
 	
 	if(ee->kind == EXPR_BUILTIN_CALL){
+	    
 		if(streq(ee->symname, "__builtin_emit")){
 			char* s;
 			uint64_t sz;
 			//function arguments are backwards on the stack, more arguments = deeper
-			memcpy(
+			memcpy( //USES CORRECT STACKPOINTER- INPUT
 				&s, 
 				&vm_stack[vm_stackpointer-1].smalldata, 
 				POINTER_SIZE
 			);
-			memcpy(
+			memcpy( //USES CORRECT STACKPOINTER- INPUT
 				&sz, 
 				&vm_stack[vm_stackpointer-2].smalldata, 
 				POINTER_SIZE
@@ -2014,7 +2015,7 @@ void do_expr(expr_node* ee){
 		if(streq(ee->symname, "__builtin_getargc")){ //0 args
 			int32_t v;
 			v = impl_builtin_getargc();
-			memcpy(
+			memcpy( //USES CORRECT STACKPOINTER- OUTPUT
 				&vm_stack[saved_vstack_pointer-1].smalldata, 
 				&v, 
 				4
@@ -2024,7 +2025,7 @@ void do_expr(expr_node* ee){
 		if(streq(ee->symname, "__builtin_getargv")){ //0 arguments
 			char** v;
 			v = impl_builtin_getargv();
-			memcpy(
+			memcpy( //USES CORRECT STACKPOINTER- OUTPUT
 				&vm_stack[saved_vstack_pointer-1].smalldata, 
 				&v, 
 				POINTER_SIZE
@@ -2034,13 +2035,13 @@ void do_expr(expr_node* ee){
 		if(streq(ee->symname, "__builtin_malloc")){
 			char** v;
 			uint64_t sz;
-			memcpy(
+			memcpy( //USES CORRECT STACKPOINTER- INPUT
 				&sz, 
 				&vm_stack[vm_stackpointer-1].smalldata, 
 				8
 			);
 			v = impl_builtin_malloc(sz);
-			memcpy(
+			memcpy( //USES CORRECT STACKPOINTER- OUTPUT
 				&vm_stack[saved_vstack_pointer-1].smalldata, 
 				&v, 
 				POINTER_SIZE
@@ -2051,19 +2052,19 @@ void do_expr(expr_node* ee){
 			char* v;
 			uint64_t sz;
 			//remember: arguments are backwards on the stack! so the first argument is on top...
-			memcpy(
+			memcpy( //USES CORRECT STACKPOINTER- INPUT
 				&v, 
 				&vm_stack[vm_stackpointer-1].smalldata, 
 				POINTER_SIZE
 			);
-			memcpy(
+			memcpy( //USES CORRECT STACKPOINTER- INPUT
 				&sz, 
 				&vm_stack[vm_stackpointer-2].smalldata, 
 				8
 			);
 			v = impl_builtin_realloc(v,sz);
 			
-			memcpy(
+			memcpy( //USES CORRECT STACKPOINTER- OUTPUT
 				&vm_stack[saved_vstack_pointer-1].smalldata, 
 				&v, 
 				POINTER_SIZE
@@ -2075,13 +2076,13 @@ void do_expr(expr_node* ee){
 			uint64_t sz;
 			//remember: arguments are backwards on the stack! so the first argument is on top...
 			
-			memcpy(
+			memcpy( //USES CORRECT STACKPOINTER- INPUT
 				&v, 
 				&vm_stack[vm_stackpointer-1].smalldata, 
 				POINTER_SIZE
 			);
 			sz = impl_builtin_type_getsz(v);
-			memcpy(
+			memcpy( //USES CORRECT STACKPOINTER- OUTPUT
 				&vm_stack[saved_vstack_pointer-1].smalldata, 
 				&sz, 
 				8
@@ -2092,13 +2093,13 @@ void do_expr(expr_node* ee){
 			uint64_t sz;
 			//remember: arguments are backwards on the stack! so the first argument is on top...
 			
-			memcpy(
+			memcpy( //USES CORRECT STACKPOINTER- INPUT
 				&sz, 
 				&vm_stack[vm_stackpointer-1].smalldata, 
 				8
 			);
 			sz = impl_builtin_struct_metadata(sz);
-			memcpy(
+			memcpy( //USES CORRECT STACKPOINTER- OUTPUT
 				&vm_stack[saved_vstack_pointer-1].smalldata, 
 				&sz, 
 				8
@@ -2109,14 +2110,14 @@ void do_expr(expr_node* ee){
 			char* v;
 			//remember: arguments are backwards on the stack! so the first argument is on top...
 			
-			memcpy(
+			memcpy( //USES CORRECT STACKPOINTER- INPUT
 				&v, 
 				&vm_stack[vm_stackpointer-1].smalldata, 
 				POINTER_SIZE
 			);
 			v = impl_builtin_strdup(v);
 			
-			memcpy(
+			memcpy( //USES CORRECT STACKPOINTER- OUTPUT
 				&vm_stack[saved_vstack_pointer-1].smalldata, 
 				&v, 
 				POINTER_SIZE
@@ -2128,7 +2129,7 @@ void do_expr(expr_node* ee){
 			char* v;
 			//remember: arguments are backwards on the stack! so the first argument is on top...
 			
-			memcpy(
+			memcpy( //USES CORRECT STACKPOINTER- INPUT
 				&v, 
 				&vm_stack[vm_stackpointer-1].smalldata, 
 				POINTER_SIZE
@@ -2142,7 +2143,7 @@ void do_expr(expr_node* ee){
 			int32_t v;
 			//remember: arguments are backwards on the stack! so the first argument is on top...
 			
-			memcpy(
+			memcpy( //USES CORRECT STACKPOINTER- INPUT
 				&v, 
 				&vm_stack[vm_stackpointer-1].smalldata, 
 				4
@@ -2156,7 +2157,7 @@ void do_expr(expr_node* ee){
 		if(streq(ee->symname, "__builtin_get_ast")){
 			char* v;
 			v = (char*) impl_builtin_get_ast();
-			memcpy(
+			memcpy( //USES CORRECT STACKPOINTER- OUTPUT
 				&vm_stack[saved_vstack_pointer-1].smalldata, 
 				&v, 
 				POINTER_SIZE
@@ -2167,7 +2168,7 @@ void do_expr(expr_node* ee){
 			char* v;
 			v = (char*) impl_builtin_peek();
 			
-			memcpy(
+			memcpy( //USES CORRECT STACKPOINTER- OUTPUT
 				&vm_stack[saved_vstack_pointer-1].smalldata, 
 				&v, 
 				POINTER_SIZE
@@ -2178,7 +2179,7 @@ void do_expr(expr_node* ee){
 			char* v;
 			v = (char*) impl_builtin_getnext();
 			
-			memcpy(
+			memcpy( //USES CORRECT STACKPOINTER- OUTPUT
 				&vm_stack[saved_vstack_pointer-1].smalldata, 
 				&v, 
 				POINTER_SIZE
@@ -2189,10 +2190,10 @@ void do_expr(expr_node* ee){
 			char* v;
 			//remember: arguments are backwards on the stack! so the first argument is on top...
 			
-			//memcpy(&v, &vm_stack[vm_stackpointer-1].smalldata, 4);
+			
 			v = (char*) impl_builtin_consume();
 			
-			memcpy(
+			memcpy( //USES CORRECT STACKPOINTER- OUTPUT
 				&vm_stack[saved_vstack_pointer-1].smalldata, 
 				&v, 
 				POINTER_SIZE
@@ -2203,7 +2204,7 @@ void do_expr(expr_node* ee){
 			char* v;
 			//remember: arguments are backwards on the stack! so the first argument is on top...
 			
-			memcpy(
+			memcpy( //USES CORRECT STACKPOINTER- INPUT
 				&v, 
 				&vm_stack[vm_stackpointer-1].smalldata, 
 				POINTER_SIZE
@@ -2217,17 +2218,17 @@ void do_expr(expr_node* ee){
 			char* v;
 			uint64_t q;
 			uint64_t sz;
-			memcpy(
+			memcpy( //USES CORRECT STACKPOINTER- INPUT
 				&v, 
 				&vm_stack[vm_stackpointer-1].smalldata, 
 				POINTER_SIZE
 			);
-			memcpy(
+			memcpy( //USES CORRECT STACKPOINTER- INPUT
 				&q, 
 				&vm_stack[vm_stackpointer-2].smalldata, 
 				8
 			);
-			memcpy(
+			memcpy( //USES CORRECT STACKPOINTER- INPUT
 				&sz, 
 				&vm_stack[vm_stackpointer-3].smalldata, 
 				8
@@ -2240,12 +2241,12 @@ void do_expr(expr_node* ee){
 			uint64_t sz;
 			//remember: arguments are backwards on the stack! so the first argument is on top...
 			
-			memcpy(
+			memcpy( //USES CORRECT STACKPOINTER- INPUT
 				&v, 
 				&vm_stack[vm_stackpointer-1].smalldata, 
 				POINTER_SIZE
 			);
-			memcpy(
+			memcpy( //USES CORRECT STACKPOINTER- INPUT
 				&sz, 
 				&vm_stack[vm_stackpointer-2].smalldata, 
 				8
@@ -2260,14 +2261,14 @@ void do_expr(expr_node* ee){
 			int32_t q;
 			//remember: arguments are backwards on the stack! so the first argument is on top...
 			
-			memcpy(
+			memcpy( //USES CORRECT STACKPOINTER- INPUT
 				&v, 
 				&vm_stack[vm_stackpointer-1].smalldata, 
 				POINTER_SIZE
 			);
 			//memcpy(&q, &vm_stack[vm_stackpointer-2].smalldata, 4);
 			q = impl_builtin_open_ofile(v);
-			memcpy(
+			memcpy( //USES CORRECT STACKPOINTER- OUTPUT
 				&vm_stack[saved_vstack_pointer-1].smalldata, 
 				&q, 
 				4
@@ -2280,18 +2281,21 @@ void do_expr(expr_node* ee){
 			char* zz;
 			//remember: arguments are backwards on the stack! so the first argument is on top...
 			
-			memcpy(
+			//Notice how INPUTS use vm_stackpointer,
+			//but the OUTPUT uses saved_vstack_pointer?
+			memcpy( //USES CORRECT STACKPOINTER- INPUT
 				&v, 
 				&vm_stack[vm_stackpointer-1].smalldata, 
 				POINTER_SIZE
 			);
-			memcpy(
+			memcpy( //USES CORRECT STACKPOINTER- INPUT
                 &zz, 
                 &vm_stack[vm_stackpointer-2].smalldata, 
                 POINTER_SIZE
             );
+            
 			q = impl_builtin_read_file(v, zz);
-			memcpy(
+			memcpy( //USES CORRECT STACKPOINTER- OUTPUT
 				&vm_stack[saved_vstack_pointer-1].smalldata, 
 				&q, 
 				POINTER_SIZE
@@ -2303,14 +2307,14 @@ void do_expr(expr_node* ee){
 			unsigned char* q;
 			//remember: arguments are backwards on the stack! so the first argument is on top...
 			
-			memcpy(
+			memcpy( //USES CORRECT STACKPOINTER- INPUT
 				&v, 
 				&vm_stack[vm_stackpointer-1].smalldata, 
 				POINTER_SIZE
 			);
 			//memcpy(&q, &vm_stack[vm_stackpointer-2].smalldata, 4);
 			q = impl_builtin_retrieve_sym_ptr(v);
-			memcpy(
+			memcpy( //USES CORRECT STACKPOINTER- OUTPUT
 				&vm_stack[saved_vstack_pointer-1].smalldata, 
 				&q, 
 				POINTER_SIZE
@@ -2322,14 +2326,14 @@ void do_expr(expr_node* ee){
 			unsigned char* q;
 			//remember: arguments are backwards on the stack! so the first argument is on top...
 			
-			memcpy(
+			memcpy( //USES CORRECT STACKPOINTER- INPUT
 				&v, 
 				&vm_stack[vm_stackpointer-1].smalldata, 
 				POINTER_SIZE
 			);
 			//memcpy(&q, &vm_stack[vm_stackpointer-2].smalldata, 4);
 			q = impl_builtin_strll_dupe(v);
-			memcpy(
+			memcpy( //USES CORRECT STACKPOINTER- OUTPUT
 				&vm_stack[saved_vstack_pointer-1].smalldata, 
 				&q, 
 				POINTER_SIZE
@@ -2341,14 +2345,14 @@ void do_expr(expr_node* ee){
 			unsigned char* q;
 			//remember: arguments are backwards on the stack! so the first argument is on top...
 			
-			memcpy(
+			memcpy( //USES CORRECT STACKPOINTER- INPUT
 				&v, 
 				&vm_stack[vm_stackpointer-1].smalldata, 
 				POINTER_SIZE
 			);
 			//memcpy(&q, &vm_stack[vm_stackpointer-2].smalldata, 4);
 			q = impl_builtin_strll_dupell(v);
-			memcpy(
+			memcpy( //USES CORRECT STACKPOINTER- OUTPUT
 				&vm_stack[saved_vstack_pointer-1].smalldata, 
 				&q, 
 				POINTER_SIZE
@@ -2361,7 +2365,11 @@ void do_expr(expr_node* ee){
 		}
 		if(streq(ee->symname, "__builtin_validate_function")){
 			char* v;
-			memcpy(&v, &vm_stack[vm_stackpointer-1].smalldata, POINTER_SIZE);
+			memcpy(//USES CORRECT STACKPOINTER- INPUT
+			    &v, 
+			    &vm_stack[vm_stackpointer-1].smalldata, 
+			    POINTER_SIZE
+			);
 			impl_builtin_validate_function(v);
 			goto end_of_builtin_call;
 		}
@@ -2369,21 +2377,23 @@ void do_expr(expr_node* ee){
 			char* a;
 			char* b;
 			uint64_t c;
+			//USES CORRECT STACKPOINTER- INPUT
 			memcpy(&a, &vm_stack[vm_stackpointer-1].smalldata, POINTER_SIZE);
 			memcpy(&b, &vm_stack[vm_stackpointer-2].smalldata, POINTER_SIZE);
 			memcpy(&c, &vm_stack[vm_stackpointer-3].smalldata, 8);
+			
 			impl_builtin_memcpy(a,b,c);
 			goto end_of_builtin_call;
 		}
 		if(streq(ee->symname, "__builtin_utoa")){
 			char* buf;
 			uint64_t i;
-			memcpy(
+			memcpy( //USES CORRECT STACKPOINTER- INPUT
 				&buf, 
 				&vm_stack[vm_stackpointer-1].smalldata, 
 				POINTER_SIZE
 			);
-			memcpy(
+			memcpy( //USES CORRECT STACKPOINTER- INPUT
 				&i, 
 				&vm_stack[vm_stackpointer-2].smalldata, 
 				8
@@ -2394,12 +2404,12 @@ void do_expr(expr_node* ee){
 		if(streq(ee->symname, "__builtin_itoa")){
 			char* buf;
 			int64_t i;
-			memcpy(
+			memcpy( //USES CORRECT STACKPOINTER- INPUT
 				&buf, 
 				&vm_stack[vm_stackpointer-1].smalldata, 
 				POINTER_SIZE
 			);
-			memcpy(
+			memcpy( //USES CORRECT STACKPOINTER- INPUT
 				&i, 
 				&vm_stack[vm_stackpointer-2].smalldata, 
 				8
@@ -2410,12 +2420,12 @@ void do_expr(expr_node* ee){
 		if(streq(ee->symname, "__builtin_ftoa")){
 			char* buf;
 			double i;
-			memcpy(
+			memcpy(//USES CORRECT STACKPOINTER- INPUT
 				&buf, 
 				&vm_stack[vm_stackpointer-1].smalldata, 
 				POINTER_SIZE
 			);
-			memcpy(
+			memcpy(//USES CORRECT STACKPOINTER- INPUT
 				&i, 
 				&vm_stack[vm_stackpointer-2].smalldata, 
 				8
@@ -2426,13 +2436,13 @@ void do_expr(expr_node* ee){
 		if(streq(ee->symname, "__builtin_atof")){
 			char* buf;
 			double f;
-			memcpy(
+			memcpy(//USES CORRECT STACKPOINTER- INPUT
 				&buf, 
 				&vm_stack[vm_stackpointer-1].smalldata, 
 				POINTER_SIZE
 			);
 			f = impl_builtin_atof(buf);
-			memcpy(
+			memcpy(//USES CORRECT STACKPOINTER- OUTPUT
 				&vm_stack[saved_vstack_pointer-1].smalldata, 
 				&f, 
 				8
@@ -2442,13 +2452,13 @@ void do_expr(expr_node* ee){
 		if(streq(ee->symname, "__builtin_atoi")){
 			char* buf;
 			int64_t f;
-			memcpy(
+			memcpy(//USES CORRECT STACKPOINTER- INPUT
 				&buf, 
 				&vm_stack[vm_stackpointer-1].smalldata, 
 				POINTER_SIZE
 			);
 			f = impl_builtin_atoi(buf);
-			memcpy(
+			memcpy(//USES CORRECT STACKPOINTER- OUTPUT
 				&vm_stack[saved_vstack_pointer-1].smalldata, 
 				&f, 
 				8
@@ -2458,13 +2468,13 @@ void do_expr(expr_node* ee){
 		if(streq(ee->symname, "__builtin_atou")){
 			char* buf;
 			uint64_t f;
-			memcpy(
+			memcpy(//USES CORRECT STACKPOINTER- INPUT
 				&buf, 
 				&vm_stack[vm_stackpointer-1].smalldata, 
 				POINTER_SIZE
 			);
 			f = impl_builtin_atou(buf);
-			memcpy(
+			memcpy(//USES CORRECT STACKPOINTER- OUTPUT
 				&vm_stack[saved_vstack_pointer-1].smalldata, 
 				&f, 
 				8
@@ -2474,7 +2484,7 @@ void do_expr(expr_node* ee){
 		if(streq(ee->symname, "__builtin_peek_is_fname")){
 			int32_t f;
 			f = impl_builtin_peek_is_fname();
-			memcpy(
+			memcpy(//USES CORRECT STACKPOINTER- OUTPUT
 				&vm_stack[saved_vstack_pointer-1].smalldata, 
 				&f, 
 				4
@@ -2484,13 +2494,13 @@ void do_expr(expr_node* ee){
 		if(streq(ee->symname, "__builtin_str_is_fname")){
 			char* buf;
 			int32_t f;
-			memcpy(
+			memcpy(//USES CORRECT STACKPOINTER- INPUT
 				&buf, 
 				&vm_stack[vm_stackpointer-1].smalldata, 
 				POINTER_SIZE
 			);
 			f = impl_builtin_str_is_fname(buf);
-			memcpy(
+			memcpy(//USES CORRECT STACKPOINTER- OUTPUT
 				&vm_stack[saved_vstack_pointer-1].smalldata, 
 				&f, 
 				4
@@ -2500,7 +2510,7 @@ void do_expr(expr_node* ee){
 		if(streq(ee->symname, "__builtin_parser_push_statement")){
 			char* f;
 			f = impl_builtin_parser_push_statement();
-			memcpy(
+			memcpy(//USES CORRECT STACKPOINTER- OUTPUT
 				&vm_stack[saved_vstack_pointer-1].smalldata, 
 				&f, 
 				POINTER_SIZE
@@ -2517,6 +2527,10 @@ void do_expr(expr_node* ee){
 		exit(1);
 		
 		end_of_builtin_call:;
+		//Question for myself: Why doesn't this pop the return value?
+		//We wrote it to vm_stack[vm_stack_pointer-1]...
+		//and for a builtin with a single argument and a return value,
+		//BECAUSE WE USE SAVED_VSTACK_POINTER FOR WRITING RETURN VALUES! AH!
 		for(i = 0; i < n_subexpressions; i++) {ast_vm_stack_pop();}
 		return;
 	}
