@@ -11,7 +11,8 @@
     serve it!
     
     The goal with Tbas is to allow you to refer to templated code
-    inside of a function seamlessly, with the template parameters in-place.
+    inside of a function seamlessly, with the template parameters in-place,
+    without having to instantiate the template at global scope first.
     
     
     SEMANTICS
