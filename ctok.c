@@ -5,9 +5,29 @@
 /*for realpath*/
 
 #ifdef WINDOWS
-#error "Operating system not supported- need to have function `realpath` implemented!!!"
+
+#ifdef USE_REALPATH
+#undef USE_REALPATH
 #endif
+
+#endif
+
+#ifdef USE_REALPATH
+
 #include <limits.h>
+#define REALPATH_IMPL realpath
+#else
+/*
+    Do not use realpath- simply implement
+    strdup
+*/
+char* REALPATH_IMPL(char* L, char* A){
+    (void)A;
+    return strdup(L);
+}
+
+#endif
+
 
 #include "targspecifics.h"
 #include "libmin.h"
@@ -63,12 +83,12 @@ unsigned long nguards = 0;
 void compile_unit(strll* _unit);
 
 
+#ifdef USE_REALPATH
 static char* filepath_to_directory(char* infilename){
 	char* retval;
 	unsigned long len;
-	
 	{
-    	retval = realpath(infilename,NULL);
+    	retval = REALPATH_IMPL(infilename,NULL);
     	if(!retval) return NULL;
     	len = strlen(retval);
     	len--;
@@ -80,6 +100,7 @@ static char* filepath_to_directory(char* infilename){
     	return retval;
 	}
 }
+#endif
 
 
 
@@ -1214,15 +1235,19 @@ static void tokenizer(
 						char* temp;
 						include_text->text[strlen(include_text->text)-1] = '\0';
 						temp = strcata(sys_include_dir,include_text->text+1);
-						file_to_include = realpath(temp, NULL);
+						file_to_include = REALPATH_IMPL(temp, NULL);
 						include_text->text[strlen(include_text->text)] = '>'; /*Must be longer*/
 						free(temp);
 					} else if(include_text->data ==(void*)2){
 						include_text->text[strlen(include_text->text)-1] = '\0';
 						//printf("Filename is %s\n", filename);
+#ifdef USE_REALPATH						
 						temp_include_manip = filepath_to_directory((char*)filename);
 						temp_include_manip = strcataf1(temp_include_manip,include_text->text + 1);
-						file_to_include = realpath(temp_include_manip, NULL);
+#else
+                        temp_include_manip = strdup(include_text->text+1);
+#endif
+						file_to_include = REALPATH_IMPL(temp_include_manip, NULL);
 						include_text->text[strlen(include_text->text)] = '"';
 						free(temp_include_manip);
 					} else {
@@ -1861,7 +1886,7 @@ int main(int argc, char** argv){
 	
 	{
 	    {
-		    t = realpath(infilename, NULL);
+		    t = REALPATH_IMPL(infilename, NULL);
 		} 
 		if(!t) {
 			puts("\r\nCannot find file realpath!\n");
