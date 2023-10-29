@@ -143,8 +143,9 @@ int impl_builtin_open_ofile(char* fname){
 	return ofile != NULL;
 }
 
-char* impl_builtin_read_file(char* fname){
+char* impl_builtin_read_file(char* fname, char* zz){
     unsigned long l;
+    unsigned long long ll;
     FILE* ifile = fopen(fname, "rb");
     if(!ifile) {
         puts("<ERROR> Compilation dependency unmet. This file could not be opened:");
@@ -153,13 +154,14 @@ char* impl_builtin_read_file(char* fname){
         exit(1);
     }
     char* fcontents = read_file_into_alloced_buffer(ifile, &l);
-
+    ll = l;
     if(!fcontents) {
         puts("<INTERNAL ERROR> No file contents read-in from file:");
         fflush(stdout);
         puts(fname);
         exit(1);
     }
+    memcpy(zz, &ll, POINTER_SIZE);
     return fcontents;
 }
 
@@ -368,7 +370,7 @@ uint64_t get_builtin_nargs(char* s){
 	if(streq(s, "__builtin_emit")) return 2;
 	if(streq(s, "__builtin_open_ofile")) return 1;
 	if(streq(s, "__builtin_close_ofile")) return 0;
-	if(streq(s, "__builtin_read_file")) return 1;
+	if(streq(s, "__builtin_read_file")) return 2;
 	if(streq(s, "__builtin_get_ast")) return 0;
 	if(streq(s, "__builtin_consume")) return 0;
 	if(streq(s, "__builtin_gets")) return 2;
@@ -487,6 +489,7 @@ uint64_t get_builtin_arg2_type(char* s){
 	if(streq(s, "__builtin_emit")) return BUILTIN_PROTO_U64;
 	if(streq(s, "__builtin_gets")) return BUILTIN_PROTO_U64;
 	if(streq(s, "__builtin_realloc")) return BUILTIN_PROTO_U64;
+    if(streq(s, "__builtin_read_file")) return BUILTIN_PROTO_U64_PTR;
 	if(streq(s, "__builtin_memcpy")) return BUILTIN_PROTO_U8_PTR;
 	if(streq(s, "__builtin_memset")) return BUILTIN_PROTO_U64;
 

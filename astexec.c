@@ -2277,6 +2277,7 @@ void do_expr(expr_node* ee){
         if(streq(ee->symname, "__builtin_read_file")){
 			char* v;
 			char* q;
+			char* zz;
 			//remember: arguments are backwards on the stack! so the first argument is on top...
 			
 			memcpy(
@@ -2284,7 +2285,12 @@ void do_expr(expr_node* ee){
 				&vm_stack[vm_stackpointer-1].smalldata, 
 				POINTER_SIZE
 			);
-			q = impl_builtin_read_file(v);
+			memcpy(
+                &zz, 
+                &vm_stack[vm_stackpointer-2].smalldata, 
+                POINTER_SIZE
+            );
+			q = impl_builtin_read_file(v, zz);
 			memcpy(
 				&vm_stack[saved_vstack_pointer-1].smalldata, 
 				&q, 
