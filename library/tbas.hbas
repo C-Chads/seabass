@@ -70,6 +70,7 @@
         //write your worksheet's post-processing....
     ][
         //write code here which takes the template parameters
+        //as a proper set of strll bracket sequences.
         //and then says what to generate in the body...
     ]
     
