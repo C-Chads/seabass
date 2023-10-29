@@ -274,10 +274,12 @@ end
         cgstrll* temp
         for(temp = vars,temp != cast(cgstrll*)0, temp = temp.right)
             nvars++;
-            if(temp.text == cast(cgstrll*)0)
+            if(temp.text == cast(cgstrll*)0||
+                temp.d == CG_TOK_STRING
+                )
                 char[500] buf
                 __builtin_puts("WORKSHEET ERROR");
-                __builtin_puts("A variable without .text...");
+                __builtin_puts("A variable without .text, or a string...");
                 __builtin_puts("USE ONLY IDENTIFIERS!!!!");
                 __builtin_puts("The syntax is....");
                 __builtin_puts("@wksht myWorksheet [ [ put_some_code_here(variable);] [variable]]");
@@ -419,5 +421,281 @@ end
     return retval;
 ]
 
+/*
+    TODO: write a version of worksheet which does not create
+    a builder, but rather receives a set of tokens as input, and emits
+    a set of tokens as output...
+*/
 
 
+@mkbldrn wksht_fn 2 [
+
+    cgstr wksht_name
+    cgstrll dummy //for storing the inlist.
+    cgstrll* inwalker
+    cgstrll* code
+    cgstrll* vars
+    cgstrll* ppcode
+    u64 has_ppcode;
+    u64 nvars
+    dummy.d = 0;
+    has_ppcode = 0;
+    dummy.right = inlist:dupell();
+    //CODE
+    if(dummy.right.d != CG_TOK_IDENT)
+        char[500] buf
+        __builtin_puts("WORKSHEET AS FUNCTION ERROR");
+        __builtin_puts("You must provide a valid identifier for the worksheet's name.");
+        __builtin_puts("The syntax is....");
+        __builtin_puts("@wksht myWorksheet [ [ put_some_code_here(variable);] [variable]]");
+        __builtin_puts("Worksheet is in:");
+        __builtin_puts(dummy.right.filename);
+        __builtin_puts("On Line number:");
+        __builtin_itoa(buf, dummy.right.linenum);__builtin_puts(buf);
+        __builtin_puts("On Column number:");
+        __builtin_itoa(buf, dummy.right.colnum);__builtin_puts(buf);
+        __builtin_exit(1);
+    else
+        //a valid identifier was provided.
+        cgstrll* t1
+        cgstrll* t2
+        t2 = dummy.right.right;
+        t1 = dummy.right;
+        dummy.right = t2;
+        wksht_name.s = t1.text; //move.
+        __builtin_free(cast(u8*)t1);
+    end
+    //check that a square brace is present.
+    if(dummy.right.d != CG_TOK_OBRACK)
+        char[500] buf
+        __builtin_puts("WORKSHEET AS FUNCTION ERROR");
+        __builtin_puts("The second argument didn't start with brackets?!?!");
+        __builtin_puts("The syntax is....");
+        __builtin_puts("@wksht myWorksheet [ [ put_some_code_here(variable);] [variable]]");
+        __builtin_puts("Worksheet is in:");
+        __builtin_puts(dummy.right.filename);
+        __builtin_puts("On Line number:");
+        __builtin_itoa(buf, dummy.right.linenum);__builtin_puts(buf);
+        __builtin_puts("On Column number:");
+        __builtin_itoa(buf, dummy.right.colnum);__builtin_puts(buf);
+        __builtin_exit(1);
+    end
+    //remove brackets.
+    dummy.right = cg_tok_arglist_remove_brackets(dummy.right);
+    
+    //check that a square brace is present.
+    if(dummy.right.d != CG_TOK_OBRACK)
+        char[500] buf
+        __builtin_puts("WORKSHEET AS FUNCTION ERROR");
+        __builtin_puts("There is no code section?!?!");
+        __builtin_puts("The syntax is....");
+        __builtin_puts("@wksht myWorksheet [ [ put_some_code_here(variable);] [variable]]");
+        __builtin_puts("Worksheet is in:");
+        __builtin_puts(dummy.right.filename);
+        __builtin_puts("On Line number:");
+        __builtin_itoa(buf, dummy.right.linenum);__builtin_puts(buf);
+        __builtin_puts("On Column number:");
+        __builtin_itoa(buf, dummy.right.colnum);__builtin_puts(buf);
+        __builtin_exit(1);
+    end
+    
+    code = dummy:cg_token_foldout_arglist();
+    code = cg_tok_arglist_remove_brackets(code);
+    //check that the code exists.
+    //    @cg_bldr_ifnull [code]
+    if(code == 0)
+        char[500] buf
+        __builtin_puts("WORKSHEET AS FUNCTION ERROR");
+        __builtin_puts("CODE SECTION WAS EMPTY?!?! NANI?!?!");
+        __builtin_puts("The syntax is....");
+        __builtin_puts("@wksht myWorksheet [ [ put_some_code_here(variable);] [variable]]");
+        __builtin_puts("Worksheet is in:");
+        __builtin_puts(dummy.right.filename);
+        __builtin_puts("On Line number:");
+        __builtin_itoa(buf, dummy.right.linenum);__builtin_puts(buf);
+        __builtin_puts("On Column number:");
+        __builtin_itoa(buf, dummy.right.colnum);__builtin_puts(buf);
+        __builtin_exit(1);
+    end    
+    
+        //check that a square brace is present.
+    if(dummy.right.d != CG_TOK_OBRACK)
+        char[500] buf
+        __builtin_puts("WORKSHEET AS FUNCTION ERROR");
+        __builtin_puts("There is no vars section?!?!");
+        __builtin_puts("The syntax is....");
+        __builtin_puts("@wksht myWorksheet [ [ put_some_code_here(variable);] [variable]]");
+        __builtin_puts("Worksheet is in:");
+        __builtin_puts(dummy.right.filename);
+        __builtin_puts("On Line number:");
+        __builtin_itoa(buf, dummy.right.linenum);__builtin_puts(buf);
+        __builtin_puts("On Column number:");
+        __builtin_itoa(buf, dummy.right.colnum);__builtin_puts(buf);
+        __builtin_exit(1);
+    end
+    vars = dummy:cg_token_foldout_arglist();
+    vars = cg_tok_arglist_remove_brackets(vars);
+
+    u64 wkshtid
+    nvars = 0;
+    //traverse the list of variables
+    if(vars != cast(cgstrll*)0)
+        cgstrll* temp
+        for(temp = vars,temp != cast(cgstrll*)0, temp = temp.right)
+            nvars++;
+            if(temp.text == cast(cgstrll*)0 ||
+                temp.d == CG_TOK_STRING
+            )
+                char[500] buf
+                __builtin_puts("WORKSHEET AS FUNCTION ERROR");
+                __builtin_puts("A variable without .text...");
+                __builtin_puts("USE ONLY IDENTIFIERS!!!!");
+                __builtin_puts("The syntax is....");
+                __builtin_puts("@wksht myWorksheet [ [ put_some_code_here(variable);] [variable]]");
+                __builtin_puts("Worksheet is in:");
+                __builtin_puts(dummy.right.filename);
+                __builtin_puts("On Line number:");
+                __builtin_itoa(buf, dummy.right.linenum);__builtin_puts(buf);
+                __builtin_puts("On Column number:");
+                __builtin_itoa(buf, dummy.right.colnum);__builtin_puts(buf);
+                __builtin_exit(1);
+            end
+            //this is moved.
+            cg_worksheet_template ttt
+            ttt.template_code = code;
+            ttt.var_list = vars;
+            cg_worksheet_push_template(ttt);
+            //assign wksht id
+            wkshtid = ncg_worksheet_templates-1;
+        end
+    else
+        //this is moved.
+        cg_worksheet_template ttt
+        ttt.template_code = code;
+        ttt.var_list = 0; //null!
+        cg_worksheet_push_template(ttt);
+        //assign wksht id
+        wkshtid = ncg_worksheet_templates-1;
+    end
+    //@ifnotnull [dummy.right]
+    if(dummy.right != 0)
+        //there is a ppcode section.
+        has_ppcode = 1;
+        if(dummy.right.d != CG_TOK_OBRACK)
+            char[500] buf
+            __builtin_puts("WORKSHEET ERROR");
+            __builtin_puts("post processing code section does not start with a square bracket!!!");
+            __builtin_puts("The syntax is....");
+            __builtin_puts("@wksht myWorksheet [ [ put_some_code_here(variable);] [variable] [myPostProcessingCode();]]");
+            __builtin_puts("Worksheet is in:");
+            __builtin_puts(dummy.right.filename);
+            __builtin_puts("On Line number:");
+            __builtin_itoa(buf, dummy.right.linenum);__builtin_puts(buf);
+            __builtin_puts("On Column number:");
+            __builtin_itoa(buf, dummy.right.colnum);__builtin_puts(buf);
+            __builtin_exit(1);
+        end
+        ppcode = dummy:cg_token_foldout_arglist();
+        ppcode = cg_tok_arglist_remove_brackets(ppcode);
+        //@ifnull [ppcode]
+        if(ppcode == 0)
+            char[500] buf
+            __builtin_puts("WORKSHEET ERROR");
+            __builtin_puts("post processing code section is NULL after removing brackets!");
+            __builtin_puts("If you want to have an empty ppcode section, OMIT it!");
+            __builtin_puts("The syntax is....");
+            __builtin_puts("@wksht myWorksheet [ [ put_some_code_here(variable);] [variable] [myPostProcessingCode();]]");
+            __builtin_puts("Worksheet is in:");
+            __builtin_puts(dummy.right.filename);
+            __builtin_puts("On Line number:");
+            __builtin_itoa(buf, dummy.right.linenum);__builtin_puts(buf);
+            __builtin_puts("On Column number:");
+            __builtin_itoa(buf, dummy.right.colnum);__builtin_puts(buf);
+            __builtin_exit(1);
+        end
+    end
+    
+    /*
+        ?TODO?
+        rewrite to not use a compiletime database, 
+        but create commands using cgstrll:to_cstr
+        
+        That will enable this portion of the metaprogramming library to serialize properly.
+        
+        HOWEVER...
+        it will probably run slower.
+        
+        So... what do I choose?
+    */
+    //we return retval.
+    @initqtok "fn"
+    @pushqtok "codegen"
+    @pushqtok [wksht_name.s]
+    @pushqtok "("
+    @pushqtok "cgstrll"
+    @pushqtok "*"
+    @pushqtok "inlist"
+    @pushqtok ")"
+    @pushqtok "->"
+    @pushqtok "cgstrll"
+    @pushqtok "*"
+    @pushqtok ":"
+    if(1)
+        char[50] buf
+        /*
+        __builtin_itoa(buf, nvars);
+        @pushqtok buf
+        */
+        //call our inner function
+        if(has_ppcode == 0)            
+                @pushqtok "return"
+                @pushqtok "cg_worksheet_inner"
+                @pushqtok "("
+                    __builtin_itoa(buf, wkshtid);
+                    @pushqtok buf
+                    @pushqtok ","
+                    if(vars != cast(cgstrll*)0)
+                        @pushqtok "inlist"
+                    else
+                        @pushqtok "cast"
+                        @pushqtok "("
+                        @pushqtok "cgstrll"
+                        @pushqtok "*"
+                        @pushqtok ")"
+                        @pushqtok "0"
+                    end
+                @pushqtok ")"
+                @pushqtok ";"
+        else
+            /*we have post-processing code!*/
+            @pushqtok "cgstrll"
+            @pushqtok "*"
+            @pushqtok "result"
+            
+            @pushqtok "result"
+            @pushqtok "="
+            @pushqtok "cg_worksheet_inner"
+            @pushqtok "("
+                __builtin_itoa(buf, wkshtid);
+                @pushqtok buf
+                @pushqtok ","
+                if(vars != cast(cgstrll*)0)
+                    @pushqtok "inlist"
+                else
+                    @pushqtok "cast"
+                    @pushqtok "("
+                    @pushqtok "cgstrll"
+                    @pushqtok "*"
+                    @pushqtok ")"
+                    @pushqtok "0"
+                end
+            @pushqtok ")"
+            @pushqtok ";"
+            @pushtok [ppcode]
+            @rwalk_skip ;
+        end
+        @pushqtok "end"
+    end
+    wksht_name:free(); //don't need this garbage
+    return retval;
+]

@@ -173,7 +173,6 @@ end
 
 fn codegen cg_tbas_replace_type_aliases(cgstrll* in):
     /*in-place modify in....*/
-    
     while(in != 0)
         if(in.d != CG_TOK_KEYWORD)
             goto nextiter
