@@ -84,7 +84,7 @@ unsigned char* impl_builtin_retrieve_sym_ptr(char* name)
         if(streq(symbol_table[i]->name, name))
         {
             if(symbol_table[i]->t.is_function){
-                return (unsigned char*)(symbol_table + i);
+                return (unsigned char*)((symbol_table + i)[0]);
             } else {
     			if(symbol_table[i]->is_incomplete){
     				puts("VM Error");
