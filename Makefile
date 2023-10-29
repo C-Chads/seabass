@@ -87,4 +87,4 @@ push: clean
 	git push
 
 clean:
-	rm -f *.exe *.out *.bin *.o cbas cbas_dirty cbas_dbg cbas_clean cbas_tcc auto_out.c toc_test fib
+	rm -f *.exe *.out *.bin *.o cbas cbas_dirty cbas_pure cbas_dbg cbas_clean cbas_tcc auto_out.c toc_test fib
