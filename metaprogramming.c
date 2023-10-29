@@ -143,6 +143,26 @@ int impl_builtin_open_ofile(char* fname){
 	return ofile != NULL;
 }
 
+char* impl_builtin_read_file(char* fname){
+    unsigned long l;
+    FILE* ifile = fopen(fname, "rb");
+    if(!ifile) {
+        puts("<ERROR> Compilation dependency unmet. This file could not be opened:");
+        fflush(stdout);
+        puts(fname);
+        exit(1);
+    }
+    char* fcontents = read_file_into_alloced_buffer(ifile, &l);
+
+    if(!fcontents) {
+        puts("<INTERNAL ERROR> No file contents read-in from file:");
+        fflush(stdout);
+        puts(fname);
+        exit(1);
+    }
+    return fcontents;
+}
+
 void impl_builtin_close_ofile(){
 	if(!ofile) return;
 	if(ofile)fclose(ofile);
@@ -302,6 +322,7 @@ int is_builtin_name(char* s){
 	if(streq(s, "__builtin_emit")) return 1;
 	if(streq(s, "__builtin_open_ofile")) return 1;
 	if(streq(s, "__builtin_close_ofile")) return 1;
+	if(streq(s, "__builtin_read_file")) return 1;
 	if(streq(s, "__builtin_get_ast")) return 1;
 	if(streq(s, "__builtin_consume")) return 1;
 	if(streq(s, "__builtin_gets")) return 1;
@@ -347,6 +368,7 @@ uint64_t get_builtin_nargs(char* s){
 	if(streq(s, "__builtin_emit")) return 2;
 	if(streq(s, "__builtin_open_ofile")) return 1;
 	if(streq(s, "__builtin_close_ofile")) return 0;
+	if(streq(s, "__builtin_read_file")) return 1;
 	if(streq(s, "__builtin_get_ast")) return 0;
 	if(streq(s, "__builtin_consume")) return 0;
 	if(streq(s, "__builtin_gets")) return 2;
@@ -390,6 +412,7 @@ uint64_t get_builtin_retval(char* s){
 	if(streq(s, "__builtin_emit")) return BUILTIN_PROTO_VOID;
 	if(streq(s, "__builtin_open_ofile")) return BUILTIN_PROTO_I32;
 	if(streq(s, "__builtin_close_ofile")) return BUILTIN_PROTO_VOID;
+	if(streq(s, "__builtin_read_file")) return BUILTIN_PROTO_U8_PTR;
 	if(streq(s, "__builtin_get_ast")) return BUILTIN_PROTO_U64_PTR;
 	if(streq(s, "__builtin_consume")) return BUILTIN_PROTO_U64_PTR;
 	if(streq(s, "__builtin_gets")) return BUILTIN_PROTO_VOID;
@@ -431,6 +454,7 @@ uint64_t get_builtin_retval(char* s){
 uint64_t get_builtin_arg1_type(char* s){
 	if(streq(s, "__builtin_emit")) return BUILTIN_PROTO_U8_PTR;
 	if(streq(s, "__builtin_open_ofile")) return BUILTIN_PROTO_U8_PTR;
+    if(streq(s, "__builtin_read_file")) return BUILTIN_PROTO_U8_PTR;
 	if(streq(s, "__builtin_gets")) return BUILTIN_PROTO_U8_PTR;
 	if(streq(s, "__builtin_puts")) return BUILTIN_PROTO_U8_PTR;
 	if(streq(s, "__builtin_exit")) return BUILTIN_PROTO_I32;

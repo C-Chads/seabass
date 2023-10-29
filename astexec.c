@@ -2274,6 +2274,24 @@ void do_expr(expr_node* ee){
 			);
 			goto end_of_builtin_call;
 		}
+        if(streq(ee->symname, "__builtin_read_file")){
+			char* v;
+			char* q;
+			//remember: arguments are backwards on the stack! so the first argument is on top...
+			
+			memcpy(
+				&v, 
+				&vm_stack[vm_stackpointer-1].smalldata, 
+				POINTER_SIZE
+			);
+			q = impl_builtin_read_file(v);
+			memcpy(
+				&vm_stack[saved_vstack_pointer-1].smalldata, 
+				&q, 
+				POINTER_SIZE
+			);
+			goto end_of_builtin_call;
+		}
         if(streq(ee->symname, "__builtin_retrieve_sym_ptr")){
 			char* v;
 			unsigned char* q;

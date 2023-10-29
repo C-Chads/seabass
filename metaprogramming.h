@@ -50,6 +50,7 @@ void* impl_builtin_getnext();
 void impl_builtin_puts(char* s); //DONE
 void impl_builtin_gets(char* s, uint64_t sz); //DONE
 int impl_builtin_open_ofile(char* fname); //DONE
+char* impl_builtin_read_file(char* fname);
 void impl_builtin_close_ofile(); //DONE
 strll* impl_builtin_consume(); //DONE
 uint64_t impl_builtin_emit(char* data, uint64_t sz); //DONE
