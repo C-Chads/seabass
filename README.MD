@@ -189,6 +189,12 @@ Because of these "superfeatures" the following are all true with Cbas:
     * All "codegen" code executes inside Seabass's "AST executor". This execution is not particularly
         fast (it's significantly slower than python). This is only a real problem if you are trying
         to write compiletime virtualization layers.
+
+* Seabass is "Domain Complete"
+
+    Disregarding memory limitations (You might have issues compiling a 3 Gigabyte program...)
+    and file size constraints, there is at least one seabass program which can generate a given
+    program in another language.
     
 ## Answers to common concerns people have about programming languages
 
