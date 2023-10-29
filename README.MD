@@ -3,11 +3,72 @@ ______________________________________________________________
 ______________________________________________________________
 
 ![logo](logo.png)
+______________________________________________________________
 
-# THE SEABASS METAPROGRAMMING LANGUAGE
+Seabass is a public domain, self-retargeting, self-extending, 
+self-modifying metaprogramming language and general-purpose 
+metaprogramming tool.
 
-Seabass (or CBAS) is a small, portable, public domain general-purpose programming language which
-compiles into efficient C code.
+Let's talk about what that means, shall we?
+
+## Public Domain
+
+Seabass is a public domain dedication, so that your joy
+may be full. No attribution required.
+
+## Language
+
+Seabass is, fundamentally, a programming language. You can write
+software with it. The syntax of the language is fairly unique,
+however it is close cousins with Lua, BASIC, and C.
+
+## Tool
+
+Seabass is also a programming tool. Because of its nature, it is
+useful for more than just writing programs in its own language, 
+but also implementing your own programming languages.
+
+## General-Purpose
+
+Seabass aims to "fill the gap" for virtually every conceivable
+software-authorship use case. It is not a domain specific
+language.
+
+## Self-retargeting
+
+Seabass requires that the compilation unit write code to define how it
+should be compiled. This code is given virtually unrestricted access to
+the internals of the compiler and runs at compiletime. It is responsible
+for generating "target code" (such as machine code) using all of the functions,
+types, methods, and global variables in the unit.
+
+## Self-extending
+
+Seabass allows the definition of special `codegen` functions, methods, and
+global variables which exist exclusively at compiletime. 
+
+These functions, methods, and variables effectively extend the capabilities 
+of the compiler, and should be thought of as a natural extension of the
+compiler.
+
+## Self-modifying
+
+Seabass allows `codegen` code to manipulate the internal state of the
+compiler, including the abstract syntax tree (AST, the internal
+representation of a program) and token stream.
+
+## Metaprogramming
+
+Seabass includes a special operator (@) for invoking `codegen` functions
+to "take over" parsing. They can perform arbitrary manipulations of the
+program's source code (as represented in the token stream).
+
+In practice, this allows you to not only define entirely new syntaxes,
+language constructs, and abstractions, but entirely new programming languages.
+
+
+
+# Example program
 
 Here is a minimal complete example program, which you can find under 'library/toc_fib_example.cbas'
 
@@ -133,10 +194,7 @@ fn mutoa(char* dest, uint value):
 end
 ```
 
-If that was the end of it, then seabass would be little more than an interesting toy. A syntax
-sugar for C.
-
-However, seabass has several "superfeatures" which place it firmly amongst the "heavyweights":
+# Seabass Superfeatures
 
 1. Arbitrary compiletime execution. Seabass lets you write arbitrary code which runs at compiletime,
     called "codegen" code.
@@ -170,25 +228,6 @@ Because of these "superfeatures" the following are all true with Cbas:
     seabass (which is made much easier with the wide variety of metaprogramming tools available to
     you). This isn't just restricted to DSLs either. If you want a new, higher-level general-purpose
     programming language with features seabass doesn't have, you can write it in seabass.
-    
-* You can bypass almost any restriction seabass has.
-
-    If anything about seabass as a language or as a compiler bothers you, it is usually
-    possible to override or change it, from syntax annoyances to how commandline arguments
-    are parsed.
-    
-    There are some "hard" limitations of Seabass:
-    
-    * Obviously, seabass code is limited by the hardware it runs on. If you run seabass code on a slow
-        computer, it will run slowly.
-    
-    * It is not possible to create custom syntaxes within seabass which are whitespace-oriented-
-        at least, not without wrapping them in string literals. If your dream was to re-create python
-        inside of seabass, then... well... sorry!
-    
-    * All "codegen" code executes inside Seabass's "AST executor". This execution is not particularly
-        fast (it's significantly slower than python). This is only a real problem if you are trying
-        to write compiletime virtualization layers.
 
 * Seabass is "Domain Complete"
 
@@ -200,7 +239,8 @@ Because of these "superfeatures" the following are all true with Cbas:
 
 ### Is CBAS fast?
 
-It depends on what you compile CBAS code into. Cbas is self-retargeting, you see.
+It depends on what you compile CBAS code into. If you decide to compile
+Seabass into BASIC then it might not be very fast.
 
 If you're compiling to C the answer is "Yes".
 
@@ -245,61 +285,15 @@ and destructors.
 You can implement your own memory management schemes in higher level languages if you
 wish.
 
-### Are there any "gotchas"?
+### Are there any "gotchas"? 
 
-Yes, however they are almost entirely bikeshedding. Seabass gives you enormous flexibility and
-power with what you can make.
+I don't really think so. 
 
-I know of the following real "gotchas" with seabass, mostly surrounding the current compiler implementation:
-    
-    * The compiler itself assumes that the platform it is running on is a 64 bit system with byte-addressable
-        memory. So the compiler itself can't be compiled for retro computers.
-        
-    * The compiler implementation requires the `realpath` function, which comes from POSIX. This function
-        is not available on Windows, so either a supplementary implementation must be provided, or
-        the compiler itself must be modified to not require this function.
-        
-        It is used for handling include statements.
-        
-    * custom syntaxes in Seabass may not be whitespace-oriented... unless you want to write all your code
-        inside of a string literal.
-        
-    * `codegen` code in seabass is not very fast. it directly executes the AST, not even using a bytecode.
-    
-        I plan to implement a bytecode when I get around to making seabass self-hosting.
-    
-    * The compiler greedily over-allocates memory, especially at startup, reserving multiple megabytes.
-    
-        This shouldn't be a problem for any serious use, however I know it will drive software minimalists
-        absolutely bonkers.
+Interop with C is fairly trivial, and examples are provided.
 
-There are also some gotchas which are not really gotchas, but seem like they are:
-    
-    * there are no 128 bit integers or long doubles (10 byte floats). 
-
-        This is not really a gotcha, as it is still possible to write seabass code which uses
-        long doubles/128 bit integers by embedding their usage in the `asm` statement.
-        
-    * Structs/Unions are always passed by pointer, not by value, even if they are small.
-    
-        You optimization geeks might think this is a serious limitation, 
-        however my own testing has revealed that not only is this not true, but the opposite is
-        often the case- that seabass's pass-by-pointer convention can force your code
-        to be faster.
-        
-        It have found that it is sometimes faster to pass an 8 byte pointer to an 8 byte struct than
-        to pass the struct itself. Yeah.
-        
-        If you absolutely have to pass large objects by value, you can always subdivide your object
-        into 8 byte chunks and pass it as multiple arguments.
-        
-        (If you are writing a SIMD library, use 'inline')
-        
-        If seabass's AST (which requires pass-by-pointer conventions for structs) is
-        too limiting for you, you can write your own.
-        
-        So this is not really a gotcha.
-
+Compiletimes are typically much slower than C, however the
+increased development speed and quality should more than make
+up for it.
 
 ## ***For the love of Programming and Programmers***
 
@@ -309,17 +303,18 @@ https://github.com/gek169/seabass
 
 https://codeberg.org/gek/seabass
 
-All Glory to the Lord Jesus Christ, whose blessings I do not deserve,
-yet he loves me so much that I get them anyway. Amen.
+All Glory to the Lord Jesus Christ, whose blessings I do not deserve.
 
 # MANIFESTO
 
 For the maximum utilization of Man's God-given talents.
 
-# Theories / Design Principle
+# DOCUMENTATION
 
 see `doc.html` for the official "readable" documentation (in development)
 or run `cbas -m help` to view the manual pages.
+
+# Theories / Design Principle
 
 ## THEORY 1: YOU MUST BE ABLE TO CREATE ARBITRARY SYNTAXES
 
@@ -434,15 +429,14 @@ Well, it's a metaprogramming language. So, by definition, it looks however you w
 
 The project has advanced more and I can firmly say with authority...
 
-* The base level language is a mixture of C++, C, and Lua. It supports simple object oriented
-programming without inheritance, but doesn't automatically write constructors or destructors
-(it only calls ones you've already written).
+* The base level language is a mixture of Lua, Basic, C++, and C. It supports
+simple object oriented programming without inheritance.
 
 * Custom notations vary wildly depending on use-case. There is a running
 theme in my work that I tend to surround my custom notation code in square brackets `[]`
 for convenience of parsing.
 
-Notable core language syntax tidbits which make it "different" from C:
+Notable base-level language syntax tidbits which make it "different" from C:
 
 * SEABASS has support for automatic constructors and destructors. `ctor` and `dtor` taking in
     zero arguments and returning void each. These methods are not automatically used on arrays of structs, only
@@ -532,63 +526,33 @@ Notable core language syntax tidbits which make it "different" from C:
 
 ## Project state
 
-Seabass is advancing at a modest pace, not as quick as I'd like, in
-part because I am doing a lot of theory work. What are the best
-metaprogramming paradigms? How do I make metaprogramming as easy
-as possible? What are the general principles of metaprogramming?
+(UPDATED OCTOBER 29th 2023)
 
-Seabass has become a minimum viable product for metaprogramming now
-that it has a `toc` converter, but it has yet to truly supersede
-Rust or C++ in raw programming power. In order to advance to that
-point, SEABASS will require a standard template library and a
-full reflection of the C standard library. Additionally, I want to
-write a higher-level Rust-style language (which, unlike rust, will
-be easy for me to read and write).
+Seabass is advancing rapidly. If the blessings of God continue, the project
+should reach a "completed" state fairly soon
 
-Seabass is on the war path, but I cannot yet say that it is more 
-powerful than the juggernauts.
+### WHAT DOES COMPLETE MEAN?
 
-## The War Path
+Seabass must have:
 
-I am working on Seabass with the intent to make it more powerful than all
-other programming languages currently in large-scale production (even lisp).
+ [X] One complete implementation in C99 
+ 
+ [X] A reflection library
+ 
+ [X] A C code generator
+ 
+ [ ] A standard library
+ 
+ [X] Syntax highlighting files
 
-Here's the general plan:
+ [ ] A complete metaprogramming library
+ 
+ [ ] Multiple custom high-level general-purpose languages to replace languages like C++ and Rust.
+ 
+ [ ] A large set of domain specific languages
 
-1. Make metaprogramming in seabass easy
+## Project Vision
 
-    It has to be possible to create new compilers and metaprogramming tools in seabass with little effort,
-    
-    so that a person can have an idea and then implement it the same day.
-    
-2. Create new languages and tools within Seabass with abstractions that supersede those of
-    other languages.
-    
-    I have plans for meta-tools, libraries, and even entire programming languages (Such as OOPSY)
-    to write in/for Seabass, which should make using Seabass easy. This will make the language
-    more powerful than Rust.
-    
-    I believe that once OOPSY is finished, i can truly say that seabass is more powerful than
-    the "juggernauts" of our time.
-    
-3. Write documentation and tools for working with Seabass (code and projects) 
-    to make it accessible and easy, even for beginners.
-    
-    Notably, I want to make my own text editor, build system, and probably a project manager.
-    
-    This will give me a proper IDE for development in Seabass.
-    
-4. Port Seabass into itself.
-
-    I want seabass and all tools written in it to be self-hosting. The current compiler is
-    the bootstrap compiler.
-    
-    Using the power of seabass's metaprogramming and arbitrary abstractions, I should be
-    able to formally verify the correctness of this implementation, whereas the C99
-    implementation is virtually impossible to prove anything about.
-    
-    This would make seabass truly viable for "mission critical" work, such as life support
-    systems or aircraft system software.
 
     
 	
