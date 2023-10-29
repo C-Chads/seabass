@@ -4,7 +4,7 @@
 
 typedecl* type_table = NULL;
 typedecl_oop_metadata* oop_metadata = NULL;
-symdecl* symbol_table = NULL;
+symdecl** symbol_table = NULL;
 uint64_t* parsehook_table = NULL;
 scope** scopestack = NULL;
 stmt** loopstack = NULL;
@@ -30,6 +30,7 @@ uint64_t push_empty_metadata(){
     noop_metadata++;
     return noop_metadata-1;
 }
+
 
 //This function should only be called when the ctor or dtor are needed. It creates the
 //relationship.
@@ -58,16 +59,16 @@ void update_metadata(uint64_t declid){
     int found_ctor = 0;
     int found_dtor = 0;
     for(i = 0; i < (int64_t)nsymbols; i++){
-        if(symbol_table[i].t.is_function == 0) continue;
-        int is_ctor = streq(symbol_table[i].name, ctor_name);
-        int is_dtor = streq(symbol_table[i].name, dtor_name);
+        if(symbol_table[i]->t.is_function == 0) continue;
+        int is_ctor = streq(symbol_table[i]->name, ctor_name);
+        int is_dtor = streq(symbol_table[i]->name, dtor_name);
         if(!is_ctor && !is_dtor) continue;
         //it has the correct name, make sure it has the right number of arguments!
         if(
-            symbol_table[i].nargs != 1              || //Recall that a method takes itself as the first argument...
-            symbol_table[i].t.basetype != BASE_VOID ||
-            symbol_table[i].t.pointerlevel != 0     ||
-            symbol_table[i].t.arraylen != 0
+            symbol_table[i]->nargs != 1              || //Recall that a method takes itself as the first argument...
+            symbol_table[i]->t.basetype != BASE_VOID ||
+            symbol_table[i]->t.pointerlevel != 0     ||
+            symbol_table[i]->t.arraylen != 0
         ){
             puts("Object Oriented Programming Error!!!!");
             if(is_ctor)
@@ -78,7 +79,7 @@ void update_metadata(uint64_t declid){
             puts(type_table[declid].name);
             puts("but with an improper prototype.");
             puts("Ctor and dtor always take zero arguments, and return nothing.");
-            if(symbol_table[i].nargs == 0){
+            if(symbol_table[i]->nargs == 0){
                 puts("I can tell you have been using undefined behavior... Naughty!");
                 puts("User is invoking undefined behavior!");
                 exit(1);
@@ -127,7 +128,7 @@ int scope_has_label(scope* s, char* name){
 int unit_has_incomplete_symbols(){
 	uint64_t i;
 	for(i = 0; i < nsymbols; i++)
-		if(symbol_table[i].is_incomplete) return 1;
+		if(symbol_table[i]->is_incomplete) return 1;
 	
 	return 0;
 }
@@ -136,10 +137,10 @@ int unit_has_incomplete_symbols(){
 void unit_throw_if_had_incomplete(){
 	uint64_t i;
 	for(i = 0; i < nsymbols; i++)
-		if(symbol_table[i].is_incomplete)
-		if(symbol_table[i].is_codegen){
+		if(symbol_table[i]->is_incomplete)
+		if(symbol_table[i]->is_codegen){
 			puts("The global symbol:");
-			puts(symbol_table[i].name);
+			puts(symbol_table[i]->name);
 			puts("is codegen, and INCOMPLETE.");
 			puts("Please provide a compatible definition for it.");
 			parse_error("Error: Failure to define all symbols for compilation");
@@ -199,8 +200,8 @@ uint64_t peek_basetype(){
 	if(nsymbols > 0){
 		uint64_t i;
 		for(i = 0; i < nsymbols; i++)
-			if(symbol_table[i].t.is_function)
-				if(streq(symbol_table[i].name, peek()->text)){
+			if(symbol_table[i]->t.is_function)
+				if(streq(symbol_table[i]->name, peek()->text)){
 					return BASE_FUNCTION;
 				}
 	}

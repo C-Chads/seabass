@@ -22,4 +22,5 @@ typedef struct{
 
 void ast_execute_function(symdecl* s); //execute function in the AST VM.
 void ast_execute_expr_parsehook(symdecl* s, expr_node** targ);
-
+uint64_t ast_vm_stack_push_temporary();
+void ast_vm_stack_pop();

@@ -417,22 +417,22 @@ void astdump(){
 	unsigned long j = 0;
 	puts("~~GLOBAL SYMBOL TABLE~~");
 	for(i = 0; i < nsymbols; i++)
-		astdump_printsymbol(symbol_table + i, 1,0);
+		astdump_printsymbol((symbol_table + i)[0], 1,0);
 	puts("\n~~FUNCTION DUMP~~");
 	for(i=0; i < nsymbols; i++)
-	if(symbol_table[i].fbody)
-	if(symbol_table[i].t.is_function)
+	if(symbol_table[i]->fbody)
+	if(symbol_table[i]->t.is_function)
 	{
 
 		fputs("\n",stdout);
-		astdump_printsymbol(symbol_table+i,1,0);
+		astdump_printsymbol((symbol_table+i)[0],1,0);
 
 		fputs("\nargs:",stdout);
-		for(j = 0; j < symbol_table[i].nargs; j++){
+		for(j = 0; j < symbol_table[i]->nargs; j++){
 			fputs("\n",stdout);
 			do_indent(2);
-			astdump_print_type(symbol_table[i].fargs[j][0],1);
+			astdump_print_type(symbol_table[i]->fargs[j][0],1);
 		}
-		astdump_printscope(symbol_table[i].fbody,4);
+		astdump_printscope(symbol_table[i]->fbody,4);
 	}
 }

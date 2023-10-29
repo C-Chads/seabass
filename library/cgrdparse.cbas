@@ -119,10 +119,24 @@ end
 
 
 fn codegen codegen_main():
-    __builtin_exit(0);
+    //__builtin_exit(0);
     my_int_name = 3;
     if(my_int_name == 3)
         __builtin_puts("Hello from autocoding!");
     end
+    @global
+    fn codegen print_stuff():
+        __builtin_puts("Hello!");
+        @global
+        fn codegen print_stuff2():
+            __builtin_puts("Hello Again!");
+        end
+        ;    
+    end
+    __builtin_puts("Finality!!");
+    print_stuff();
+
+    print_stuff2();
+
     ;
 end

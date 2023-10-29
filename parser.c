@@ -457,7 +457,7 @@ void compile_unit(strll* _unit){
 				require(peek()->data == TOK_IDENT, "__cbas_run_fn requires identifier");
 				t = strdup(peek()->text);
 				for(i = 0; i < nsymbols; i++){
-					if(streq(t, symbol_table[i].name)){
+					if(streq(t, symbol_table[i]->name)){
 						id = i;
 						found = 1;
 						break;
@@ -466,14 +466,17 @@ void compile_unit(strll* _unit){
 				require(found != 0, "Could not find __cbas_run_fn function");
 				free(t);
 				consume();
-				require(symbol_table[id].t.is_function != 0, "__cbas_run_fn- must be a function.");
-				require(symbol_table[id].is_codegen == 1, "__cbas_run_fn- must be is_codegen.");
-				require(symbol_table[id].is_incomplete == 0, "__cbas_run_fn- definition must be completed.");
-				require(symbol_table[id].fbody != NULL, "__cbas_run_fn- function body must not be null.");
-				require(symbol_table[id].t.basetype == BASE_VOID, "__cbas_run_fn- must return nothing!");
-				require(symbol_table[id].t.pointerlevel == 0 , "__cbas_run_fn- must return nothing");
-				require(symbol_table[id].nargs == 0, "__cbas_run_fn- must take zero arguments. That's how I call it.");
-				ast_execute_function(symbol_table+id);
+				require(symbol_table[id]->t.is_function != 0, "__cbas_run_fn- must be a function.");
+				require(symbol_table[id]->is_codegen == 1, "__cbas_run_fn- must be is_codegen.");
+				require(symbol_table[id]->is_incomplete == 0, "__cbas_run_fn- definition must be completed.");
+				require(symbol_table[id]->fbody != NULL, "__cbas_run_fn- function body must not be null.");
+				require(symbol_table[id]->t.basetype == BASE_VOID, "__cbas_run_fn- must return nothing!");
+				require(symbol_table[id]->t.pointerlevel == 0 , "__cbas_run_fn- must return nothing");
+				require(symbol_table[id]->nargs == 0, "__cbas_run_fn- must take zero arguments. That's how I call it.");
+				//ast_execute_function(symbol_table+id);
+                ast_vm_stack_push_temporary();
+		        ast_execute_function((symbol_table+id)[0]);
+		        ast_vm_stack_pop();
 				continue;
 		}
 
@@ -495,7 +498,7 @@ void compile_unit(strll* _unit){
 				t = strcataf2("parsehook_",t);
 				for(i = 0; i < nparsehooks; i++){
 				    uint64_t the_parsehook = parsehook_table[i];
-					if(streq(symbol_table[the_parsehook].name, t)){
+					if(streq(symbol_table[the_parsehook]->name, t)){
 						id = the_parsehook;
 						found = 1;
 						break;
@@ -504,9 +507,13 @@ void compile_unit(strll* _unit){
 				require(found != 0, "Could not find parsehook_ function");
 				free(t);
 				consume();
-				require(symbol_table[id].is_incomplete == 0, "parsehook definition must be completed.");
-				require(symbol_table[id].fbody != NULL, "parsehook function body must not be null.");
-				ast_execute_function(symbol_table+id);
+				require(symbol_table[id]->is_incomplete == 0, "parsehook definition must be completed.");
+				require(symbol_table[id]->fbody != NULL, "parsehook function body must not be null.");
+				
+				//ast_execute_function(symbol_table+id);
+				ast_vm_stack_push_temporary();
+		        ast_execute_function((symbol_table+id)[0]);
+		        ast_vm_stack_pop();
 				continue;
 			}
 
@@ -629,14 +636,18 @@ void compile_unit(strll* _unit){
 	//search for the codegen function and try to execute it.
 	{unsigned long i;
 		for(i = 0; i < nsymbols; i++){
-			if(streq(symbol_table[i].name, "codegen_main")){
-				require(symbol_table[i].is_codegen > 0, "codegen_main must be declared codegen.");
-				require(symbol_table[i].t.is_function, "codegen_main must be a function.");
-				require(symbol_table[i].t.basetype == BASE_VOID, "codegen_main must return nothing!");
-				require(symbol_table[i].t.pointerlevel == 0 , "codegen_main must return nothing, not even a pointer to nothing!");
-				require(symbol_table[i].nargs == 0, "codegen_main must take zero arguments. That's how I call it.");
+			if(streq(symbol_table[i]->name, "codegen_main")){
+				require(symbol_table[i]->is_codegen > 0, "codegen_main must be declared codegen.");
+				require(symbol_table[i]->t.is_function, "codegen_main must be a function.");
+				require(symbol_table[i]->t.basetype == BASE_VOID, "codegen_main must return nothing!");
+				require(symbol_table[i]->t.pointerlevel == 0 , "codegen_main must return nothing, not even a pointer to nothing!");
+				require(symbol_table[i]->nargs == 0, "codegen_main must take zero arguments. That's how I call it.");
 				//IT'S TIME!!!!
-				ast_execute_function(symbol_table+i);
+				//ast_execute_function(symbol_table+i);
+				ast_vm_stack_push_temporary();
+		        //ast_execute_function(symbol_table+i);
+		        ast_execute_function((symbol_table+i)[0]);
+		        ast_vm_stack_pop();
 				exit(0);
 			}
 		}
@@ -657,7 +668,7 @@ if(peek()->data == TOK_IDENT)
 				require(peek()->data == TOK_IDENT, "__cbas_run_fn requires identifier");
 				t = strdup(peek()->text);
 				for(i = 0; i < nsymbols; i++){
-					if(streq(t, symbol_table[i].name)){
+					if(streq(t, symbol_table[i]->name)){
 						id = i;
 						found = 1;
 						break;
@@ -666,14 +677,17 @@ if(peek()->data == TOK_IDENT)
 				require(found != 0, "Could not find __cbas_run_fn function");
 				free(t);
 				consume();
-				require(symbol_table[id].t.is_function != 0, "__cbas_run_fn- must be a function.");
-				require(symbol_table[id].is_codegen == 1, "__cbas_run_fn- must be is_codegen.");
-				require(symbol_table[id].is_incomplete == 0, "__cbas_run_fn- definition must be completed.");
-				require(symbol_table[id].fbody != NULL, "__cbas_run_fn- function body must not be null.");
-				require(symbol_table[id].t.basetype == BASE_VOID, "__cbas_run_fn- must return nothing!");
-				require(symbol_table[id].t.pointerlevel == 0 , "__cbas_run_fn- must return nothing");
-				require(symbol_table[id].nargs == 0, "__cbas_run_fn- must take zero arguments. That's how I call it.");
-				ast_execute_function(symbol_table+id);
+				require(symbol_table[id]->t.is_function != 0, "__cbas_run_fn- must be a function.");
+				require(symbol_table[id]->is_codegen == 1, "__cbas_run_fn- must be is_codegen.");
+				require(symbol_table[id]->is_incomplete == 0, "__cbas_run_fn- definition must be completed.");
+				require(symbol_table[id]->fbody != NULL, "__cbas_run_fn- function body must not be null.");
+				require(symbol_table[id]->t.basetype == BASE_VOID, "__cbas_run_fn- must return nothing!");
+				require(symbol_table[id]->t.pointerlevel == 0 , "__cbas_run_fn- must return nothing");
+				require(symbol_table[id]->nargs == 0, "__cbas_run_fn- must take zero arguments. That's how I call it.");
+				//ast_execute_function(symbol_table+id);
+                ast_vm_stack_push_temporary();
+		        ast_execute_function((symbol_table+id)[0]);
+		        ast_vm_stack_pop();
 				return;
 		}
 		if(peek()->data == TOK_SEMIC){
@@ -694,7 +708,7 @@ if(peek()->data == TOK_IDENT)
 				t = strcataf2("parsehook_",t);
 				for(i = 0; i < nparsehooks; i++){
 				    uint64_t the_parsehook = parsehook_table[i];
-					if(streq(symbol_table[the_parsehook].name, t)){
+					if(streq(symbol_table[the_parsehook]->name, t)){
 						id = the_parsehook;
 						found = 1;
 						break;
@@ -703,9 +717,12 @@ if(peek()->data == TOK_IDENT)
 				require(found != 0, "Could not find parsehook_ function");
 				free(t);
 				consume();
-				require(symbol_table[id].is_incomplete == 0, "parsehook definition must be completed.");
-				require(symbol_table[id].fbody != NULL, "parsehook function body must not be null.");
-				ast_execute_function(symbol_table+id);
+				require(symbol_table[id]->is_incomplete == 0, "parsehook definition must be completed.");
+				require(symbol_table[id]->fbody != NULL, "parsehook function body must not be null.");
+				//ast_execute_function(symbol_table+id);
+		        ast_vm_stack_push_temporary();
+        		ast_execute_function((symbol_table+id)[0]);
+        		ast_vm_stack_pop();
 				return;
 			}
     if(peek_match_keyw("data")){
@@ -735,7 +752,6 @@ if(peek()->data == TOK_IDENT)
     				if(streq(peek()->text, "__CBAS_TARGET_WORDSZ")){
     					uint64_t a;
     					consume();
-    					peek_always_not_null = 1;
     					require(peek()->data == TOK_INT_CONST, "Expected integer constant- target word size.");
     					a = matou(peek()->text);
     					consume();
@@ -750,12 +766,10 @@ if(peek()->data == TOK_IDENT)
     					} else{
     						parse_error("Invalid target word size. Valid values are 64, 32, 16, and 8. 128 bit is not supported.");
     					}
-    					peek_always_not_null = 0;
     					return;
     				} else if(streq(peek()->text, "__CBAS_TARGET_MAX_FLOAT")){
     					uint64_t a;
     					consume();
-    					peek_always_not_null = 1;
     					require(peek()->data == TOK_INT_CONST, "Expected integer constant- target max float size.");
     					a = matou(peek()->text);
     					consume();
@@ -766,7 +780,6 @@ if(peek()->data == TOK_IDENT)
     					} else{
     						parse_error("Invalid target max float size. 64 and 32 bit are allowed- no 10 byte floats!");
     					}
-    					peek_always_not_null = 0;
     					return;
     				} else if(streq(peek()->text, "__CBAS_TARGET_DISABLE_FLOAT")){
     					consume();
@@ -910,27 +923,27 @@ void parse_gvardecl(){
 		is_new_symbol = 0;
 		/*Check if it is an incomplete compatible declaration.*/
 		for(i = 0; i < nsymbols; i++){
-			if(streq(symbol_table[i].name, peek()->text)){
+			if(streq(symbol_table[i]->name, peek()->text)){
 				found = 1;
 				/*check for compatible declaration.*/
 				if(!is_predecl)
-					require(!!symbol_table[i].is_incomplete, "Attempted to redefine complete Global Variable.");
+					require(!!symbol_table[i]->is_incomplete, "Attempted to redefine complete Global Variable.");
 				
-				require(symbol_table[i].is_codegen == is_codegen,"Global Variable Predeclaration-definition mismatch (is_codegen)");
-				require(symbol_table[i].is_noexport == is_noexport,"Global Variable Predeclaration-definition mismatch (is_noexport)");
-				require(symbol_table[i].is_volatile == is_volatile,"Global Variable Predeclaration-definition mismatch (is_volatile)");
-				require(symbol_table[i].is_atomic == is_atomic,"Global Variable Predeclaration-definition mismatch (is_atomic)");
-				require(symbol_table[i].is_pub == is_pub,"Global Variable Predeclaration-definition mismatch (is_pub)");
-				require(symbol_table[i].t.basetype == t.basetype, "Global Variable Predeclaration-definition mismatch (basetype)");
-				require(symbol_table[i].t.pointerlevel == t.pointerlevel, "Global Variable Predeclaration-definition mismatch (pointerlevel)");
-				require(symbol_table[i].t.arraylen == t.arraylen, "Global Variable Predeclaration-definition mismatch (arraylen)");
-				require(symbol_table[i].t.is_function == t.is_function, "Global Variable Predeclaration-definition mismatch (is_function)");
-				require(symbol_table[i].t.is_lvalue == t.is_lvalue, "Global Variable Predeclaration-definition mismatch (is_lvalue)");
+				require(symbol_table[i]->is_codegen == is_codegen,"Global Variable Predeclaration-definition mismatch (is_codegen)");
+				require(symbol_table[i]->is_noexport == is_noexport,"Global Variable Predeclaration-definition mismatch (is_noexport)");
+				require(symbol_table[i]->is_volatile == is_volatile,"Global Variable Predeclaration-definition mismatch (is_volatile)");
+				require(symbol_table[i]->is_atomic == is_atomic,"Global Variable Predeclaration-definition mismatch (is_atomic)");
+				require(symbol_table[i]->is_pub == is_pub,"Global Variable Predeclaration-definition mismatch (is_pub)");
+				require(symbol_table[i]->t.basetype == t.basetype, "Global Variable Predeclaration-definition mismatch (basetype)");
+				require(symbol_table[i]->t.pointerlevel == t.pointerlevel, "Global Variable Predeclaration-definition mismatch (pointerlevel)");
+				require(symbol_table[i]->t.arraylen == t.arraylen, "Global Variable Predeclaration-definition mismatch (arraylen)");
+				require(symbol_table[i]->t.is_function == t.is_function, "Global Variable Predeclaration-definition mismatch (is_function)");
+				require(symbol_table[i]->t.is_lvalue == t.is_lvalue, "Global Variable Predeclaration-definition mismatch (is_lvalue)");
 				if(t.basetype == BASE_STRUCT){
-					require(symbol_table[i].t.structid == t.structid, "Global Variable Predeclaration-definition mismatch");
+					require(symbol_table[i]->t.structid == t.structid, "Global Variable Predeclaration-definition mismatch");
 				}
 				if(t.basetype == BASE_FUNCTION){
-					require(symbol_table[i].t.funcid == t.funcid, "Global Variable Predeclaration-definition mismatch (funcid)");
+					require(symbol_table[i]->t.funcid == t.funcid, "Global Variable Predeclaration-definition mismatch (funcid)");
 				}
 				symid = i;
 				break;
@@ -945,27 +958,30 @@ void parse_gvardecl(){
 		);
 		is_new_symbol = 1;
 		symid = nsymbols;
-		symbol_table = re_allocX(symbol_table, (++nsymbols) * sizeof(symdecl));
-		symbol_table[symid] = symdecl_init();
-		symbol_table[symid].t = t;
-		symbol_table[symid].name = strdup(peek()->text);
-		symbol_table[symid].is_pub = is_pub;
-		symbol_table[symid].is_codegen = is_codegen;
-		symbol_table[symid].is_noexport = is_noexport;
-		symbol_table[symid].is_volatile = is_volatile;
-		symbol_table[symid].is_atomic = is_atomic;
-		symbol_table[symid].is_data = 0;
+		
+		symbol_table = re_allocX(symbol_table, (++nsymbols) * sizeof(symdecl*));
+		//printf("Symbol %zu\n", nsymbols);
+		symbol_table[symid] = malloc(sizeof(symdecl));
+		symbol_table[symid][0] = symdecl_init();
+		symbol_table[symid]->t = t;
+		symbol_table[symid]->name = strdup(peek()->text);
+		symbol_table[symid]->is_pub = is_pub;
+		symbol_table[symid]->is_codegen = is_codegen;
+		symbol_table[symid]->is_noexport = is_noexport;
+		symbol_table[symid]->is_volatile = is_volatile;
+		symbol_table[symid]->is_atomic = is_atomic;
+		symbol_table[symid]->is_data = 0;
 	}
 	/*If we are predeclaring something which was already defined, we don't want to suddenly make it incomplete again.*/
 	/*A new symbol always inherits our is_predecl*/
 	if(is_new_symbol){
-		symbol_table[symid].is_incomplete = is_predecl;
+		symbol_table[symid]->is_incomplete = is_predecl;
 		//puts("Using New Symbol rule...");
 	}
 	/*A previously defined symbol which was incomplete inherits our is_predecl*/
 	if(!is_new_symbol)
-	if(symbol_table[symid].is_incomplete){
-		symbol_table[symid].is_incomplete = is_predecl;
+	if(symbol_table[symid]->is_incomplete){
+		symbol_table[symid]->is_incomplete = is_predecl;
 		//puts("Using Old Symbol rule...");
 	}
 
@@ -978,71 +994,71 @@ void parse_gvardecl(){
 		consume(); //eat the equals sign!
 
 		if(type_should_be_assigned_float_literal(t)){
-			symbol_table[symid].cdata = c_allocX(8);
-			symbol_table[symid].cdata_sz = 8;
+			symbol_table[symid]->cdata = c_allocX(8);
+			symbol_table[symid]->cdata_sz = 8;
 			fval = parse_cexpr_double();
 			if(t.basetype == BASE_F32){
 				float t;
 				t = fval;
 				//printf("%f",t);
-				memcpy(symbol_table[symid].cdata, &t, 4);
-				symbol_table[symid].cdata_sz = 4;
+				memcpy(symbol_table[symid]->cdata, &t, 4);
+				symbol_table[symid]->cdata_sz = 4;
 				goto end;
 			}
 			if(t.basetype == BASE_F64){
 				double t;
 				t = fval;
 				//printf("%f",t);
-				memcpy(symbol_table[symid].cdata, &t, 8);
-				symbol_table[symid].cdata_sz = 8;
+				memcpy(symbol_table[symid]->cdata, &t, 8);
+				symbol_table[symid]->cdata_sz = 8;
 				goto end;
 			}
 			parse_error("Internal error, failed to assign value to symbol cdata");
 		}
 		if(type_can_be_assigned_integer_literal(t))
 		{
-			symbol_table[symid].cdata = c_allocX(8);
-			symbol_table[symid].cdata_sz = 8;
+			symbol_table[symid]->cdata = c_allocX(8);
+			symbol_table[symid]->cdata_sz = 8;
 			cval = parse_cexpr_int();
 			if(t.pointerlevel == 0){
 				if(t.basetype == BASE_U8 || t.basetype == BASE_I8){
 					int8_t t;
 					t = cval;
-					memcpy(symbol_table[symid].cdata, &t, 1);
-					symbol_table[symid].cdata_sz = 1;
+					memcpy(symbol_table[symid]->cdata, &t, 1);
+					symbol_table[symid]->cdata_sz = 1;
 					goto end;
 				}
 				if(t.basetype == BASE_U16 || t.basetype == BASE_I16){
 					int16_t t;
 					t = cval;
-					memcpy(symbol_table[symid].cdata, &t, 2);
-					symbol_table[symid].cdata_sz = 2;
+					memcpy(symbol_table[symid]->cdata, &t, 2);
+					symbol_table[symid]->cdata_sz = 2;
 					goto end;
 				}
 				if(t.basetype == BASE_U32 || t.basetype == BASE_I32){
 					int32_t t;
 					t = cval;
-					memcpy(symbol_table[symid].cdata, &t, 4);
-					symbol_table[symid].cdata_sz = 4;
+					memcpy(symbol_table[symid]->cdata, &t, 4);
+					symbol_table[symid]->cdata_sz = 4;
 					goto end;
 				}
 				if(t.basetype == BASE_U64 || t.basetype == BASE_I64){
 					int64_t t;
 					t = cval;
 					memcpy(
-						symbol_table[symid].cdata, 
+						symbol_table[symid]->cdata, 
 						&t, 
 						8
 					);
-					symbol_table[symid].cdata_sz = 8;
+					symbol_table[symid]->cdata_sz = 8;
 					goto end;
 				}
 			}
 			if(t.pointerlevel > 0){
 				uint64_t t;
 				t = cval;
-				memcpy(symbol_table[symid].cdata, &t, POINTER_SIZE);
-				symbol_table[symid].cdata_sz = POINTER_SIZE;
+				memcpy(symbol_table[symid]->cdata, &t, POINTER_SIZE);
+				symbol_table[symid]->cdata_sz = POINTER_SIZE;
 				goto end;
 			}
 			parse_error("Internal error, failed to assign value to symbol cdata");
@@ -1052,7 +1068,7 @@ void parse_gvardecl(){
 	
 	/*No initial assignment is allowed.*/
 	end:;
-	if(had_equals)require(symbol_table[symid].cdata != NULL, "Global Variable Initial value failed!");
+	if(had_equals)require(symbol_table[symid]->cdata != NULL, "Global Variable Initial value failed!");
 	consume_semicolon("Global Variable declaration statement must end in a semicolon.");
 	return;
 }
@@ -1127,29 +1143,29 @@ void parse_datastmt(){
 		int found = 0;
 		/*Check if it is an incomplete compatible declaration.*/
 		for(i = 0; i < nsymbols; i++){
-			if(streq(symbol_table[i].name, peek()->text)){
+			if(streq(symbol_table[i]->name, peek()->text)){
 				found = 1;
 				/*check for compatible declaration.*/
 				if(is_predecl == 0)
 					require(
-						symbol_table[i].is_incomplete != 0, 
+						symbol_table[i]->is_incomplete != 0, 
 						"Attempted to redefine complete data statement."
 					);
-				require(symbol_table[i].is_volatile == 0,"data statement Predeclaration-definition mismatch (is_volatile)");
-				require(symbol_table[i].is_atomic == 0,"data statement Predeclaration-definition mismatch (is_atomic)");
-				require(symbol_table[i].is_codegen == is_codegen,"data statement Predeclaration-definition mismatch (is_codegen)");
-				require(symbol_table[i].is_noexport == is_noexport,"data statement Predeclaration-definition mismatch (is_noexport)");
-				require(symbol_table[i].is_pub == is_pub,"data statement Predeclaration-definition mismatch (is_pub)");
-				require(symbol_table[i].t.basetype == t.basetype, "data statement Predeclaration-definition mismatch (basetype)");
-				require(symbol_table[i].t.pointerlevel == t.pointerlevel, "data statement Predeclaration-definition mismatch (pointerlevel)");
-				require(symbol_table[i].t.arraylen == t.arraylen, "data statement Predeclaration-definition mismatch (arraylen)");
-				require(symbol_table[i].t.is_function == t.is_function, "data statement Predeclaration-definition mismatch (is_function)");
-				require(symbol_table[i].t.is_lvalue == t.is_lvalue, "data statement Predeclaration-definition mismatch (is_lvalue)");
+				require(symbol_table[i]->is_volatile == 0,"data statement Predeclaration-definition mismatch (is_volatile)");
+				require(symbol_table[i]->is_atomic == 0,"data statement Predeclaration-definition mismatch (is_atomic)");
+				require(symbol_table[i]->is_codegen == is_codegen,"data statement Predeclaration-definition mismatch (is_codegen)");
+				require(symbol_table[i]->is_noexport == is_noexport,"data statement Predeclaration-definition mismatch (is_noexport)");
+				require(symbol_table[i]->is_pub == is_pub,"data statement Predeclaration-definition mismatch (is_pub)");
+				require(symbol_table[i]->t.basetype == t.basetype, "data statement Predeclaration-definition mismatch (basetype)");
+				require(symbol_table[i]->t.pointerlevel == t.pointerlevel, "data statement Predeclaration-definition mismatch (pointerlevel)");
+				require(symbol_table[i]->t.arraylen == t.arraylen, "data statement Predeclaration-definition mismatch (arraylen)");
+				require(symbol_table[i]->t.is_function == t.is_function, "data statement Predeclaration-definition mismatch (is_function)");
+				require(symbol_table[i]->t.is_lvalue == t.is_lvalue, "data statement Predeclaration-definition mismatch (is_lvalue)");
 				if(t.basetype == BASE_STRUCT){
-					require(symbol_table[i].t.structid == t.structid, "data statement Predeclaration-definition mismatch");
+					require(symbol_table[i]->t.structid == t.structid, "data statement Predeclaration-definition mismatch");
 				}
 				if(t.basetype == BASE_FUNCTION){
-					require(symbol_table[i].t.funcid == t.funcid, "data statement Predeclaration-definition mismatch (funcid)");
+					require(symbol_table[i]->t.funcid == t.funcid, "data statement Predeclaration-definition mismatch (funcid)");
 				}
 				symid = i;
 				break;
@@ -1166,28 +1182,32 @@ void parse_datastmt(){
 		*/
 		symid = nsymbols;
 		is_new_symbol=1;
-		symbol_table = re_allocX(symbol_table, (++nsymbols) * sizeof(symdecl));
-		symbol_table[symid] = symdecl_init();
-		symbol_table[symid].t = t;
-		symbol_table[symid].name = strdup(peek()->text);
-		symbol_table[symid].is_pub = is_pub;
-		symbol_table[symid].is_codegen = is_codegen;
-		symbol_table[symid].is_noexport = is_noexport;
-		symbol_table[symid].is_data = 1;
-		symbol_table[symid].cdata = 0;
-		symbol_table[symid].cdata_sz = 0;
+		++nsymbols;
+		//removed
+		symbol_table = re_allocX(symbol_table, (nsymbols) * sizeof(symdecl*));
+        symbol_table[symid] = malloc(sizeof(symdecl));
+
+		symbol_table[symid][0] = symdecl_init();
+		symbol_table[symid]->t = t;
+		symbol_table[symid]->name = strdup(peek()->text);
+		symbol_table[symid]->is_pub = is_pub;
+		symbol_table[symid]->is_codegen = is_codegen;
+		symbol_table[symid]->is_noexport = is_noexport;
+		symbol_table[symid]->is_data = 1;
+		symbol_table[symid]->cdata = 0;
+		symbol_table[symid]->cdata_sz = 0;
 	}
 
 
 	/*If we are predeclaring something which was already defined, we don't want to suddenly make it incomplete again.*/
 	/*A new symbol always inherits our is_predecl*/
 	if(is_new_symbol){
-		symbol_table[symid].is_incomplete = is_predecl;
+		symbol_table[symid]->is_incomplete = is_predecl;
 	}
 	/*A previously defined symbol which was incomplete inherits our is_predecl*/
 	if(!is_new_symbol)
-	if(symbol_table[symid].is_incomplete){
-		symbol_table[symid].is_incomplete = is_predecl;
+	if(symbol_table[symid]->is_incomplete){
+		symbol_table[symid]->is_incomplete = is_predecl;
 	}
 	consume(); /*eat the identifier.*/
 
@@ -1207,10 +1227,10 @@ void parse_datastmt(){
 			peek()->data == TOK_STRING, 
 			"Syntax is data string ident (expected string....) [data statement error]"
 		);
-		symbol_table[symid].cdata = (uint8_t*)strdup(peek()->text);
+		symbol_table[symid]->cdata = (uint8_t*)strdup(peek()->text);
 		consume(); /*Eat the string.*/
-		symbol_table[symid].cdata_sz = strlen((char*)symbol_table[symid].cdata) + 1; /*includes null terminator*/
-		symbol_table[symid].is_incomplete = 0; /*It's definitely complete now!*/
+		symbol_table[symid]->cdata_sz = strlen((char*)symbol_table[symid]->cdata) + 1; /*includes null terminator*/
+		symbol_table[symid]->is_incomplete = 0; /*It's definitely complete now!*/
 	}
 	
 	if(!is_predecl)
@@ -1240,42 +1260,43 @@ void parse_datastmt(){
 					break;
 				}
 				//require(peek()->data == TOK_INT_CONST, "data statement with integer type requires unsigned integer literal.");
-				symbol_table[symid].cdata = re_allocX(symbol_table[symid].cdata, type_getsz(t) * (i));
-				symbol_table[symid].cdata_sz = type_getsz(t) * (i);
+				symbol_table[symid]->cdata = re_allocX(symbol_table[symid]->cdata, type_getsz(t) * (i));
+				
+				symbol_table[symid]->cdata_sz = type_getsz(t) * (i);
 				it = parse_cexpr_int(); /*Allow for constant expressions.*/
 				ut = it;
 				//printf("%lld",(long long)it);
 				/*write the data to the array.*/
 				if(t.basetype == BASE_U8){
-					uint8_t* arr = (uint8_t*)symbol_table[symid].cdata;
+					uint8_t* arr = (uint8_t*)symbol_table[symid]->cdata;
 					arr[i-1] = ut;
 				}
 				if(t.basetype == BASE_U16){
-					uint16_t* arr = (uint16_t*)symbol_table[symid].cdata;
+					uint16_t* arr = (uint16_t*)symbol_table[symid]->cdata;
 					arr[i-1] = ut;
 				}
 				if(t.basetype == BASE_U32){
-					uint32_t* arr = (uint32_t*)symbol_table[symid].cdata;
+					uint32_t* arr = (uint32_t*)symbol_table[symid]->cdata;
 					arr[i-1] = ut;
 				}
 				if(t.basetype == BASE_U64){
-					uint64_t* arr = (uint64_t*)symbol_table[symid].cdata;
+					uint64_t* arr = (uint64_t*)symbol_table[symid]->cdata;
 					arr[i-1] = ut;
 				}
 				if(t.basetype == BASE_I8){
-					int8_t* arr = (int8_t*)symbol_table[symid].cdata;
+					int8_t* arr = (int8_t*)symbol_table[symid]->cdata;
 					arr[i-1] = it;
 				}
 				if(t.basetype == BASE_I16){
-					int16_t* arr = (int16_t*)symbol_table[symid].cdata;
+					int16_t* arr = (int16_t*)symbol_table[symid]->cdata;
 					arr[i-1] = it;
 				}
 				if(t.basetype == BASE_I32){
-					int32_t* arr = (int32_t*)symbol_table[symid].cdata;
+					int32_t* arr = (int32_t*)symbol_table[symid]->cdata;
 					arr[i-1] = it;
 				}
 				if(t.basetype == BASE_I64){
-					int64_t* arr = (int64_t*)symbol_table[symid].cdata;
+					int64_t* arr = (int64_t*)symbol_table[symid]->cdata;
 					arr[i-1] = it;
 				}
 				if(peek_is_semic()){
@@ -1295,16 +1316,18 @@ void parse_datastmt(){
 				if(peek_is_semic()){
 					break;
 				}
-				symbol_table[symid].cdata = re_allocX(symbol_table[symid].cdata, type_getsz(t) * (i));
-				symbol_table[symid].cdata_sz = type_getsz(t) * (i);
+				//removed
+				symbol_table[symid]->cdata = re_allocX(symbol_table[symid]->cdata, type_getsz(t) * (i));
+				
+				symbol_table[symid]->cdata_sz = type_getsz(t) * (i);
 				db = parse_cexpr_double();
 				ft = db;
 				if(t.basetype == BASE_F32){
-					float* arr = (float*)symbol_table[symid].cdata;
+					float* arr = (float*)symbol_table[symid]->cdata;
 					arr[i-1] = ft;
 				}
 				if(t.basetype == BASE_F64){
-					double* arr = (double*)symbol_table[symid].cdata;
+					double* arr = (double*)symbol_table[symid]->cdata;
 					arr[i-1] = db;
 				}
 				if(peek_is_semic()){
@@ -1319,7 +1342,7 @@ void parse_datastmt(){
 
 
 	if(!is_predecl)
-		require(symbol_table[symid].cdata_sz > 0, "Zero-length data statement.");
+		require(symbol_table[symid]->cdata_sz > 0, "Zero-length data statement.");
 	consume_semicolon("data statement must end in a semicolon.");
 }
 
@@ -1423,12 +1446,12 @@ uint64_t parse_stringliteral(){
         uint64_t i;
         for(i = 0; i < nsymbols; i++){
             //incompatible. Reason: Not a string literal.
-            if(symbol_table[i].is_stringlit == 0)
+            if(symbol_table[i]->is_stringlit == 0)
                 continue;
             //incompatible. Reason: Not codegen matching.
-            if(symbol_table[i].is_codegen != symbol_table[active_function].is_codegen)
+            if(symbol_table[i]->is_codegen != symbol_table[active_function]->is_codegen)
                 continue;
-            if(streq((char*)symbol_table[i].cdata, peek()->text)){
+            if(streq((char*)symbol_table[i]->cdata, peek()->text)){
                 //we have a match!
                 consume(); /*Eat the string literal!*/
                 return i;
@@ -1438,21 +1461,25 @@ uint64_t parse_stringliteral(){
 #endif
     n = gen_reserved_sym_name();
 	require(!ident_is_already_used_globally(n),"String literal's anonymous name is already taken.");
-	symbol_table = re_allocX(symbol_table, (++nsymbols) * sizeof(symdecl));
+	nsymbols++;
 	
-	symbol_table[nsymbols-1] = symdecl_init();
+	//removed
+	symbol_table = re_allocX(symbol_table, (nsymbols) * sizeof(symdecl));
+    symbol_table[nsymbols-1] = malloc(sizeof(symdecl));
+
+	symbol_table[nsymbols-1][0] = symdecl_init();
 
 	/*assign symbol type and cdata.*/
 	t.basetype = BASE_U8;
 	t.pointerlevel = 1;
 	t.arraylen = 0;
 	t.is_function = 0;
-	symbol_table[nsymbols-1].t = t;
-	symbol_table[nsymbols-1].cdata = (uint8_t*)strdup(peek()->text);
-	symbol_table[nsymbols-1].cdata_sz = strlen(peek()->text);
-	symbol_table[nsymbols-1].name = n;
-	symbol_table[nsymbols-1].is_stringlit = 1;
-	symbol_table[nsymbols-1].is_codegen = symbol_table[active_function].is_codegen;
+	symbol_table[nsymbols-1]->t = t;
+	symbol_table[nsymbols-1]->cdata = (uint8_t*)strdup(peek()->text);
+	symbol_table[nsymbols-1]->cdata_sz = strlen(peek()->text);
+	symbol_table[nsymbols-1]->name = n;
+	symbol_table[nsymbols-1]->is_stringlit = 1;
+	symbol_table[nsymbols-1]->is_codegen = symbol_table[active_function]->is_codegen;
 	consume(); /*Eat the string literal!*/
 	return nsymbols-1;
 }
@@ -1678,38 +1705,38 @@ void parse_fn(int is_method){
 		int found = 0;
 		/*Check if it is an incomplete compatible declaration.*/
 		for(i = 0; i < nsymbols; i++){
-			if(streq(symbol_table[i].name, n)){
+			if(streq(symbol_table[i]->name, n)){
 				found = 1;
 				/*check for compatible declaration.*/
 				if(is_predecl == 0)
 					require(
-						symbol_table[i].is_incomplete != 0, 
+						symbol_table[i]->is_incomplete != 0, 
 						"Attempted to redefine complete Function"
 					);
-				require(symbol_table[i].is_codegen == is_codegen,"fn Predeclaration-definition mismatch (is_codegen)");
-				require(symbol_table[i].is_noexport == is_noexport, "fn Predeclaration-definition mismatch (is_noexport)");
-				require(symbol_table[i].is_pub == is_pub,"fn Predeclaration-definition mismatch (is_pub)");
-				require(symbol_table[i].is_pure == is_pure,"fn Predeclaration-definition mismatch (is_pure)");
-				require(symbol_table[i].is_inline == is_inline,"fn Predeclaration-definition mismatch (is_inline)");
-				require(symbol_table[i].t.basetype == t.basetype, "fn Predeclaration-definition mismatch (basetype)");
-				require(symbol_table[i].t.pointerlevel == t.pointerlevel, "fn Predeclaration-definition mismatch (pointerlevel)");
-				require(symbol_table[i].t.arraylen == t.arraylen, "fn Predeclaration-definition mismatch (arraylen)");
-				require(symbol_table[i].t.is_function == t.is_function, "fn Predeclaration-definition mismatch (is_function)");
-				require(symbol_table[i].t.is_lvalue == t.is_lvalue, "fn Predeclaration-definition mismatch (is_lvalue)");
+				require(symbol_table[i]->is_codegen == is_codegen,"fn Predeclaration-definition mismatch (is_codegen)");
+				require(symbol_table[i]->is_noexport == is_noexport, "fn Predeclaration-definition mismatch (is_noexport)");
+				require(symbol_table[i]->is_pub == is_pub,"fn Predeclaration-definition mismatch (is_pub)");
+				require(symbol_table[i]->is_pure == is_pure,"fn Predeclaration-definition mismatch (is_pure)");
+				require(symbol_table[i]->is_inline == is_inline,"fn Predeclaration-definition mismatch (is_inline)");
+				require(symbol_table[i]->t.basetype == t.basetype, "fn Predeclaration-definition mismatch (basetype)");
+				require(symbol_table[i]->t.pointerlevel == t.pointerlevel, "fn Predeclaration-definition mismatch (pointerlevel)");
+				require(symbol_table[i]->t.arraylen == t.arraylen, "fn Predeclaration-definition mismatch (arraylen)");
+				require(symbol_table[i]->t.is_function == t.is_function, "fn Predeclaration-definition mismatch (is_function)");
+				require(symbol_table[i]->t.is_lvalue == t.is_lvalue, "fn Predeclaration-definition mismatch (is_lvalue)");
 				require(
-					symbol_table[i].nargs == nargs,
+					symbol_table[i]->nargs == nargs,
 					"fn Predeclaration-definition mismatch (nargs)"
 				);
 				for(j = 0; j < nargs; j++){
-					require(s.fargs[j]->basetype ==symbol_table[i].fargs[j]->basetype, "Argument mismatch (basetype)");
-					require(s.fargs[j]->pointerlevel ==symbol_table[i].fargs[j]->pointerlevel, "Argument mismatch (ptrlevel)");
-					require(s.fargs[j]->arraylen ==symbol_table[i].fargs[j]->arraylen, "Argument mismatch (arraylen)");
-					require(s.fargs[j]->is_function ==symbol_table[i].fargs[j]->is_function, "Argument mismatch (is_function)");
-					require(s.fargs[j]->funcid ==symbol_table[i].fargs[j]->funcid, "Argument mismatch (funcid)");
+					require(s.fargs[j]->basetype ==symbol_table[i]->fargs[j]->basetype, "Argument mismatch (basetype)");
+					require(s.fargs[j]->pointerlevel ==symbol_table[i]->fargs[j]->pointerlevel, "Argument mismatch (ptrlevel)");
+					require(s.fargs[j]->arraylen ==symbol_table[i]->fargs[j]->arraylen, "Argument mismatch (arraylen)");
+					require(s.fargs[j]->is_function ==symbol_table[i]->fargs[j]->is_function, "Argument mismatch (is_function)");
+					require(s.fargs[j]->funcid ==symbol_table[i]->fargs[j]->funcid, "Argument mismatch (funcid)");
 					require(
 						streq(
 							s.fargs[j]->membername,
-							symbol_table[i].fargs[j]->membername
+							symbol_table[i]->fargs[j]->membername
 						),
 						"Argument name mismatch"
 					);
@@ -1733,20 +1760,23 @@ void parse_fn(int is_method){
 		parse_error("Unknown conflicting identifier usage for function name...");
 	}else{
 		symid = nsymbols;
-		symbol_table = re_allocX(symbol_table, (++nsymbols) * sizeof(symdecl));
+		++nsymbols;
+		//Removed.
+		symbol_table = re_allocX(symbol_table, (nsymbols) * sizeof(symdecl));
 		
 		t.funcid = symid;
 		s.t = t;
 		s.nargs = nargs;
 		s.name = n;
-		symbol_table[symid] = s;
+		symbol_table[symid] = malloc(sizeof(symdecl));
+		symbol_table[symid][0] = s;
 		if(s.is_codegen)
 		if(strprefix("parsehook_", n))
 		if(!strprefix("parsehook_expr_", n)){
 		    //check for validity as a parsehook...
 		    require(s.t.is_function != 0, "parsehook must be a function.");
     		//require(s.is_codegen == 1, "parsehook must be is_codegen.");
-    		//require(s.is_incomplete == 0, "parsehook definition must be completed.");
+    		//require(s->is_incomplete == 0, "parsehook definition must be completed.");
     		//require(s.fbody != NULL, "parsehook function body must not be null.");
     		require(s.t.basetype == BASE_VOID, "parsehook must return nothing!");
     		require(s.t.pointerlevel == 0 , "parsehook must return nothing, not even a pointer to nothing!");
@@ -1761,10 +1791,11 @@ void parse_fn(int is_method){
 	if(is_predecl)
 		consume_semicolon("Function predeclaration requires semicolon");
 	if(!is_predecl){
-		symbol_table[symid].is_incomplete = 1; /*important for codegen functions...*/
+		symbol_table[symid]->is_incomplete = 1; /*important for codegen functions...*/
 		active_function = symid;
 		parse_fbody();
-		symbol_table[symid].is_incomplete = 0;
+		active_function = -1;
+		symbol_table[symid]->is_incomplete = 0;
 	}
 }
 
@@ -1943,13 +1974,13 @@ void expr_parse_fcall(expr_node** targ){
 	f.symname = strdup(peek()->text);
 
 	for( i = 0; i < nsymbols; i++){
-		if(streq(f.symname, symbol_table[i].name)){
+		if(streq(f.symname, symbol_table[i]->name)){
 			require(
-				symbol_table[i].t.is_function != 0, 
+				symbol_table[i]->t.is_function != 0, 
 				"expr_parse_fcall: not a function"
 			);
 			require(
-				symbol_table[i].is_codegen == symbol_table[active_function].is_codegen ,
+				symbol_table[i]->is_codegen == symbol_table[active_function]->is_codegen ,
 				"expr_parse_fcall: is_codegen mismatch."
 			);
 			found_function = 1;
@@ -1958,7 +1989,7 @@ void expr_parse_fcall(expr_node** targ){
 		}
 	}
 	require(found_function != 0, "expr_parse_fcall could not find referenced function");
-	required_arguments = symbol_table[f.symid].nargs;
+	required_arguments = symbol_table[f.symid]->nargs;
 	consume(); /*eat the identifier*/
 	require(peek()->data == TOK_OPAREN, "expr_parse_fcall requires opening parentheses");
 	consume();
@@ -1986,7 +2017,7 @@ void expr_parse_builtin_call(expr_node** targ){
 	require(peek()->data ==  TOK_IDENT, "expr_parse_builtin_call needs an identifier");
 	require(is_builtin_name(peek()->text), "That's not a builtin call!");
 
-	if(symbol_table[active_function].is_codegen == 0)
+	if(symbol_table[active_function]->is_codegen == 0)
 		parse_error("Non-codegen functions may not invoke __builtin functions.");
 	f.kind = EXPR_BUILTIN_CALL;
 	f.symname = strdup(peek()->text);
@@ -2117,17 +2148,17 @@ void expr_parse_getfnptr(expr_node** targ){
 	require(peek_is_fname(), "getfnptr requires a function pointer!");
 		f.symname = strdup(peek()->text);
 		for( i = 0; i < nsymbols; i++){
-			if(streq(f.symname, symbol_table[i].name)){
+			if(streq(f.symname, symbol_table[i]->name)){
 				require(
-					symbol_table[i].t.is_function != 0, 
+					symbol_table[i]->t.is_function != 0, 
 					"expr_parse_getfnptr: not a function"
 				);
 				require(
-					symbol_table[i].is_codegen == symbol_table[active_function].is_codegen ,
+					symbol_table[i]->is_codegen == symbol_table[active_function]->is_codegen ,
 					"expr_parse_getfnptr: is_codegen mismatch."
 				);
 				require(
-					symbol_table[i].is_inline == 0,
+					symbol_table[i]->is_inline == 0,
 					"expr_parse_getfnptr: cannot get pointer to inline function."
 				);
 				found_function = 1;
@@ -2155,13 +2186,13 @@ void expr_parse_getglobalptr(expr_node** targ){
 	
 	f.symname = strdup(peek()->text);
 	for( i = 0; i < nsymbols; i++){
-		if(streq(f.symname, symbol_table[i].name)){
+		if(streq(f.symname, symbol_table[i]->name)){
 			require(
-				symbol_table[i].t.is_function == 0, 
+				symbol_table[i]->t.is_function == 0, 
 				"expr_parse_getglobalptr: is a function"
 			);
 			require(
-				symbol_table[i].is_codegen == symbol_table[active_function].is_codegen ,
+				symbol_table[i]->is_codegen == symbol_table[active_function]->is_codegen ,
 				"expr_parse_getglobalptr: is_codegen mismatch."
 			);
 			found_sym = 1;
@@ -2192,16 +2223,16 @@ void expr_parse_callfnptr(expr_node** targ){
 	f.symname = strdup(peek()->text);
 
 	for( i = 0; i < (int64_t)nsymbols; i++){
-		if(streq(f.symname, symbol_table[i].name)){
+		if(streq(f.symname, symbol_table[i]->name)){
 			require(
-				symbol_table[i].t.is_function != 0, 
+				symbol_table[i]->t.is_function != 0, 
 				"expr_parse_callfnptr: prototype is not a function"
 			);
 			require(
-				symbol_table[i].is_codegen == symbol_table[active_function].is_codegen,
+				symbol_table[i]->is_codegen == symbol_table[active_function]->is_codegen,
 				"expr_parse_callfnptr: prototype function has mismatch on is_codegen."
 			);
-			nargs = symbol_table[i].nargs;
+			nargs = symbol_table[i]->nargs;
 			require(nargs < (MAX_FARGS-1), "expr_parse_callfnptr: prototype function has too many arguments (MAX_FARGS-1). Not allowed!");
 			found_function = 1;
 			f.symid = i;
@@ -2324,23 +2355,23 @@ void expr_parse_terminal(expr_node** targ){
             t = strdup(peek()->text);
             t = strcataf2("parsehook_expr_",t);
             for(i = 0; i < nsymbols; i++){
-            	if(streq(symbol_table[i].name, t)){
+            	if(streq(symbol_table[i]->name, t)){
             		id = i;
             		found = 1;
             		break;
             	}
             }
 	        require(found != 0, "Could not find parsehook_expr_ function");
-            require(symbol_table[id].t.is_function != 0, "parsehook_expr_ must be a function.");
-            require(symbol_table[id].is_codegen == 1, "parsehook_expr_ must be is_codegen.");
-            require(symbol_table[id].is_incomplete == 0, "parsehook_expr_ definition must be completed.");
-            require(symbol_table[id].fbody != NULL, "parsehook_expr_ function body must not be null.");
-            require(symbol_table[id].t.basetype == BASE_VOID, "parsehook_expr_ must return nothing!");
-            require(symbol_table[id].t.pointerlevel == 0 , "parsehook_expr_ must return nothing, not even a pointer to nothing!");
-            require(symbol_table[id].nargs == 1, "parsehook must take a char**. That's how I call it.");
-            require(symbol_table[id].fargs[0]->basetype == BASE_U8,"parsehook_expr_XXXXX requires a char** argument with void return");
-            require(symbol_table[id].fargs[0]->pointerlevel == 2,"parsehook_expr_XXXXX requires a char** argument with void return");
-            ast_execute_expr_parsehook(symbol_table + id,targ);
+            require(symbol_table[id]->t.is_function != 0, "parsehook_expr_ must be a function.");
+            require(symbol_table[id]->is_codegen == 1, "parsehook_expr_ must be is_codegen.");
+            require(symbol_table[id]->is_incomplete == 0, "parsehook_expr_ definition must be completed.");
+            require(symbol_table[id]->fbody != NULL, "parsehook_expr_ function body must not be null.");
+            require(symbol_table[id]->t.basetype == BASE_VOID, "parsehook_expr_ must return nothing!");
+            require(symbol_table[id]->t.pointerlevel == 0 , "parsehook_expr_ must return nothing, not even a pointer to nothing!");
+            require(symbol_table[id]->nargs == 1, "parsehook must take a char**. That's how I call it.");
+            require(symbol_table[id]->fargs[0]->basetype == BASE_U8,"parsehook_expr_XXXXX requires a char** argument with void return");
+            require(symbol_table[id]->fargs[0]->pointerlevel == 2,"parsehook_expr_XXXXX requires a char** argument with void return");
+            ast_execute_expr_parsehook((symbol_table + id)[0],targ);
             require(targ[0] != NULL, "No expression came out of the parsehook being called?");
             return;
 	    }
@@ -3273,8 +3304,8 @@ void parse_return(){
 	consume_keyword("return");
 	me->kind = STMT_RETURN;
 	if(
-		symbol_table[active_function].t.basetype == BASE_VOID &&
-		symbol_table[active_function].t.pointerlevel == 0
+		symbol_table[active_function]->t.basetype == BASE_VOID &&
+		symbol_table[active_function]->t.pointerlevel == 0
 	){
 		me->nexpressions = 0;
 		//do require a semicolon.
@@ -3350,11 +3381,11 @@ void parse_tail(){
 	//puts(me->referenced_label_name);
 	/*Check to see if the return type of the function is compatible with us.*/
 	for(unsigned long i = 0; i < nsymbols; i++)
-		if(symbol_table[i].t.is_function)
+		if(symbol_table[i]->t.is_function)
 			if(
 				streq(
 					me->referenced_label_name, 
-					symbol_table[i].name
+					symbol_table[i]->name
 				)
 			){
 				found = 1;
@@ -3362,14 +3393,14 @@ void parse_tail(){
 					check the number of arguments, as well as the return type.
 				*/
 				require(
-					symbol_table[i].nargs == symbol_table[active_function].nargs, 
+					symbol_table[i]->nargs == symbol_table[active_function]->nargs, 
 					"tail requires a function taking the same number of arguments and an identical return type to the function it's being called from."
 				);
-				require(symbol_table[i].t.basetype == symbol_table[active_function].t.basetype, "Tail function type mismatch (basetype)");
-				if(symbol_table[i].t.basetype == BASE_STRUCT)
-					require(symbol_table[i].t.structid == symbol_table[active_function].t.structid, "Tail function type mismatch (structid)");
-				require(symbol_table[i].t.pointerlevel == symbol_table[active_function].t.pointerlevel, "Tail function type mismatch (pointerlevel)");
-				require(symbol_table[i].is_codegen == symbol_table[active_function].is_codegen, "Tail function type mismatch (is_codegen)");
+				require(symbol_table[i]->t.basetype == symbol_table[active_function]->t.basetype, "Tail function type mismatch (basetype)");
+				if(symbol_table[i]->t.basetype == BASE_STRUCT)
+					require(symbol_table[i]->t.structid == symbol_table[active_function]->t.structid, "Tail function type mismatch (structid)");
+				require(symbol_table[i]->t.pointerlevel == symbol_table[active_function]->t.pointerlevel, "Tail function type mismatch (pointerlevel)");
+				require(symbol_table[i]->is_codegen == symbol_table[active_function]->is_codegen, "Tail function type mismatch (is_codegen)");
 				me->symid = i;
 				break;
 			}
@@ -3379,9 +3410,9 @@ void parse_tail(){
 }
 
 void parse_fbody(){
-	symbol_table[active_function].fbody = c_allocX(sizeof(scope));
-	((scope*)symbol_table[active_function].fbody)->is_fbody = 1;
-	scopestack_push(symbol_table[active_function].fbody);
+	symbol_table[active_function]->fbody = c_allocX(sizeof(scope));
+	((scope*)symbol_table[active_function]->fbody)->is_fbody = 1;
+	scopestack_push(symbol_table[active_function]->fbody);
 		parse_stmts();
 	scopestack_pop();
 	if(nscopes > 0 || nloops > 0){
@@ -3390,7 +3421,7 @@ void parse_fbody(){
 	/*
 		handle type checking and most of that language-y stuff.
 	*/
-	validate_function(symbol_table + active_function);
+	validate_function((symbol_table + active_function)[0]);
 }
 
 
@@ -3616,7 +3647,7 @@ void parse_stmt(){
 		t = strdup(peek()->text);
 		t = strcataf2("parsehook_",t);
 		for(i = 0; i < nsymbols; i++){
-			if(streq(symbol_table[i].name, t)){
+			if(streq(symbol_table[i]->name, t)){
 				id = i;
 				found = 1;
 				break;
@@ -3625,15 +3656,16 @@ void parse_stmt(){
 		require(found != 0, "Could not find parsehook_ function corresponding with ");
 		free(t);
 		consume();
-		require(symbol_table[id].t.is_function != 0, "parsehook must be a function.");
-		require(symbol_table[id].is_codegen != 0, "parsehook must be is_codegen.");
-		require(symbol_table[id].is_incomplete == 0, "parsehook definition must be completed.");
-		require(symbol_table[id].fbody != NULL, "parsehook function body must not be null.");
-		require(symbol_table[id].t.basetype == BASE_VOID, "parsehook must return nothing!");
-		require(symbol_table[id].t.pointerlevel == 0 , "parsehook must return nothing, not even a pointer to nothing!");
-		require(symbol_table[id].nargs == 0, "parsehook must take zero arguments. That's how I call it.");
-		
-		ast_execute_function(symbol_table+id);
+		require(symbol_table[id]->t.is_function != 0, "parsehook must be a function.");
+		require(symbol_table[id]->is_codegen != 0, "parsehook must be is_codegen.");
+		require(symbol_table[id]->is_incomplete == 0, "parsehook definition must be completed.");
+		require(symbol_table[id]->fbody != NULL, "parsehook function body must not be null.");
+		require(symbol_table[id]->t.basetype == BASE_VOID, "parsehook must return nothing!");
+		require(symbol_table[id]->t.pointerlevel == 0 , "parsehook must return nothing, not even a pointer to nothing!");
+		require(symbol_table[id]->nargs == 0, "parsehook must take zero arguments. That's how I call it.");
+		ast_vm_stack_push_temporary();
+		ast_execute_function((symbol_table+id)[0]);
+		ast_vm_stack_pop();
 		return;
 	}}
 	parse_expr_stmt();

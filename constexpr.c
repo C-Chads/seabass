@@ -56,80 +56,80 @@ static int64_t cexpr_int_parse_ident(){
 	require(!peek_is_typename(), "constexpr error: cexpr_parse_ident: Fatal: identifier is typename");
 	require(peek_ident_is_already_used_globally(), "constexpr error: Identifier in const expression is not in use!");
 	for(i = 0; i < nsymbols; i++){
-		if(streq(peek()->text, symbol_table[i].name))
+		if(streq(peek()->text, symbol_table[i]->name))
 		{
 			found = 1;
 			symid = i;
-			if(symbol_table[i].is_incomplete)
+			if(symbol_table[i]->is_incomplete)
 				parse_error("Attempted to use incomplete symbol in constant expression.");
-			if(symbol_table[i].is_codegen == 0)
+			if(symbol_table[i]->is_codegen == 0)
 				parse_error("Attempted to use non-codegen identifier in constant expression.");
-			if(symbol_table[i].t.basetype == BASE_STRUCT)
+			if(symbol_table[i]->t.basetype == BASE_STRUCT)
 				parse_error("Attempted to use struct variable in constant expression.");
-			if(symbol_table[i].cdata == NULL)
+			if(symbol_table[i]->cdata == NULL)
 				parse_error("Attempted to use un-initialized identifier in constant expression.");
-			if(symbol_table[i].t.arraylen > 0)
+			if(symbol_table[i]->t.arraylen > 0)
 				parse_error("Attempted to use array identifier in constant expression.");
 		}
 	}
 	if(!found) parse_error("Unknown identifier in constant expression.");
 	consume(); //eat the identifier.
-	if(symbol_table[symid].t.pointerlevel > 0){
-		require(symbol_table[symid].cdata_sz == POINTER_SIZE, "constexpr Identifier cdata size error.");
-		memcpy(&retval, symbol_table[symid].cdata, POINTER_SIZE);
+	if(symbol_table[symid]->t.pointerlevel > 0){
+		require(symbol_table[symid]->cdata_sz == POINTER_SIZE, "constexpr Identifier cdata size error.");
+		memcpy(&retval, symbol_table[symid]->cdata, POINTER_SIZE);
 		return retval;
 	}
-	if(symbol_table[symid].t.basetype == BASE_U64 ||
-	symbol_table[symid].t.basetype == BASE_I64	){
-		require(symbol_table[symid].cdata_sz == 8, "constexpr Identifier cdata size error.");
-		memcpy(&retval, symbol_table[symid].cdata, 8);
+	if(symbol_table[symid]->t.basetype == BASE_U64 ||
+	symbol_table[symid]->t.basetype == BASE_I64	){
+		require(symbol_table[symid]->cdata_sz == 8, "constexpr Identifier cdata size error.");
+		memcpy(&retval, symbol_table[symid]->cdata, 8);
 		return retval;
 	}
-	if(symbol_table[symid].t.basetype == BASE_I32){
-		require(symbol_table[symid].cdata_sz == 4, "constexpr Identifier cdata size error.");
-		memcpy(&i32data, symbol_table[symid].cdata, 4);
+	if(symbol_table[symid]->t.basetype == BASE_I32){
+		require(symbol_table[symid]->cdata_sz == 4, "constexpr Identifier cdata size error.");
+		memcpy(&i32data, symbol_table[symid]->cdata, 4);
 		retval = i32data;
 		return retval;
 	}
-	if(symbol_table[symid].t.basetype == BASE_I16){
-		require(symbol_table[symid].cdata_sz == 2, "constexpr Identifier cdata size error.");
-		memcpy(&i16data, symbol_table[symid].cdata, 2);
+	if(symbol_table[symid]->t.basetype == BASE_I16){
+		require(symbol_table[symid]->cdata_sz == 2, "constexpr Identifier cdata size error.");
+		memcpy(&i16data, symbol_table[symid]->cdata, 2);
 		retval = i16data;
 		return retval;
 	}
-	if(symbol_table[symid].t.basetype == BASE_I8){
-		require(symbol_table[symid].cdata_sz == 1, "constexpr Identifier cdata size error.");
-		memcpy(&i16data, symbol_table[symid].cdata, 1);
+	if(symbol_table[symid]->t.basetype == BASE_I8){
+		require(symbol_table[symid]->cdata_sz == 1, "constexpr Identifier cdata size error.");
+		memcpy(&i16data, symbol_table[symid]->cdata, 1);
 		retval = i8data;
 		return retval;
 	}
-	if(symbol_table[symid].t.basetype == BASE_U32){
-		require(symbol_table[symid].cdata_sz == 4, "constexpr Identifier cdata size error.");
-		memcpy(&u32data, symbol_table[symid].cdata, 4);
+	if(symbol_table[symid]->t.basetype == BASE_U32){
+		require(symbol_table[symid]->cdata_sz == 4, "constexpr Identifier cdata size error.");
+		memcpy(&u32data, symbol_table[symid]->cdata, 4);
 		retval = (uint64_t)u32data;
 		return retval;
 	}
-	if(symbol_table[symid].t.basetype == BASE_U16){
-		require(symbol_table[symid].cdata_sz == 2, "constexpr Identifier cdata size error.");
-		memcpy(&u16data, symbol_table[symid].cdata, 2);
+	if(symbol_table[symid]->t.basetype == BASE_U16){
+		require(symbol_table[symid]->cdata_sz == 2, "constexpr Identifier cdata size error.");
+		memcpy(&u16data, symbol_table[symid]->cdata, 2);
 		retval = (uint64_t)u16data;
 		return retval;
 	}
-	if(symbol_table[symid].t.basetype == BASE_U8){
-		require(symbol_table[symid].cdata_sz == 1, "constexpr Identifier cdata size error.");
-		memcpy(&u8data, symbol_table[symid].cdata, 1);
+	if(symbol_table[symid]->t.basetype == BASE_U8){
+		require(symbol_table[symid]->cdata_sz == 1, "constexpr Identifier cdata size error.");
+		memcpy(&u8data, symbol_table[symid]->cdata, 1);
 		retval = (uint64_t)u8data;
 		return retval;
 	}
-	if(symbol_table[symid].t.basetype == BASE_F32){
-		require(symbol_table[symid].cdata_sz == 4, "constexpr Identifier cdata size error.");
-		memcpy(&f32_data, symbol_table[symid].cdata, 4);
+	if(symbol_table[symid]->t.basetype == BASE_F32){
+		require(symbol_table[symid]->cdata_sz == 4, "constexpr Identifier cdata size error.");
+		memcpy(&f32_data, symbol_table[symid]->cdata, 4);
 		retval = f32_data;
 		return retval;
 	}
-	if(symbol_table[symid].t.basetype == BASE_F64){
-		require(symbol_table[symid].cdata_sz == 8, "constexpr Identifier cdata size error.");
-		memcpy(&f64_data, symbol_table[symid].cdata, 8);
+	if(symbol_table[symid]->t.basetype == BASE_F64){
+		require(symbol_table[symid]->cdata_sz == 8, "constexpr Identifier cdata size error.");
+		memcpy(&f64_data, symbol_table[symid]->cdata, 8);
 		retval = f32_data;
 		return retval;
 	}
@@ -156,79 +156,79 @@ static double cexpr_double_parse_ident(){
 	require(!peek_is_typename(), "cexpr_parse_ident: Fatal: identifier is typename");
 	require(peek_ident_is_already_used_globally(), "Identifier in const expression is not in use!");
 	for(i = 0; i < nsymbols; i++){
-		if(streq(peek()->text, symbol_table[i].name))
+		if(streq(peek()->text, symbol_table[i]->name))
 		{
 			found = 1;
 			symid = i;
-			if(symbol_table[i].is_incomplete)
+			if(symbol_table[i]->is_incomplete)
 				parse_error("Attempted to use incomplete symbol in constant expression.");
-			if(symbol_table[i].is_codegen == 0)
+			if(symbol_table[i]->is_codegen == 0)
 				parse_error("Attempted to use non-codegen identifier in constant expression.");
-			if(symbol_table[i].t.basetype == BASE_STRUCT)
+			if(symbol_table[i]->t.basetype == BASE_STRUCT)
 				parse_error("Attempted to use struct variable in constant expression.");
-			if(symbol_table[i].cdata == NULL)
+			if(symbol_table[i]->cdata == NULL)
 				parse_error("Attempted to use un-initialized identifier in constant expression.");
-			if(symbol_table[i].t.arraylen > 0)
+			if(symbol_table[i]->t.arraylen > 0)
 				parse_error("Attempted to use array identifier in constant expression.");
 		}
 	}
 	if(!found) parse_error("Unknown identifier in constant expression.");
 	consume(); //eat the identifier.
-	if(symbol_table[symid].t.pointerlevel > 0){
+	if(symbol_table[symid]->t.pointerlevel > 0){
 		parse_error("Cannot use pointer identifier in double constexpr.");
 	}
-	if(symbol_table[symid].t.basetype == BASE_U64 ||
-	symbol_table[symid].t.basetype == BASE_I64	){
-		require(symbol_table[symid].cdata_sz == 8, "constexpr Identifier cdata size error.");
-		memcpy(&i64_data, symbol_table[symid].cdata, 8);
+	if(symbol_table[symid]->t.basetype == BASE_U64 ||
+	symbol_table[symid]->t.basetype == BASE_I64	){
+		require(symbol_table[symid]->cdata_sz == 8, "constexpr Identifier cdata size error.");
+		memcpy(&i64_data, symbol_table[symid]->cdata, 8);
 		f64_data = i64_data;
 		return f64_data;
 	}
-	if(symbol_table[symid].t.basetype == BASE_I32){
-		require(symbol_table[symid].cdata_sz == 4, "constexpr Identifier cdata size error.");
-		memcpy(&i32data, symbol_table[symid].cdata, 4);
+	if(symbol_table[symid]->t.basetype == BASE_I32){
+		require(symbol_table[symid]->cdata_sz == 4, "constexpr Identifier cdata size error.");
+		memcpy(&i32data, symbol_table[symid]->cdata, 4);
 		f64_data = i32data;
 		return f64_data;
 	}
-	if(symbol_table[symid].t.basetype == BASE_I16){
-		require(symbol_table[symid].cdata_sz == 2, "constexpr Identifier cdata size error.");
-		memcpy(&i16data, symbol_table[symid].cdata, 2);
+	if(symbol_table[symid]->t.basetype == BASE_I16){
+		require(symbol_table[symid]->cdata_sz == 2, "constexpr Identifier cdata size error.");
+		memcpy(&i16data, symbol_table[symid]->cdata, 2);
 		f64_data = i16data;
 		return f64_data;
 	}
-	if(symbol_table[symid].t.basetype == BASE_I8){
-		require(symbol_table[symid].cdata_sz == 1, "constexpr Identifier cdata size error.");
-		memcpy(&i16data, symbol_table[symid].cdata, 1);
+	if(symbol_table[symid]->t.basetype == BASE_I8){
+		require(symbol_table[symid]->cdata_sz == 1, "constexpr Identifier cdata size error.");
+		memcpy(&i16data, symbol_table[symid]->cdata, 1);
 		f64_data = i8data;
 		return f64_data;
 	}
-	if(symbol_table[symid].t.basetype == BASE_U32){
-		require(symbol_table[symid].cdata_sz == 4, "constexpr Identifier cdata size error.");
-		memcpy(&u32data, symbol_table[symid].cdata, 4);
+	if(symbol_table[symid]->t.basetype == BASE_U32){
+		require(symbol_table[symid]->cdata_sz == 4, "constexpr Identifier cdata size error.");
+		memcpy(&u32data, symbol_table[symid]->cdata, 4);
 		f64_data = (uint64_t)u32data;
 		return f64_data;
 	}
-	if(symbol_table[symid].t.basetype == BASE_U16){
-		require(symbol_table[symid].cdata_sz == 2, "constexpr Identifier cdata size error.");
-		memcpy(&u16data, symbol_table[symid].cdata, 2);
+	if(symbol_table[symid]->t.basetype == BASE_U16){
+		require(symbol_table[symid]->cdata_sz == 2, "constexpr Identifier cdata size error.");
+		memcpy(&u16data, symbol_table[symid]->cdata, 2);
 		f64_data = (uint64_t)u16data;
 		return f64_data;
 	}
-	if(symbol_table[symid].t.basetype == BASE_U8){
-		require(symbol_table[symid].cdata_sz == 1, "constexpr Identifier cdata size error.");
-		memcpy(&u8data, symbol_table[symid].cdata, 1);
+	if(symbol_table[symid]->t.basetype == BASE_U8){
+		require(symbol_table[symid]->cdata_sz == 1, "constexpr Identifier cdata size error.");
+		memcpy(&u8data, symbol_table[symid]->cdata, 1);
 		f64_data = (uint64_t)u8data;
 		return f64_data;
 	}
-	if(symbol_table[symid].t.basetype == BASE_F32){
-		require(symbol_table[symid].cdata_sz == 4, "constexpr Identifier cdata size error.");
-		memcpy(&f32_data, symbol_table[symid].cdata, 4);
+	if(symbol_table[symid]->t.basetype == BASE_F32){
+		require(symbol_table[symid]->cdata_sz == 4, "constexpr Identifier cdata size error.");
+		memcpy(&f32_data, symbol_table[symid]->cdata, 4);
 		f64_data = f32_data;
 		return f64_data;
 	}
-	if(symbol_table[symid].t.basetype == BASE_F64){
-		require(symbol_table[symid].cdata_sz == 8, "constexpr Identifier cdata size error.");
-		memcpy(&f64_data, symbol_table[symid].cdata, 8);
+	if(symbol_table[symid]->t.basetype == BASE_F64){
+		require(symbol_table[symid]->cdata_sz == 8, "constexpr Identifier cdata size error.");
+		memcpy(&f64_data, symbol_table[symid]->cdata, 8);
 		return f64_data;
 	}
 	parse_error("Unhandled type in cexpr_double_parse_ident");

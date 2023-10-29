@@ -365,7 +365,7 @@ static void stmt_destroy(stmt* s){
 
 
 extern typedecl* type_table;
-extern symdecl* symbol_table;
+extern symdecl** symbol_table;
 extern uint64_t* parsehook_table;
 extern scope** scopestack;
 extern stmt** loopstack;
@@ -384,8 +384,8 @@ static inline int peek_is_fname(){
 	if(peek()->data != TOK_IDENT) return 0;
 	if(nsymbols == 0) return 0;
 	for(unsigned long i = 0; i < nsymbols; i++){
-		if(streq(peek()->text, symbol_table[i].name)){
-			if(symbol_table[i].t.is_function)
+		if(streq(peek()->text, symbol_table[i]->name)){
+			if(symbol_table[i]->t.is_function)
 				return 1;
 		}
 	}
@@ -394,8 +394,8 @@ static inline int peek_is_fname(){
 
 static inline int str_is_fname(char* s){
 	for(unsigned long i = 0; i < nsymbols; i++){
-		if(streq(s, symbol_table[i].name)){
-			if(symbol_table[i].t.is_function)
+		if(streq(s, symbol_table[i]->name)){
+			if(symbol_table[i]->t.is_function)
 				return 1;
 		}
 	}
@@ -408,8 +408,8 @@ static inline int ident_is_used_locally(char* s){
 			if(streq(s, scopestack[i]->syms[j].name))
 				return 1;
 	
-	for(unsigned long i = 0;i < symbol_table[active_function].nargs;i++){
-		if(streq(s, symbol_table[active_function].fargs[i]->membername))
+	for(unsigned long i = 0;i < symbol_table[active_function]->nargs;i++){
+		if(streq(s, symbol_table[active_function]->fargs[i]->membername))
 			return 1;
 	}
 	return 0;
@@ -494,7 +494,7 @@ static inline int peek_ident_is_already_used_globally(){
 	uint64_t i;
 	if(peek()->data != TOK_IDENT) return 0;
 	for(i = 0; i < nsymbols; i++)
-		if(streq(peek()->text, symbol_table[i].name))
+		if(streq(peek()->text, symbol_table[i]->name))
 			return 1;	
 	if(peek_is_typename()) return 1;
 
@@ -506,7 +506,7 @@ static inline int ident_is_already_used_globally(char* name){
 	for(i = 0; i < nsymbols; i++)
 		if(
 			streq(name, 
-				symbol_table[i].name
+				symbol_table[i]->name
 			)
 		)
 			return 1;	

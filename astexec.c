@@ -42,7 +42,7 @@ static inline void scope_executing_stack_pop(){
 	n_scopes_executings--;
 }
 
-static inline scope* scope_executing_stack_gettop(){
+static inline scope* scope_executing_stack_gettop(){ //This function causes @global to crash... hmmm
 	return scope_executing_stack[n_scopes_executings-1];
 }
 
@@ -116,7 +116,7 @@ static uint64_t ast_vm_stack_push_lvar(symdecl* s){
 	return placement;
 }
 
-static uint64_t ast_vm_stack_push_temporary(){
+uint64_t ast_vm_stack_push_temporary(){
 	uint64_t placement = ast_vm_stack_push();
 	ast_vm_stack_elem tt;
 	tt.identification = VM_EXPRESSION_TEMPORARY;
@@ -126,7 +126,7 @@ static uint64_t ast_vm_stack_push_temporary(){
 	return placement;
 }
 
-static void ast_vm_stack_pop(){
+void ast_vm_stack_pop(){
 	if(vm_stack[vm_stackpointer-1].identification == VM_EXPRESSION_TEMPORARY) cur_expr_stack_usage--;
 	if(vm_stack[vm_stackpointer-1].identification == VM_VARIABLE) cur_func_frame_size--;
 	if(vm_stack[vm_stackpointer-1].ldata) {
@@ -134,7 +134,6 @@ static void ast_vm_stack_pop(){
 	}
 	
 	vm_stack[vm_stackpointer-1].ldata = NULL;
-//	vm_stack[vm_stackpointer-1].vname = NULL; /*Don't want to accidentally pick this up in the future!*/
 	vm_stackpointer--;
 }
 
@@ -437,30 +436,30 @@ static void* retrieve_variable_memory_pointer(
 	if(is_global){
 		i = symid;
 		{
-			if(symbol_table[i].is_incomplete){
+			if(symbol_table[i]->is_incomplete){
 				puts("VM Error");
 				puts("This global:");
-				puts(symbol_table[i].name);
+				puts(symbol_table[i]->name);
 				puts("Was incomplete at access time.");
 				exit(1);
 			}
-			if(symbol_table[i].t.is_function){
+			if(symbol_table[i]->t.is_function){
 				puts("VM Error");
 				puts("This global:");
-				puts(symbol_table[i].name);
+				puts(symbol_table[i]->name);
 				puts("Was accessed as a variable, but it's a function!");
 				exit(1);
 			}
 			/*if it has no cdata- initialize it!*/
-			if(symbol_table[i].cdata == NULL){
-				uint64_t sz = type_getsz(symbol_table[i].t);
+			if(symbol_table[i]->cdata == NULL){
+				uint64_t sz = type_getsz(symbol_table[i]->t);
 //				debug_print("\nHaving to allocate global storage...",0,0);
-				symbol_table[i].cdata = calloc(
+				symbol_table[i]->cdata = calloc(
 					sz,1
 				);
-				symbol_table[i].cdata_sz = sz;
+				symbol_table[i]->cdata_sz = sz;
 			}
-			return symbol_table[i].cdata;
+			return symbol_table[i]->cdata;
 		}
 		puts("VM ERROR");
 		puts("Could not find global");
@@ -593,7 +592,7 @@ void do_expr(expr_node* ee){
 		uint64_t general;
 		//push a temporary.
 		general = ast_vm_stack_push_temporary();
-		vm_stack[general].smalldata = (uint64_t) (symbol_table + ee->symid);
+		vm_stack[general].smalldata = (uint64_t) ((symbol_table + ee->symid)[0]);
 		return;
 	}
 	if(ee->kind == EXPR_SIZEOF ||
@@ -622,7 +621,7 @@ void do_expr(expr_node* ee){
 		saved_cur_expr_stack_usage = cur_expr_stack_usage;
 		saved_executing_function= executing_function;
 		saved_vstack_pointer = vm_stackpointer;
-		ast_execute_function(symbol_table + ee->symid);
+		ast_execute_function((symbol_table + ee->symid)[0]);
 		
 		cur_func_frame_size = saved_cur_func_frame_size;
 		cur_expr_stack_usage = saved_cur_expr_stack_usage;
@@ -672,7 +671,7 @@ void do_expr(expr_node* ee){
 	if(ee->kind == EXPR_STRINGLIT){
 		void* p;
 		uint64_t general;
-		p = symbol_table[ee->symid].cdata;
+		p = symbol_table[ee->symid]->cdata;
 		//debug_print("Found String Literal. Address:",(uint64_t)p,0);
 		general = ast_vm_stack_push_temporary();
 		memcpy(&vm_stack[general].smalldata,&p,POINTER_SIZE);
@@ -1772,7 +1771,7 @@ void do_expr(expr_node* ee){
 			puts("VM error");
 			puts("streq got NULL");
 			puts("In function:");
-			puts(symbol_table[executing_function].name);
+			puts(symbol_table[executing_function]->name);
 			exit(1);
 		}
 		ast_vm_stack_pop(); //we no longer need the index itself.
@@ -1789,7 +1788,7 @@ void do_expr(expr_node* ee){
 			puts("VM error");
 			puts("strneq got NULL");
 			puts("In function:");
-			puts(symbol_table[executing_function].name);
+			puts(symbol_table[executing_function]->name);
 			exit(1);
 		}
 		ast_vm_stack_pop(); //we no longer need the index itself.
@@ -2513,16 +2512,16 @@ void ast_execute_function(symdecl* s){
 	stmt* stmt_list = NULL;
 	uint64_t stmt_kind = 0;
 	/*are we just starting? The first function returns void.*/
-	if(vm_stackpointer == 0){
+	/*if(vm_stackpointer == 0){
 		//type t = type_init();
 		ast_vm_stack_push_temporary();
 		n_scopes_executings = 0;
-	}
+	}*/
 
 	begin_executing_function:
 	{uint64_t i;
 		for(i = 0; i < nsymbols; i++){
-			if(s == symbol_table+i){
+			if(s == (symbol_table+i)[0]){
 				executing_function = i;
 				goto found_our_boy;
 			}
@@ -2553,6 +2552,11 @@ void ast_execute_function(symdecl* s){
 		}
 	continue_executing_scope:
 		while(1){
+		    
+		    /*
+			printf("s's name is... ");
+			printf("%s\n", s->name);
+			*/
 			stmt_list = scope_executing_stack_gettop()->stmts;
 			if(
 			    (scope_executing_stack_gettop()->nstmts == 0) || 
@@ -2644,7 +2648,7 @@ void ast_execute_function(symdecl* s){
 					if(streq(symbol_table[i].name, cur_stmt->referenced_label_name))
 					*/
                 {
-                    s = symbol_table + i;
+                    s = (symbol_table + i)[0];
                     goto begin_executing_function;
                 }
 			}
@@ -2862,6 +2866,6 @@ void ast_execute_expr_parsehook(symdecl* s, expr_node** targ){
     }
     p->smalldata = (uint64_t) targ;
     ast_execute_function(s);
-    vm_stackpointer = 0;
+    ast_vm_stack_pop();
     return;
 }

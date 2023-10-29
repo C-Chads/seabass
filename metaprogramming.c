@@ -81,27 +81,27 @@ unsigned char* impl_builtin_retrieve_sym_ptr(char* name)
     size_t i;
     for(i = 0; i < nsymbols; i++)
     {
-        if(streq(symbol_table[i].name, name))
+        if(streq(symbol_table[i]->name, name))
         {
-            if(symbol_table[i].t.is_function){
+            if(symbol_table[i]->t.is_function){
                 return (unsigned char*)(symbol_table + i);
             } else {
-    			if(symbol_table[i].is_incomplete){
+    			if(symbol_table[i]->is_incomplete){
     				puts("VM Error");
     				puts("This global:");
-    				puts(symbol_table[i].name);
+    				puts(symbol_table[i]->name);
     				puts("Was incomplete at access time, through __builtin_retrieve_sym_ptr");
     				exit(1);
     			}
     			/*if it has no cdata- initialize it!*/
-    			if(symbol_table[i].cdata == NULL){
-    				uint64_t sz = type_getsz(symbol_table[i].t);
-    				symbol_table[i].cdata = calloc(
+    			if(symbol_table[i]->cdata == NULL){
+    				uint64_t sz = type_getsz(symbol_table[i]->t);
+    				symbol_table[i]->cdata = calloc(
     					sz,1
     				);
-    				symbol_table[i].cdata_sz = sz;
+    				symbol_table[i]->cdata_sz = sz;
     			}
-    			return (unsigned char*)symbol_table[i].cdata;
+    			return (unsigned char*)symbol_table[i]->cdata;
             }
         }
     }
@@ -283,9 +283,18 @@ unsigned char* impl_builtin_strll_dupell(unsigned char* in_this){
 }
 
 void parse_global();
-
+extern uint64_t cur_func_frame_size;
+extern uint64_t cur_expr_stack_usage;
 void impl_builtin_parse_global(){
+    /*
+        We have to cache some state from the 
+        AST executor...
+    */
+    uint64_t stash_cur_func_frame_size = cur_func_frame_size;
+    uint64_t stash_cur_expr_stack_usage = cur_expr_stack_usage;
     parse_global();
+    cur_expr_stack_usage = stash_cur_expr_stack_usage;
+    cur_func_frame_size = stash_cur_func_frame_size;
 }
 
 

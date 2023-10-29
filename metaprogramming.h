@@ -17,7 +17,7 @@
 */
 typedef struct{
 	typedecl** type_table;
-	symdecl** symbol_table;
+	symdecl*** symbol_table;
 	typedecl_oop_metadata** oop_metadata;
 	scope*** scopestack;
 	stmt*** loopstack;

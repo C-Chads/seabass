@@ -187,7 +187,7 @@ method codegen cgexpr_node:gen_code(cgast* ast)->char*:
         i64 nargs
         cgsymdecl* sym
         symid = this.symid;
-        sym = ast.symbol_table[0] + symid;
+        sym = (ast.symbol_table[0] + symid)[0];
         retval.s = __builtin_strdup(this.symname);
         ff.s = "("; retval:add(ff);
             nargs = sym.nargs;
@@ -232,7 +232,7 @@ method codegen cgexpr_node:gen_code(cgast* ast)->char*:
         buf[1] = 0;
         buf[2] = 0;
         ff.s = buf;
-        str_text = (ast.symbol_table[0] + symid).cdata;
+        str_text = (ast.symbol_table[0] + symid)[0].cdata;
         retval.s = __builtin_strdup("\"");
         
         for(0, str_text[0], str_text++)
@@ -730,7 +730,7 @@ method codegen cgexpr_node:gen_code(cgast* ast)->char*:
         
         
         symid = this.symid;
-        sym_proto = (ast.symbol_table[0]+symid);
+        sym_proto = (ast.symbol_table[0]+symid)[0];
         //proto_nargs = sym_proto.nargs;
         proto_nargs = this.fnptr_nargs; //we already cached this from parser.c
         proto_retval_type = sym_proto.t;
@@ -787,7 +787,7 @@ method codegen cgexpr_node:gen_code(cgast* ast)->char*:
         cgstr ff
         cgsymdecl* sym_to_get_pointer_of
         symid = this.symid;
-        sym_to_get_pointer_of = (ast.symbol_table[0]+symid);
+        sym_to_get_pointer_of = (ast.symbol_table[0]+symid)[0];
         if(sym_to_get_pointer_of.t.arraylen || sym_to_get_pointer_of.is_data)
             //simply strdup it...
             retval:fromstr(this.symname);
@@ -1157,8 +1157,8 @@ method codegen cgstmt:gen_code(cgast* ast, char* disptablename, u64 active_fun_s
         i64 nargs
         cgsymdecl* target_fn
         cgsymdecl* this_fn
-        target_fn = ast.symbol_table[0] + this.symid;
-        this_fn = ast.symbol_table[0]+ active_fun_symid;
+        target_fn = (ast.symbol_table[0] + this.symid)[0];
+        this_fn = (ast.symbol_table[0]+ active_fun_symid) [0];
         nargs = target_fn.nargs;
         is_void_return_type = (this_fn.t.basetype == CG_BASE_VOID);
         if(!is_void_return_type)
@@ -1857,14 +1857,14 @@ fn codegen cg_emitC(char* prefix):
     for(i = 0, i < ast.nsymbols[0]; i++)
         if
         (
-            (ast.symbol_table[0]+i).t.is_function ||
-            (ast.symbol_table[0]+i).is_codegen ||
-            (ast.symbol_table[0]+i).is_stringlit
+            (ast.symbol_table[0]+i)[0].t.is_function ||
+            (ast.symbol_table[0]+i)[0].is_codegen ||
+            (ast.symbol_table[0]+i)[0].is_stringlit
         )
             continue
         end
         //it's not a function!
-            p = (ast.symbol_table[0]+i):gen_code(ast,0,i);
+            p = (ast.symbol_table[0]+i)[0]:gen_code(ast,0,i);
         if(cast(uptr)p)
             cg_quick_emit(p,0);
             __builtin_free(p);
@@ -1876,13 +1876,13 @@ fn codegen cg_emitC(char* prefix):
     for(i = 0, i < ast.nsymbols[0]; i++)
         if
         (
-            !(ast.symbol_table[0]+i).t.is_function ||
-            (ast.symbol_table[0]+i).is_codegen
+            !(ast.symbol_table[0]+i)[0].t.is_function ||
+            (ast.symbol_table[0]+i)[0].is_codegen
         )
             continue
         end
         //it is a function! Generate prototype...
-        p = (ast.symbol_table[0]+i):gen_code(ast,1, i);
+        p = (ast.symbol_table[0]+i)[0]:gen_code(ast,1, i);
         if(cast(uptr)p)
             cg_quick_emit(p,0);
             __builtin_free(p);
@@ -1895,12 +1895,12 @@ fn codegen cg_emitC(char* prefix):
     for(i = 0, i < ast.nsymbols[0]; i++)
         if
         (
-            !(ast.symbol_table[0]+i).t.is_function ||
-            (ast.symbol_table[0]+i).is_codegen
+            !(ast.symbol_table[0]+i)[0].t.is_function ||
+            (ast.symbol_table[0]+i)[0].is_codegen
         )
             continue
         end
-            p = (ast.symbol_table[0]+i):gen_code(ast,0, i);
+            p = (ast.symbol_table[0]+i)[0]:gen_code(ast,0, i);
         if(cast(uptr)p)
             cg_quick_emit(p,0);
             __builtin_free(p);

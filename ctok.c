@@ -1760,6 +1760,7 @@ static char* read_stdin_until_we_get_eof(FILE* f, unsigned long* len){
 
 
 void vm_allocate_needed_memory(size_t amt);
+//void alloc_symbol_table();
 
 int main(int argc, char** argv){
 	saved_argc = argc;
@@ -1854,6 +1855,10 @@ int main(int argc, char** argv){
 	ifile = NULL;
 	tokenized.text = entire_input_file;
 	vm_allocate_needed_memory(0x2000000);
+	/*
+	    Needed for secure symbol table...
+	*/
+	
 	{
 	    {
 		    t = realpath(infilename, NULL);

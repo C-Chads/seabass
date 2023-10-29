@@ -66,17 +66,17 @@ uint64_t get_target_max_float_type(){
 */
 static inline int impl_streq_exists(){
 	for(unsigned long i = 0; i < nsymbols; i++){
-		if(streq("impl_streq", symbol_table[i].name)){
-			if(symbol_table[i].t.is_function == 0) return 0;
-			if(symbol_table[i].is_codegen > 0) return 0;
-			if(symbol_table[i].is_pure == 0) return 0;
-			if(symbol_table[i].t.basetype != TARGET_WORD_SIGNED_BASE) return 0;
-			if(symbol_table[i].t.pointerlevel != 0) return 0;
-			if(symbol_table[i].nargs != 2) return 0;
-			if(symbol_table[i].fargs[0]->basetype != BASE_U8) return 0;
-			if(symbol_table[i].fargs[0]->pointerlevel != 1) 	return 0;
-			if(symbol_table[i].fargs[1]->basetype != BASE_U8) return 0;
-			if(symbol_table[i].fargs[1]->pointerlevel != 1) 	return 0;
+		if(streq("impl_streq", symbol_table[i]->name)){
+			if(symbol_table[i]->t.is_function == 0) return 0;
+			if(symbol_table[i]->is_codegen > 0) return 0;
+			if(symbol_table[i]->is_pure == 0) return 0;
+			if(symbol_table[i]->t.basetype != TARGET_WORD_SIGNED_BASE) return 0;
+			if(symbol_table[i]->t.pointerlevel != 0) return 0;
+			if(symbol_table[i]->nargs != 2) return 0;
+			if(symbol_table[i]->fargs[0]->basetype != BASE_U8) return 0;
+			if(symbol_table[i]->fargs[0]->pointerlevel != 1) 	return 0;
+			if(symbol_table[i]->fargs[1]->basetype != BASE_U8) return 0;
+			if(symbol_table[i]->fargs[1]->pointerlevel != 1) 	return 0;
 			return 1;
 		}
 	}
@@ -144,7 +144,7 @@ static void checkswitch(stmt* sw){
 				puts("Switch statement in function uses label not in its home scope.");
 				puts("A switch statement is not allowed to jump out of its own scope, either up or down!");
 				puts("Function name:");
-				puts(symbol_table[active_function].name);
+				puts(symbol_table[active_function]->name);
 				puts("Label in particular:");
 				puts(sw->switch_label_list[i]);
 				validator_exit_err();
@@ -192,7 +192,7 @@ static void check_label_declarations(scope* lvl){
 				if(streq(stmtlist[i].referenced_label_name, discovered_labels[j]))
 				{
 					puts("Duplicate label in function:");
-					puts(symbol_table[active_function].name);
+					puts(symbol_table[active_function]->name);
 					puts("Label is:");
 					puts(stmtlist[i].referenced_label_name);
 					validator_exit_err();
@@ -248,15 +248,15 @@ static void assign_lsym_gsym(expr_node* ee){
 
 	/*Mut search active_function's fargs...*/
 	if(ee->kind == EXPR_SYM)
-		for(i = 0; i < (int64_t)symbol_table[active_function].nargs; i++){
+		for(i = 0; i < (int64_t)symbol_table[active_function]->nargs; i++){
 			if(
 				streq(
 					ee->symname, 
-					symbol_table[active_function].fargs[i]->membername
+					symbol_table[active_function]->fargs[i]->membername
 				)
 			){
 				ee->kind = EXPR_LSYM;
-				ee->t = *symbol_table[active_function].fargs[i];
+				ee->t = *symbol_table[active_function]->fargs[i];
 				ee->symid = depth;
 				//ee->t.membername;
 				return;
@@ -267,38 +267,38 @@ static void assign_lsym_gsym(expr_node* ee){
 	
 	if(ee->kind == EXPR_SYM)
 		for(i = 0; i < (int64_t)nsymbols; i++)
-			if(streq(ee->symname, symbol_table[i].name)){
+			if(streq(ee->symname, symbol_table[i]->name)){
 				/*Do some validation. It can't be a function...*/
-				if(symbol_table[i].t.is_function)
+				if(symbol_table[i]->t.is_function)
 				{
 					puts("<INTERNAL ERROR> Uncaught usage of function name as identifier?");
 					puts("Active Function:");
-					puts(symbol_table[active_function].name);
+					puts(symbol_table[active_function]->name);
 					puts("Identifier:");
 					if(ee->symname)
 						puts(ee->symname);
 					validator_exit_err();
 				}
-				if(symbol_table[active_function].is_pure > 0){
+				if(symbol_table[active_function]->is_pure > 0){
 					puts("VALIDATOR ERROR!");
 					puts("You may not use global variables in pure functions.");
 					puts("This is the variable you are not allowed to access:");
 					puts(ee->symname);
 					puts("This is the function you tried to access it from:");
-					puts(symbol_table[active_function].name);
+					puts(symbol_table[active_function]->name);
 					validator_exit_err();
 				}
 				ee->kind = EXPR_GSYM;
 				ee->symid = i;
 				//this function is impure because it uses global variables.
-				symbol_table[active_function].is_impure_globals_or_asm = 1;
-				symbol_table[active_function].is_impure = 1;
+				symbol_table[active_function]->is_impure_globals_or_asm = 1;
+				symbol_table[active_function]->is_impure = 1;
 				return;
 			}
 	if(ee->kind == EXPR_SYM){
 		puts("<VALIDATION ERROR> Unknown identifier...");
 		puts("Active Function:");
-		puts(symbol_table[active_function].name);
+		puts(symbol_table[active_function]->name);
 		puts("Identifier:");
 		if(ee->symname)
 			puts(ee->symname);
@@ -313,7 +313,7 @@ static void throw_type_error(char* msg){
 	puts("TYPING ERROR!");
 	puts(msg);
 	puts("Function:");
-	puts(symbol_table[active_function].name);
+	puts(symbol_table[active_function]->name);
 	validator_exit_err();
 }
 
@@ -324,7 +324,7 @@ static void throw_type_error_with_expression_enums(char* msg, unsigned a, unsign
 	puts("TYPING ERROR!");
 	puts(msg);
 	puts("Function:");
-	puts(symbol_table[active_function].name);
+	puts(symbol_table[active_function]->name);
 	c = a;
 	puts("a=");
 	if(c == EXPR_SIZEOF) puts("EXPR_SIZEOF");
@@ -438,7 +438,7 @@ static void propagate_types(expr_node* ee){
 	uint64_t WORD_BASE;
 	uint64_t SIGNED_WORD_BASE;
 	uint64_t FLOAT_BASE;
-	if(symbol_table[active_function].is_codegen){
+	if(symbol_table[active_function]->is_codegen){
 		WORD_BASE = BASE_U64;
 		SIGNED_WORD_BASE = BASE_I64;
 		FLOAT_BASE = BASE_F64;
@@ -564,7 +564,7 @@ static void propagate_types(expr_node* ee){
 		return;
 	}
 	if(ee->kind == EXPR_FLOATLIT){
-		if(symbol_table[active_function].is_codegen == 0)
+		if(symbol_table[active_function]->is_codegen == 0)
 		if(TARGET_DISABLE_FLOAT)
 		{
 			puts("Validator error:");
@@ -579,7 +579,7 @@ static void propagate_types(expr_node* ee){
 		return;
 	}
 	if(ee->kind == EXPR_GSYM){
-		t = symbol_table[ee->symid].t;
+		t = symbol_table[ee->symid]->t;
 		if(t.arraylen){
 			t.arraylen = 0;
 			t.pointerlevel++;
@@ -596,12 +596,12 @@ static void propagate_types(expr_node* ee){
 		return;
 	}
 	if(ee->kind == EXPR_GETGLOBALPTR){
-		t = symbol_table[ee->symid].t;
+		t = symbol_table[ee->symid]->t;
 		t.is_lvalue = 0;
 		if(t.arraylen){ //arrays need arrayness removed.
 			t.arraylen = 0;
 		}
-		if(symbol_table[ee->symid].is_data == 0){ //pointer level is not increased for data variables. they are already pointers!
+		if(symbol_table[ee->symid]->is_data == 0){ //pointer level is not increased for data variables. they are already pointers!
 			t.pointerlevel++;
 		}
 		ee->t = t;
@@ -642,12 +642,12 @@ static void propagate_types(expr_node* ee){
 	if(ee->kind == EXPR_BUILTIN_CALL){
 		uint64_t q = get_builtin_retval(ee->symname);
 		t.is_lvalue = 0;
-		if(symbol_table[active_function].is_pure > 0){
+		if(symbol_table[active_function]->is_pure > 0){
 			puts("Validator error:");
 			puts("Attempted to use a builtin call in a pure function.");
 	        validator_exit_err();
 		}
-		if(symbol_table[active_function].is_codegen == 0){
+		if(symbol_table[active_function]->is_codegen == 0){
 		    puts("Cannot use builtin calls in non-codegen function!");
 		    validator_exit_err();
 		}
@@ -910,8 +910,8 @@ static void propagate_types(expr_node* ee){
 		    c = ee->symname;
 		}
 		for(j = 0; j < nsymbols; j++)
-			if(streq(c, symbol_table[j].name)){
-				if(symbol_table[j].t.is_function == 0){
+			if(streq(c, symbol_table[j]->name)){
+				if(symbol_table[j]->t.is_function == 0){
 					puts("Weird things have been happening with the method table.");
 					puts("It appears you've been using reserved (__) names...");
 					puts("Don't do that!");
@@ -920,26 +920,26 @@ static void propagate_types(expr_node* ee){
 					puts("And I found a symbol by that name, but it is not a function.");
 					throw_type_error("Method table messed up");
 				}
-				if(symbol_table[j].nargs == 0){
+				if(symbol_table[j]->nargs == 0){
 					puts("This method:");
 					puts(c);
 					puts("Takes no arguments? Huh?");
 					throw_type_error("Method table messed up");
 				}
-				if(symbol_table[j].fargs[0]->basetype != BASE_STRUCT){
+				if(symbol_table[j]->fargs[0]->basetype != BASE_STRUCT){
 					puts("This method:");
 					puts(c);
 					puts("Does not take a struct pointer as its first argument. Huh?");
 					throw_type_error("Method table messed up");
 				}
-				if(symbol_table[j].fargs[0]->structid != t.structid){
+				if(symbol_table[j]->fargs[0]->structid != t.structid){
 					puts("This method:");
 					puts(c);
 					puts("Was apparently somehow called, as a method, on a non-matching struct.");
 					throw_type_error("Method shenanigans");
 				}
-				if(symbol_table[active_function].is_pure)
-					if(symbol_table[j].is_pure == 0){
+				if(symbol_table[active_function]->is_pure)
+					if(symbol_table[j]->is_pure == 0){
 						puts("<VALIDATOR ERROR>");
 						puts("You tried to invoke this method:");
 						puts(ee->method_name);
@@ -947,22 +947,22 @@ static void propagate_types(expr_node* ee){
 						puts(type_table[t.structid].name);
 						puts("But that method is not declared 'pure', and you are trying to invoke it in a pure function.");
 						puts("The pure function's name is:");
-						puts(symbol_table[active_function].name);
+						puts(symbol_table[active_function]->name);
 						throw_type_error("Purity check failure.");
 					}
-				if(!!symbol_table[active_function].is_codegen != !!symbol_table[j].is_codegen){
+				if(!!symbol_table[active_function]->is_codegen != !!symbol_table[j]->is_codegen){
 					puts("Validator Error");
 					puts("You tried to invoke this method:");
 					puts(ee->method_name);
 					puts("On a struct of this type:");
 					puts(type_table[t.structid].name);
-					if(!!symbol_table[j].is_codegen)
+					if(!!symbol_table[j]->is_codegen)
 						puts("But that method was declared codegen,");
 					else
 						puts("But that method was not declared codegen,");
 					puts("And the active function:");
-					puts(symbol_table[active_function].name);
-					if(!!symbol_table[active_function].is_codegen)
+					puts(symbol_table[active_function]->name);
+					if(!!symbol_table[active_function]->is_codegen)
 						puts("is declared codegen.");
 					else
 						puts("is not declared codegen.");
@@ -971,7 +971,7 @@ static void propagate_types(expr_node* ee){
 				//count how many subnodes we have.
 				for(i = 0; ee->subnodes[i] != NULL; i++);
 				//this is not meant to be inside the for...
-				if(i != symbol_table[j].nargs){
+				if(i != symbol_table[j]->nargs){
 					puts("This method:");
 					puts(c);
 					puts("Was called with the wrong number of arguments.");
@@ -981,7 +981,7 @@ static void propagate_types(expr_node* ee){
 						EXPR_BAD
 					);
 				}
-				t2 = symbol_table[j].t;
+				t2 = symbol_table[j]->t;
 				t2.is_function = 0;
 				t2.funcid = 0;
 				t2.is_lvalue = 0;
@@ -999,18 +999,18 @@ static void propagate_types(expr_node* ee){
 		if(ee->symid >= nsymbols){
 			throw_type_error("INTERNAL ERROR: EXPR_FCALL erroneously has bad symbol ID. This should have been resolved in parser.c");
 		}
-		if(symbol_table[active_function].is_pure > 0)
-			if(symbol_table[ee->symid].is_pure == 0){
+		if(symbol_table[active_function]->is_pure > 0)
+			if(symbol_table[ee->symid]->is_pure == 0){
 				puts("<VALIDATOR ERROR>");
 				puts("You tried to invoke this function:");
-				puts(symbol_table[ee->symid].name);
+				puts(symbol_table[ee->symid]->name);
 				puts("But that function is not declared 'pure', and you are trying to invoke it in a pure function.");
 				puts("The pure function's name is:");
-				puts(symbol_table[active_function].name);
+				puts(symbol_table[active_function]->name);
 				throw_type_error("Purity check failure.");
 			}
 		for(i = 0; ee->subnodes[i] != NULL; i++);
-		if(i != symbol_table[ee->symid].nargs){
+		if(i != symbol_table[ee->symid]->nargs){
 			puts("This function:");
 			puts(ee->symname);
 			puts("Was called with the wrong number of arguments.");
@@ -1021,7 +1021,7 @@ static void propagate_types(expr_node* ee){
 			);
 		}
 		
-		ee->t = symbol_table[ee->symid].t;
+		ee->t = symbol_table[ee->symid]->t;
 		ee->t.is_function = 0;
 		ee->t.funcid = 0;
 		ee->t.is_lvalue = 0; /*You can't assign to the output of a function*/
@@ -1031,13 +1031,13 @@ static void propagate_types(expr_node* ee){
 		if(ee->symid >= nsymbols){
 			throw_type_error("INTERNAL ERROR: EXPR_CALLFNPTR erroneously has bad symbol ID. This should have been resolved in parser.c");
 		}
-		if(symbol_table[active_function].is_pure > 0){
+		if(symbol_table[active_function]->is_pure > 0){
 			puts("<VALIDATOR ERROR>");
 			puts("You tried to invoke a function pointer in a pure function. That is not allowed!");
 			validator_exit_err();
 		}
 		for(i = 0; ee->subnodes[i] != NULL; i++);
-		if(i != symbol_table[ee->symid].nargs+1){
+		if(i != symbol_table[ee->symid]->nargs+1){
 			puts("Function pointer, with the given prototype:");
 			puts(ee->symname);
 			puts("Was called with the wrong number of arguments.");
@@ -1047,7 +1047,7 @@ static void propagate_types(expr_node* ee){
 				EXPR_BAD
 			);
 		}
-		ee->t = symbol_table[ee->symid].t;
+		ee->t = symbol_table[ee->symid]->t;
 		ee->t.is_function = 0;
 		ee->t.funcid = 0;
 		ee->t.is_lvalue = 0; /*You can't assign to the output of a function*/
@@ -1072,7 +1072,7 @@ static void propagate_types(expr_node* ee){
 					ee->kind,
 					ee->subnodes[0]->kind
 				);
-        if(symbol_table[active_function].is_codegen == 0){
+        if(symbol_table[active_function]->is_codegen == 0){
 		    if(TARGET_DISABLE_FLOAT)
 			    if(t.basetype == BASE_F32 || t.basetype == BASE_F64)
 				    throw_type_error("Floating point is disabled on the target and it is invalid to cast to floating point types on it.");
@@ -1120,7 +1120,7 @@ static void propagate_types(expr_node* ee){
 		){
 				throw_type_error("EXPR_STREQ requires two char pointers!");
 			}
-		if(symbol_table[active_function].is_codegen == 0)
+		if(symbol_table[active_function]->is_codegen == 0)
 		{
 			if(!impl_streq_exists()){
 				puts("Validator error:");
@@ -1147,7 +1147,7 @@ static void propagate_types(expr_node* ee){
 			t2.basetype != BASE_U8){
 				throw_type_error("EXPR_STRNEQ requires two char pointers!");
 			}
-		if(symbol_table[active_function].is_codegen == 0)
+		if(symbol_table[active_function]->is_codegen == 0)
 		{
 			if(!impl_streq_exists()){
 				puts("Validator error:");
@@ -1696,7 +1696,7 @@ static void validate_function_argument_passing(expr_node* ee){
 		strcpy(buf_err, "Function Argument Number ");
 
 		
-		nargs = symbol_table[ee->symid].nargs;
+		nargs = symbol_table[ee->symid]->nargs;
 		for(i = 0; i < nargs; i++){
 			if(ee->kind == EXPR_FCALL)
 				strcpy(buf_err, "fn arg ");
@@ -1707,7 +1707,7 @@ static void validate_function_argument_passing(expr_node* ee){
 			mutoa(buf_err + strlen(buf_err), i+1);
 			strcat(buf_err, " has the wrong type.\n");
 			strcat(buf_err, " function's name is... ");
-			strcat(buf_err, symbol_table[ee->symid].name);
+			strcat(buf_err, symbol_table[ee->symid]->name);
 			strcat(buf_err, "\n");
 			if(ee->kind == EXPR_METHOD)
 				strcat(
@@ -1716,14 +1716,14 @@ static void validate_function_argument_passing(expr_node* ee){
 				);
 			if(ee->kind != EXPR_CALLFNPTR){
 				throw_if_types_incompatible(
-					symbol_table[ee->symid].fargs[i][0], 
+					symbol_table[ee->symid]->fargs[i][0], 
 					ee->subnodes[i]->t,
 					buf_err,
 					0
 				);
 			} else{
 				throw_if_types_incompatible(
-					symbol_table[ee->symid].fargs[i][0], 
+					symbol_table[ee->symid]->fargs[i][0], 
 					ee->subnodes[i+1]->t,
 					buf_err,
 					0
@@ -1757,23 +1757,23 @@ static void validate_codegen_safety(expr_node* ee){
 		ee->kind == EXPR_GETGLOBALPTR
 	)
 	if(
-		symbol_table[active_function].is_codegen !=
-		symbol_table[ee->symid].is_codegen
+		symbol_table[active_function]->is_codegen !=
+		symbol_table[ee->symid]->is_codegen
 	){
 		puts("Codegen safety check failed!");
 		puts("This function:");
-		puts(symbol_table[active_function].name);
+		puts(symbol_table[active_function]->name);
 		puts("May not at any time use this symbol:");
-		puts(symbol_table[ee->symid].name);
+		puts(symbol_table[ee->symid]->name);
 		puts("Because one of them is declared 'codegen'");
 		puts("and the other is not!");
 		validator_exit_err();
 	}
-	if(symbol_table[active_function].is_codegen == 0)
+	if(symbol_table[active_function]->is_codegen == 0)
 		if(ee->kind == EXPR_BUILTIN_CALL){
 			puts("Codegen safety check failed!");
 			puts("This non-codegen function:");
-			puts(symbol_table[active_function].name);
+			puts(symbol_table[active_function]->name);
 			puts("May not invoke builtin functions. Including this one:");
 			puts(ee->symname);
 			puts("Because it is not declared 'codegen'");
@@ -1876,7 +1876,7 @@ static void propagate_implied_type_conversions(expr_node* ee){
 	uint64_t SIGNED_WORD_BASE;
 	uint64_t FLOAT_BASE;
 	(void)FLOAT_BASE;
-	if(symbol_table[active_function].is_codegen){
+	if(symbol_table[active_function]->is_codegen){
 		WORD_BASE = BASE_U64;
 		SIGNED_WORD_BASE = BASE_I64;
 		FLOAT_BASE = BASE_F64;
@@ -2266,9 +2266,9 @@ static void propagate_implied_type_conversions(expr_node* ee){
 	}
 	
 	if(ee->kind == EXPR_FCALL || ee->kind == EXPR_METHOD){
-		for(i = 0; i < symbol_table[ee->symid].nargs; i++){
+		for(i = 0; i < symbol_table[ee->symid]->nargs; i++){
 			type qqq;
-			qqq = symbol_table[ee->symid].fargs[i][0];
+			qqq = symbol_table[ee->symid]->fargs[i][0];
 			qqq.is_lvalue = 0;
 			qqq.membername = NULL;
 			throw_if_types_incompatible(
@@ -2302,10 +2302,10 @@ static void propagate_implied_type_conversions(expr_node* ee){
 				qqq
 			);
 		}
-		if(symbol_table[ee->symid].nargs)
-			for(i = 0; i < symbol_table[ee->symid].nargs; i++){
+		if(symbol_table[ee->symid]->nargs)
+			for(i = 0; i < symbol_table[ee->symid]->nargs; i++){
 				type qqq;
-				qqq = symbol_table[ee->symid].fargs[i][0];
+				qqq = symbol_table[ee->symid]->fargs[i][0];
 				qqq.is_lvalue = 0;
 				qqq.membername = NULL;
 				throw_if_types_incompatible(
@@ -2516,7 +2516,7 @@ static void walk_assign_lsym_gsym(){
 	int64_t i;
 	int64_t j;
 
-	current_scope = symbol_table[active_function].fbody;
+	current_scope = symbol_table[active_function]->fbody;
 	stmt* stmtlist;
 	current_scope->walker_point = 0;
 	i = 0;
@@ -2524,7 +2524,7 @@ static void walk_assign_lsym_gsym(){
 	uint64_t SIGNED_WORD_BASE;
 	uint64_t FLOAT_BASE;
 	(void)FLOAT_BASE;
-	if(symbol_table[active_function].is_codegen){
+	if(symbol_table[active_function]->is_codegen){
 		WORD_BASE = BASE_U64;
 		SIGNED_WORD_BASE = BASE_I64;
 		FLOAT_BASE = BASE_F64;
@@ -2606,7 +2606,7 @@ static void walk_assign_lsym_gsym(){
 				puts("Goto target:");
 				puts(stmtlist[i].referenced_label_name);
 				puts("Does not exist in function:");
-				puts(symbol_table[active_function].name);
+				puts(symbol_table[active_function]->name);
 				validator_exit_err();
 
 			}
@@ -2748,7 +2748,7 @@ static void walk_assign_lsym_gsym(){
 		if(stmtlist[i].kind == STMT_RETURN){
 			if((expr_node*)stmtlist[i].expressions[0]){
 				type qq = ((expr_node*)stmtlist[i].expressions[0])->t;
-				type pp = symbol_table[active_function].t;
+				type pp = symbol_table[active_function]->t;
 				pp.is_function = 0;
 				pp.funcid = 0;
 				throw_if_types_incompatible(pp,qq,"Return statement must have compatible type.",0);
@@ -2763,20 +2763,20 @@ static void walk_assign_lsym_gsym(){
 			scopestack_pop();
 		}
 		if(stmtlist[i].kind == STMT_TAIL){
-			if(symbol_table[active_function].is_pure){
-				if(symbol_table[stmtlist[i].symid].is_pure == 0){
+			if(symbol_table[active_function]->is_pure){
+				if(symbol_table[stmtlist[i].symid]->is_pure == 0){
 					puts("Validator Error!");
 					puts("Tail statement in function:");
-					puts(symbol_table[active_function].name);
+					puts(symbol_table[active_function]->name);
 					puts("Tails-off to a function not explicitly defined as pure.");
 					validator_exit_err();
 				}
 			}
 			/*compare function arguments...*/
-			for(j = 0; j < (int64_t)symbol_table[active_function].nargs; j++)
+			for(j = 0; j < (int64_t)symbol_table[active_function]->nargs; j++)
 				throw_if_types_incompatible(
-					symbol_table[active_function].fargs[j][0],
-					symbol_table[stmtlist[i].symid].fargs[j][0],
+					symbol_table[active_function]->fargs[j][0],
+					symbol_table[stmtlist[i].symid]->fargs[j][0],
 					"Tail to function with non-matching function prototype.",
 					1 //basetypes must be identical
 				);
@@ -2789,21 +2789,21 @@ static void walk_assign_lsym_gsym(){
 			scopestack_pop();
 		}
 		if(stmtlist[i].kind == STMT_ASM){
-			symbol_table[active_function].is_impure_globals_or_asm = 1;
-			symbol_table[active_function].is_impure = 1;
-			if(symbol_table[active_function].is_codegen != 0){
+			symbol_table[active_function]->is_impure_globals_or_asm = 1;
+			symbol_table[active_function]->is_impure = 1;
+			if(symbol_table[active_function]->is_codegen != 0){
 				puts("VALIDATION ERROR!");
 				puts("asm blocks may not exist in codegen functions.");
 				puts("This function:");
-				puts(symbol_table[active_function].name);
+				puts(symbol_table[active_function]->name);
 				puts("Was declared 'codegen' so you cannot use 'asm' blocks in it.");
 				validator_exit_err();
 			}
-			if(symbol_table[active_function].is_pure > 0){
+			if(symbol_table[active_function]->is_pure > 0){
 				puts("VALIDATION ERROR!");
 				puts("asm blocks may not exist in pure functions.");
 				puts("This function:");
-				puts(symbol_table[active_function].name);
+				puts(symbol_table[active_function]->name);
 				puts("Was declared 'pure' so you cannot use 'asm' blocks in it.");
 				validator_exit_err();
 			}
@@ -2993,7 +2993,7 @@ static void walk_insert_ctor_dtor(){
 	scope* current_scope;
 	int64_t i;
 
-	current_scope = symbol_table[active_function].fbody;
+	current_scope = symbol_table[active_function]->fbody;
 	stmt* stmtlist;
 	current_scope->walker_point = 0;
 	i = 0;
@@ -3154,7 +3154,7 @@ static void walk_insert_ctor_dtor_pt2(){
 	scope* current_scope;
 	int64_t i;
 
-	current_scope = symbol_table[active_function].fbody;
+	current_scope = symbol_table[active_function]->fbody;
 	stmt* stmtlist;
 	current_scope->walker_point = 0;
 	i = 0;
@@ -3263,7 +3263,7 @@ void validate_function(symdecl* funk){
 			puts("INTERNAL VALIDATOR ERROR: The function is not in the symbol list!");
 			exit(1);
 		}
-        if(symbol_table+i == funk){
+        if((symbol_table+i)[0] == funk){
 			active_function = i; break;
 		}
 	}
