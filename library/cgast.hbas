@@ -539,7 +539,7 @@ class cgast
 	cgscope*** scopestack
 	cgstmt*** loopstack
 	
-	u64* active_function
+	u64* active_function //I DID!!!!
 	u64* ntypedecls
 	u64* nsymbols
 	u64* nscopes

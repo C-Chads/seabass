@@ -80,6 +80,7 @@ char* impl_builtin_parser_push_statement();
 unsigned char* impl_builtin_retrieve_sym_ptr(char* name);
 unsigned char* impl_builtin_strll_dupe(unsigned char* this);
 unsigned char* impl_builtin_strll_dupell(unsigned char* this);
+void impl_builtin_parse_global();
 
 
 

@@ -282,6 +282,12 @@ unsigned char* impl_builtin_strll_dupell(unsigned char* in_this){
 	return (unsigned char*)retval;
 }
 
+void parse_global();
+
+void impl_builtin_parse_global(){
+    parse_global();
+}
+
 
 int is_builtin_name(char* s){
 	if(streq(s, "__builtin_emit")) return 1;
@@ -324,6 +330,7 @@ int is_builtin_name(char* s){
 	
 	if(streq(s, "__builtin_strll_dupe")) return 1;
 	if(streq(s, "__builtin_strll_dupell")) return 1;
+	if(streq(s, "__builtin_parse_global")) return 1;
 	return 0;
 }
 
@@ -365,6 +372,8 @@ uint64_t get_builtin_nargs(char* s){
     if(streq(s, "__builtin_retrieve_sym_ptr")) return 1;
 	if(streq(s, "__builtin_strll_dupe")) return 1;
     if(streq(s, "__builtin_strll_dupell")) return 1;
+	if(streq(s, "__builtin_parse_global")) return 0;
+
 	return 0;
 }
 
@@ -405,6 +414,8 @@ uint64_t get_builtin_retval(char* s){
 	if(streq(s, "__builtin_retrieve_sym_ptr")) return BUILTIN_PROTO_U8_PTR;
     if(streq(s, "__builtin_strll_dupe")) return BUILTIN_PROTO_U8_PTR;
 	if(streq(s, "__builtin_strll_dupell")) return BUILTIN_PROTO_U8_PTR;
+    if(streq(s, "__builtin_parse_global")) return BUILTIN_PROTO_VOID;
+
 	return 0;
 }
 

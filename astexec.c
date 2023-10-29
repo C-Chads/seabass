@@ -2150,6 +2150,10 @@ void do_expr(expr_node* ee){
 			);
 			impl_builtin_exit(v);
 		}
+        if(streq(ee->symname, "__builtin_parse_global")){
+			impl_builtin_parse_global();
+			goto end_of_builtin_call;
+		}
 		if(streq(ee->symname, "__builtin_get_ast")){
 			char* v;
 			v = (char*) impl_builtin_get_ast();

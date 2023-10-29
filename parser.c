@@ -645,6 +645,26 @@ void compile_unit(strll* _unit){
 	exit(0);
 }
 
+void parse_global(){
+    if(peek_match_keyw("data")){
+        parse_datastmt();
+        return;
+    }
+    if(peek_match_keyw("struct")){
+        parse_structdecl();
+        return;
+    }
+    if(peek_match_keyw("fn")){
+        parse_fn(0);
+        return;
+    }
+    if(peek_match_keyw("method")){
+        parse_method();
+        return;
+    }
+    parse_error("<INTERNAL CODEGEN ERROR> Codegen code called __builtin_parse_global() I didn't find any global to parse!");
+}
+
 
 type parse_type(){
 	type t = type_init();

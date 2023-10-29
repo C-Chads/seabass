@@ -7,7 +7,7 @@ typedecl_oop_metadata* oop_metadata = NULL;
 symdecl* symbol_table = NULL;
 uint64_t* parsehook_table = NULL;
 scope** scopestack = NULL;
-stmt** loopstack;
+stmt** loopstack = NULL;
 uint64_t active_function = 0;
 uint64_t ntypedecls = 0;
 uint64_t nsymbols = 0;
