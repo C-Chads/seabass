@@ -1,7 +1,7 @@
 CC= gcc
-CFLAGS= -O3 -s -std=gnu99 -march=native -flto
-CFLAGS_DBG= -Og -g -fsanitize=address,undefined,leak -std=gnu99 -DCOMPILER_CLEANS_UP -DUSE_PARSER_ECHO
-CFLAGS_CLEAN= -O3 -std=gnu99 -DCOMPILER_CLEANS_UP
+CFLAGS= -O3 -s -std=gnu99 -march=native -flto -fwrapv
+CFLAGS_DBG= -Og -g -fwrapv -fsanitize=address,undefined,leak -std=gnu99 -DCOMPILER_CLEANS_UP -DUSE_PARSER_ECHO
+CFLAGS_CLEAN= -O3 -fwrapv -std=gnu99 -DCOMPILER_CLEANS_UP
 
 CFLAGS_CBAS= -O3 -fwrapv -s -lpthread
 
