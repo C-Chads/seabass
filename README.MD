@@ -750,24 +750,27 @@ To begin viewing these manpages, do `cbas -m help`
 
 ## Platform specific stuff
 
-This code uses a little bit of *nix-specific functionality, specifically
-to evaluate paths for included files.
+The compiler builds by default with support for the `realpath`
+function of *nix-based systems. The standard library also
+mirrors this ability. This is used to make file includes
+relative to the directory of the current file, rather than
+the current working directory.
 
-It works on Debian 12 so it should work on whatever distro you're on.
+It is possible to build the compiler without any
+usage of realpath by not defining USE_REALPATH. This will
+cause all non-system includes to use the current working
+directory.
 
-If you're on windows for some reason
-then you'll have to replace `realpath` with some windows 
-equivalent.
+`__builtin_read_file` always uses the current working directory.
 
-realpath DOES return an owning pointer, by the way.
+## Implementation Limitations
 
 Seabass assumes that the codegen environment is 64 bit. You can
-write code for a non-64 bit target, but for instance, you'll
-have to evaluate type sizes yourself. It's not that difficult,
-it's just something you'll have to write.
+write code for a non-64 bit target, but the compiler itself must
+live on a 64 bit host.
 
-If and when seabass is ported to itself, I may make `cbas` compatible
-with other environments. It's a very low-priority goal.
+When Seabass is eventually ported to itself, I plan to address
+this by allowing you to define the compiletime environment.
 
 # Enjoy Programming!
 
