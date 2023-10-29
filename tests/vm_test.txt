@@ -271,10 +271,12 @@ end
 
 //do not reuse this class! it's not good!
 class codegen_ast_dontreuse
-	char*** type_table
+	char** type_table
 	char*** symbol_table
+	char** oop_metadata;
 	char*** scopestack
 	char*** loopstack
+	
 	u64* active_function
 	u64* ntypedecls
 	u64* nsymbols
