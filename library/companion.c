@@ -181,7 +181,7 @@ void thread_start(unsigned char* tr){
     return;
 }
 void thread_kill(unsigned char* tr){
-    return
+    return;
 }
 
 void thread_step(unsigned char* tr){
