@@ -60,16 +60,17 @@
         //prefix code....
     ]
     
-    and you can omit "type" or "fn" and instead just write arbitrary code...
-    mktemplate myCode[type T, typename T2, ident I, Q][
-        //prefix code....
-    ]
+    and you can omit "type" or "fn" and instead write
+    this fancy worksheet...
     
-    and you can specify body code as well (only for code...)
     mktemplate myCode[type T, typename T2, ident I, Q][
-        //prefix code....
+        //prefix code.... this will ultimately become the
+        //body of the worksheet.
     ][
-        //body code...
+        //write your worksheet's post-processing....
+    ][
+        //write code here which takes the template parameters
+        //and then says what to generate in the body...
     ]
     
     ?WHAT HAPPENS WHEN A TEMPLATE IS DEFINED?
@@ -81,11 +82,14 @@
     
     ?WHAT HAPPENS WHEN A TEMPLATE IS INSTANTIATED?
     
-    * Parse the parameter list and validate its correctness.
+    * Parse the parameter list and validate its correctness. We may also have
+        to instantiate a template (for instance, vector[vector[int]])
     * Check the list of instantiations to see if the instance has already
         been generated. If it has, we use it. Otherwise, we press onward...
     * A unique name is generated according to the template parameters.
-    * we fill out the worksheet
+    * we fill out the worksheet and insert the worksheet invocation at the
+        end of the prefix. We have to remember to get the bracket levels correct...
+    * the body portion has the identifier added.
 */
 
 #include "cgtoken_manip_tools.hbas"
