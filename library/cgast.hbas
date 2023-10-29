@@ -571,6 +571,12 @@ end
 
 method codegen cgparsecache.load():
     cgast* ast = cast(cgast*)__builtin_get_ast();
+    if(ast.scopestack[0] != 0)
+        __builtin_free((u8*)ast.scopestack[0]);
+    end
+    if(ast.loopstack[0] != 0)
+        __builtin_free((u8*)ast.loopstack[0]);
+    end
     ast.nscopes[0] = this.nscopes;
     ast.nloops[0] = this.nloops;
     ast.scopestack[0] = this.scopestack;
