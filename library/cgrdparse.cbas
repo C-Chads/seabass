@@ -117,7 +117,7 @@ end
     data data char;;;,,,, (char) "Yes, I want this printed" if if Here_is_the_name my_int_name
 ]
 
-
+@global
 fn codegen codegen_main():
     //__builtin_exit(0);
     my_int_name = 3;
