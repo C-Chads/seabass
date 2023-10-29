@@ -541,6 +541,16 @@ a few months.
  - [X] A C code generator
  
  - [ ] A standard library
+ 
+    - [X] basic file I/O
+    
+    - [X] Multithreading
+    
+    - [ ] Networking
+    
+    - [ ] Math
+    
+    - [ ] Algorithms
 
  - [X] Syntax highlighting files
 
@@ -550,25 +560,106 @@ a few months.
     
     - [X] The Worksheet
     
+    - [X] Token Manipulation Tools
+    
     - [ ] Language design tools
     
         - [X] cgrdparse- compiletime recursive descent parser generator
         
-        - [?] cg_uast- the Universal Abstract Syntax Tree
+            - [ ] Parser Rule Templates- Common patterns in recursive descent parsing.
+        
+        - [ ] cg_uast- the Universal Abstract Syntax Tree (Unfinished)
         
     - [ ] Tbas- Templated Seabass
+    
+    - [ ] System Archetypes
+    
+    - [ ] Datastructure Implementation Language (DIL)
+
+ - [ ] A standard template library
     
  - [ ] A self-hosted implementation (MILESTONE- READY FOR PRODUCTION)
  
  - [ ] Multiple custom high-level general-purpose languages to replace languages like C++ and Rust.
  
+    - [ ] CBAS++ (New features include...)
+        
+        - [ ] Actors- a Multithreaded programming model
+        
+        - [ ] Tuples
+        
+    - [ ] A functional language
+    
+    - [ ] A rust-like borrow-checked language.
+ 
  - [ ] A large set of domain specific languages for solving specific programming problems
 
+ - [ ] SDL2 port (MILESTONE- APPLICATION-READY)
 
+## ROADMAP (What order do I make things in?)
 
-## Project Vision
+1. Templated Seabass- TBAS
 
+I require the ability to define custom high-level
+templated data structures such as vector[int] and
+I need to be able to do it seamlessly. TBas will
+also give me the ability to do more advanced
+worksheet-style programming than `cgwksht` currently
+allows.
 
+This is a top-level priority as it will unlock
+way more metaprogramming potential than is currently
+possible with `cgwksht`- namely, you could write
+entire new classes and functions to extend the control
+flow of a small part of a single function.
+
+2. Data structure templates
+
+I need common data structures such as `vector` and
+`list` and `map` available at my finger tips, and I
+need it without any hassle. It's what I miss most from
+C++. I could theoretically already template any data
+structure I want by using `cgwksht` however this would
+not allow for inline usage ala `vector<int>`.
+
+3. Self hosting
+
+Seabass needs to be ported into itself so that work
+on the compiler is easier to verify as correct and
+easier to do.
+
+Once that occurs, all future development on Seabass
+will move to that repository and this compiler
+will be archived. Future bootstraps will use
+the latest build-to-C.
+
+This update should also remove Seabass's 64-bit-only
+requirement and possibly even add support for 128
+bit integers into the language.
+
+4. Cbas++
+
+I need a language on top of Seabass which provides me with
+everything C++ has, except readable. Everything from automatic
+type conversions to operator overloading and of course templates.
+
+It will also be a metaprogramming language.
+
+5. DIL / System Archetypes
+
+My visions for Higher order programming are what keep me inspired.
+
+In order to make those dreams a reality, I need a programming language
+specifically for writing systems and data structures.
+
+6. SDL2 port
+
+I want to be able to write games and graphical applications using
+Seabass- so I would like to properly port SDL2 into the language.
+
+7. Text editor
+
+I want to write the coolest programming editor ever.
     
 	
 # My Blessing to you
