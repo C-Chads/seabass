@@ -546,6 +546,45 @@ class cgast
 	u64* nloops
 end
 
+class cgparsecache noexport
+    u64 active_function
+    u64 nscopes
+    u64 nloops
+    cgscope** scopestack
+    cgstmt** loopstack
+end
+
+method codegen cgparsecache.save():
+    cgast* ast = cast(cgast*)__builtin_get_ast();
+    this.active_function = ast.active_function[0];
+    this.nscopes = ast.nscopes[0];
+    this.nloops = ast.nloops[0];
+    this.scopestack = ast.scopestack[0];
+    this.loopstack = ast.loopstack[0];
+    
+    ast.nscopes[0] = 0;
+    ast.nloops[0] = 0;
+    ast.scopestack[0] = 0;
+    ast.loopstack[0] = 0;
+    ast.active_function[0] = -1;
+end
+
+method codegen cgparsecache.load():
+    cgast* ast = cast(cgast*)__builtin_get_ast();
+    ast.nscopes[0] = this.nscopes;
+    ast.nloops[0] = this.nloops;
+    ast.scopestack[0] = this.scopestack;
+    ast.loopstack[0] = this.loopstack;
+    ast.active_function[0] = this.active_function;
+end
+
+fn codegen parsehook_global():
+    cgparsecache pcache
+    pcache.save();
+    __builtin_parse_global();
+    pcache.load();
+end
+
 /*
 	strll
 	char* text;

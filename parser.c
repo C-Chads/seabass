@@ -646,6 +646,68 @@ void compile_unit(strll* _unit){
 }
 
 void parse_global(){
+if(peek()->data == TOK_IDENT)
+		if(streq(peek()->text, "__cbas_run_fn")){
+            char* t;
+            uint64_t i;
+			uint64_t id;
+			int found = 0;
+				consume();
+				require(peek() != NULL, "__cbas_run_fn requires identifier.");
+				require(peek()->data == TOK_IDENT, "__cbas_run_fn requires identifier");
+				t = strdup(peek()->text);
+				for(i = 0; i < nsymbols; i++){
+					if(streq(t, symbol_table[i].name)){
+						id = i;
+						found = 1;
+						break;
+					}
+				}
+				require(found != 0, "Could not find __cbas_run_fn function");
+				free(t);
+				consume();
+				require(symbol_table[id].t.is_function != 0, "__cbas_run_fn- must be a function.");
+				require(symbol_table[id].is_codegen == 1, "__cbas_run_fn- must be is_codegen.");
+				require(symbol_table[id].is_incomplete == 0, "__cbas_run_fn- definition must be completed.");
+				require(symbol_table[id].fbody != NULL, "__cbas_run_fn- function body must not be null.");
+				require(symbol_table[id].t.basetype == BASE_VOID, "__cbas_run_fn- must return nothing!");
+				require(symbol_table[id].t.pointerlevel == 0 , "__cbas_run_fn- must return nothing");
+				require(symbol_table[id].nargs == 0, "__cbas_run_fn- must take zero arguments. That's how I call it.");
+				ast_execute_function(symbol_table+id);
+				return;
+		}
+		if(peek()->data == TOK_SEMIC){
+			//ignore it!
+			consume();
+			return;
+		}
+		if(peek()->data == TOK_OPERATOR)
+			if(streq(peek()->text, "@")){
+				char* t;
+				uint64_t i;
+				uint64_t id;
+				int found = 0;
+				consume();
+				require(peek() != NULL, "parsehook requires identifier.");
+				require(peek()->data == TOK_IDENT, "parsehook requires identifier");
+				t = strdup(peek()->text);
+				t = strcataf2("parsehook_",t);
+				for(i = 0; i < nparsehooks; i++){
+				    uint64_t the_parsehook = parsehook_table[i];
+					if(streq(symbol_table[the_parsehook].name, t)){
+						id = the_parsehook;
+						found = 1;
+						break;
+					}
+				}
+				require(found != 0, "Could not find parsehook_ function");
+				free(t);
+				consume();
+				require(symbol_table[id].is_incomplete == 0, "parsehook definition must be completed.");
+				require(symbol_table[id].fbody != NULL, "parsehook function body must not be null.");
+				ast_execute_function(symbol_table+id);
+				return;
+			}
     if(peek_match_keyw("data")){
         parse_datastmt();
         return;
@@ -662,6 +724,72 @@ void parse_global(){
         parse_method();
         return;
     }
+    if(peek()->data == TOK_MACRO_OP)
+    		if(streq(peek()->text, "#")){
+    			consume();
+    			if(peek() == NULL){
+    				parse_error("stray # at end of compilation unit.");
+    			}
+    			/**/
+    			if(peek()->data == TOK_IDENT){
+    				if(streq(peek()->text, "__CBAS_TARGET_WORDSZ")){
+    					uint64_t a;
+    					consume();
+    					peek_always_not_null = 1;
+    					require(peek()->data == TOK_INT_CONST, "Expected integer constant- target word size.");
+    					a = matou(peek()->text);
+    					consume();
+    					if(a == 64){
+    						set_target_word(BASE_U64);
+    					}else if(a == 32){
+    						set_target_word(BASE_U32);
+    					}else if(a == 16){
+    						set_target_word(BASE_U16);
+    					}else if(a == 8){
+    						set_target_word(BASE_U8);
+    					} else{
+    						parse_error("Invalid target word size. Valid values are 64, 32, 16, and 8. 128 bit is not supported.");
+    					}
+    					peek_always_not_null = 0;
+    					continue;
+    				} else if(streq(peek()->text, "__CBAS_TARGET_MAX_FLOAT")){
+    					uint64_t a;
+    					consume();
+    					peek_always_not_null = 1;
+    					require(peek()->data == TOK_INT_CONST, "Expected integer constant- target max float size.");
+    					a = matou(peek()->text);
+    					consume();
+    					if(a == 64){
+    						set_max_float_type(BASE_F64);
+    					} else if(a == 32){
+    						set_max_float_type(BASE_F32);
+    					} else{
+    						parse_error("Invalid target max float size. 64 and 32 bit are allowed- no 10 byte floats!");
+    					}
+    					peek_always_not_null = 0;
+    					continue;
+    				} else if(streq(peek()->text, "__CBAS_TARGET_DISABLE_FLOAT")){
+    					consume();
+    					set_max_float_type(0);
+    					continue;
+    				} else if(streq(peek()->text, "__CBAS_BAKE")){
+    				    consume();
+    				    parser_echo = 1;
+    				} else if(streq(peek()->text, "__CBAS_STOP_BAKE")){
+    				    parser_echo = 0;
+    				    consume();	
+    				} else if(streq(peek()->text, "__CBAS_TERMINATE")){
+    				    parser_echo = 0;
+    				    puts("//Compilation Terminated!");
+    				    exit(0);
+    				} else {
+    					parse_error("Unrecognized configuration option.");
+    				}
+    			} else{
+    				parse_error("# followed by non-keyword parsed by program.");
+    			}
+    			return;
+    		}
     parse_error("<INTERNAL CODEGEN ERROR> Codegen code called __builtin_parse_global() I didn't find any global to parse!");
 }
 
@@ -3277,8 +3405,8 @@ void parse_stmts(){
 	consume();
 	/*special case- empty body.*/
 	if(scopestack_gettop()->nstmts == 0){
-		stmt* s;
-		s= parser_push_statement_nop();
+		
+		parser_push_statement_nop();
 	}
 }
 
@@ -3293,8 +3421,7 @@ int  parse_stmts_allow_else_chain(){
 
 	/*special case- empty body.*/
 	if(scopestack_gettop()->nstmts == 0){
-		stmt* s;
-		s= parser_push_statement_nop();
+		parser_push_statement_nop();
 	}
 
 	if(peek_match_keyw("end")) return 0;
