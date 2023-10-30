@@ -433,11 +433,56 @@ void parse_error(char* msg){
 }
 
 
+
+
+static void parse_do_metaprogramming(){
+		char* t;
+		uint64_t i;
+		uint64_t id;
+		int found = 0;
+		consume();
+		require(peek()->data == TOK_IDENT, "Parserhook requires identifier");
+		//require(peek()->text != NULL, "Internal error, identifier does not have text?");
+		t = strdup(peek()->text);
+		t = strcataf2("parsehook_",t);
+		for(i = 0; i < nsymbols; i++){
+			if(streq(symbol_table[i]->name, t)){
+				id = i;
+				found = 1;
+				break;
+			}
+		}
+		require(found != 0, "Could not find parsehook_ function corresponding with ");
+		free(t);
+		consume(); //eat the identifier!
+		require(symbol_table[id]->t.is_function != 0, "parsehook must be a function.");
+		require(symbol_table[id]->is_codegen != 0, "parsehook must be is_codegen.");
+		require(symbol_table[id]->is_incomplete == 0, "parsehook definition must be completed.");
+		require(symbol_table[id]->fbody != NULL, "parsehook function body must not be null.");
+		require(symbol_table[id]->t.basetype == BASE_VOID, "parsehook must return nothing!");
+		require(symbol_table[id]->t.pointerlevel == 0 , "parsehook must return nothing, not even a pointer to nothing!");
+		require(symbol_table[id]->nargs == 0, "parsehook must take zero arguments. That's how I call it.");
+		ast_vm_stack_push_temporary();
+		ast_execute_function((symbol_table+id)[0]);
+		ast_vm_stack_pop();
+		return;
+}
+
+static void parse_repeatedly_try_metaprogramming(){
+    while(1){
+        if(peek() == NULL) return;
+        if(peek()->data != TOK_OPERATOR) return;
+        if(!streq(peek()->text, "@")) return;
+        parse_do_metaprogramming();
+    }
+}
+
 void require(int cond, char* msg){if(!cond)parse_error(msg);}
 void require_peek_notnull(char* msg){if(peek() == NULL)parse_error(msg);}
 void astdump();
 void set_target_word(uint64_t val);
 void set_max_float_type(uint64_t val);
+
 void compile_unit(strll* _unit){
 	unit = _unit;
 	next = unit;
@@ -485,6 +530,7 @@ void compile_unit(strll* _unit){
 			consume();
 			continue;
 		}
+		
 		if(peek()->data == TOK_OPERATOR)
 			if(streq(peek()->text, "@")){
 				char* t;
@@ -516,6 +562,7 @@ void compile_unit(strll* _unit){
 		        ast_vm_stack_pop();
 				continue;
 			}
+		
 
 		if(peek()->data == TOK_KEYWORD)
 			if(peek_match_keyw("end"))
@@ -695,6 +742,8 @@ if(peek()->data == TOK_IDENT)
 			consume();
 			return;
 		}
+		parse_repeatedly_try_metaprogramming(); //allow parsehooks at global scope as invoked by @global
+		/*
 		if(peek()->data == TOK_OPERATOR)
 			if(streq(peek()->text, "@")){
 				char* t;
@@ -725,6 +774,7 @@ if(peek()->data == TOK_IDENT)
         		ast_vm_stack_pop();
 				return;
 			}
+        */
     if(peek_match_keyw("data")){
         parse_datastmt();
         return;
@@ -832,6 +882,7 @@ type parse_type(){
 	}
 	if(peek()->data == TOK_OBRACK){
 		consume(); /*Eat the opening bracket!*/
+		parse_repeatedly_try_metaprogramming(); //Allow parsehooks to be invoked to define the contents of an array declaration...
 		t.arraylen = parse_cexpr_int();
 		require((t.arraylen > 0), "Array must be of greater than zero length.");
 		require(peek()->data == TOK_CBRACK, 	"Array type requires closing bracket.");
@@ -992,7 +1043,7 @@ void parse_gvardecl(){
 		had_equals = 1;
 		require(!is_predecl, "Predeclaration of global variable may not have a definition.");
 		consume(); //eat the equals sign!
-
+        parse_repeatedly_try_metaprogramming(); //allow parsehooks to generate the constant expression used by a global variable.
 		if(type_should_be_assigned_float_literal(t)){
 			symbol_table[symid]->cdata = c_allocX(8);
 			symbol_table[symid]->cdata_sz = 8;
@@ -1086,31 +1137,33 @@ void parse_datastmt(){
 	require(ID_KEYW(peek()) == ID_KEYW_STRING("data"), "data statement must begin with \"data\" ");
 	consume();
 	set_is_codegen(0);
+	parse_repeatedly_try_metaprogramming(); //allow parsehooks to generate an entire data statement, immediately after `data`
     if(peek()->data == TOK_KEYWORD)
 		if(ID_KEYW(peek()) == ID_KEYW_STRING("predecl")){
 			consume();
 			is_predecl = 1;
 		}
-	
+	parse_repeatedly_try_metaprogramming(); //allow parsehooks after `data predecl`
 	if(peek()->data == TOK_KEYWORD)
 		if(ID_KEYW(peek()) == ID_KEYW_STRING("codegen")){
 			consume();
 			set_is_codegen(1);
 			is_codegen = 1;
 		}
-	
+	parse_repeatedly_try_metaprogramming(); //allow parsehooks after `data predecl codegen`
 	if(peek()->data == TOK_KEYWORD)
 	    if(ID_KEYW(peek()) == ID_KEYW_STRING("noexport")){
 			consume();
 			is_noexport = 1;
 		}
-
+    parse_repeatedly_try_metaprogramming(); //allow parsehooks immediately after noexport too
 	if(peek()->data == TOK_KEYWORD)
 		if(ID_KEYW(peek()) == ID_KEYW_STRING("pub")){
 			is_pub = 1;
 			consume();
 			//if(!peek()) parse_error("Data declaration parsing halted: NULL");
 		}
+	parse_repeatedly_try_metaprogramming(); //Do you get it?
 	if(peek()->data == TOK_KEYWORD)
 		if(ID_KEYW(peek()) == ID_KEYW_STRING("static")){
 			require(!is_pub, "Cannot have public and static at the same time! They are opposites!");
@@ -1118,7 +1171,7 @@ void parse_datastmt(){
 			consume();
 			//if(!peek()) parse_error("Data declaration parsing halted: NULL");
 		}
-
+    parse_repeatedly_try_metaprogramming(); //I think you understand by now....
 	require(peek_is_typename() || peek()->data == TOK_KEYWORD, "data statement requires typename or keyword.");
 	if(ID_KEYW(peek()) == ID_KEYW_STRING("string")){
 		t.basetype = BASE_U8;
@@ -1132,6 +1185,7 @@ void parse_datastmt(){
 	require(type_can_be_literal(t), "The data type supplied to this data statement cannot be a literal! Note that pointers are not valid for a data statement.");
 	require(type_can_be_variable(t), "Invalid type for data statement.");
 	t.pointerlevel = 1;
+	parse_repeatedly_try_metaprogramming(); //allow a parsehook immediately after the type specifier of a data statement...
 	require(peek()->data == TOK_IDENT, "Identifier required in data statement declaration");
 
 
@@ -1210,7 +1264,7 @@ void parse_datastmt(){
 		symbol_table[symid]->is_incomplete = is_predecl;
 	}
 	consume(); /*eat the identifier.*/
-
+    parse_repeatedly_try_metaprogramming(); //here is where we would auto-generate data statement data...
 
 	/*Change t so that pointer level is now zero.*/
 	t.pointerlevel = 0;
@@ -1256,6 +1310,7 @@ void parse_datastmt(){
 		){
 			while(1){
 				i++;
+				parse_repeatedly_try_metaprogramming(); //allow individual elements of a data statement's data to be metaprogrammed.
 				if(peek_is_semic()){
 					break;
 				}
@@ -1313,6 +1368,7 @@ void parse_datastmt(){
 		){
 			while(1){
 				i++;
+				parse_repeatedly_try_metaprogramming(); //allow individual elements of a data statement's data to be metaprogrammed.
 				if(peek_is_semic()){
 					break;
 				}
@@ -1353,7 +1409,7 @@ void parse_structdecl(){
 	require(peek()->data == TOK_KEYWORD, "Struct declaration must begin with keyword");
 	require(ID_KEYW(peek()) == ID_KEYW_STRING("struct"),"Struct declaration must begin with 'struct' or 'class'");
 	consume();
-
+    parse_repeatedly_try_metaprogramming(); //allow struct declarations to be metaprogrammed, even their identifiers
 	require(peek()->data == TOK_IDENT, "Struct declaration without identifier");
 	require(!peek_ident_is_already_used_globally(), "Struct declaration uses already-in-use identifier");
 
@@ -1367,6 +1423,7 @@ void parse_structdecl(){
 	consume(); /*eat the identifier*/
 
 	while(1){
+	    parse_repeatedly_try_metaprogramming(); //allow individual struct members to be metaprogrammed.
 		if(peek_match_keyw("end")){
 			consume();
 			break;
@@ -1401,6 +1458,7 @@ void parse_struct_member(uint64_t sid){
 	require(type_can_be_variable(t), "Struct member is not of a type which can be a struct member!");
 
 	if(t.arraylen == 0) t.is_lvalue = 1;
+	parse_repeatedly_try_metaprogramming(); //after the type specifier of a struct member, allow a parsehook.
 	
 	require(peek()->data == TOK_IDENT, "Struct member must have an identifier name.");
 	t.membername = strdup(peek()->text);
@@ -1510,6 +1568,7 @@ void parse_fn(int is_method){
 		require(ID_KEYW(peek()) == ID_KEYW_STRING("method"), "fn statement must begin with \"fn\"");
 	}
 	consume(); //Eat fn or method
+	parse_repeatedly_try_metaprogramming(); //Immediately after fn/method, allow a parsehook invocation...
 
 	//optionally eat any qualifiers...
 	if(peek()->data == TOK_KEYWORD)
@@ -1517,44 +1576,51 @@ void parse_fn(int is_method){
 			consume();
 			is_predecl = 1;
 		}
+	parse_repeatedly_try_metaprogramming(); //after qualifier
 	if(peek()->data == TOK_KEYWORD)
 		if(ID_KEYW(peek()) == ID_KEYW_STRING("codegen")){
 			consume();
 			is_codegen = 1;
 			set_is_codegen(1);
 		}
+	parse_repeatedly_try_metaprogramming(); //after qualifier
 	if(peek()->data == TOK_KEYWORD)
 		if(ID_KEYW(peek()) == ID_KEYW_STRING("noexport")){
 			consume();
 			is_noexport = 1;
 		}
+	parse_repeatedly_try_metaprogramming(); //after qualifier
 	if(peek()->data == TOK_KEYWORD)
 		if(ID_KEYW(peek()) == ID_KEYW_STRING("pub")){
 			consume();
 			is_pub = 1;
 		}
+	parse_repeatedly_try_metaprogramming(); //after qualifier
 	if(peek()->data == TOK_KEYWORD)
 		if(ID_KEYW(peek()) == ID_KEYW_STRING("static")){
 			require(!is_pub, "Cannot have public and static, they are opposites!");
 			is_pub = 0;
 			consume();
 		}
+	parse_repeatedly_try_metaprogramming(); //after qualifier
 	if(peek()->data == TOK_KEYWORD)
 		if(ID_KEYW(peek()) == ID_KEYW_STRING("inline")){
 			require(!is_pub, "Cannot have public and inline.");
 			is_inline = 1;
 			consume();
 		}
+	parse_repeatedly_try_metaprogramming(); //after qualifier
 	if(peek()->data == TOK_KEYWORD)
 		if(ID_KEYW(peek()) == ID_KEYW_STRING("pure")){
 			is_pure = 1;
 			consume();
 		}
+	parse_repeatedly_try_metaprogramming(); //after qualifier
 
 	if(is_method){
 		require(peek_is_typename(), "method statement requires a typename- the struct it operates on");
 		t_method_struct = parse_type();
-
+        
 		require(t_method_struct.pointerlevel == 0, "must be a struct name");
 		require(t_method_struct.arraylen == 0, "must be a struct name");
 		require(t_method_struct.basetype == BASE_STRUCT, "must be a struct name");
@@ -1566,6 +1632,7 @@ void parse_fn(int is_method){
 		/*it is indeed an lvalue thing.*/
 		t_method_struct.is_lvalue = 1;
 
+		parse_repeatedly_try_metaprogramming(); //allow a parsehook after the type specifier of a method.
 		/*Optionally consume a colon the method mystruct:myfunction*/
 		if(peek()->data == TOK_OPERATOR){
     		if(streq(peek()->text,":")){
@@ -1575,6 +1642,7 @@ void parse_fn(int is_method){
     		}
 		}
 	}
+	parse_repeatedly_try_metaprogramming(); //allow a parsehook after the : or . of a method.
 	require(peek()->data == TOK_IDENT, "fn requires identifier. Syntax is not C-like.");
 	require(!is_builtin_name(peek()->text),"Hey, What are you tryna pull? Defining the builtins?");
 
@@ -1591,6 +1659,7 @@ void parse_fn(int is_method){
 		n = strcatafb(t_,n);
 	}
 	consume(); /*eat the identifier*/
+	//do not allow a parsehook here...
 	require(peek()->data == TOK_OPAREN, "fn requires opening parentheses");
 	consume();
 
@@ -1602,6 +1671,7 @@ void parse_fn(int is_method){
 		nargs = 1;
 	}
 	while(1){
+	    parse_repeatedly_try_metaprogramming(); //allow individual function prototype arguments to be metaprogrammed.
 		if(peek()->data == TOK_CPAREN) break;
 		/*there is an argument to parse, it has both a type and a name.*/
 		t_temp = type_init();
@@ -1613,6 +1683,7 @@ void parse_fn(int is_method){
 		if(t_temp.basetype == BASE_VOID)
 			require(t_temp.pointerlevel > 0, "Cannot pass void into function.");
 		
+		parse_repeatedly_try_metaprogramming(); //allow the name of a function prototype variable to be metaprogrammed.
 		require(peek()->data == TOK_IDENT, "fn argument requires identifier. Syntax is not C-like.");
 		require(!peek_is_fname(), "fn argument cannot be named after a function.");
 		require(!peek_is_typename(), "fn argument cannot be named after a type.");
@@ -1638,9 +1709,11 @@ void parse_fn(int is_method){
 		if(peek()->data == TOK_CPAREN) break;
 		require(peek()->data == TOK_COMMA, "fn argument list is comma separated.");
 		consume(); //eat the comma
+
 	}
 	require(peek()->data == TOK_CPAREN, "fn requires closing parentheses");
 	consume();
+
 	s.nargs = nargs;
 
 
@@ -1648,6 +1721,7 @@ void parse_fn(int is_method){
 		require(peek()->data == TOK_OPERATOR, "fn requires either a semicolon (predeclaration), colon(void return), or ->type");
 		if(streq(peek()->text,"->")){
 			consume();
+			parse_repeatedly_try_metaprogramming(); //allow parsehooks after ->
 			t = parse_type();
 			require(t.arraylen == 0, "Function return type cannot be an array.");
 			if(t.basetype == BASE_STRUCT)
@@ -1670,6 +1744,8 @@ void parse_fn(int is_method){
 			goto after_thing1;
 		}
 		if(streq(peek()->text,":")){
+		    //DO NOT allow parsehooks here... they could be confused with parsehooks that operate
+		    //inside the body of a function...
 			t.basetype = BASE_VOID;
 			t.pointerlevel = 0;
 			t.arraylen = 0;
@@ -1690,7 +1766,6 @@ void parse_fn(int is_method){
 			parse_error("Confused about whether this is actually predeclared or not.");
 	}
 	after_thing1:;
-	
 	t.arraylen = 0;
 	t.is_function = 1;
 	s.is_incomplete = is_predecl;
@@ -2079,6 +2154,7 @@ void expr_parse_sizeof(expr_node** targ){
 	consume();
 	require(peek()->data == TOK_OPAREN, "expr_parse_sizeof requires opening parentheses");
 	consume();
+	parse_repeatedly_try_metaprogramming(); //allow invoking metaprogramming inside of sizeof...
 	f.type_to_get_size_of = parse_type();
 	//write idata.
 	f.idata = type_getsz(f.type_to_get_size_of);
@@ -2145,6 +2221,7 @@ void expr_parse_getfnptr(expr_node** targ){
 	consume();
 	require(peek()->data == TOK_OPAREN, "expr_parse_getfnptrf requires opening parentheses");
 	consume();
+	parse_repeatedly_try_metaprogramming(); //allow parsehooks inside of getfnptr
 	require(peek_is_fname(), "getfnptr requires a function pointer!");
 		f.symname = strdup(peek()->text);
 		for( i = 0; i < nsymbols; i++){
@@ -2182,6 +2259,7 @@ void expr_parse_getglobalptr(expr_node** targ){
 	consume();
 	require(peek()->data == TOK_OPAREN, "expr_parse_getglobalptr requires opening parentheses");
 	consume();
+	parse_repeatedly_try_metaprogramming(); //allow a parsehook to create the identifier for getglobalptr
 	require(!peek_is_fname(), "expr_parse_getglobalptr requires a global variable name, not a function!");
 	
 	f.symname = strdup(peek()->text);
@@ -2217,6 +2295,7 @@ void expr_parse_callfnptr(expr_node** targ){
 	consume();
 	require(peek()->data == TOK_OBRACK, "expr_parse_callfnptr requires opening bracket.");
 	consume();
+	parse_repeatedly_try_metaprogramming(); //allow parsehooks to be used in the prototype field.
 	require(peek_is_fname(), "function name required: function matching prototype of function pointer.");
 
 	f.is_function = 1;
@@ -2468,6 +2547,7 @@ void expr_parse_postfix(expr_node** targ){ //the valid postfixes are --, ++, [],
 			}
 			if(streq(peek()->text,".")){
 				consume();
+				parse_repeatedly_try_metaprogramming(); //allow parsehooks to be invoked as .@myparsehook
 				//TODO: Devise a scheme to allow calling of methods with .
 				
 				/*
@@ -2525,6 +2605,7 @@ void expr_parse_postfix(expr_node** targ){ //the valid postfixes are --, ++, [],
 			}
 			if(streq(peek()->text,".&")){
 				consume();
+				parse_repeatedly_try_metaprogramming(); //allow parsehooks like this: .&@myparsehooks
 				before_f = c_allocX(sizeof(expr_node));
 				before_f->kind = EXPR_MEMBERPTR;
 				before_f->subnodes[0] = f; /*expression evaluating to struct with 1 or more levels of indirection.*/
@@ -2537,6 +2618,7 @@ void expr_parse_postfix(expr_node** targ){ //the valid postfixes are --, ++, [],
 			}
 			if(streq(peek()->text, ":")){
 				consume(); //eat the colon
+				parse_repeatedly_try_metaprogramming(); //allow parsehooks after the colon, myObject:@myParsehook
 				before_f = c_allocX(sizeof(expr_node));
 				before_f->kind = EXPR_METHOD;
 				f->is_function = 1; //HUH?!?!
@@ -2630,6 +2712,7 @@ void expr_parse_prefix(expr_node** targ){
 		consume(); //eat 'cast'
 		require(peek()->data == TOK_OPAREN, "cast requires opening parentheses.");
 		consume(); //
+		parse_repeatedly_try_metaprogramming(); //allow parsehooks inside of a cast...
 		f->type_to_get_size_of = parse_type();
 		require(peek()->data == TOK_CPAREN, "cast requires closing parentheses.");
 		consume();
@@ -2647,6 +2730,7 @@ void expr_parse_prefix(expr_node** targ){
  		f->kind = EXPR_CAST;
 		f->is_implied = 0;
         consume(); //consume the parentheses...
+        //parse_repeatedly_try_metaprogramming(); //DO NOT allow parsehooks inside of a C-style cast... they could be confused with expr parsehooks.
 		f->type_to_get_size_of = parse_type();
 		require(peek()->data == TOK_CPAREN, "C-style cast requires closing parentheses.");
 		consume();
@@ -3127,6 +3211,7 @@ void parse_lvardecl(){
 	cscope = scopestack[nscopes - 1];
 	//require(cscope != NULL, "Internal error. Cannot add local variable to NULL scope.");
 	s.t = parse_type();
+	parse_repeatedly_try_metaprogramming(); //allow parsehooks to define local variable names...
 	require(type_can_be_variable(s.t), "cannot declare local variable of that type.");
 	require(peek()->data == TOK_IDENT, "local variable requires identifier.");
 	require(!is_builtin_name(peek()->text),"Hey, What are you tryna pull? Defining the builtins?");
@@ -3372,6 +3457,7 @@ void parse_tail(){
 	int found = 0;
 	me = parser_push_statement();
 	consume_keyword("tail");
+	parse_repeatedly_try_metaprogramming(); //allow parsehooks in the function name field of a tail statement.
 	me->kind = STMT_TAIL;
 	me->nexpressions = 0;
 	require(peek_is_fname(), "tail requires a function name.");
@@ -3487,6 +3573,7 @@ void parse_goto(){
 	me->kind = STMT_GOTO;
 	me->nexpressions = 0;
 	consume_keyword("goto");
+	parse_repeatedly_try_metaprogramming(); //allow parsehooks in the label name field of a goto statement.
 	require(peek()->data == TOK_IDENT, "goto takes label identifer");
 	me->referenced_label_name = strdup(peek()->text);
 	consume();
@@ -3501,6 +3588,7 @@ void parse_asm_stmt(){
 	consume_keyword("asm");
 	require(peek()->data == TOK_OPAREN, "asm needs opening parentheses"); 
 	consume();
+	parse_repeatedly_try_metaprogramming(); //allow parsehooks inside of an asm() statement.
 	require(peek()->data == TOK_STRING, "asm takes a string.");
 	me->referenced_label_name = strdup(peek()->text);
 	consume();
@@ -3525,6 +3613,7 @@ void parse_switch(){
 	require(peek()->data == TOK_CPAREN, "switch statement needs closing parentheses");
 	consume();
 	while(1){
+	    parse_repeatedly_try_metaprogramming(); //allow parsehooks to generate switch labels...
 		require(peek()->data == TOK_IDENT, "switch statement expected identifier");
 		require(!peek_is_typename(), "switch statement not allowed to take a typename...");
 
@@ -3543,6 +3632,8 @@ void parse_switch(){
 	//end:;
 	me->expressions[0] = e;
 }
+
+
 
 
 void parse_stmt(){
@@ -3635,6 +3726,8 @@ void parse_stmt(){
 		parse_lvardecl();
 		return;
 	}
+	
+	//parse_repeatedly_try_metaprogramming(); //allow parsehooks at local scope.
 	if(peek()->data == TOK_OPERATOR){
 	if(streq(peek()->text, "@")){
 		char* t;
@@ -3668,6 +3761,7 @@ void parse_stmt(){
 		ast_vm_stack_pop();
 		return;
 	}}
+	
 	parse_expr_stmt();
 	return;
 }

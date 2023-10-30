@@ -299,8 +299,9 @@ end
 
 proc codegen codegen_main():
 	//invokes parsehook_dostuff
+	;
 	@dostuff
-	
+	;;;;
 	myClass classy;
 	myClass* f;
 	classy.x = 3;
