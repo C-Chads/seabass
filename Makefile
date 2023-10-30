@@ -89,6 +89,7 @@ uninstall:
 	rm -f /usr/local/bin/cbas_dirty
 	rm -f /usr/local/bin/cbas_clean
 	rm -f /usr/local/bin/cbas_dbg
+	rm -f /usr/local/bin/cbas_dbg2
 	rm -f /usr/local/bin/cbas_tcc
 	rm -f /usr/local/bin/cbas_pure
 	rm -f /usr/local/bin/cbas
