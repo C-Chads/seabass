@@ -365,13 +365,6 @@ end
         goto explain_syntax
     end
     @foldout_arg name inlist_dupe
-    if(name == 0 || name.right != 0)
-        @pprint[
-            /           "MKTEMPLATE INTERNAL ERROR"
-            /           "Name is null or has a right? CALL THE SYSTEM ADMINISTRATOR!"
-        ]
-        goto explain_syntax
-    end
     
     if(
         inlist_dupe == 0 || 
