@@ -582,7 +582,7 @@ static void propagate_types(expr_node* ee){
 		t = symbol_table[ee->symid]->t;
 		if(t.arraylen){
 			t.arraylen = 0;
-			t.pointerlevel++;
+			t.pointerlevel++; //this prevents the next part from triggering...
 			t.is_lvalue = 0;
 		}
 		if(t.pointerlevel == 0){
@@ -611,7 +611,7 @@ static void propagate_types(expr_node* ee){
 		t = ee->t;
 		if(t.arraylen){
 			t.arraylen = 0;
-			t.pointerlevel++;
+			t.pointerlevel++; //this prevents the next part from triggering...
 			t.is_lvalue = 0;
 		}
 		if(t.pointerlevel == 0){
