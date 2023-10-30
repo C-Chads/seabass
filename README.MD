@@ -295,6 +295,17 @@ Compiletimes are typically much slower than C, however the
 increased development speed and quality should more than make
 up for it.
 
+### Is it possible to write my own tokenizer?
+
+Yes. Using `__builtin_read_file` you can get the contents
+of any file given a path at compiletime.
+
+You can then tokenize this however you see fit.
+
+### Can I have global target code blocks?
+
+Of course! The C code generator already uses this feature to do the standard includes.
+
 ## ***For the love of Programming and Programmers***
 
 In the public domain, so that your joy may be full.
