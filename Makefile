@@ -1,6 +1,7 @@
 CC= gcc
 CFLAGS= -O3 -s -std=gnu99 -march=native -flto -fwrapv -DUSE_REALPATH
 CFLAGS_DBG= -Og -g -fwrapv -fsanitize=address,undefined,leak -std=gnu99 -DCOMPILER_CLEANS_UP -DUSE_PARSER_ECHO -DUSE_REALPATH
+CFLAGS_DBGVG= -Og -g -fwrapv -std=gnu99 -DCOMPILER_CLEANS_UP -DUSE_PARSER_ECHO -DUSE_REALPATH
 CFLAGS_CLEAN= -O3 -s -fwrapv -flto -std=gnu99 -DCOMPILER_CLEANS_UP -DUSE_REALPATH
 CFLAGS_PURE= -O3 -fwrapv -std=gnu99 -DCOMPILER_CLEANS_UP
 CFLAGS_CBAS= -O3 -fwrapv -s -lpthread
@@ -9,15 +10,18 @@ CFLAGS_CBAS= -O3 -fwrapv -s -lpthread
 cbas_dirty:
 	$(CC) $(CFLAGS) ctok.c parser.c data.c constexpr.c metaprogramming.c code_validator.c astexec.c astdump.c reflection_library.c -o cbas_dirty -lm -g
 	
-all: cbas_tcc cbas_clean cbas_dirty cbas_dbg cbas_pure
+all: cbas_tcc cbas_clean cbas_dirty cbas_dbg cbas_pure cbas_dbg2
 
-all_not_tcc: cbas_clean cbas_dirty cbas_dbg cbas_pure
+all_not_tcc: cbas_clean cbas_dirty cbas_dbg cbas_pure cbas_dbg2
 	
 cbas_clean:
 	$(CC) $(CFLAGS_CLEAN) ctok.c parser.c data.c constexpr.c metaprogramming.c code_validator.c astexec.c astdump.c reflection_library.c -o cbas_clean -lm -g
 
 cbas_dbg:
 	$(CC) $(CFLAGS_DBG) ctok.c parser.c data.c constexpr.c metaprogramming.c code_validator.c astexec.c astdump.c reflection_library.c -o cbas_dbg -lm -g
+
+cbas_dbg2:
+	$(CC) $(CFLAGS_DBGVG) ctok.c parser.c data.c constexpr.c metaprogramming.c code_validator.c astexec.c astdump.c reflection_library.c -o cbas_dbg2 -lm -g
 
 cbas_tcc:
 	tcc -s ctok.c parser.c data.c constexpr.c metaprogramming.c code_validator.c astexec.c astdump.c reflection_library.c -o cbas_tcc -lm
@@ -29,12 +33,15 @@ cbas_pure:
 install: all_not_tcc
 	cp ./cbas_dirty /usr/local/bin/
 	cp ./cbas_dbg /usr/local/bin/
-	cp ./cbas_clean /usr/local/bin/cbas
+	cp ./cbas_dbg2 /usr/local/bin/
+	cp ./cbas_clean /usr/local/bin/
 	cp ./cbas_pure /usr/local/bin/
+	cp ./cbas_clean /usr/local/bin/cbas
 
 install_all: all
 	cp ./cbas_dirty /usr/local/bin/
 	cp ./cbas_dbg /usr/local/bin/
+	cp ./cbas_dbg2 /usr/local/bin/
 	cp ./cbas_clean /usr/local/bin/
 	cp ./cbas_tcc /usr/local/bin/
 	cp ./cbas_pure /usr/local/bin/
@@ -92,4 +99,4 @@ push: clean
 	git push
 
 clean:
-	rm -f *.exe *.out *.bin *.o cbas cbas_dirty cbas_pure cbas_dbg cbas_clean cbas_tcc auto_out.c toc_test fib
+	rm -f *.exe *.out *.bin *.o cbas cbas_dirty cbas_pure cbas_dbg cbas_dbg2 cbas_clean cbas_tcc auto_out.c toc_test fib

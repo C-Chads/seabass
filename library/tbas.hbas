@@ -201,15 +201,6 @@ end
     @foldout_arg fakename inlist_dupe
     @foldout_arg realname inlist_dupe
     @foldout_arg the_number inlist_dupe
-    //inlist_dupe should be null. Check it...
-    if(inlist_dupe != 0)
-        @pprint[
-            /       "TBAS INTERNAL ERROR"
-            /       "inlist_dupe was not null after foldouts..."
-            /       "This should never happen.... Eeep!"
-        ]
-        __builtin_exit(1);
-    end
     
     if(fakename == 0 || fakename.d != CG_TOK_IDENT)
         @pprint[
@@ -245,7 +236,7 @@ end
     end
     nargs = __builtin_atou(the_number.text);
     the_function_pointer = (cgsymdecl*)__builtin_retrieve_sym_ptr(realname.text);
-
+    realname:freelist();
     if(the_function_pointer == 0)
         @pprint[
             /       "TBAS ERROR"
@@ -283,7 +274,7 @@ end
     qq.name = fakename.text;
     fakename.text = 0;
     fakename:freelist();
-    realname:freelist();
+
     qq.funky = (u8*)the_function_pointer;
     qq.nargs = nargs;
     
@@ -479,6 +470,7 @@ end
     @pushqtok "@"
     @pushqtok "cg_tbas_inner_mktemplate"
     @pushtok [name] //MOVE
+    @rwalk_skip ;
     @pushqtok [mutated_innername]
     __builtin_free(mutated_innername);
     if(1)
