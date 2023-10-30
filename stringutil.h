@@ -444,35 +444,9 @@ typedef struct strll{
 	char* filename;
 	void* data;
 	struct strll* right;
-	struct strll* child;
-	struct strll* left;
 }strll;
 
 /*Make Child*/
-
-static strll* consume_child_bytes(strll* current_node, unsigned long nbytes){
-	strll* child_old; char* text_old;
-	text_old = current_node->text;
-	current_node->text = str_null_terminated_alloc(text_old, nbytes);
-	child_old = current_node->child;
-	current_node->child = STRUTIL_CALLOC(1, sizeof(strll));
-	current_node->child->right = child_old;
-	current_node->child->text = strcatalloc(text_old + nbytes, "");
-	STRUTIL_FREE(text_old);
-	return current_node->child;
-}
-
-static strll* consume_left_bytes(strll* current_node, unsigned long nbytes){
-	strll* left_old; char* text_old;
-	text_old = current_node->text;
-	current_node->text = str_null_terminated_alloc(text_old, nbytes);
-	left_old = current_node->left;
-	current_node->left = STRUTIL_CALLOC(1, sizeof(strll));
-	current_node->left->right = left_old;
-	current_node->left->text = strcatalloc(text_old + nbytes, "");
-	STRUTIL_FREE(text_old);
-	return current_node->left;
-}
 
 
 static strll* consume_bytes(strll* current_node, unsigned long nbytes){
@@ -508,44 +482,9 @@ static inline strll* consume__bytes_with_bigstore(strll* current_node, unsigned 
 	return current_node->right;
 }
 
-/*Add the right node to the list of children.*/
-static void parent_right_node(strll* current_node){
-	strll* right_right;  
-	strll* top = current_node;
-	if(current_node->right == NULL) return; /*Nothing to do!*/
-	right_right = top->right->right;
-	top->right->right = NULL;
-	if(current_node->child){
-		current_node = current_node->child;
-		for(;current_node->right != NULL;current_node = current_node->right){};
-		/*we are now on the last child.*/
-		current_node->right = top->right;
-		top->right = right_right;
-	} else {
-		top->child = top->right;
-		top->right = right_right;
-	}
-	
-}
 
-/*Append the right node to the list of lefthand children.*/
-static void left_parent_right_node(strll* current_node){
-	strll* right_right;  
-	strll* top = current_node;
-	if(current_node->right == NULL) return; /*Nothing to do!*/
-	right_right = current_node->right->right;
-	top->right->right = NULL;
-	if(current_node->child){
-		current_node = current_node->left;
-		for(;current_node->right != NULL;current_node = current_node->right){};
-		/*we are now on the last child.*/
-		current_node->right = top->right;
-		top->right = right_right;
-	} else {
-		current_node->left = top->right;
-		top->right = right_right;
-	}
-}
+
+
 
 static strll* consume_until(strll* current_node, const char* find_me, const char delete_findable){
 	long loc; strll* right_old; char* text_old;

@@ -120,36 +120,7 @@ static void strll_append(strll* list, strll* list2){
 
 
 
-static void strll_linearize(strll* node){
-	strll* work;
-	strll* place; /*What we place right*/
 
-	top:;
-	{
-		/*Step 0: Do we return?*/
-		if(!node) return;
-		
-		work = node;
-		place = NULL;
-		/*STEP 1: do we have a child or left pointer?*/
-		if(node->child) {
-			place = node->child;
-			node->child = NULL;
-		} else if(node->left){
-			place = node->left;
-			node->left = NULL;
-		}
-		/*STEP 2: Do we have a node to place? Place it at the end and start over.*/
-		if(place){
-			while(work->right) work = work->right;
-			work->right = place;
-			goto top;
-		}
-		/*STEP 3: Go right, repeat this.*/
-		node = node->right;
-		goto top;
-	}
-}
 
 static void strll_free(strll* root, char free_root){
 	strll* work;
@@ -1328,8 +1299,6 @@ strll* linear_strll_dupe(strll* i){
 		if(i->text) f->text = strdup(i->text);
 		
 		f->right = NULL;
-		f->left = NULL;
-		f->child = NULL;
 		
 		if(retval){
 			w = retval;
@@ -1712,8 +1681,6 @@ static void strll_concat_stringliterals(strll* in){
 			current->text = NULL;
 			saved_current_right = current->right;
 			current->right = NULL;
-			current->left = NULL;
-			current->child = NULL;
 			strll_free(current,1);
 			father->right = saved_current_right;
 			current = saved_current_right;
@@ -1911,8 +1878,6 @@ int main(int argc, char** argv){
 			tokenized.text = NULL;
 			tokenized.data = (void*)1; /*newline*/
 			tokenized.linenum = 0; /*line does not exist*/
-			tokenized.left = NULL; /*no left child*/
-			tokenized.child = NULL; /*no true heirs to the throne*/
 		}
 		strll_handle_defines(&tokenized);
 		/*strll_hexify_int_constants(&tokenized);*/

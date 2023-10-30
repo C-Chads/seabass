@@ -593,18 +593,6 @@ fn codegen parsehook_global():
     pcache.load();
 end
 
-/*
-	strll
-	char* text;
-	uint64_t identification;
-	uint64_t linenum;
-	uint64_t colnum;
-	char* filename;
-	void* data;
-	struct strll* right;
-	struct strll* child;
-	struct strll* left;
-*/
 
 class cgstrll
     noexport
@@ -616,10 +604,27 @@ class cgstrll
 	u8* d //data, but data is a keyword in seabass.... I 
 	//probably should have thought of that, huh?
 	cgstrll* right
-	cgstrll* child
-	cgstrll* left
 end
 
+
+fn codegen parsehook_globalscope():
+    cgstrll* pp
+    cg_parser_cache pcache
+    pcache.save();
+    while(1)
+        pp = (cgstrll*)__builtin_peek();
+        if(pp == 0) break end
+        if(
+            pp.d == CG_TOK_KEYWORD &&
+            pp.text streq "end"
+        )
+            __builtin_consume();
+            break; 
+        end
+        __builtin_parse_global();
+    end
+    pcache.load();
+end
 
 
 method codegen cgstrll.dupe()->cgstrll*:
