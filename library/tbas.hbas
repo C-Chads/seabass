@@ -139,7 +139,7 @@ method codegen cg_tbas_template.gen_instance(cgstrll* arglist)->i64:
     i64 retval = this.ninstances;
     this.push_empty_instance();
     cg_tbas_template_instance* qq = this.instances + retval;
-    //Function is assumed to not consume the arglist...
+    //Function is assumed to not consume or modify the arglist...
     cgstrll* gen = callfnptr[cg_tbas_prototype_template_fn](this.funky)(arglist);
     cgstrll* body;
     if(gen == 0)

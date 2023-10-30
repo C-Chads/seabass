@@ -135,14 +135,14 @@ fn codegen cg_worksheet_inner(
                 template_rwalk.right = expansion:dupell();
                 
                 //walk template_rwalk to the end of that list.
-                
+                //we will start expanding using that token...
                 while(template_rwalk.right != cast(cgstrll*)0)
                     template_rwalk = template_rwalk.right;
                 end
                 //set its right...
                 
                 template_rwalk.right = the_new_right;
-                
+                if(template_rwalk.right == 0) break end
                 //goto the top!
                 jump local_top
             end //if we found a hit for the variable.
