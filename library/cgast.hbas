@@ -567,7 +567,7 @@ method codegen cg_parser_cache.save():
     ast.scopestack[0] = 0;
     ast.loopstack[0] = 0;
     ast.active_function[0] = -1;
-    __builtin_puts("Executed a save!");
+    //__builtin_puts("Executed a save!");
 end
 
 method codegen cg_parser_cache.load():
@@ -583,7 +583,7 @@ method codegen cg_parser_cache.load():
     ast.scopestack[0] = this.scopestack;
     ast.loopstack[0] = this.loopstack;
     ast.active_function[0] = this.active_function;
-    __builtin_puts("Executed a load!");
+    //__builtin_puts("Executed a load!");
 end
 
 fn codegen parsehook_global():

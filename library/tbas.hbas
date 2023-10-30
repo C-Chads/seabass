@@ -10,251 +10,503 @@
     Can you imagine what it would mean to template it? We can
     serve it!
     
-    The goal with Tbas is to allow you to refer to templated code
-    inside of a function seamlessly, with the template parameters in-place,
-    without having to instantiate the template at global scope first.
+    THE IDEA
     
+    Following the "End-of-October Revolution" it is now
+    possible to define global symbols during parsing in
+    Seabass. This allows me to write structs, methods,
+    functions, and even global variables while a function
+    is being parsed.
     
-    SEMANTICS
+    I will use this to implement a custom kind of
+    worksheet called the "Two-Part-Worksheet". Basically,
+    the worksheet will take in a series of inputs, and
+    based on the inputs, generate two separate pieces
+    of code.
     
-    ? HOW ARE TYPE ALIASES HANDLED ?
-    Whenever a template is recognized, and it is being fed a "type"
-    parameter, we convert all primitive types in that sequence into their natural
-    aliases (e.g. uptr to u64, int to i32, etcetera).
+    The first piece of code is expanded only the first
+    time the worksheet is invoked with a particular set
+    of arguments. This would, for instance, implement
+    a templated data structure.
     
-    This ensures for instance that when we go to look for a template paramater, we don't
-    ever confuse vector[i32] as not being the same as vector[int], nor
-    vector[vector[i32]] not the same as vector[vector[int]].
+    The second piece of code is inserted in-place of the invocation.
     
-    ? HOW DOES TBAS HANDLE COMPATIBILITY WITH NESTED DSLS ?
+    HOW WILL IT WORK, IN DETAIL?
     
-    It shouldn't ever be an issue, however, if it ever is, we'll
-    include the $ escape character to escape a token.
+    1. You write a function that emits a token
+    stream beginning with a bracked portion followed by another
+    set of tokens. The portion inside brackets will be the
+    "every single time" portion and the rest will be the
+    "only once" code.
     
-    ? WHAT DO TBAS TEMPLATES EXPAND INTO ?
+    2. You ask Tbas to make it into a template, providing the
+    number of arguments it receives (0 to n bracketed token lists) 
+    and giving it a new name.
     
-    Code in the prefix and body. Each of these
-    two sections can be written to by a Tbas template.
-    
-    So every time that you have a worksheet written for
-    Tbas, it needs to consist of two bracketed sections...
-    
-    [][]
-    
-    for the prefix and body expansions.
-    
-    Normally, for most things, I imagine that the prefix
-    is not necessary to preserve. However, we might want to
-    keep it around...
-    
-    TEMPLATE SYNTAX
-    
-    mktemplate type myType[type T, typename T2, ident I, Q][
-        //prefix code....
-    ]
-    
-    //usage...
-    myType[int[3], int*, int, [int]]
-    
-    you can also use it for functions...
-    mktemplate fn myfn[type T, typename T2, ident I, Q][
-        //prefix code....
-    ]
-    
-    and you can omit "type" or "fn" and instead write
-    this fancy worksheet...
-    
-    mktemplate myCode[type T, typename T2, ident I, Q][
-        //prefix code.... this will ultimately become the
-        //body of the worksheet.
-    ][
-        //write your worksheet's post-processing....
-    ][
-        //write code here which takes the template parameters
-        //as a proper set of strll bracket sequences.
-        //and then says what to generate in the body...
-    ]
-    
-    ?WHAT HAPPENS WHEN A TEMPLATE IS DEFINED?
-    * We check to see if a template by the same name exists- if it does,
-        that's an error.
-    * We create a worksheet for us to use internally, with a peculiarly mangled
-      name. This worksheet is used to perform templating.
-    
-    
-    ?WHAT HAPPENS WHEN A TEMPLATE IS INSTANTIATED?
-    
-    * Parse the parameter list and validate its correctness. We may also have
-        to instantiate a template (for instance, vector[vector[int]])
-    * Check the list of instantiations to see if the instance has already
-        been generated. If it has, we use it. Otherwise, we press onward...
-    * A unique name is generated according to the template parameters.
-    * we fill out the worksheet and insert the worksheet invocation at the
-        end of the prefix. We have to remember to get the bracket levels correct...
-    * the body portion has the identifier added.
+    3. Tbas will handle the process of instantiating the template
+    only once giving a token list of arguments.
 */
 
 #include "cgtoken_manip_tools.hbas"
 
-codegen u64 CG_TBAS_MAX_TEMPLATE_PARAMS = 64;
+fn codegen cg_tbas_prototype_template_fn(cgstrll* in)->cgstrll*: return cast(cgstrll*)0 end
 
-
-//an instance of a template
 class cg_tbas_template_instance noexport
-    //what were the parameters? This is an array of cgstrlls
-    cgstrll*[CG_TBAS_MAX_TEMPLATE_PARAMS] params
-    cgstrll* prefix_once  //what gets written only once? (Usually the template expansion...)
-                          //theoretically, we could choose not to save this...
-    cgstrll* body //what gets put in the body? (Usually just a single identifier...)
-    u64 nparams
+    cgstrll* arglist
+    cgstrll* prefix //once
+    cgstrll* body //every time
 end
 
-//a templated "thingie"
 class cg_tbas_template noexport
-    cgstr name //exposed api name
-    cgstr internal_name //name of the worksheet
-    u64 nparams //how many parameters does it take?
-    u64 template_type /*
-        Is this thing a---
-        0. Unspecified?
-        1. Type?
-        2. Function?
-    */
-    cg_tbas_template_instance* instances
+    char* name
+    byte* funky
+    u64 nargs
     u64 ninstances
-    u8[CG_TBAS_MAX_TEMPLATE_PARAMS] paramtypes /*
-        Are the parameters...
-        0. Types (arrays not allowed)
-        1. Types (arrays allowed)
-        2. Identifiers
-        3. Functions
-        4. Integers
-        5. Arbitrary token sequences?
-    */
+    cg_tbas_template_instance* instances
 end
 
-class cg_tbas_unit noexport
-    cgstrll* prefix
-    cgstrll* body
-end
-
-
-codegen cg_tbas_template* cg_tbas_templates = 0;
+codegen cg_tbas_template** cg_tbas_all_templates = 0;
 codegen u64 cg_tbas_ntemplates = 0;
-codegen u64 cg_tbas_uuid_gen = 1; //start at 1
 
-codegen cg_tbas_unit cg_tbas_cur_unit;
 
-method codegen cg_tbas_unit.reset():
-    this.prefix = 0;
-    this.body = 0;
+fn codegen cg_tbas_push_template():
+    cg_tbas_all_templates = (cg_tbas_template**)__builtin_realloc(
+        (u8*)cg_tbas_all_templates,
+        ++cg_tbas_ntemplates * (sizeof(u8*)  )
+    );
+    cg_tbas_all_templates[cg_tbas_ntemplates-1] = (cg_tbas_template*)__builtin_malloc(
+        sizeof(cg_tbas_template)
+    );
+    
+    cg_tbas_all_templates[cg_tbas_ntemplates-1].name = 0;
+    cg_tbas_all_templates[cg_tbas_ntemplates-1].funky = 0;
+    cg_tbas_all_templates[cg_tbas_ntemplates-1].nargs = 0;
+    cg_tbas_all_templates[cg_tbas_ntemplates-1].instances = 0;
+    cg_tbas_all_templates[cg_tbas_ntemplates-1].ninstances = 0;
 end
 
-method codegen cg_tbas_template.ctor():
-    this.name.s = 0;
-    this.internal_name.s = 0;
-    this.nparams = 0;
-    this.instances = 0;
-    this.ninstances = 0;
-    //don't bother setting paramtypes...
-end
-//don't bother writing a dtor
-
-
-method codegen cg_tbas_template_instance.ctor():
-    u64 i
-    for(i = 0, i < CG_TBAS_MAX_TEMPLATE_PARAMS, i++)
-        this.params[i] = 0;
-    end
-    this.prefix_once = 0;
-    this.body = 0;
-    this.nparams = 0;
+method codegen cgstrll.equ(cgstrll* o)->u64:
+    //Not the same classification? FAIL!
+    if(this.d != o.d) return 0 end
+    //same classification and both have no text? They're the same!
+    if(this.text == 0 && o.text == 0) return 1 end
+    //one had text but the other didn't? Fail it!
+    if(this.text == 0 || o.text == 0) return 0 end
+    //They both have text and the same classification. Compare the text.
+    return this.text streq o.text
 end
 
-fn codegen cg_tbas_replace_type_aliases(cgstrll* in):
-    /*in-place modify in....*/
-    while(in != 0)
-        if(in.d != CG_TOK_KEYWORD)
-            goto nextiter
+//Of note: this must return true if both are null.
+method codegen cgstrll.eqll(cgstrll* o)->u64:
+    while(1)
+        if(this == 0 || o == 0)
+            if(this != o) //one ended prematurely...
+                return 0 
+            else
+                //success!
+                return 1
+            end
         end
-        if(
-            in.text streq "char" ||
-            in.text streq "byte" ||
-            in.text streq "ubyte" ||
-            in.text streq "uchar"
-        )
-            __builtin_free(in.text);
-            in.text = __builtin_strdup("u8");
-        elif(
-            in.text streq "sbyte" ||
-            in.text streq "schar"
-        )
-            __builtin_free(in.text);
-            in.text = __builtin_strdup("i8");
-        elif(
-            in.text streq "ushort"
-        )
-            __builtin_free(in.text);
-            in.text = __builtin_strdup("u16");
-        elif(
-            in.text streq "short" ||
-            in.text streq "sshort"
-        )
-            __builtin_free(in.text);
-            in.text = __builtin_strdup("i16");
-        elif(
-            in.text streq "uint" ||
-            in.text streq "ulong"
-        )
-            __builtin_free(in.text);
-            in.text = __builtin_strdup("u32");
-        elif(
-            in.text streq "int" ||
-            in.text streq "sint" ||
-            in.text streq "long" ||
-            in.text streq "slong"
-        )
-            __builtin_free(in.text);
-            in.text = __builtin_strdup("i32");
-        elif(
-            in.text streq "ullong" ||
-            in.text streq "uqword" ||
-            in.text streq "qword" ||
-            in.text streq "uptr"  //NOTE: PLATFORM DEPENDENT
-        )
-            __builtin_free(in.text);
-            in.text = __builtin_strdup("u64");
-        elif(
-            in.text streq "sllong" ||
-            in.text streq "llong" ||
-            in.text streq "sqword" 
-        )
-            __builtin_free(in.text);
-            in.text = __builtin_strdup("i64");
-        elif(
-            in.text streq "float" 
-        )
-            __builtin_free(in.text);
-            in.text = __builtin_strdup("f32");
-        elif(
-            in.text streq "double" 
-        )
-            __builtin_free(in.text);
-            in.text = __builtin_strdup("f64");
+        if(!this.equ(o))
+            return 0
         end
-        :nextiter
-        in = in.right;
+        this = this.right;
+        o = o.right;
     end
 end
 
-//how you add templates to Tbas...
-fn codegen cg_tbas_mktemplate(cgstrll* in):
-    //TODO: make a template...
+//for a given template, search to see if any instances match the argument list...
+method codegen cg_tbas_template.find_instance_with_arg(cgstrll* arglist)->i64:
+    i64 i = 0;
+    i64 ninstances = this.ninstances;
+    for(i = 0; i < ninstances; i++)
+        if((this.instances+i).arglist.eqll(arglist))
+            return i
+        end
+    end
+    return -1
 end
 
-//How you 
-fn codegen cg_tbas_instantiate_template(cgstrll* in, u64 tid):
-    //TODO: Instantiate template...
+method codegen cg_tbas_template.push_empty_instance():
+    this.instances = (cg_tbas_template_instance*)__builtin_realloc(cast(u8*)this.instances, sizeof(cg_tbas_template_instance) * ++this.ninstances);
+    (this.instances + (this.ninstances-1)).arglist = 0;
+    (this.instances + (this.ninstances-1)).prefix = 0;
+    (this.instances + (this.ninstances-1)).body = 0;
 end
 
+//Provided an argument list, force the generation of the prefix and body portions...
+method codegen cg_tbas_template.gen_instance(cgstrll* arglist)->i64:
+    i64 retval = this.ninstances;
+    this.push_empty_instance();
+    cg_tbas_template_instance* qq = this.instances + retval;
+    //Function is assumed to not consume the arglist...
+    cgstrll* gen = callfnptr[cg_tbas_prototype_template_fn](this.funky)(arglist);
+    cgstrll* body;
+    if(gen == 0)
+        @pprint[
+            /bar
+            /       "TBAS INTERNAL ERROR: cg_tbas_template.gen_instance"
+            /bar
+            /       "Template returned nothing..."
+            /       "Template's name was:"
+            /       (this.name)
+        ]
+        __builtin_exit(1);
+    end
+    if(gen.d != CG_TOK_OBRACK)
+        @pprint[
+            /bar
+            /       "TBAS INTERNAL ERROR: cg_tbas_template.gen_instance"
+            /bar
+            /       "Template returned without an inner bracketed portion..."
+            /       "Template's name was:"
+            /       (this.name)
+        ]
+        __builtin_exit(1);
+    end
+    @cg_bldr_foldout_arg body gen
+    //gen is the prefix...
+    qq.arglist = arglist;
+    qq.body = body;
+    qq.prefix = gen;
+    return retval;
+end
+
+//Given an argument list, see if such an instance exists, and if it doesn't, then instantiate it.
+//Also return whether or not it had to be created...
+method codegen cg_tbas_template.get_instance(cgstrll* in, u64* did_create)->cg_tbas_template_instance*:
+    i64 qq
+    qq = this.find_instance_with_arg(in);
+    if(qq != -1) did_create[0] = 0;return this.instances + qq end
+    //The instance does not exist...
+    did_create[0] = 1;
+    qq = this.gen_instance(in:dupell());
+    return this.instances + qq
+end
+
+//Define a template. Inner...
+
+@mkbldrn cg_tbas_inner_mktemplate 3 [
+    /*
+        our arguments are like this:
+        @cg_tbas_inner_mktemplate IDENT IDENT INTEGER
+    */
+    @dupell_inlist
+    cgstrll* fakename
+    cgstrll* realname
+    cgstrll* the_number
+    u64 nargs
+    cgsymdecl* the_function_pointer
+    
+    @foldout_arg fakename inlist_dupe
+    @foldout_arg realname inlist_dupe
+    @foldout_arg the_number inlist_dupe
+    //inlist_dupe should be null. Check it...
+    if(inlist_dupe != 0)
+        @pprint[
+            /       "TBAS INTERNAL ERROR"
+            /       "inlist_dupe was not null after foldouts..."
+            /       "This should never happen.... Eeep!"
+        ]
+        __builtin_exit(1);
+    end
+    
+    if(fakename == 0 || fakename.d != CG_TOK_IDENT)
+        @pprint[
+            /       "TBAS ERROR"
+            /       "Dest name is INVALID!!!!!"
+            /       "Usage:"
+            /       "@cg_tbas_inner_mktemplate destname src_fn nargs"
+            /       "@cg_tbas_inner_mktemplate IDENT IDENT INT_CONST"
+        ]
+        __builtin_exit(1);
+    end
+    
+    if(realname == 0 || realname.d != CG_TOK_IDENT)
+        @pprint[
+            /       "TBAS ERROR"
+            /       "Src name is INVALID!!!!!"
+            /       "Usage:"
+            /       "@cg_tbas_inner_mktemplate destname src_fn nargs"
+            /       "@cg_tbas_inner_mktemplate IDENT IDENT INT_CONST"
+        ]
+        __builtin_exit(1);
+    end
+ 
+    if(the_number == 0 || the_number.d != CG_TOK_INT_CONST)
+        @pprint[
+            /       "TBAS ERROR"
+            /       "Intlit is INVALID!!!!!"
+            /       "Usage:"
+            /       "@cg_tbas_inner_mktemplate destname src_fn nargs"
+            /       "@cg_tbas_inner_mktemplate IDENT IDENT INT_CONST"
+        ]
+        __builtin_exit(1);
+    end
+    nargs = __builtin_atou(the_number.text);
+    the_function_pointer = (cgsymdecl*)__builtin_retrieve_sym_ptr(realname.text);
+
+    if(the_function_pointer == 0)
+        @pprint[
+            /       "TBAS ERROR"
+            /       "Could not find this function:"
+            /       (realname.text)
+            /       "Usage:"
+            /       "@cg_tbas_inner_mktemplate destname src_fn nargs"
+            /       "@cg_tbas_inner_mktemplate IDENT IDENT INT_CONST"
+        ]
+        __builtin_exit(1)
+    end
+    if(
+        the_function_pointer.is_codegen == 0 ||
+        the_function_pointer.t.is_function == 0 ||
+        the_function_pointer.t.basetype != CG_BASE_STRUCT ||
+        the_function_pointer.t.pointerlevel != 1 ||
+        the_function_pointer.nargs != 1 ||
+        the_function_pointer.fargs[0].basetype != CG_BASE_STRUCT ||
+        the_function_pointer.fargs[0].pointerlevel != 1
+    )
+        @pprint[
+            /       "TBAS ERROR"
+            /       "This symbol is not a codegen function with the correct prototype:"
+            /       (realname.text)
+            /       "The correct prototype is:"
+            /       "fn codegen my_hook(cgstrll* in)->cgstrll*;"
+        ]
+        __builtin_exit(1)
+    end
+
+    //push the new template...
+    cg_tbas_push_template();
+    cg_tbas_template* qq = cg_tbas_all_templates[cg_tbas_ntemplates-1];
+    
+    qq.name = fakename.text;
+    fakename.text = 0;
+    fakename:freelist();
+    realname:freelist();
+    qq.funky = (u8*)the_function_pointer;
+    qq.nargs = nargs;
+    
+    
+    
+    /*
+        Create the "realname" template invoker.
+        
+        This has to 
+    */
+    @initqtok "@"
+    @pushqtok "mkbldrn"
+    @pushqtok [qq.name]
+    @pushqtok [the_number.text]
+    the_number:freelist();
+    @pushqtok "["
+    /*
+        1. make variables...
+    */
+    @pushqtok "u64"
+    @pushqtok "our_templateid"
+    @pushqtok "="
+    if(1)
+        char[50] buf
+        __builtin_utoa(buf, cg_tbas_ntemplates-1);
+        @pushqtok [buf]
+    end
+    @pushqtok ";"
+
+    /*
+        Based on the arguments passed to the builder, we call get_instance
+    */
+    @tokmanip_push_strings[
+        cg_tbas_template* us = cg_tbas_all_templates[our_templateid];
+        u64[1] did_create;
+        cg_tbas_template_instance* hh = us.get_instance(inlist, did_create);
+        cgstrll* retval
+        
+        if(did_create[0])
+            retval = hh.prefix:dupell();
+            retval:push_end(hh.body:dupell());
+            return retval;
+        end
+        
+        retval = (hh.body:dupell());
+        return retval;
+    ]
+    
+    @pushqtok "]"
+    return retval;
+]
+
+/*
+    USAGE
+    
+    @cgmktemplate [
+        [
+            //template contents
+        ][
+            //args
+        ][
+        
+        ]
+    ]
+*/
+
+@mkbldr [
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        mktemplate 
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    /*
+        First argument must be an identifier.
+    */
+    @dupell_inlist
+    cgstrll* name;
+    cgstrll* first_portion
+    cgstrll* second_portion
+    cgstrll* third_portion = 0;
+    u64 nargs = 0;
+    if(
+        inlist_dupe == 0 || 
+        inlist_dupe.d != CG_TOK_IDENT
+    )
+        @pprint[
+            /           "MKTEMPLATE ERROR"
+            /           "Template lacks identifier (NAME)"
+        ]
+        goto explain_syntax
+    end
+    @foldout_arg name inlist_dupe
+    if(name == 0 || name.right != 0)
+        @pprint[
+            /           "MKTEMPLATE INTERNAL ERROR"
+            /           "Name is null or has a right? CALL THE SYSTEM ADMINISTRATOR!"
+        ]
+        goto explain_syntax
+    end
+    
+    if(
+        inlist_dupe == 0 || 
+        inlist_dupe.d != CG_TOK_OBRACK
+    )
+        @pprint[
+            /           "MKTEMPLATE ERROR"
+            /           "Template lacks opening square bracket at beginning!"
+            /           "meaning it has no properly-formed template portion!"
+        ]
+        goto explain_syntax
+    end
+    
+    @foldout_arg first_portion inlist_dupe //NOTE: it can be empty, so it could be null...
+    
+    if(
+        inlist_dupe == 0 || 
+        inlist_dupe.d != CG_TOK_OBRACK
+    )
+        @pprint[
+            /           "MKTEMPLATE ERROR"
+            /           "Template lacks opening square bracket for arglist!"
+            /           "meaning it has no properly-formed arglist portion!"
+        ]
+        goto explain_syntax
+    end
+    @foldout_arg second_portion inlist_dupe //NOTE: This can also be empty, so it could also be null...
+    
+    if(inlist_dupe != 0)
+        if(inlist_dupe.d != CG_TOK_OBRACK)
+            @pprint[
+                /           "MKTEMPLATE ERROR"
+                /           "The code portion (optional) has something other than an opening square bracket!"
+                /           "meaning it is not properly formed!"
+            ]
+            goto explain_syntax
+        end
+        @foldout_arg third_portion inlist_dupe //NOTE: This can also be empty, so it could also be null...
+    end
+    if(inlist_dupe != 0)
+        @pprint[
+            /       "MKTEMPLATE ERROR"
+            /       "There's something here AFTER the code portion! That's not allowed!"
+        ]
+        goto explain_syntax
+    end
+    /*
+        We have to do some analysis...
+    */
+    
+    
+    char* mutated_innername
+    if(1)
+        cgstrll* ww
+        cgstr q
+        cgstr q2
+        q:fromstr("tbas_interior_function_");
+        q2.s = name.text;
+        q:add(q2);
+        mutated_innername = q.s;
+        ww = second_portion;
+        while(ww != 0)
+            ww = ww.right;
+            nargs++;
+        end
+    end
+    /*
+        Create a worksheet function with the mutated inner name....
+    */
+    @initqtok "@"
+    @pushqtok "wksht_fn"
+    @pushqtok [mutated_innername]
+    @pushqtok "["
+        @pushqtok "["
+        if(first_portion != 0)
+            @pushtok  [first_portion] //MOVE
+            @rwalk_skip ;
+        end
+        @pushqtok "]"
+        //arglist
+        @pushqtok "["
+        if(second_portion != 0)
+            @pushtok  [second_portion] //MOVE
+            @rwalk_skip ;
+        end
+        @pushqtok "]"
+        //third portion...
+        if(third_portion != 0)
+            @pushqtok "["
+            @pushtok [third_portion] //MOVE
+            @rwalk_skip ;
+            @pushqtok "]"
+        end
+    @pushqtok "]"
+    //use the previously created mkbldrn to create the template...
+    @pushqtok "@"
+    @pushqtok "cg_tbas_inner_mktemplate"
+    @pushtok [name] //MOVE
+    @pushqtok [mutated_innername]
+    __builtin_free(mutated_innername);
+    if(1)
+        char[50] buf
+        __builtin_utoa(buf, nargs);
+        @pushqtok [buf]
+    end
+    
+    
+    return retval;
+    :explain_syntax
+    @pprint[
+        /           "Syntax is..."
+        /           "@cgmktemplate["
+        /           "myTemplate"
+        /           "    [//template"
+        /           "        [/*body. This is inserted each time.*/]"
+        /           "        //prefix code. This is generated only once."
+        /           "    ]"
+        /           "    [//Argument list. All identifiers."
+        /           "        ARG1 ARG2 ARG3 //..."
+        /           "    ]"
+        /           "//this portion (the code portion) is optional..."
+        /           "    ["
+        /           "        return result;"
+        /           "    ]"            
+        /           "]"
+    ]
+    __builtin_exit(1)
+]
 
