@@ -713,7 +713,7 @@ method codegen cgexpr_node:gen_code(cgast* ast)->char*:
         __builtin_ftoa(buf, this.fdata);
         return __builtin_strdup(buf);
     elif(this.kind == CG_EXPR_CONSTEXPR_INT)
-        __builtin_itoa(buf, this.idata);
+        cg_cemitter_itoa(buf, this.idata);
         return __builtin_strdup(buf);
     elif(this.kind == CG_EXPR_STREQ)
         cgstr ff
@@ -1416,7 +1416,8 @@ method codegen cgsymdecl:gen_code(cgast* ast, char is_local, u64 my_symid)->char
         out:add(ff);
         ff.s = "[";
         out:add(ff);
-        __builtin_itoa(buf, arraylen);
+        //__builtin_itoa(buf, arraylen);
+        cg_cemitter_itoa(buf, arraylen);
         ff.s = buf;
         out:add(ff);
         ff.s = "]";
@@ -1569,7 +1570,8 @@ method codegen cgsymdecl:gen_code(cgast* ast, char is_local, u64 my_symid)->char
             ff.s = "[";
             out:add(ff);
     
-                __builtin_itoa(buf, arraylen);
+                //__builtin_itoa(buf, arraylen);
+                cg_cemitter_itoa(buf,arraylen);
                 ff.s = buf;
                 out:add(ff);
     
@@ -1859,7 +1861,8 @@ method codegen cgtypedecl:emit_type(cgast* ast, u64 my_structid):
             t.s = "[";printme:add(t);
             //emit it!
             char[50] buf;
-            __builtin_itoa(buf, arraylen);
+            //__builtin_itoa(buf, arraylen);
+            cg_cemitter_itoa(buf, arraylen);
             t.s = buf;printme:add(t);
             t.s = "]";printme:add(t);
         end
