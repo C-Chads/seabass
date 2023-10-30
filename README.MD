@@ -581,7 +581,7 @@ a few months.
         
         - [ ] cg_uast- the Universal Abstract Syntax Tree (Unfinished)
         
-    - [ ] Tbas- Templated Seabass
+    - [X] Tbas- Templated Seabass
     
     - [ ] System Archetypes
     
@@ -597,7 +597,13 @@ a few months.
         
         - [ ] Actors- a Multithreaded programming model
         
-        - [ ] Tuples
+        - [ ] Generics (C++ templates, but type-only)
+        
+        - [ ] Templated code
+        
+        - [ ] Everything Cbas has and more
+        
+        - [ ] Automatic creation of pass-by-value wrappers.
         
     - [ ] A functional language
     
