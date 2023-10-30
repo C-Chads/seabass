@@ -31,6 +31,16 @@ struct bbb
     bbb* beebeebee
 end
 
+struct bbb2
+    bbb mymember
+    float q
+end
+
+method bbb2.ctor():
+    this.&mymember.a = 3;
+    this.&mymember.b = 3;
+end
+
 
 struct membuf
     char* d

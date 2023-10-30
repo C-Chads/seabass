@@ -370,13 +370,41 @@ method codegen cgexpr_node:gen_code(cgast* ast)->char*:
         return retval.s;
     elif(this.kind == CG_EXPR_MEMBER)
         cgstr ff
-        retval:fromstr("(");
+        /*
+            if the member is a BASE_STRUCT with
+            pointerlevel 0 and arraylen 0, we need
+            to get the address...
+        */
+        u64 sid = this.subnodes[0].t.structid;
+        cgtypedecl* td = (ast.type_table[0]+sid);
+        u64 ii
+        u64 was_struct = 0;
+        cgtype* mt
+        for(ii = 0, ii < td.nmembers, ii++)
+            if((td.members+ii).membername streq this.symname)
+                //check what its type is...
+                mt = (td.members+ii);
+                if(mt.basetype == CG_BASE_STRUCT &&
+                mt.pointerlevel == 0 &&
+                mt.arraylen == 0)
+                    was_struct = 1;
+                end
+                break
+            end
+        end
+        if(was_struct)
+            retval:fromstr("&((");
+        else
+            retval:fromstr("((");
+        end
             //the expression which evaluates to a struct*
             ff.s = this.subnodes[0]:gen_code(ast);
             retval:add(ff); ff:free();
         ff.s = ")->";
         retval:add(ff);
         ff.s = this.symname;
+        retval:add(ff);
+        ff.s = ")";
         retval:add(ff);
         return retval.s;
     elif(this.kind == CG_EXPR_CAST)
