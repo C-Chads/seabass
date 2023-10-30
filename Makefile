@@ -71,6 +71,11 @@ fib:
 	cbas toc_fib_example.cbas && \
 	mv auto_out.c ../
 	$(CC) $(CFLAGS_CBAS) auto_out.c library/companion.c -o fib
+
+fib_realpath:
+
+	cbas library/toc_fib_example.cbas
+	$(CC) $(CFLAGS_CBAS) auto_out.c library/companion.c -o fib
 	
 
 uninstall:
