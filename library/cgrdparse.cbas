@@ -127,13 +127,24 @@ fn codegen codegen_main():
     @global
     fn codegen print_stuff():
         __builtin_puts("Hello!");
-        @global
-        fn codegen print_stuff2():
-            __builtin_puts("Hello Again!");
-            @global
+        @globalscope
+            fn codegen print_stuff2():
+                __builtin_puts("Hello Again!");
+                @globalscope
                     fn codegen print_stuff3():
                         __builtin_puts("Goodbye Again!");
                     end
+                end
+            end
+        
+            fn codegen print_stuff4():
+                __builtin_puts("Four");
+                @globalscope
+                    fn codegen print_stuff5():
+                        __builtin_puts("Five");
+                    end
+                end
+            end
         end
         ;    
     end
