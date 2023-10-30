@@ -37,8 +37,8 @@ struct bbb2
 end
 
 method bbb2.ctor():
-    this.&mymember.a = 3;
-    this.&mymember.b = 3;
+    this.mymember.a = 3;
+    this.mymember.b = 3;
 end
 
 
