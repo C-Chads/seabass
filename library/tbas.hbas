@@ -120,7 +120,7 @@ method codegen cg_tbas_template.find_instance_with_arg(cgstrll* arglist)->i64:
     i64 i = 0;
     i64 ninstances = this.ninstances;
     for(i = 0; i < ninstances; i++)
-        if((this.instances+i).arglist.eqll(arglist))
+        if((this.instances[i]).arglist.eqll(arglist))
             return i
         end
     end
@@ -129,16 +129,16 @@ end
 
 method codegen cg_tbas_template.push_empty_instance():
     this.instances = (cg_tbas_template_instance*)__builtin_realloc(cast(u8*)this.instances, sizeof(cg_tbas_template_instance) * ++this.ninstances);
-    (this.instances + (this.ninstances-1)).arglist = 0;
-    (this.instances + (this.ninstances-1)).prefix = 0;
-    (this.instances + (this.ninstances-1)).body = 0;
+    (this.instances[this.ninstances-1]).arglist = 0;
+    (this.instances[this.ninstances-1]).prefix = 0;
+    (this.instances[this.ninstances-1]).body = 0;
 end
 
 //Provided an argument list, force the generation of the prefix and body portions...
 method codegen cg_tbas_template.gen_instance(cgstrll* arglist)->i64:
     i64 retval = this.ninstances;
     this.push_empty_instance();
-    cg_tbas_template_instance* qq = this.instances + retval;
+    cg_tbas_template_instance* qq = this.instances[retval];
     //Function is assumed to not consume or modify the arglist...
     cgstrll* gen = callfnptr[cg_tbas_prototype_template_fn](this.funky)(arglist);
     cgstrll* body;
