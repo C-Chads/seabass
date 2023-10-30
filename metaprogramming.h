@@ -27,6 +27,9 @@ typedef struct{
 	uint64_t* nsymbols;
 	uint64_t* nscopes;
 	uint64_t* nloops; /*Needed for identifying the parent loop.*/
+	uint64_t target_word;
+	uint64_t signed_target_word;
+	uint64_t target_max_float;
 }seabass_builtin_ast;
 
 /*

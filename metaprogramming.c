@@ -16,6 +16,10 @@
 	This is all the stuff that enables the metaprogramming of Seabass.
 */
 
+extern uint64_t get_target_word();
+extern uint64_t get_signed_target_word();
+extern uint64_t get_target_max_float_type();
+
 FILE* ofile = NULL;
 
 int impl_builtin_getargc(){return saved_argc;}
@@ -124,6 +128,9 @@ seabass_builtin_ast* impl_builtin_get_ast(){
 	retval->nscopes = &nscopes;
 	retval->ntypedecls = &ntypedecls;
 	retval->nloops = &nloops;
+	retval->target_word = get_target_word();
+	retval->signed_target_word = get_signed_target_word();
+	retval->target_max_float = get_target_max_float_type();
 	return retval;
 }
 strll* impl_builtin_peek(){

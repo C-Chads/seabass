@@ -45,6 +45,10 @@ uint64_t get_target_word(){
     return TARGET_WORD_BASE;
 }
 
+uint64_t get_signed_target_word(){
+    return TARGET_WORD_SIGNED_BASE;
+}
+
 
 void set_max_float_type(uint64_t val){
 	if(val != BASE_F64 && val != BASE_F32){
@@ -490,6 +494,7 @@ static void propagate_types(expr_node* ee){
 
 		prevent most illegal type operations.
 */
+    back_to_the_top:;
 
 	if(ee->kind != EXPR_FCALL)/*Disallow void from this point onward.*/
 	if(ee->kind != EXPR_BUILTIN_CALL)/*Disallow void from this point onward.*/
@@ -756,7 +761,14 @@ static void propagate_types(expr_node* ee){
 		t.is_lvalue = 1; /*if it wasn't an lvalue before, it is now!*/
 		if(t.pointerlevel == 0){
 			if(t.basetype == BASE_STRUCT)
-				throw_type_error("Can't deref pointer to struct. Try pointer arithmetic instead.");
+            {
+                ee->kind = EXPR_ADD;
+                t.pointerlevel++;
+                t.is_lvalue = 0;
+        		ee->t = t;
+
+                goto back_to_the_top;
+            }
 			if(t.basetype == BASE_VOID)
 				throw_type_error("Can't deref pointer to void.");
 		}

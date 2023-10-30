@@ -34,7 +34,40 @@ fn codegen cg_Cemitter_make_dtable_name()->char*:
     return retval.s;
 end
 
+fn codegen cg_cemitter_utoa(char* buf, u64 v):
+    char* suffix;
+    
+    cgast* ast = (cgast*)__builtin_get_ast();
+    if(ast.target_word == CG_BASE_U64)
+        suffix = "ull";
+    elif(ast.target_word == CG_BASE_U32 && cg_Cemitter_long_32bit)
+        suffix = "ul";
+    else
+        suffix = "u";
+    end
+    __builtin_utoa(buf, v);
+    //append the suffix...
+    while(buf[0]) buf++ end
+    cgstrcpy(buf, suffix);
+end
 
+
+fn codegen cg_cemitter_itoa(char* buf, i64 v):
+    char* suffix;
+    
+    cgast* ast = (cgast*)__builtin_get_ast();
+    if(ast.target_word == CG_BASE_U64)
+        suffix = "ll";
+    elif(ast.target_word == CG_BASE_U32 && cg_Cemitter_long_32bit)
+        suffix = "l";
+    else
+        suffix = "";
+    end
+    __builtin_itoa(buf, v);
+    //append the suffix...
+    while(buf[0]) buf++ end
+    cgstrcpy(buf, suffix);
+end
 
 
 fn codegen cg_quick_emit(char* str, u64 indent_level):
@@ -215,7 +248,7 @@ method codegen cgexpr_node:gen_code(cgast* ast)->char*:
         retval:add(q);
         return retval.s;
     elif(this.kind == CG_EXPR_INTLIT)
-        __builtin_utoa(buf, cast(i64)this.idata);
+        cg_cemitter_utoa(buf, cast(i64)this.idata);
 
         retval.s = __builtin_strdup(buf);
         return retval.s;
@@ -710,7 +743,26 @@ method codegen cgexpr_node:gen_code(cgast* ast)->char*:
         return retval.s;
     elif(this.kind == CG_EXPR_MEMBERPTR)
         cgstr ff
-        retval:fromstr("&((");
+                u64 sid = this.subnodes[0].t.structid;
+        cgtypedecl* td = (ast.type_table[0]+sid);
+        u64 ii
+        u64 was_array = 0;
+        cgtype* mt
+        for(ii = 0, ii < td.nmembers, ii++)
+            if((td.members+ii).membername streq this.symname)
+                //check what its type is...
+                mt = (td.members+ii);
+                if(mt.arraylen != 0)
+                    was_array = 1;
+                end
+                break
+            end
+        end
+        if(was_array)
+            retval:fromstr("((");
+        else
+            retval:fromstr("&((");
+        end
                 //part 1- get the thing to get the member pointer of...
                 ff.s = this.subnodes[0]:gen_code(ast);
                 retval:add(ff); ff:free();
@@ -891,7 +943,8 @@ method codegen cg_cemitter_disptable:emit_table(cgast* ast)->char*:
     ff.s = "[";
     retval:add(ff);
         //generate the number of entries as a string...
-        __builtin_utoa(buf, this.nlabels);
+        //__builtin_utoa(buf, this.nlabels);
+        cg_cemitter_utoa(buf, this.nlabels);
         ff.s = buf;
         retval:add(ff);
     ff.s = "] = {\n    ";
@@ -1428,9 +1481,11 @@ method codegen cgsymdecl:gen_code(cgast* ast, char is_local, u64 my_symid)->char
             
             //emit it as a string...
             if(kind == 0)
-                __builtin_utoa(buf, uval[0]);
+                //__builtin_utoa(buf, uval[0]);
+               cg_cemitter_utoa(buf, uval[0]);
             elif(kind == 1)
-                __builtin_itoa(buf, ival[0]);
+                //__builtin_itoa(buf, ival[0]);
+                cg_cemitter_itoa(buf, ival[0]);
             elif(kind == 2)
                 __builtin_ftoa(buf, fval[0]);
             elif(kind == 3)
@@ -1585,9 +1640,11 @@ method codegen cgsymdecl:gen_code(cgast* ast, char is_local, u64 my_symid)->char
                     end
                     //emit it as a string...
                     if(kind == 0)
-                        __builtin_utoa(buf, uval[0]);
+                        //__builtin_utoa(buf, uval[0]);
+                        cg_cemitter_utoa(buf, uval[0]);
                     elif(kind == 1)
-                        __builtin_itoa(buf, ival[0]);
+                        //__builtin_itoa(buf, ival[0]);
+                        cg_cemitter_itoa(buf, uval[0]);
                     elif(kind == 2)
                         __builtin_ftoa(buf, fval[0]);
                     elif(kind == 3)
@@ -1686,9 +1743,11 @@ method codegen cgsymdecl:gen_code(cgast* ast, char is_local, u64 my_symid)->char
             
             //emit it as a string...
             if(kind == 0)
-                __builtin_utoa(buf, uval[0]);
+                //__builtin_utoa(buf, uval[0]);
+                cg_cemitter_utoa(buf, uval[0]);
             elif(kind == 1)
-                __builtin_itoa(buf, ival[0]);
+                //__builtin_itoa(buf, ival[0]);
+                cg_cemitter_itoa(buf, uval[0]);
             elif(kind == 2)
                 __builtin_ftoa(buf, fval[0]);
             elif(kind == 3)

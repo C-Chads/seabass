@@ -544,6 +544,9 @@ class cgast
 	u64* nsymbols
 	u64* nscopes
 	u64* nloops
+    u64 target_word
+	u64 signed_target_word
+	u64 target_max_float
 end
 
 class cg_parser_cache noexport
