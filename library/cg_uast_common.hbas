@@ -20,6 +20,13 @@ codegen u64 cg_uast_coord_author = (0xf<<(64-4)) | 2;
 //LOGICAL OPS
 codegen u64 cg_uast_coord_implies = (0xf<<(64-4)) | 3;
 codegen u64 cg_uast_coord_impliesnot = (0xf<<(64-4)) | 4;
+//Common AST Node Types
+codegen u64 cg_uast_coord_expr_node = (0xf<<(64-4)) | 5;
+codegen u64 cg_uast_coord_stmt_node = (0xf<<(64-4)) | 6;
+codegen u64 cg_uast_coord_scope_node = (0xf<<(64-4)) | 7;
+codegen u64 cg_uast_coord_symdecl_node = (0xf<<(64-4)) | 8;
+codegen u64 cg_uast_coord_typedecl_node = (0xf<<(64-4)) | 9;
+codegen u64 cg_uast_coord_root_node = (0xf<<(64-4)) | 10;
 
 
 /*
