@@ -7,7 +7,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <limits.h>
 #include <errno.h>
 #ifndef __APPLE__
 #include "lockstepthread.h"
@@ -49,9 +48,7 @@ size_t get_utime(){
     return time(0);
 }
 
-uc* get_real_path(uc* path){
-    return (uc*)realpath((char*)path,NULL);
-}
+
 
 void set_errno(int new_errno){
     errno = new_errno;

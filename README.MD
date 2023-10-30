@@ -767,18 +767,12 @@ To begin viewing these manpages, do `cbas -m help`
 
 ## Platform specific stuff
 
-The compiler builds by default with support for the `realpath`
-function of *nix-based systems. The standard library also
-mirrors this ability. This is used to make file includes
-relative to the directory of the current file, rather than
-the current working directory.
+The compiler itself has been modified not to use any *nix specific functionality, so
+the compiler should be portable to non-POSIX platforms (such as Windows).
 
-It is possible to build the compiler without any
-usage of realpath by not defining USE_REALPATH. This will
-cause all non-system includes to use the current working
-directory.
-
-`__builtin_read_file` always uses the current working directory.
+However, the stdlib implementation (for compiling Seabass interop with C) currently
+implements threads using `pthreads`. Furthermore, this implementation does not
+work on ...Fruit... devices.
 
 ## Implementation Limitations
 

@@ -1,8 +1,8 @@
 CC= gcc
-CFLAGS= -O3 -s -std=gnu99 -march=native -flto -fwrapv -DUSE_REALPATH
-CFLAGS_DBG= -Og -g -fwrapv -fsanitize=address,undefined,leak -std=gnu99 -DCOMPILER_CLEANS_UP -DUSE_PARSER_ECHO -DUSE_REALPATH
-CFLAGS_DBGVG= -Og -g -fwrapv -std=gnu99 -DCOMPILER_CLEANS_UP -DUSE_PARSER_ECHO -DUSE_REALPATH
-CFLAGS_CLEAN= -O3 -s -fwrapv -flto -std=gnu99 -DCOMPILER_CLEANS_UP -DUSE_REALPATH
+CFLAGS= -O3 -s -std=gnu99 -march=native -flto -fwrapv
+CFLAGS_DBG= -Og -g -fwrapv -fsanitize=address,undefined,leak -std=gnu99 -DCOMPILER_CLEANS_UP -DUSE_PARSER_ECHO
+CFLAGS_DBGVG= -Og -g -fwrapv -std=gnu99 -DCOMPILER_CLEANS_UP -DUSE_PARSER_ECHO
+CFLAGS_CLEAN= -O3 -s -fwrapv -flto -std=gnu99 -DCOMPILER_CLEANS_UP
 CFLAGS_PURE= -O3 -fwrapv -std=gnu99 -DCOMPILER_CLEANS_UP
 CFLAGS_CBAS= -O3 -fwrapv -s -lpthread
 

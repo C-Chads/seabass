@@ -33,9 +33,6 @@ fn predecl read_bytes(TGT_UMAX fhandle, char* buf, TGT_UMAX nbytes)->TGT_UMAX;
 //get unix time...
 fn predecl pure get_utime()->TGT_UMAX;
 
-//realpath...
-fn predecl get_real_path(char* path)->char*;
-
 fn predecl set_errno(int new_errno);
 fn predecl get_errno()->int;
 
