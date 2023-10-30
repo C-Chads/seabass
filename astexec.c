@@ -13,7 +13,7 @@
 
 static uint64_t is_debugging = 1;    //only used in debug_print
 static uint64_t executing_function = 0; //the symbol (index into the symbol table) of the function where code is currently being executed.
-static scope**scope_executing_stack; //stack of all scopes. every function, every if statement, etcetera add 
+static scope**  scope_executing_stack; //stack of all scopes. every function, every if statement, etcetera add 
 static uint64_t n_scopes_executings = 0; //depth of the scope_executing_stack.
 
 typedef struct{

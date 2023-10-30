@@ -1846,7 +1846,7 @@ int main(int argc, char** argv){
 	fclose(ifile); 
 	ifile = NULL;
 	tokenized.text = entire_input_file;
-	vm_allocate_needed_memory(0x100000);
+	vm_allocate_needed_memory(0x1000000);
 	/*
 	    Needed for secure symbol table...
 	*/
