@@ -3048,8 +3048,8 @@ void expr_parse_compare(expr_node** targ){
 }
 
 
+
 void expr_parse_logbool(expr_node** targ){
-	/*parse multiple, divide, and modulo*/
 	expr_node* c;
 	expr_node* a;
 	expr_node* b;
@@ -3112,6 +3112,41 @@ void expr_parse_logbool(expr_node** targ){
 	    *targ = chain;
 	}
 }
+
+
+
+/*
+void expr_parse_logbool(expr_node** targ){
+	expr_node* c;
+	expr_node* a;
+	expr_node* b;
+	expr_parse_compare(&a);
+	{
+		if(peek()->data == TOK_OPERATOR){
+			if(streq(peek()->text, "||")){
+				consume();
+				c = c_allocX(sizeof(expr_node));
+				c->kind = EXPR_LOGOR;
+				expr_parse_logbool(&b);
+				c->subnodes[0] = a;
+				c->subnodes[1] = b;
+				a = c;
+			}
+			if(streq(peek()->text, "&&")){
+				consume();
+				c = c_allocX(sizeof(expr_node));
+				c->kind = EXPR_LOGAND;
+				expr_parse_logbool(&b);
+				c->subnodes[0] = a;
+				c->subnodes[1] = b;
+				a = c;
+			}
+		}
+	}
+	*targ = a;
+}
+*/
+
 
 void expr_parse_assign(expr_node** targ){
 	/*parse assignments*/

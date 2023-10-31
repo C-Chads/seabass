@@ -637,6 +637,20 @@ UAST. This will be used as the test-bench for the tools. Needed tools:
         different chaining rules (left-left-folding,
         right node insertion, etc)
         
+            * OF NOTE: the folding technique can be
+            partially defined using what rule is
+            applied on the right hand side- 
+            
+            y = x + y | x
+            
+            will create a tree from this:
+            
+            1 + 2 + 3 + 4 + 5
+            
+            that looks like this:
+            
+            1 + (2 + (3 + (4 + (5))))
+        
         * sequence rule templates - do some
         rule, then check for a sequence continuator
         or a sequence terminator. If the sequence continuator
