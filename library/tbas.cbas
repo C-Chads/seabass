@@ -68,6 +68,8 @@ codegen u64 whygen = 0;
 fn codegen codegen_main():
     @doWhy "For fun and pleasure!"
     @doWhy "For fun and pleasure!"
+    @doWhy "For fun and pleasure!"
+    @doWhy "For fun and pleasure!"
     @doWhy "For fun and joy!"
     @doWhy "For Squealing and laughter!"
     @doWhy "For Squealing and laughter!"
