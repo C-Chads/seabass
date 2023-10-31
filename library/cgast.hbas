@@ -816,33 +816,21 @@ method codegen cgstrll:debug_print():
 	    __builtin_puts("~~~");
 	elif(cast(uptr)this.text)
 		__builtin_puts(this.text);
-	end
-	if(this.d == CG_TOK_OBRACK)
+	elif(this.d == CG_TOK_OBRACK)
 		__builtin_puts("[");
-	end
-	if(this.d == CG_TOK_CBRACK)
+	elif(this.d == CG_TOK_CBRACK)
 		__builtin_puts("]");
-	end
-
-	if(this.d == CG_TOK_OPAREN)
+	elif(this.d == CG_TOK_OPAREN)
 		__builtin_puts("(");
-	end
-	if(this.d == CG_TOK_CPAREN)
+	elif(this.d == CG_TOK_CPAREN)
 		__builtin_puts(")");
-	end
-
-	if(this.d == CG_TOK_OCB)
+	elif(this.d == CG_TOK_OCB)
 		__builtin_puts("{");
-	end
-	if(this.d == CG_TOK_CCB)
+	elif(this.d == CG_TOK_CCB)
 		__builtin_puts("}");
-	end
-
-	if(this.d == CG_TOK_SEMIC)
+	elif(this.d == CG_TOK_SEMIC)
 		__builtin_puts(";");
-	end
-
-	if(this.d == CG_TOK_COMMA)
+	elif(this.d == CG_TOK_COMMA)
 		__builtin_puts(",");
 	end
 	this = this.right;
@@ -1059,6 +1047,7 @@ fn codegen cg_token_grab_arglist(char* errtext)->cgstrll*:
 	cgstrll* retval
 	cgstrll* p
 	cgstrll* walker
+	cgstrll* owalker
 	p = cg_peek();
 	//if there are no arguments, return no arguments!
 	if(cast(uptr)p == 0) 		
@@ -1078,14 +1067,20 @@ fn codegen cg_token_grab_arglist(char* errtext)->cgstrll*:
 	//the argument was an opening bracket...
 
 	//Walk the token list until we reach the end or the matching closing square bracket
-	u64 len;
-	len = 1; //include 1 token already...
+
 	i64 level;
 	level = 1;
-	for(walker = p.right, walker != cast(cgstrll*)0, walker = walker.right)
-		len++; //not at the end, because we start with p.right.
-		if(walker.d == CG_TOK_OBRACK) level++; 
-		elif(walker.d == CG_TOK_CBRACK) level--; end
+	retval = p:dupe();
+	owalker = retval;
+	__builtin_consume();
+	while(1)
+	    p = cg_peek();
+	    if(p == 0) break
+		elif(p.d == CG_TOK_OBRACK) level++; 
+		elif(p.d == CG_TOK_CBRACK) level--; end
+		owalker.right = p:dupe();
+		owalker = owalker.right;
+		__builtin_consume();
 		if(level == 0) break; end
 	end
 	if(level != 0)
@@ -1093,7 +1088,6 @@ fn codegen cg_token_grab_arglist(char* errtext)->cgstrll*:
 		__builtin_puts(errtext);
 		__builtin_exit(1);
 	end
-	retval = cg_token_dupe_skip(len);
 	return retval;
 end
 
