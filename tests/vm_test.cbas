@@ -108,7 +108,8 @@ function codegen test_type_conversion():
     uint e = 78951;
     int f = -78951;
     uqword g = (1<<50) + 739;
-    sqword h = -1 * ((1<<50) + 739);
+    sqword h = -1 * ((1<<60) + 739);
+    char* ptr = (char*)91824;
     
     
     char[2048] buf
@@ -151,6 +152,9 @@ function codegen test_type_conversion():
         t = h;
         __builtin_ftoa(buf,t);        
         prnt
+        t = (float)(uptr)ptr;
+        __builtin_ftoa(buf,t);        
+        prnt
     end
     __builtin_puts("DOUBLE:")
     if(1)
@@ -186,6 +190,9 @@ function codegen test_type_conversion():
         t = h;
         __builtin_ftoa(buf,t);        
         prnt
+        t = (double)(uptr)ptr;
+        __builtin_ftoa(buf,t);        
+        prnt
     end
     __builtin_puts("BYTE:")
     if(1)
@@ -218,6 +225,9 @@ function codegen test_type_conversion():
         __builtin_utoa(buf,t);        
         prnt
         t = h;
+        __builtin_utoa(buf,t);        
+        prnt
+        t = (byte)ptr;
         __builtin_utoa(buf,t);        
         prnt
     end
@@ -255,6 +265,9 @@ function codegen test_type_conversion():
         t = h;
         __builtin_itoa(buf,t);        
         prnt
+        t = (sbyte)ptr;
+        __builtin_itoa(buf,t);        
+        prnt
     end
     
         __builtin_puts("USHORT:")
@@ -290,6 +303,9 @@ function codegen test_type_conversion():
         t = h;
         __builtin_utoa(buf,t);        
         prnt
+        t = (ushort)ptr;
+        __builtin_utoa(buf,t);        
+        prnt
     end
     
     __builtin_puts("SHORT:")
@@ -323,6 +339,9 @@ function codegen test_type_conversion():
         __builtin_itoa(buf,t);        
         prnt
         t = h;
+        __builtin_itoa(buf,t);        
+        prnt
+        t = (short)ptr;
         __builtin_itoa(buf,t);        
         prnt
     end
@@ -361,6 +380,9 @@ function codegen test_type_conversion():
         t = h;
         __builtin_utoa(buf,t);        
         prnt
+        t = (u32)ptr;
+        __builtin_utoa(buf,t);        
+        prnt
     end
     
     __builtin_puts("INT:")
@@ -394,6 +416,9 @@ function codegen test_type_conversion():
         __builtin_itoa(buf,t);        
         prnt
         t = h;
+        __builtin_itoa(buf,t);        
+        prnt
+        t = (sint)ptr;
         __builtin_itoa(buf,t);        
         prnt
     end
@@ -432,6 +457,9 @@ function codegen test_type_conversion():
         t = h;
         __builtin_utoa(buf,t);        
         prnt
+        t = (uqword)ptr;
+        __builtin_utoa(buf,t);        
+        prnt
     end
     
     __builtin_puts("SQWORD:")
@@ -466,6 +494,47 @@ function codegen test_type_conversion():
         prnt
         t = h;
         __builtin_itoa(buf,t);        
+        prnt
+        t = (sqword)ptr;
+        __builtin_itoa(buf,t);        
+        prnt
+    end
+    
+    __builtin_puts("PTR:")
+    if(1)
+        char* t
+        t = (char*)(sqword)ff;
+        __builtin_utoa(buf,(uqword)t);
+        prnt
+        t = (char*)(sqword)dd;
+        __builtin_utoa(buf,(uqword)t);        
+        prnt        
+        t = (char*)a;
+        __builtin_utoa(buf,(uqword)t);        
+        prnt
+        t = (char*)b;
+        __builtin_utoa(buf,(uqword)t);        
+        prnt
+        t = (char*)c;
+        __builtin_utoa(buf,(uqword)t);        
+        prnt
+        t = (char*)d;
+        __builtin_utoa(buf,(uqword)t);        
+        prnt
+        t = (char*)e;
+        __builtin_utoa(buf,(uqword)t);        
+        prnt
+        t = (char*)f;
+        __builtin_utoa(buf,(uqword)t);        
+        prnt
+        t = (char*)g;
+        __builtin_utoa(buf,(uqword)t);        
+        prnt
+        t = (char*)h;
+        __builtin_utoa(buf,(uqword)t);        
+        prnt
+        t = ptr;
+        __builtin_utoa(buf,(uqword)t);        
         prnt
     end
     
