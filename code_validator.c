@@ -1203,6 +1203,9 @@ static void propagate_types(expr_node* ee){
 	        }
             if(propagator){
                 special_exception_pointer_int_compare = 1;
+                /*
+                    Perform a conversion...
+                */
             }
 	    }
 	    if(!special_exception_pointer_int_compare){
@@ -2065,7 +2068,7 @@ static void propagate_implied_type_conversions(expr_node* ee){
 		ee->kind == EXPR_EQ ||
 		ee->kind == EXPR_NEQ
 	){
-    	if(ee->subnodes[0]->t.pointerlevel == 0)
+    	if(ee->subnodes[0]->t.pointerlevel == 0){
 		if(ee->subnodes[1]->t.pointerlevel == 0)
 		{
 			t_target = type_init();
@@ -2083,6 +2086,36 @@ static void propagate_implied_type_conversions(expr_node* ee){
 				t_target
 			);
 			return;
+		}}
+		/*For the specific and unusual case...*/
+		if(		ee->kind == EXPR_EQ ||
+		ee->kind == EXPR_NEQ)
+		if(
+		    (ee->subnodes[0]->t.pointerlevel != ee->subnodes[1]->t.pointerlevel) &&
+		    (
+		        (ee->subnodes[0]->t.pointerlevel == 0) ||
+		        (ee->subnodes[1]->t.pointerlevel == 0)
+		    )
+		){
+		    /*We must insert a cast...*/
+		    t_target = type_init();
+		    if(ee->subnodes[0]->t.pointerlevel){
+		        //cast the integer to the pointer type...
+		        t_target = ee->subnodes[0]->t;
+    			insert_implied_type_conversion_ptr_compare_int_ptr_override(
+    				ee->subnodes + 1,
+    				t_target
+    			);
+		    }else{
+		        //cast the integer to the pointer type...
+		        t_target = ee->subnodes[1]->t;
+    			insert_implied_type_conversion_ptr_compare_int_ptr_override(
+                    ee->subnodes + 0,
+                    t_target
+			    );
+		    }
+		    /*insert the cast...*/
+		
 		}
 	}
 	/*streq always takes two pointers.*/
