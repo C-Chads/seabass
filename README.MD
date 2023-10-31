@@ -666,6 +666,11 @@ UAST. This will be used as the test-bench for the tools. Needed tools:
         check for the presence of the terminating
         symbol.
         
+        * Arbitrary sequences of token sequences
+        and rule executions...
+        
+        ala... rule1 "?" rule2 ":" rule3
+        
         * Error- Need to standardize how errors
         are handled by `cgrdparse` parsers. I
         figure there will be a standard `error`

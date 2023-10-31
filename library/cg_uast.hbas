@@ -183,6 +183,8 @@ class cg_uast
     u64 n_analyzers
     u64 cap_analyzers
     u64 uuid_gen
+    u64* pstack
+    u64 stackptr
     
     noexport
 end
@@ -211,6 +213,9 @@ method codegen cg_uastnode.dtor():
     end
 end
 
+//all pstacks are this size in bytes...
+codegen u64 cg_uast_pstack_sz = 0x1000000;
+
 method codegen cg_uast.ctor():
     this.nodes = 0;
     this.n_nodes = 0;
@@ -221,6 +226,9 @@ method codegen cg_uast.ctor():
     this.cap_nodes = 0;
     this.err_text = 0;
     this.uuid_gen = 1; //zero is a special value...
+    this.stackptr = 0;
+    //
+    this.pstack = (qword*)__builtin_malloc(cg_uast_pstack_sz);
 end
 
 method codegen cg_uast.dtor():
@@ -240,9 +248,17 @@ method codegen cg_uast.dtor():
     if(this.err_text != 0)
         __builtin_free((u8*)this.err_text);
     end
+    if(this.pstack != 0)
+        __builtin_free((u8*)this.pstack)
+    end
 end
 
-
+method codegen cg_uast.stackpush(u64 a):
+    this.pstack[this.stackptr++] = a;
+end
+method codegen cg_uast.stackpop()->qword:
+    return this.pstack[--this.stackptr]
+end
 /*
     Node pushes...
 */
