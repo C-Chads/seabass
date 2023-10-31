@@ -133,6 +133,11 @@ fn codegen codegen_main():
                 @globalscope
                     fn codegen print_stuff3():
                         __builtin_puts("Goodbye Again!");
+                        @globalscope
+                            fn codegen print_stuff6():
+                                __builtin_puts("6");
+                            end
+                        end
                     end
                 end
             end
@@ -153,6 +158,9 @@ fn codegen codegen_main():
 
     print_stuff2();
     print_stuff3();
+    print_stuff4();
+    print_stuff5();
+    print_stuff6();
 
     ;
 end
