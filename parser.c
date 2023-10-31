@@ -3787,8 +3787,6 @@ void* c_allocX(uint64_t sz){
 	return p;
 }
 
-//reduce memory allocations!
-
 
 void* re_allocX(void* p, uint64_t sz){
     p = realloc(p, sz);
