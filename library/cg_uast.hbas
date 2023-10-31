@@ -374,7 +374,7 @@ method codegen cg_uastnode.get_rel_ind(cg_uast ast, u64 coord, u64 which)->i64:
     i64 i
     which++ //convert from zero-indexing to 1-indexing...
     for(i = 0, i < this.n_rel, i++)
-        if((ast.nodes + this.rel[i]).coord == coord)
+        if(ast.nodes[this.rel[i]].coord == coord)
             which--
             if(which) continue end
             return i
