@@ -615,8 +615,52 @@ a few months.
 
 ## ROADMAP (What order do I make things in?)
 
+* cgrdparse + cg_uast tools
 
-1. Self hosting
+I need more tools for writing recursive descent parsers that generate ASTs using the
+UAST. To do this, I want to write a toy expression parser and have it parse into the
+UAST. This will be used as the test-bench for the tools. Needed tools:
+
+    * Common UAST patterns- such as...
+    
+        * Add child
+        
+        * maintaining a stack
+    
+    * Parser authoring helpers
+    
+        * binop rule templates - do some rule, 
+        resulting in a new node on top of the parse
+        stack, then check for a sequence of tokens,
+        and if they're present, parse the RHS.
+        Different binop rule templates will provide
+        different chaining rules (left-left-folding,
+        right node insertion, etc)
+        
+        * sequence rule templates - do some
+        rule, then check for a sequence continuator
+        or a sequence terminator. If the sequence continuator
+        is present, continue the sequence. Sequence
+        terminator terminates sequence. What happens
+        when neither of these is present is definable.
+        Whether or not the terminator is consumed is
+        also definable.
+        
+        * Nested pair parser- check for an opening 
+        token sequence. If it is present, consume
+        it and execute some rule. When it returns,
+        check for the presence of the terminating
+        symbol.
+        
+        * Error- Need to standardize how errors
+        are handled by `cgrdparse` parsers. I
+        figure there will be a standard `error`
+        rule in all parsers, that you `go error`
+        to...
+    
+    * Parser Generator
+
+* Self hosting
 
 Seabass needs to be ported into itself so that work
 on the compiler is easier to verify as correct and
@@ -631,22 +675,7 @@ This update should also remove Seabass's 64-bit-only
 requirement and possibly even add support for 128
 bit integers into the language.
 
-2. Templated Seabass- TBAS
-
-I require the ability to define custom high-level
-templated data structures such as vector[int] and
-I need to be able to do it seamlessly. TBas will
-also give me the ability to do more advanced
-worksheet-style programming than `cgwksht` currently
-allows.
-
-This is a top-level priority as it will unlock
-way more metaprogramming potential than is currently
-possible with `cgwksht`- namely, you could write
-entire new classes and functions to extend the control
-flow of a small part of a single function.
-
-3. Data structure templates
+* Data structure templates
 
 I need common data structures such as `vector` and
 `list` and `map` available at my finger tips, and I
@@ -655,7 +684,7 @@ C++. I could theoretically already template any data
 structure I want by using `cgwksht` however this would
 not allow for inline usage ala `vector<int>`.
 
-4. Cbas++
+* Cbas++
 
 I need a language on top of Seabass which provides me with
 everything C++ has, except readable. Everything from automatic
@@ -663,19 +692,19 @@ type conversions to operator overloading and of course templates.
 
 It will also be a metaprogramming language.
 
-5. DIL / System Archetypes
+* DIL / System Archetypes
 
 My visions for Higher order programming are what keep me inspired.
 
 In order to make those dreams a reality, I need a programming language
 specifically for writing systems and data structures.
 
-6. SDL2 port
+* SDL2 port
 
 I want to be able to write games and graphical applications using
 Seabass- so I would like to properly port SDL2 into the language.
 
-7. Text editor
+* Text editor
 
 I want to write the coolest programming editor ever.
     
