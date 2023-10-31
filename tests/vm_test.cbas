@@ -98,6 +98,382 @@ function myFunc():
     return;
 end
 
+function codegen test_type_conversion():
+    float ff = 137.91;
+    double dd = 1973.7542;
+    byte a = 20;
+    sbyte b = -2;
+    ushort c = 739;
+    sshort d = -32020;
+    uint e = 78951;
+    int f = -78951;
+    uqword g = (1<<50) + 739;
+    sqword h = -1 * ((1<<50) + 739);
+    
+    
+    char[2048] buf
+#define prnt __builtin_puts(buf);
+    
+    /*
+        Test conversions to FLOAT
+    */
+    __builtin_puts("FLOAT:")
+    if(1)
+        float t
+        t = ff;
+        __builtin_ftoa(buf,t);
+        prnt
+        
+        t = dd;
+        __builtin_ftoa(buf,t);        
+        prnt        
+        t = a;
+        __builtin_ftoa(buf,t);        
+        prnt
+        t = b;
+        __builtin_ftoa(buf,t);        
+        prnt
+        t = c;
+        __builtin_ftoa(buf,t);        
+        prnt
+        t = d;
+        __builtin_ftoa(buf,t);        
+        prnt
+        t = e;
+        __builtin_ftoa(buf,t);        
+        prnt
+        t = f;
+        __builtin_ftoa(buf,t);        
+        prnt
+        t = g;
+        __builtin_ftoa(buf,t);        
+        prnt
+        t = h;
+        __builtin_ftoa(buf,t);        
+        prnt
+    end
+    __builtin_puts("DOUBLE:")
+    if(1)
+        double t
+        t = ff;
+        __builtin_ftoa(buf,t);
+        prnt
+        
+        t = dd;
+        __builtin_ftoa(buf,t);        
+        prnt        
+        t = a;
+        __builtin_ftoa(buf,t);        
+        prnt
+        t = b;
+        __builtin_ftoa(buf,t);        
+        prnt
+        t = c;
+        __builtin_ftoa(buf,t);        
+        prnt
+        t = d;
+        __builtin_ftoa(buf,t);        
+        prnt
+        t = e;
+        __builtin_ftoa(buf,t);        
+        prnt
+        t = f;
+        __builtin_ftoa(buf,t);        
+        prnt
+        t = g;
+        __builtin_ftoa(buf,t);        
+        prnt
+        t = h;
+        __builtin_ftoa(buf,t);        
+        prnt
+    end
+    __builtin_puts("BYTE:")
+    if(1)
+        byte t
+        t = ff;
+        __builtin_utoa(buf,t);
+        prnt
+        t = dd;
+        __builtin_utoa(buf,t);        
+        prnt        
+        t = a;
+        __builtin_utoa(buf,t);        
+        prnt
+        t = b;
+        __builtin_utoa(buf,t);        
+        prnt
+        t = c;
+        __builtin_utoa(buf,t);        
+        prnt
+        t = d;
+        __builtin_utoa(buf,t);        
+        prnt
+        t = e;
+        __builtin_utoa(buf,t);        
+        prnt
+        t = f;
+        __builtin_utoa(buf,t);        
+        prnt
+        t = g;
+        __builtin_utoa(buf,t);        
+        prnt
+        t = h;
+        __builtin_utoa(buf,t);        
+        prnt
+    end
+    
+    __builtin_puts("SBYTE:")
+    if(1)
+        sbyte t
+        t = ff;
+        __builtin_itoa(buf,t);
+        prnt
+        t = dd;
+        __builtin_itoa(buf,t);        
+        prnt        
+        t = a;
+        __builtin_itoa(buf,t);        
+        prnt
+        t = b;
+        __builtin_itoa(buf,t);        
+        prnt
+        t = c;
+        __builtin_itoa(buf,t);        
+        prnt
+        t = d;
+        __builtin_itoa(buf,t);        
+        prnt
+        t = e;
+        __builtin_itoa(buf,t);        
+        prnt
+        t = f;
+        __builtin_itoa(buf,t);        
+        prnt
+        t = g;
+        __builtin_itoa(buf,t);        
+        prnt
+        t = h;
+        __builtin_itoa(buf,t);        
+        prnt
+    end
+    
+        __builtin_puts("USHORT:")
+    if(1)
+        ushort t
+        t = ff;
+        __builtin_utoa(buf,t);
+        prnt
+        t = dd;
+        __builtin_utoa(buf,t);        
+        prnt        
+        t = a;
+        __builtin_utoa(buf,t);        
+        prnt
+        t = b;
+        __builtin_utoa(buf,t);        
+        prnt
+        t = c;
+        __builtin_utoa(buf,t);        
+        prnt
+        t = d;
+        __builtin_utoa(buf,t);        
+        prnt
+        t = e;
+        __builtin_utoa(buf,t);        
+        prnt
+        t = f;
+        __builtin_utoa(buf,t);        
+        prnt
+        t = g;
+        __builtin_utoa(buf,t);        
+        prnt
+        t = h;
+        __builtin_utoa(buf,t);        
+        prnt
+    end
+    
+    __builtin_puts("SHORT:")
+    if(1)
+        sshort t
+        t = ff;
+        __builtin_itoa(buf,t);
+        prnt
+        t = dd;
+        __builtin_itoa(buf,t);        
+        prnt        
+        t = a;
+        __builtin_itoa(buf,t);        
+        prnt
+        t = b;
+        __builtin_itoa(buf,t);        
+        prnt
+        t = c;
+        __builtin_itoa(buf,t);        
+        prnt
+        t = d;
+        __builtin_itoa(buf,t);        
+        prnt
+        t = e;
+        __builtin_itoa(buf,t);        
+        prnt
+        t = f;
+        __builtin_itoa(buf,t);        
+        prnt
+        t = g;
+        __builtin_itoa(buf,t);        
+        prnt
+        t = h;
+        __builtin_itoa(buf,t);        
+        prnt
+    end
+    
+    
+    __builtin_puts("UINT:")
+    if(1)
+        uint t
+        t = ff;
+        __builtin_utoa(buf,t);
+        prnt
+        t = dd;
+        __builtin_utoa(buf,t);        
+        prnt        
+        t = a;
+        __builtin_utoa(buf,t);        
+        prnt
+        t = b;
+        __builtin_utoa(buf,t);        
+        prnt
+        t = c;
+        __builtin_utoa(buf,t);        
+        prnt
+        t = d;
+        __builtin_utoa(buf,t);        
+        prnt
+        t = e;
+        __builtin_utoa(buf,t);        
+        prnt
+        t = f;
+        __builtin_utoa(buf,t);        
+        prnt
+        t = g;
+        __builtin_utoa(buf,t);        
+        prnt
+        t = h;
+        __builtin_utoa(buf,t);        
+        prnt
+    end
+    
+    __builtin_puts("INT:")
+    if(1)
+        int t
+        t = ff;
+        __builtin_itoa(buf,t);
+        prnt
+        t = dd;
+        __builtin_itoa(buf,t);        
+        prnt        
+        t = a;
+        __builtin_itoa(buf,t);        
+        prnt
+        t = b;
+        __builtin_itoa(buf,t);        
+        prnt
+        t = c;
+        __builtin_itoa(buf,t);        
+        prnt
+        t = d;
+        __builtin_itoa(buf,t);        
+        prnt
+        t = e;
+        __builtin_itoa(buf,t);        
+        prnt
+        t = f;
+        __builtin_itoa(buf,t);        
+        prnt
+        t = g;
+        __builtin_itoa(buf,t);        
+        prnt
+        t = h;
+        __builtin_itoa(buf,t);        
+        prnt
+    end
+    
+    
+    __builtin_puts("QWORD:")
+    if(1)
+        qword t
+        t = ff;
+        __builtin_utoa(buf,t);
+        prnt
+        t = dd;
+        __builtin_utoa(buf,t);        
+        prnt        
+        t = a;
+        __builtin_utoa(buf,t);        
+        prnt
+        t = b;
+        __builtin_utoa(buf,t);        
+        prnt
+        t = c;
+        __builtin_utoa(buf,t);        
+        prnt
+        t = d;
+        __builtin_utoa(buf,t);        
+        prnt
+        t = e;
+        __builtin_utoa(buf,t);        
+        prnt
+        t = f;
+        __builtin_utoa(buf,t);        
+        prnt
+        t = g;
+        __builtin_utoa(buf,t);        
+        prnt
+        t = h;
+        __builtin_utoa(buf,t);        
+        prnt
+    end
+    
+    __builtin_puts("SQWORD:")
+    if(1)
+        sqword t
+        t = ff;
+        __builtin_itoa(buf,t);
+        prnt
+        t = dd;
+        __builtin_itoa(buf,t);        
+        prnt        
+        t = a;
+        __builtin_itoa(buf,t);        
+        prnt
+        t = b;
+        __builtin_itoa(buf,t);        
+        prnt
+        t = c;
+        __builtin_itoa(buf,t);        
+        prnt
+        t = d;
+        __builtin_itoa(buf,t);        
+        prnt
+        t = e;
+        __builtin_itoa(buf,t);        
+        prnt
+        t = f;
+        __builtin_itoa(buf,t);        
+        prnt
+        t = g;
+        __builtin_itoa(buf,t);        
+        prnt
+        t = h;
+        __builtin_itoa(buf,t);        
+        prnt
+    end
+    
+    
+#undef prnt
+
+end
+
 fn predecl myFunction(int arg1, int arg2)->int;
 fn predecl myFunction(int arg1, int arg2)->int;
 fn predecl myFunction(int arg1, int arg2)->int;
@@ -631,6 +1007,7 @@ proc codegen codegen_main():
     if(returns1() && returns1_2() && returns1_3())
 	    __builtin_puts("1 1_2 1_3");
 	end
+	test_type_conversion();
 	return;
 end
 
