@@ -137,7 +137,6 @@ codegen u64 cg_rd_parse_match_temporary_id = 0;
     dummy.right = inlist_dupe;
     
     cgstr temp_var_name;
-    cgstr temp_label_name;
     cgstr temp_var_name2;
     
     @initqtok "if"
