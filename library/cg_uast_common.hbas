@@ -28,4 +28,331 @@ codegen u64 cg_uast_coord_symdecl_node = (0xf<<(64-4)) | 8;
 codegen u64 cg_uast_coord_typedecl_node = (0xf<<(64-4)) | 9;
 codegen u64 cg_uast_coord_root_node = (0xf<<(64-4)) | 10;
 
-//
+/*
+    RDPARSER RULE TEMPLATES
+    
+    the following are assumed true:
+    
+    1. you have a rule called "err" and a string member variable called "errtext"
+    2. you have a member variable called "uast" which is a cg_uast
+    3. Whatever you want the parsed node parented to is on top
+        of the uast's pstack.
+    4. there is a rule called `err_on_null` that emits an error if `tok` is null.
+    
+    TEMPLATE 1: LINEAR SEQUENCE
+    
+    @linseq[
+        myRuleName
+        [IDENT] "{" stmts "}" : (testbench_block)
+    ]
+    A linear sequence may have one "capture"- i.e. a single element
+    of the sequence which is dupe'd in the node's udata as a `strll*`.
+    
+    
+    TEMPLATE 2: BINOP
+    @binop[
+        mybinop lfolded
+        rule1 "*" rule2
+    ]
+*/
+
+fn codegen cgrdparsehook_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
+    //
+    cgstrll* iwalker;
+    iwalker = in;
+    i64 capture_element = -1;
+    u64 nelems = 0;
+    if(in == 0)
+        @pprint[
+            /   "cgrdparsehook_linseq ERROR!"
+            /   "Missing identifier for rule name!"
+            /   "Language name is:"
+            /   (spec.name.s)
+        ]
+        __builtin_exit(1);
+    end
+    if(in.d != CG_TOK_IDENT)
+        @pprint[
+            /   "cgrdparsehook_linseq ERROR!"
+            /   "Missing identifier for rule name!"
+            /   "Language name is:"
+            /   (spec.name.s)
+            /   "Filename is:"
+            /   (iwalker.filename)
+            /   "Linenum is:"
+            /int(iwalker.linenum)
+            /   "Colnum is:"
+            /int(iwalker.colnum)
+        ]
+        __builtin_exit(1);
+    end
+    //cgstrll* rulename = in:dupe();
+    @cg_bldr_initqtok [in.text]
+    @cg_bldr_pushqtok "["
+    /*
+        Create a node to represent ourselves...
+    */
+    @cg_bldr_pushqtok "cg_uastnode"
+    @cg_bldr_pushqtok "me"
+    for(iwalker = in.right, iwalker != 0, iwalker = iwalker.right)
+        if(iwalker.d == CG_TOK_OPERATOR)
+            if(iwalker.text streq ":")
+                iwalker = iwalker.right;
+                if(iwalker == 0 || iwalker.d != CG_TOK_OPAREN)
+                    @pprint[
+                        /   "cgrdparsehook_linseq ERROR!"
+                        /   "The syntax of linseq requires a colon followed immediately by an opening parentheses,"
+                        /   "which provides an expression evaluating to a u64 which is the UAST coordinate"
+                        /   "Of the node type parsed."
+                        /   "It must be the entirety of the block after the opening parentheses..."
+                    ]
+                    __builtin_exit(1);
+                end
+                break
+            end
+        end
+    end
+    @cg_bldr_pushqtok "me"
+    @cg_bldr_pushqtok "."
+    @cg_bldr_pushqtok "coord"
+    @cg_bldr_pushqtok "="
+    if(iwalker != 0)
+        @cg_bldr_pushtok [iwalker.dupell()]
+        @cg_bldr_rwalk_skip
+    else
+        @cg_bldr_pushqtok "0"
+    end
+    @cg_bldr_pushqtok "u64"
+    @cg_bldr_pushqtok "nid"
+    @cg_bldr_pushqtok "="
+    @cg_bldr_pushqtok "this"
+    @cg_bldr_pushqtok "."
+    @cg_bldr_pushqtok "uast"
+    @cg_bldr_pushqtok "."
+    @cg_bldr_pushqtok "push_node"
+    @cg_bldr_pushqtok "("
+    @cg_bldr_pushqtok "me"
+    @cg_bldr_pushqtok ")"
+    @cg_bldr_pushqtok ";"
+    //u64 pid = this.uast.pstack[this.uast.stackptr-1];
+    @cg_bldr_pushqtok "u64"
+    @cg_bldr_pushqtok "pid"
+    @cg_bldr_pushqtok "="
+    @cg_bldr_pushqtok "this"
+    @cg_bldr_pushqtok "."
+    @cg_bldr_pushqtok "uast"
+    @cg_bldr_pushqtok "."
+    @cg_bldr_pushqtok "pstack"
+    @cg_bldr_pushqtok "["
+        @cg_bldr_pushqtok "this"
+        @cg_bldr_pushqtok "."
+        @cg_bldr_pushqtok "uast"
+        @cg_bldr_pushqtok "."
+        @cg_bldr_pushqtok "stackptr"
+        @cg_bldr_pushqtok "-"
+        @cg_bldr_pushqtok "1"
+    @cg_bldr_pushqtok "]"
+    @cg_bldr_pushqtok ";"
+
+        //Push ourselves onto the stack...
+
+    @cg_bldr_pushqtok "this"
+    @cg_bldr_pushqtok "."
+    @cg_bldr_pushqtok "uast"
+    @cg_bldr_pushqtok "."
+    @cg_bldr_pushqtok "stackpush"
+    @cg_bldr_pushqtok "("
+    @cg_bldr_pushqtok "nid"
+    @cg_bldr_pushqtok ")"
+    @cg_bldr_pushqtok ";"
+    //create a link...
+    //this.uast.add_link(pid,nid);
+    @cg_bldr_pushqtok "this"
+    @cg_bldr_pushqtok "."
+    @cg_bldr_pushqtok "uast"
+    @cg_bldr_pushqtok "."
+    @cg_bldr_pushqtok "add_link"
+    @cg_bldr_pushqtok "("
+        @cg_bldr_pushqtok "pid"
+    @cg_bldr_pushqtok ","
+        @cg_bldr_pushqtok "nid"
+    @cg_bldr_pushqtok ")"
+    @cg_bldr_pushqtok ";"
+    //begin parsing rules...
+    for(iwalker = in.right, iwalker != 0, iwalker = iwalker.right)
+        //before we do anything, make sure that this isn't null...
+        @cg_bldr_pushqtok ";"
+        @cg_bldr_pushqtok "do"
+        @cg_bldr_pushqtok "err_on_null"
+        @cg_bldr_pushqtok ";"
+        if(iwalker.d == CG_TOK_OBRACK)
+            if(capture_element != -1)
+                @pprint[
+                    /   "cgrdparsehook_linseq ERROR!"
+                    /   "Cannot have multiple captures in linseq!"
+                    /   "Language name is:"
+                    /   (spec.name.s)
+                    /   "Filename is:"
+                    /   (iwalker.filename)
+                    /   "Linenum is:"
+                    /int(iwalker.linenum)
+                    /   "Colnum is:"
+                    /int(iwalker.colnum)
+                ]
+                __builtin_exit(1);
+            end
+            iwalker = iwalker.right;
+            if(iwalker == 0)
+                @pprint[
+                    /   "cgrdparsehook_linseq ERROR!"
+                    /   "Unmatched brackets!"
+                    /   "Prematurely reached end of sequence."
+                    /   "Should be impossible!!!!"
+                    /   "Language name is:"
+                    /   (spec.name.s)
+                ]
+                __builtin_exit(1);
+            end
+            if(iwalker.d != CG_TOK_IDENT)
+                @pprint[
+                    /   "cgrdparsehook_linseq ERROR!"
+                    /   "Missing identifier inside of Capture!"
+                    /   "Valid captures are [IDENT], [STRING], [INT], [FLOAT], [NUM]"
+                    /   "Language name is:"
+                    /   (spec.name.s)
+                    /   "Filename is:"
+                    /   (iwalker.filename)
+                    /   "Linenum is:"
+                    /int(iwalker.linenum)
+                    /   "Colnum is:"
+                    /int(iwalker.colnum)
+                ]
+                __builtin_exit(1);
+            end
+            /*
+                TODO: Write code to actually perform the capture...
+            */
+            capture_element = nelems;
+            if(iwalker.text streq "IDENT")
+                //TODO
+            elif(iwalker.text streq "STRING")
+                //TODO
+            elif(iwalker.text streq "INT")
+                //TODO
+            elif(iwalker.text streq "FLOAT")
+                //TODO
+            elif(iwalker.text streq "NUM")
+                //TODO
+            else
+                @pprint[
+                    /   "cgrdparsehook_linseq ERROR!"
+                    /   "Invalid identifier inside of Capture!"
+                    /   "Valid captures are [IDENT], [STRING], [INT], [FLOAT], [NUM]"
+                    /   "You may not capture a literal token."
+                    /   "Language name is:"
+                    /   (spec.name.s)
+                    /   "Filename is:"
+                    /   (iwalker.filename)
+                    /   "Linenum is:"
+                    /int(iwalker.linenum)
+                    /   "Colnum is:"
+                    /int(iwalker.colnum)
+                ]
+                __builtin_exit(1);
+            end
+
+            iwalker = iwalker.right;
+            if(iwalker == 0)
+                @pprint[
+                    /   "cgrdparsehook_linseq ERROR!"
+                    /   "Unmatched brackets!"
+                    /   "Prematurely reached end of sequence."
+                    /   "Should be impossible!!!!"
+                    /   "Language name is:"
+                    /   (spec.name.s)
+                ]
+                __builtin_exit(1);
+            end
+            if(iwalker.d != CG_TOK_CBRACK)
+                @pprint[
+                    /   "cgrdparsehook_linseq ERROR!"
+                    /   "Missing closing square bracket!"
+                    /   "Language name is:"
+                    /   (spec.name.s)
+                    /   "Filename is:"
+                    /   (iwalker.filename)
+                    /   "Linenum is:"
+                    /int(iwalker.linenum)
+                    /   "Colnum is:"
+                    /int(iwalker.colnum)
+                ]
+                __builtin_exit(1);
+            end
+            nelems++
+
+            continue
+        end //eof capture...
+        if(iwalker.d == CG_TOK_STRING)
+            //A literal token is to be matched...
+            @cg_bldr_pushqtok "match"
+            @cg_bldr_pushqtok "["
+            @cg_bldr_pushqtok "["
+                //put our string here...
+                @cg_bldr_pushtok [iwalker:dupe()]
+            @cg_bldr_pushqtok "]"
+                //TODO: put code here to handle matching this token...
+            
+            
+            @cg_bldr_pushqtok "else"
+                //TODO: put code here to handle not finding this thing...
+                @cg_bldr_pushqtok "this"
+                @cg_bldr_pushqtok "."
+                @cg_bldr_pushqtok "errtext"
+                @cg_bldr_pushqtok "="
+                /*
+                    Craft an error message...
+                */
+                if(1)
+                    cgstr errtext
+                    cgstr tmp
+                    errtext.fromstr("\"Custom Language Parse Error! Expected:");
+                    tmp.s = iwalker.text;
+                    errtext.add(tmp);
+                    tmp.s = "But did not find that!\"";
+                    errtext.add(tmp);
+                    @cg_bldr_pushqtok [errtext.s]
+                    errtext.free();
+                end
+                @cg_bldr_pushqtok ";"
+                @cg_bldr_pushqtok "go"
+                @cg_bldr_pushqtok "err"
+            @cg_bldr_pushqtok "]"
+            
+        elif(iwalker.d == CG_TOK_IDENT)
+            //this is a rule...
+            @cg_bldr_pushqtok "do"
+            @cg_bldr_pushtok [iwalker:dupe()]
+            //TODO: Handle the node pushed onto the stack and parent it to ourselves...
+        else
+            
+        end
+        /*
+            TODO: Handle writing code to parse the current token...
+        */
+        nelems++
+        continue
+    end
+    if(nelems == 0)
+        @pprint[
+            /   "cgrdparsehook_linseq ERROR!"
+            /   "Empty linseq!"
+            /   "Language name is:"
+            /   (spec.name.s)
+        ]
+        __builtin_exit(1)
+    end
+    @cg_bldr_pushqtok "]"
+
+
+end
+
