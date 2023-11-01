@@ -975,6 +975,33 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
                     //so we let ourselves do that.
                 end
                 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                if(in_rwalk.text streq "emit_skip")
+                    if(this.name.s strneq "finish")
+                        __builtin_puts("RDPARSER_ERROR!");
+                        __builtin_puts("Cannot emit_skip anywhere except finish rule");
+                        __builtin_puts("Parser's name is:");
+                        __builtin_puts(spec.name.s);
+                        __builtin_puts("Current Rule's name is:");
+                        __builtin_puts(this.name.s);
+                        __builtin_exit(1);
+                    end
+                    //step ahead
+                    //Check for errors...
+                    if(in_rwalk.right == cast(cgstrll*)0)
+                        __builtin_puts("RDPARSER_ERROR!");
+                        __builtin_puts("emit_skip at end of end rule definition.");
+                        __builtin_puts("Parser's name is:");
+                        __builtin_puts(spec.name.s);
+                        __builtin_puts("Go investigate that!");
+                        __builtin_exit(1);
+                    end
+                    //equivalence
+                    @cg_bldr_pushqtok "@"
+                    @cg_bldr_pushqtok "cg_bldr_rwalk_skip"
+                    continue; //We need to expand anything like TOK on the line...
+                    //so we let ourselves do that.
+                end
+                //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 if(in_rwalk.text streq "finish")
                     if(this.name.s strneq "finish")
                         @cg_bldr_pushqtok "return"
