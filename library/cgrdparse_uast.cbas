@@ -50,11 +50,6 @@ fn codegen testbench_print_ast(cg_uast uast, u64 nid):
             /       "END EXPR"
             /       (pp.udata)
         ]
-    elif(pp.coord == testbench_expr_terminal)
-        @pprint[
-            /       "END EXPR_TERM"
-            /       (pp.udata)
-        ]
     end
 end
 @cgrdparser[
@@ -87,14 +82,15 @@ end
         me.udata = __builtin_strdup(tok.text);
         eat
         do err_on_null
-        while(1)
-            match[["{"]
-                eat
-                break
-            ]
+
+        match[["{"]
+            eat
+        else
             this.errtext = "Block expected Opening curly brace"; 
-            go err
-        end
+            go err                
+        ]
+
+
         nid = this.uast.push_node(me);
         pid = this.uast.pstack[this.uast.stackptr-1];
         this.uast.add_link(pid,nid);
@@ -337,6 +333,9 @@ end
         littleblock{
             p 7,3,5-9/3;
         
+        }
+        badblock{
+            p 7,15 * -3;
         }
     }
 ]
