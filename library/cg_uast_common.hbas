@@ -28,38 +28,4 @@ codegen u64 cg_uast_coord_symdecl_node = (0xf<<(64-4)) | 8;
 codegen u64 cg_uast_coord_typedecl_node = (0xf<<(64-4)) | 9;
 codegen u64 cg_uast_coord_root_node = (0xf<<(64-4)) | 10;
 
-
-/*
-    RECURSIVE DESCENT TEMPLATING SYSTEM
-    
-    (TODO) 
-    
-    I want to template out the construction of commmon patterns in programming languages...
-    
-    There are multiple "patterns" in expression parsing
-    
-    RULE: THING OP THING | THING (binop_nochain)
-    
-    RULE: THING OP RULE | THING (binop_chain)
-    
-    RULE: THING '(' THING ')' (postfix_bracketed_expr pattern, could be parentheses, curly braces, or sq brackets)
-    
-    RULE: RULE2(S) (i.e. list of statements)
-    
-    RULE: RULE2, RULE2, ... ';' (i.e. data stmt)
-    
-    
-    So for instance you might write
-    
-    binop_chain my_multiply_expr ("*") my_expr
-    
-    
-    to define "my_multiply_expr" as being a binop chain which uses my_expr as the "next level down".
-    
-    If you wanted multiple tokens to be used to define the binary operator (such as ** for exponentiation) you could do
-
-    binop_chain my_multiply_expr ("*" "*") my_expr
-
-*/
-
-
+//
