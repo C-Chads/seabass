@@ -263,8 +263,8 @@ end
     Node pushes...
 */
 method codegen cg_uast.push_node(cg_uastnode p)->u64:
-    if(this.cap_nodes >= this.n_nodes + 1)
-        this.cap_nodes = this.cap_nodes * 2 + (this.cap_nodes == 0)*512;
+    if(this.cap_nodes <= (this.n_nodes + 1))
+        this.cap_nodes = this.cap_nodes * 2 + (this.cap_nodes <= 0)*512;
         this.nodes = (cg_uastnode*)__builtin_realloc((u8*)this.nodes, sizeof(cg_uastnode) * this.cap_nodes)
     end
     (this.nodes + this.n_nodes) := p;
@@ -272,7 +272,7 @@ method codegen cg_uast.push_node(cg_uastnode p)->u64:
 end
 
 method codegen cg_uast.push_analyzer(byte* analyzer, byte* sm)->u64:
-    if(this.cap_analyzers >= this.n_analyzers + 1)
+    if(this.cap_analyzers <= this.n_analyzers + 1)
         this.cap_analyzers = this.cap_analyzers * 2 + (this.cap_analyzers == 0);
         this.analyzers = (u8**)__builtin_realloc((u8*)this.analyzers, sizeof(u8*) * this.cap_analyzers);
         this.analyzer_inputs = (u8**)__builtin_realloc((u8*)this.analyzer_inputs, sizeof(u8*) * this.cap_analyzers);
@@ -285,7 +285,7 @@ end
 
 
 method codegen cg_uastnode.push_rel(u64 p)->u64:
-    if(this.cap_rel >= this.n_rel + 1)
+    if(this.cap_rel <= this.n_rel + 1)
         this.cap_rel = this.cap_rel * 2 + (this.cap_rel == 0)*512;
         this.rel = (u64*)__builtin_realloc((u8*)this.rel, sizeof(u64) * this.cap_rel)
     end
@@ -336,7 +336,7 @@ method codegen cg_uast.add_link(u64 daddy, u64 child)->i64:
     if(daddy >= this.n_nodes || child >= this.n_nodes)
         return -1
     end
-    (this.nodes + daddy).push_rel(child);
+    this.nodes[daddy].push_rel(child);
     return 0
 end
 

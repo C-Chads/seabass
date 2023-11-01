@@ -4,18 +4,341 @@
 /*
     PLAN: Template a 
 */
+codegen u64 testbench_block = 0xff01;
+codegen u64 testbench_stmt = 0xff02;
+codegen u64 testbench_expr = 0xff03;
+codegen u64 testbench_pstmt = 0xff04;
+codegen u64 testbench_expr_terminal = 0xff05;
+fn codegen testbench_print_ast(cg_uast uast, u64 nid):
+    cg_uastnode* pp = uast.nodes[nid];
+    if(pp.coord == testbench_block)
+        @pprint[
+            /       "BEGIN BLOCK"
+            /       (pp.udata)
+        ]
+    elif(pp.coord == testbench_pstmt)
+        @pprint[
+            /       "BEGIN PSTMT"
+        ]
+    elif(pp.coord == testbench_expr)
+        @pprint[
+            /       "EXPR"
+            /       (pp.udata)
+        ]    
+    elif(pp.coord == testbench_expr_terminal)
+        @pprint[
+            /       "EXPR_TERM"
+            /       (pp.udata)
+        ]
+    end
+    u64 i
+    for(i = 0, i < pp.n_rel, i++)
+        testbench_print_ast(uast, pp.rel[i]);
+    end
+    :skipugly
+    if(pp.coord == testbench_block)
+        @pprint[
+            /       "END BLOCK"
+            /       (pp.udata)
+        ]
+    elif(pp.coord == testbench_pstmt)
+        @pprint[
+            /       "END PSTMT"
+        ]
+    elif(pp.coord == testbench_expr)
+        @pprint[
+            /       "END EXPR"
+            /       (pp.udata)
+        ]
+    elif(pp.coord == testbench_expr_terminal)
+        @pprint[
+            /       "END EXPR_TERM"
+            /       (pp.udata)
+        ]
+    end
+end
 @cgrdparser[
     testbench[
         cg_uast uast
+        char* errtext
+        u64 rid
     ]
     head[
         this.uast.ctor();
+        do err_on_null
+        //we need to push a dummy token...
+        cg_uastnode rootnode
+        rootnode.udata = "__ROOT__"; //don't free this...
+        rootnode.coord = cg_uast_coord_root_node;
+        this.rid = this.uast.push_node(rootnode);
+        this.uast.stackpush(this.rid);
+        
+        //a "program" consists entirely of a single block...
+        do block
+        finish
+    ]
+    block[ //parse a block..
+        cg_uastnode me
+        u64 nid
+        u64 pid
+        me.coord = testbench_block;
+        do err_on_null
+        if(tok.d != CG_TOK_IDENT) this.errtext = "Block expected identifier- name"; go err end
+        me.udata = __builtin_strdup(tok.text);
+        eat
+        do err_on_null
+        while(1)
+            match[["{"]
+                eat
+                break
+            ]
+            this.errtext = "Block expected Opening curly brace"; 
+            go err
+        end
+        nid = this.uast.push_node(me);
+        pid = this.uast.pstack[this.uast.stackptr-1];
+        this.uast.add_link(pid,nid);
+        this.uast.stackpush(nid); //push ourselves onto the stack...
+            do err_on_null
+            do stmts
+            do err_on_null
+        this.uast.stackpop(); //pop ourselves off the stack..
+        while(1)
+            match[["}"]
+                eat
+                break
+            ]
+            this.errtext = "Block expected closing curly brace..."; 
+            go err
+        end
+        //we have finished this block!
+    ]
+    stmts[
+        //ON ENTRY: WE ARE INSIDE OF A BLOCK...
+        while(1)
+            do err_on_null
+            do stmt
+            match[["}"]
+                finish
+            ]
+        end
+    ]
+    stmt[ //parse a stmt
+        char* ident_text
+        i64 kind = 0;
+        do err_on_null
+        if(tok.text!=0)
+        end
+        while(1)
+            match[[";"]
+                eat
+                kind = 0
+                break
+            ]
+            match[["p"]
+                eat
+                kind = 1
+                break
+            ]
+            match[["}"]
+                finish
+            ]
+            if(tok.d == CG_TOK_IDENT)
+                kind = 2
+                break
+            end
+            this.errtext = "Unknown stmt type"; 
+            go err
+        end
+        switch(kind) nothing print blk;
+        this.errtext = "Internal error"; go err
+        :print
+            //
+            do pstmt
+        finish
+        :nothing
+        finish
+        :blk
+            do block
+        finish
+    ]
+    pstmt[
+        cg_uastnode me
+        u64 nid
+        me.coord = testbench_pstmt;
+        me.udata = 0;
+        nid = this.uast.push_node(me);
+        //don't even bother pushing ourselves onto the stack...
+        while(1)
+            do err_on_null
+            match[[";"]eat break]
+            match[["}"]break]
+            match[[","]eat continue]
+            do expr
+            //pop off the stack..
+            u64 eid = this.uast.stackpop();
+            this.uast.add_link(nid,eid);
+            match[[","]eat continue]
+            match[[";"]eat break]
+            match[["}"]break]
+            this.errtext = "Expected comma"
+        end
+        //add ourselves to our parent node..
+        u64 pid = this.uast.pstack[this.uast.stackptr-1];
+        this.uast.add_link(pid, nid);
+        //continue...
+    ]
+    expr[ //top level expr
+        go addsub //currentl equivalent to the addsub expression...
+    ]
+    addsub[
+        cg_uastnode me
+        u64 a
+        u64 b
+        u64 c
+        do muldiv
+        a = this.uast.stackpop();
+        while(1)
+            do err_on_null
+            match[["+"]
+                eat
+                me.coord = testbench_expr;
+                me.udata = "+";
+                c = this.uast.push_node(me);
+                do muldiv
+                b = this.uast.stackpop();
+                this.uast.add_link(c,a);
+                this.uast.add_link(c,b);
+                a = c;
+                continue
+            ]
+            match[["-"]
+                eat
+                me.coord = testbench_expr;
+                me.udata = "-";
+                c = this.uast.push_node(me);
+                do muldiv
+                b = this.uast.stackpop();
+                this.uast.add_link(c,a);
+                this.uast.add_link(c,b);
+                a = c;
+                continue            
+            ]
+            break
+        end
+        //return a...
+        this.uast.stackpush(a);
+        finish
+    ]
+    muldiv[
+        cg_uastnode me
+        u64 a
+        u64 b
+        u64 c
+        do prefix
+        a = this.uast.stackpop();
+        while(1)
+            do err_on_null
+            match[["*"]
+                eat
+                me.coord = testbench_expr;
+                me.udata = "*";
+                c = this.uast.push_node(me);
+                do prefix
+                b = this.uast.stackpop();
+                this.uast.add_link(c,a);
+                this.uast.add_link(c,b);
+                a = c;
+                continue
+            ]
+            match[["/"]
+                eat
+                me.coord = testbench_expr;
+                me.udata = "/";
+                c = this.uast.push_node(me);
+                do prefix
+                b = this.uast.stackpop();
+                this.uast.add_link(c,a);
+                this.uast.add_link(c,b);
+                a = c;
+                continue            
+            ]
+            break
+        end
+        //return a...
+        this.uast.stackpush(a);
+        finish
+    ]
+    prefix[ //neg compl
+        cg_uastnode me
+        u64 nid
+        do err_on_null
+        match[["-"]
+            eat
+            me.udata = "unary-";
+            me.coord = testbench_expr;
+            nid = this.uast.push_node(me);
+            //do prefix again...
+            do prefix
+            //get the node from it
+            u64 cid = this.uast.stackpop();
+            //add a link between our node and that node...
+            this.uast.add_link(nid,cid);
+            //push ourselves and finish...
+            this.uast.stackpush(nid);
+            finish
+        ]
+        do terminal
+    ]
+    terminal[
+        //number only!
+        do err_on_null
+        if(tok.d != CG_TOK_INT_CONST) this.errtext = "Expected integer constant..."; go err end
+        //get the contents of the token...
+        u64 nid
+        cg_uastnode me
+        me.udata = __builtin_strdup(tok.text);
+        me.coord = testbench_expr_terminal;
+        eat //don't forget to eat it!!!
+        
+        nid = this.uast.push_node(me);
+        this.uast.stackpush(nid);
+    ]
+    //error handling..
+    err_on_null[
+        if(tok != 0) finish end
+        this.errtext = "Early end of compilation unit...";
+        go err
+    ]
+    err[
+        @pprint[
+            /bar
+            /       "Testbench language error!"
+            /bar
+            /       (this.errtext)
+            /       "Does that help you? No line numbers implemented, unfortunately. Quitting..."
+        ]
+        __builtin_exit(1);
     ]
     finish[
         emitq ";"
+        /*
+            TODO
+        */
+        testbench_print_ast(this.uast, this.uast.nodes[this.rid].rel[0]);
         this.uast.dtor();
         finish
     ]
+]
+
+@testbench[
+    bigBlock{
+        p 7,3,5-9/3;
+        littleblock{
+            p 7,3,5-9/3;
+        
+        }
+    }
 ]
 
 
