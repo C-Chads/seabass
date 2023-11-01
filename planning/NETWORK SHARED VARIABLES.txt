@@ -1,0 +1,18 @@
+
+SEABASS NEEDS A NETWORKING-ORIENTED LANGUAGE.
+
+I want to write a networking-oriented language
+for seabass. I might make it an extension of
+cbas++ or tarnish. main features:
+
+* Networked shared variables. You will be able to define
+  variables that are automatically synchronized between
+  a client and a server (variables can be owned by the
+  other side or by you).
+  
+* Automatic handling of the main connection loop. The
+  language should have a built-in system for creating
+  (or managing) the connection management loop where
+  you receive packets from the other side and send
+  packets to their side. This wil allow you to write
+  networking programs much more easily.
