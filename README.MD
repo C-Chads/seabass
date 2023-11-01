@@ -833,4 +833,34 @@ this by allowing you to define the compiletime environment.
 
 # Enjoy Programming!
 
-Repository note: Reinitialized on October 16th
+# Attribution Request
+
+As stated before, Seabass is a public domain work. It does not require
+you to make any attributions or include duplicate license files in
+copies or derivative works that you distribute, nor does it impose
+any "copyleft" requirements.
+
+However, I have personal requests for anyone using Seabass or deriving
+from it:
+
+Please do not remove the dedications to our Lord Jesus Christ. I am fine
+with you removing my name or initials, but the project is dedicated to
+Christ. If this offends you, it is my request that you simply avoid my
+software rather than defile it by removing the dedication and mentions
+of our Lord Jesus Christ.
+
+The only exception is if you have a real technical reason (i.e. porting
+Seabass to a low-memory platform) for removing the dedication. In which
+case you should simply move the dedications into a separate file.
+
+None of my work would be possible without the undeserved blessings of
+God our Father and our Lord Jesus Christ. I'm not a good christian, 
+mentioning him in my work is all that I can really do. I seek to obey
+the command to acknowledge God in all my works, so that he will bless
+them.
+
+Again, none of this is a license requirement. It's what you will do if
+you care about me or remembering God. Whether you appreciate my work
+will be shown by whether or not you preserve the mentions of Jesus
+in Seabass's source code, C code generator, help screen, and manpages.
+
