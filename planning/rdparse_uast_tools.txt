@@ -1,0 +1,52 @@
+
+UAST+CGRDPARSE TOOLS FOR COMPILETIME
+
+I have known for quite some time now (several days)
+that I need to write some standard "template
+rules" for cgrdparse, for usage with the 
+UAST.
+
+The idea being that users could quickly stamp out
+their own syntaxes really easily using cgrdparse and
+seabass.
+
+I have devised a plan-
+
+1. Write a toy recursive descent parser for this language:
+
+myBlock{
+    p 1+2+3, 7;
+    p 5, 14, 21;
+    myOtherBlock{
+        p 1;
+        p 2;
+        p 3,4,5,6|37;
+    }
+}
+
+The net effect of this will be to produce a parse tree in the
+uast member of a cgrdparser which is the parsed form of the
+original source code.
+
+This parse tree can then be transformed into the "proper"
+AST, evaluated, and then pretty-printed.
+
+2. Look at my parser for patterns
+
+I know already that I will have a pattern in binop expressions
+and "sequences". Blocks and nested pairs, too.
+
+3. Implement the patterns as rule archetypes
+
+Templated cgrdparse rules. Have the compiletime code
+automatically write parser rules for us so that we
+don't have to think about it.
+
+4. Expand the toy language to be more complicated
+
+Add new "stuff" to the toy
+
+5. Repeat 2-3 but for 4
+
+6. Repeat 2-4 until satisfied with levels of abstraction.
+
