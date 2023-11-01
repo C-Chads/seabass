@@ -30,6 +30,7 @@ fn codegen testbench_print_ast(cg_uast uast, u64 nid):
             /       "EXPR_TERM"
             /       (pp.udata)
         ]
+        __builtin_free(pp.udata)
     end
     u64 i
     for(i = 0, i < pp.n_rel, i++)
@@ -41,6 +42,7 @@ fn codegen testbench_print_ast(cg_uast uast, u64 nid):
             /       "END BLOCK"
             /       (pp.udata)
         ]
+        __builtin_free(pp.udata)
     elif(pp.coord == testbench_pstmt)
         @pprint[
             /       "END PSTMT"
