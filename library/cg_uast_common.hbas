@@ -1245,7 +1245,6 @@ fn codegen cgrdparsehook_binop(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
             
             in = in.right; //this moves us to the CBRACK...
             continue //which will be consumed by the iteration...
-        
         end
         @pprint[
             /   "cgrdparsehook_binop __INTERNAL__ ERROR!"
@@ -1253,7 +1252,7 @@ fn codegen cgrdparsehook_binop(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
             /   "Call your system administrator!"
         ]
         __builtin_exit(1);
-    end
+    end //eof giant for
     //TODO: insert code which causes an error to happen if the expected operator is not present...
     if(is_mustcomplete)
         @cg_bldr_pushqtok "this"
