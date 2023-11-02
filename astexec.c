@@ -1765,6 +1765,7 @@ void do_expr(expr_node* ee){
 		char* p2;
 		p1 = (char*)vm_stack[vm_stackpointer-2].smalldata;
 		p2 = (char*)vm_stack[vm_stackpointer-1].smalldata;
+		/*
 		if(p1 == NULL || p2 == NULL){
 			puts("VM error");
 			puts("streq got NULL");
@@ -1772,6 +1773,7 @@ void do_expr(expr_node* ee){
 			puts(symbol_table[executing_function]->name);
 			exit(1);
 		}
+		*/
 		ast_vm_stack_pop(); //we no longer need the index itself.
 		//vm_stack[vm_stackpointer-1].t = ee->t;
 		vm_stack[vm_stackpointer-1].smalldata = !!streq(p1,p2);
@@ -1782,6 +1784,7 @@ void do_expr(expr_node* ee){
 		char* p2;
 		p1 = (char*)vm_stack[vm_stackpointer-2].smalldata;
 		p2 = (char*)vm_stack[vm_stackpointer-1].smalldata;
+		/*
 		if(p1 == NULL || p2 == NULL){
 			puts("VM error");
 			puts("strneq got NULL");
@@ -1789,6 +1792,7 @@ void do_expr(expr_node* ee){
 			puts(symbol_table[executing_function]->name);
 			exit(1);
 		}
+		*/
 		ast_vm_stack_pop(); //we no longer need the index itself.
 		//vm_stack[vm_stackpointer-1].t = ee->t;
 		vm_stack[vm_stackpointer-1].smalldata = !streq(p1,p2);
