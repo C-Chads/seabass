@@ -213,11 +213,15 @@ end
         //continue...
     ]
     expr[
-        go logbool
+        go this_is_not
+    ]
+    @binop_linseq[
+        this_is_not
+        logbool "THIS" "IS" [IDENT] prefix : (testbench_expr)
     ]
     @binop[
         logbool
-        addsub "&&" "||" addsub : (testbench_expr)
+        addsub "&&" "||" logbool : (testbench_expr)
     ]
     @binop[
         addsub
@@ -300,7 +304,7 @@ end
         }
         badblock{
             p 7,15 * -3;
-            p 7+1 || 0;
+            p 7+1 || 0 THIS IS BEAUTIFUL -1;
         }
     }
 ]
