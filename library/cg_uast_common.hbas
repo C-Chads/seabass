@@ -2872,7 +2872,7 @@ fn codegen cgrdparsehook_repseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
     //we always have check code....
     termination_check_code:freelist();
     in_orig:freelist();
-    retval:debug_print();
+    //retval:debug_print();
     return retval;
 end
 
