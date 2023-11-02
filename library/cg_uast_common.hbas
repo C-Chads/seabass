@@ -243,15 +243,182 @@ fn codegen cgrdparsehook_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
             */
             capture_element = nelems;
             if(iwalker.text streq "IDENT")
-                //TODO
+                //ensure that this is an identifier...
+                @cg_bldr_pushqtok "if"
+                @cg_bldr_pushqtok "("
+                    @cg_bldr_pushqtok "("
+                        @cg_bldr_pushqtok "tok"
+                        @cg_bldr_pushqtok "."
+                        @cg_bldr_pushqtok "d"
+                        @cg_bldr_pushqtok "!="
+                        @cg_bldr_pushqtok "CG_TOK_IDENT"
+                    @cg_bldr_pushqtok ")"
+                        @cg_bldr_pushqtok "&&"
+                    @cg_bldr_pushqtok "("
+                        @cg_bldr_pushqtok "tok"
+                        @cg_bldr_pushqtok "."
+                        @cg_bldr_pushqtok "d"
+                        @cg_bldr_pushqtok "!="
+                        @cg_bldr_pushqtok "CG_TOK_KEYWORD"
+                    @cg_bldr_pushqtok ")"
+                @cg_bldr_pushqtok ")"
+                    @cg_bldr_pushqtok "this"    
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "errtext"
+                    @cg_bldr_pushqtok "="
+                    /*
+                        Craft an error message...
+                    */
+                    if(1)
+                        cgstr errtext
+                        cgstr tmp
+                        errtext.fromstr("\"Language ");
+                        tmp.s = spec.name.s;
+                        errtext.add(tmp);
+                        tmp.s = " Parse Error! Expected IDENTIFIER or KEYWORD!";
+                        errtext.add(tmp);
+                        @cg_bldr_pushqtok [errtext.s]
+                        errtext.free();
+                    end
+                    @cg_bldr_pushqtok ";"
+                    @cg_bldr_pushqtok "go"
+                    @cg_bldr_pushqtok "err"
+                @cg_bldr_pushqtok "end"
+
             elif(iwalker.text streq "STRING")
-                //TODO
+                @cg_bldr_pushqtok "if"
+                @cg_bldr_pushqtok "("
+                    @cg_bldr_pushqtok "tok"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "d"
+                    @cg_bldr_pushqtok "!="
+                    @cg_bldr_pushqtok "CG_TOK_STRING"
+                @cg_bldr_pushqtok ")"
+                    @cg_bldr_pushqtok "this"    
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "errtext"
+                    @cg_bldr_pushqtok "="
+                    /*
+                        Craft an error message...
+                    */
+                    if(1)
+                        cgstr errtext
+                        cgstr tmp
+                        errtext.fromstr("\"Language ");
+                        tmp.s = spec.name.s;
+                        errtext.add(tmp);
+                        tmp.s = " Parse Error! Expected STRING! ";
+                        errtext.add(tmp);
+                        @cg_bldr_pushqtok [errtext.s]
+                        errtext.free();
+                    end
+                    @cg_bldr_pushqtok ";"
+                    @cg_bldr_pushqtok "go"
+                    @cg_bldr_pushqtok "err"
+                @cg_bldr_pushqtok "end"
             elif(iwalker.text streq "INT")
-                //TODO
+                @cg_bldr_pushqtok "if"
+                @cg_bldr_pushqtok "("
+                    @cg_bldr_pushqtok "tok"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "d"
+                    @cg_bldr_pushqtok "!="
+                    @cg_bldr_pushqtok "CG_TOK_INT_CONST"
+                @cg_bldr_pushqtok ")"
+                    @cg_bldr_pushqtok "this"    
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "errtext"
+                    @cg_bldr_pushqtok "="
+                    /*
+                        Craft an error message...
+                    */
+                    if(1)
+                        cgstr errtext
+                        cgstr tmp
+                        errtext.fromstr("\"Language ");
+                        tmp.s = spec.name.s;
+                        errtext.add(tmp);
+                        tmp.s = " Parse Error! Expected INTEGER LITERAL! ";
+                        errtext.add(tmp);
+                        @cg_bldr_pushqtok [errtext.s]
+                        errtext.free();
+                    end
+                    @cg_bldr_pushqtok ";"
+                    @cg_bldr_pushqtok "go"
+                    @cg_bldr_pushqtok "err"
+                @cg_bldr_pushqtok "end"
             elif(iwalker.text streq "FLOAT")
-                //TODO
+                @cg_bldr_pushqtok "if"
+                @cg_bldr_pushqtok "("
+                    @cg_bldr_pushqtok "tok"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "d"
+                    @cg_bldr_pushqtok "!="
+                    @cg_bldr_pushqtok "CG_TOK_FLOAT_CONST"
+                @cg_bldr_pushqtok ")"
+                    @cg_bldr_pushqtok "this"    
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "errtext"
+                    @cg_bldr_pushqtok "="
+                    /*
+                        Craft an error message...
+                    */
+                    if(1)
+                        cgstr errtext
+                        cgstr tmp
+                        errtext.fromstr("\"Language ");
+                        tmp.s = spec.name.s;
+                        errtext.add(tmp);
+                        tmp.s = " Parse Error! Expected FLOAT LITERAL! ";
+                        errtext.add(tmp);
+                        @cg_bldr_pushqtok [errtext.s]
+                        errtext.free();
+                    end
+                    @cg_bldr_pushqtok ";"
+                    @cg_bldr_pushqtok "go"
+                    @cg_bldr_pushqtok "err"
+                @cg_bldr_pushqtok "end"
             elif(iwalker.text streq "NUM")
-                //TODO
+                @cg_bldr_pushqtok "if"
+                @cg_bldr_pushqtok "("
+                    @cg_bldr_pushqtok "("
+                        @cg_bldr_pushqtok "tok"
+                        @cg_bldr_pushqtok "."
+                        @cg_bldr_pushqtok "d"
+                        @cg_bldr_pushqtok "!="
+                        @cg_bldr_pushqtok "CG_TOK_FLOAT_CONST"
+                    @cg_bldr_pushqtok ")"
+                    @cg_bldr_pushqtok "&&"
+                    @cg_bldr_pushqtok "("
+                        @cg_bldr_pushqtok "tok"
+                        @cg_bldr_pushqtok "."
+                        @cg_bldr_pushqtok "d"
+                        @cg_bldr_pushqtok "!="
+                        @cg_bldr_pushqtok "CG_TOK_INT_CONST"
+                    @cg_bldr_pushqtok ")"
+                @cg_bldr_pushqtok ")"
+                    @cg_bldr_pushqtok "this"    
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "errtext"
+                    @cg_bldr_pushqtok "="
+                    /*
+                        Craft an error message...
+                    */
+                    if(1)
+                        cgstr errtext
+                        cgstr tmp
+                        errtext.fromstr("\"Language ");
+                        tmp.s = spec.name.s;
+                        errtext.add(tmp);
+                        tmp.s = " Parse Error! Expected NUMBER LITERAL! ";
+                        errtext.add(tmp);
+                        @cg_bldr_pushqtok [errtext.s]
+                        errtext.free();
+                    end
+                    @cg_bldr_pushqtok ";"
+                    @cg_bldr_pushqtok "go"
+                    @cg_bldr_pushqtok "err"
+                @cg_bldr_pushqtok "end"
             else
                 @pprint[
                     /   "cgrdparsehook_linseq ERROR!"
@@ -269,6 +436,24 @@ fn codegen cgrdparsehook_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
                 ]
                 __builtin_exit(1);
             end
+            @cg_bldr_pushqtok "this"
+            @cg_bldr_pushqtok "."
+            @cg_bldr_pushqtok "uast"
+            @cg_bldr_pushqtok "."
+            @cg_bldr_pushqtok "nodes"
+            @cg_bldr_pushqtok "["
+                @cg_bldr_pushqtok "nid"
+            @cg_bldr_pushqtok "]"
+            @cg_bldr_pushqtok "."
+            @cg_bldr_pushqtok "udata"
+            @cg_bldr_pushqtok "="
+            @cg_bldr_pushqtok "tok"
+            @cg_bldr_pushqtok "."
+            @cg_bldr_pushqtok "dupe"
+            @cg_bldr_pushqtok "("
+            @cg_bldr_pushqtok ")"
+            @cg_bldr_pushqtok ";"
+            @cg_bldr_pushqtok "eat" //consume the token!
 
             iwalker = iwalker.right;
             if(iwalker == 0)
@@ -325,10 +510,14 @@ fn codegen cgrdparsehook_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
                 if(1)
                     cgstr errtext
                     cgstr tmp
-                    errtext.fromstr("\"Custom Language Parse Error! Expected ");
+                    errtext.fromstr("\"Language ");
+                    tmp.s = spec.name.s;
+                    errtext.add(tmp);
+                    tmp.s = " Parse Error! Expected: ";
+                    errtext.add(tmp);
                     tmp.s = iwalker.text;
                     errtext.add(tmp);
-                    tmp.s = " But did not find that!\"";
+                    tmp.s = " But did not find it!\"";
                     errtext.add(tmp);
                     @cg_bldr_pushqtok [errtext.s]
                     errtext.free();
@@ -355,6 +544,7 @@ fn codegen cgrdparsehook_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
                 __builtin_exit(1);
             end
             //this is a rule...
+            //save the stack pointer into stack_checker...
             @cg_bldr_pushqtok "stack_checker"
             @cg_bldr_pushqtok "="
             @cg_bldr_pushqtok "this"
@@ -369,13 +559,15 @@ fn codegen cgrdparsehook_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
             //verify stack has changed by exactly one...
             @cg_bldr_pushqtok "if"
             @cg_bldr_pushqtok "("
-                @cg_bldr_pushqtok "this"
-                @cg_bldr_pushqtok "."
-                @cg_bldr_pushqtok "uast"
-                @cg_bldr_pushqtok "."
-                @cg_bldr_pushqtok "stackptr"
-                @cg_bldr_pushqtok "-"
-                @cg_bldr_pushqtok "1"
+                @cg_bldr_pushqtok "("
+                    @cg_bldr_pushqtok "this"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "uast"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "stackptr"
+                    @cg_bldr_pushqtok "-"
+                    @cg_bldr_pushqtok "1"
+                @cg_bldr_pushqtok ")"
                 @cg_bldr_pushqtok "!="
                 @cg_bldr_pushqtok "stack_checker"
             @cg_bldr_pushqtok ")"
@@ -390,7 +582,11 @@ fn codegen cgrdparsehook_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
                 if(1)
                     cgstr errtext
                     cgstr tmp
-                    errtext.fromstr("\"Custom Language __Internal__ Parse Error! Rule ");
+                    errtext.fromstr("\"Language ");
+                    tmp.s = spec.name.s;
+                    errtext.add(tmp);
+                    tmp.s = " __Internal__ Parse Error! Rule ";
+                    errtext.add(tmp);
                     tmp.s = iwalker.text;
                     errtext.add(tmp);
                     tmp.s = " violated stack rules! Ask compiler author to fix!\"";
@@ -445,7 +641,7 @@ fn codegen cgrdparsehook_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
             __builtin_exit(1);
         end
         /*
-            TODO: Handle writing code to parse the current token...
+            Does anything need to go here?
         */
         nelems++
         continue
@@ -459,6 +655,30 @@ fn codegen cgrdparsehook_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
         ]
         __builtin_exit(1)
     end
+    if(iwalker != 0 && iwalker.d == CG_TOK_OPERATOR && iwalker.text streq ":")
+        //perform a validation of the expression after it.
+        iwalker = iwalker.right;
+        if(iwalker.d != CG_TOK_OPAREN)
+            @pprint[
+                /   "cgrdparsehook_linseq ERROR!"
+                /   "Expression evaluating to coordinate does not begin with opening parenthesis!"
+                /   "Language name is:"
+                /   (spec.name.s)
+            ]
+            __builtin_exit(1)
+        end
+        while(iwalker.right != 0) iwalker = iwalker.right end
+        if(iwalker.d != CG_TOK_CPAREN)
+            @pprint[
+                /   "cgrdparsehook_linseq ERROR!"
+                /   "Expression evaluating to coordinate does not end with a closing parenthesis!"
+                /   "Language name is:"
+                /   (spec.name.s)
+            ]
+            __builtin_exit(1)
+        end
+    end
+    //we're done...
     @cg_bldr_pushqtok "]"
     return retval;
 end
