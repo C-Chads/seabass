@@ -59,6 +59,7 @@ codegen u64 cg_uast_coord_root_node = (0xf<<(64-4)) | 10;
 fn codegen cgrdparsehook_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
     //
     cgstrll* iwalker;
+    
     iwalker = in;
     i64 capture_element = -1;
     u64 nelems = 0;
@@ -86,7 +87,6 @@ fn codegen cgrdparsehook_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
         ]
         __builtin_exit(1);
     end
-    
     @cg_bldr_inittok [in:dupe()]
     @cg_bldr_pushqtok "["
     /*
@@ -142,6 +142,7 @@ fn codegen cgrdparsehook_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
     @cg_bldr_pushqtok ";"
 
     //u64 pid = this.uast.pstack[this.uast.stackptr-1];
+    /*
     @cg_bldr_pushqtok "u64"
     @cg_bldr_pushqtok "pid"
     @cg_bldr_pushqtok "="
@@ -160,6 +161,7 @@ fn codegen cgrdparsehook_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
         @cg_bldr_pushqtok "1"
     @cg_bldr_pushqtok "]"
     @cg_bldr_pushqtok ";"
+    */
 
         //Push ourselves onto the stack...
 
@@ -173,7 +175,7 @@ fn codegen cgrdparsehook_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
     @cg_bldr_pushqtok ")"
     @cg_bldr_pushqtok ";"
     //create a link...
-    //this.uast.add_link(pid,nid);
+    /*
     @cg_bldr_pushqtok "this"
     @cg_bldr_pushqtok "."
     @cg_bldr_pushqtok "uast"
@@ -185,6 +187,7 @@ fn codegen cgrdparsehook_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
         @cg_bldr_pushqtok "nid"
     @cg_bldr_pushqtok ")"
     @cg_bldr_pushqtok ";"
+    */
     @cg_bldr_pushqtok "u64"
     @cg_bldr_pushqtok "cid" //for future use...
     @cg_bldr_pushqtok ";"
@@ -704,6 +707,7 @@ fn codegen cgrdparsehook_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
         end
     end
         //pop ourselves off the stack...
+        /*
         @cg_bldr_pushqtok "this"
         @cg_bldr_pushqtok "."
         @cg_bldr_pushqtok "uast"
@@ -712,7 +716,7 @@ fn codegen cgrdparsehook_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
         @cg_bldr_pushqtok "("
         @cg_bldr_pushqtok ")"
         @cg_bldr_pushqtok ";"
-    
+        */
     @cg_bldr_pushqtok "]"
     in:freelist();
     return retval;
@@ -764,7 +768,9 @@ fn codegen cgrdparsehook_binop(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
     @cg_bldr_pushqtok "b"
     @cg_bldr_pushqtok "u64"
     @cg_bldr_pushqtok "c"
-    in = in.right; //in is now pointing at `leftassoc` or the name of the lefthand rule...
+    ;
+    in = in.right; //in is now pointing at a modifier, or the name of the lefthand rule...
+
     //modifiers...
     :checkin_stuff
         if(
@@ -787,7 +793,7 @@ fn codegen cgrdparsehook_binop(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
         end
     u64 walky_talky = 0; //what part of the binop expression spec are we parsing?
     //preprocessing loop...
-    for(iwalker = in.right, iwalker != 0, iwalker = iwalker.right)
+    for(iwalker = in, iwalker != 0, iwalker = iwalker.right)
         walky_talky++;
         if(walky_talky == 1)
             if(iwalker.d != CG_TOK_IDENT)
@@ -817,8 +823,8 @@ fn codegen cgrdparsehook_binop(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
                 )
                     //an operator follows...
                     walky_talky--
-                    continue
                 end
+                continue
             elif(iwalker.d == CG_TOK_OBRACK)
                 //A capture...
                 has_capture_element = 1;
@@ -864,8 +870,8 @@ fn codegen cgrdparsehook_binop(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
                 )
                     //an operator follows...
                     walky_talky--
-                    continue
                 end
+                continue
             end
             if(iwalker.d == CG_TOK_IDENT)
                 @pprint[
@@ -887,7 +893,7 @@ fn codegen cgrdparsehook_binop(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
             end
             @pprint[
                 /   "cgrdparsehook_binop ERROR!"
-                /   "Unknown... something... in the second spot of a "
+                /   "Unknown... something... in the second spot of binop rule."
                 /   "If you want an identifier operator, please use"
                 /   "the following..."
                 /   "my_left_rule [IDENT] my_right_rule"
@@ -919,7 +925,7 @@ fn codegen cgrdparsehook_binop(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
             end
             rightrulename = iwalker; //saved for later!
             continue
-        elif(walky_talky >= 4)
+        elif(walky_talky == 4)
             if(iwalker.d != CG_TOK_OPERATOR ||
                 iwalker.text == 0 ||
                 iwalker.text strneq ":"
@@ -937,6 +943,12 @@ fn codegen cgrdparsehook_binop(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
             //It is indeed the colon operator!
             iwalker = iwalker.right
             break
+        elif(walky_talky > 4)
+            @pprint[
+                /   "cgrdparsehook_binop ERROR!"
+                /   "This rule has too much in it!"
+            ]
+            __builtin_exit(1);            
         end
         if(iwalker.d == CG_TOK_OPERATOR)
             if(iwalker.text streq ":")
@@ -955,6 +967,7 @@ fn codegen cgrdparsehook_binop(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
             end
         end
     end
+
     @cg_bldr_pushqtok ";"
     if(walky_talky < 3)
         @pprint[
@@ -978,7 +991,7 @@ fn codegen cgrdparsehook_binop(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
             /       "CALL YOUR SYSTEM ADMINISTRATOR!!!!"
         ]
     end
-    if(rightrulename == 0
+    if(rightrulename == 0)
         @pprint[
             /       "cgrdparsehook_binop __INTERNAL__ ERROR!"
             /       "The right rule name was not set!"
@@ -1000,6 +1013,7 @@ fn codegen cgrdparsehook_binop(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
         @cg_bldr_pushtok [iwalker.dupell()]
         @cg_bldr_rwalk_skip ;
     end
+    @cg_bldr_pushqtok ";"
     //do the lefthand rule, pointed at by in...
     @cg_bldr_pushqtok "do"
     @cg_bldr_pushtok [in:dupe()]
@@ -1015,6 +1029,7 @@ fn codegen cgrdparsehook_binop(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
     @cg_bldr_pushqtok "("
     @cg_bldr_pushqtok ")"
     @cg_bldr_pushqtok ";"
+
     if(is_left)
         @cg_bldr_pushqtok "while"
         @cg_bldr_pushqtok "("
@@ -1035,7 +1050,7 @@ fn codegen cgrdparsehook_binop(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
             @cg_bldr_pushqtok "match"
             @cg_bldr_pushqtok "["
             @cg_bldr_pushqtok "["
-                @cg_bldr_pushtok [in:dupe]
+                @cg_bldr_pushtok [in:dupe()]
                 in = in.right;
             @cg_bldr_pushqtok "]"
                 //here, we insert some code...
@@ -1115,7 +1130,7 @@ fn codegen cgrdparsehook_binop(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
         elif(in.d == CG_TOK_OBRACK)
             //A capture!
             in = in.right;
-            //guaranteed to be an operator, we checked...
+            //guaranteed to be an ident... we checked...
             @cg_bldr_pushqtok "if"
             @cg_bldr_pushqtok "("
                 
@@ -1149,11 +1164,11 @@ fn codegen cgrdparsehook_binop(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
                     @cg_bldr_pushqtok "d"
                     @cg_bldr_pushqtok "=="
                     @cg_bldr_pushqtok "CG_TOK_INT_CONST"
-                    @cg_bldr_pushqtok "&&"
+                    @cg_bldr_pushqtok "||"
                     @cg_bldr_pushqtok "tok"
                     @cg_bldr_pushqtok "."
                     @cg_bldr_pushqtok "d"
-                    @cg_bldr_pushqtok "!="
+                    @cg_bldr_pushqtok "=="
                     @cg_bldr_pushqtok "CG_TOK_FLOAT_CONST"
                 elif(in.text streq "STRING")
                     @cg_bldr_pushqtok "tok"
@@ -1165,6 +1180,7 @@ fn codegen cgrdparsehook_binop(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
                     @pprint[
                         /   "cgrdparsehook_binop ERROR!"
                         /   "Unknown capture rule..."
+                        /   (in.text)
                     ]
                 end
                 @cg_bldr_pushqtok ")"
@@ -1253,7 +1269,6 @@ fn codegen cgrdparsehook_binop(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
         ]
         __builtin_exit(1);
     end //eof giant for
-    //TODO: insert code which causes an error to happen if the expected operator is not present...
     if(is_mustcomplete)
         @cg_bldr_pushqtok "this"
         @cg_bldr_pushqtok "."
@@ -1273,6 +1288,9 @@ fn codegen cgrdparsehook_binop(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
         @cg_bldr_pushqtok ";"
         @cg_bldr_pushqtok "go"
         @cg_bldr_pushqtok "err"
+    else
+        @cg_bldr_pushqtok "break"
+        
     end
     
     if(is_left)

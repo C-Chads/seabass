@@ -23,9 +23,11 @@ fn codegen testbench_print_ast(cg_uast uast, u64 nid):
             /       "BEGIN PSTMT"
         ]
     elif(pp.coord == testbench_expr)
+        ppn = (cgstrll*) pp.udata;
+
         @pprint[
             /       "EXPR"
-            /       (pp.udata)
+            /       (ppn.text)
         ]    
     elif(pp.coord == testbench_expr_terminal)
         @pprint[
@@ -53,8 +55,10 @@ fn codegen testbench_print_ast(cg_uast uast, u64 nid):
     elif(pp.coord == testbench_expr)
         @pprint[
             /       "END EXPR"
-            /       (pp.udata)
+            /       (ppn.text)
         ]
+        __builtin_free(ppn.text);
+        __builtin_free(pp.udata);
     end
 end
 @cgrdparser[
@@ -75,6 +79,8 @@ end
         
         //a "program" consists entirely of a single block...
         do block
+        u64 qq = this.uast.stackpop();
+        this.uast.add_link(this.rid, qq);
         finish
     ]
     @linseq[
@@ -133,6 +139,8 @@ end
     stmt[ //parse a stmt
         char* ident_text
         i64 kind = 0;
+        u64 pid;
+        u64 nid;
         do err_on_null
         if(tok.text!=0)
         end
@@ -158,15 +166,21 @@ end
             go err
         end
         switch(kind) nothing print blk;
-        this.errtext = "Internal error"; go err
+        this.errtext = "Internal error"; go err ;
         :print
             //
+            pid = this.uast.pstack[this.uast.stackptr-1];
             do pstmt
+            nid = this.uast.stackpop();
+            this.uast.add_link(pid, nid);
         finish
         :nothing
         finish
         :blk
+            pid = this.uast.pstack[this.uast.stackptr-1];
             do block
+            nid = this.uast.stackpop();
+            this.uast.add_link(pid, nid);
         finish
     ]
     pstmt[
@@ -175,6 +189,7 @@ end
         me.coord = testbench_pstmt;
         me.udata = 0;
         nid = this.uast.push_node(me);
+        this.uast.stackpush(nid);
         //don't even bother pushing ourselves onto the stack...
         while(1)
             do err_on_null
@@ -191,13 +206,26 @@ end
             this.errtext = "Expected comma"
         end
         //add ourselves to our parent node..
+        /*
         u64 pid = this.uast.pstack[this.uast.stackptr-1];
         this.uast.add_link(pid, nid);
+        */
         //continue...
     ]
     expr[ //top level expr
         go addsub //currentl equivalent to the addsub expression...
     ]
+    @binop[
+        addsub
+        leftassoc
+        muldiv "+" "-" muldiv : (testbench_expr)
+    ]
+    @binop[
+        muldiv
+        leftassoc
+        prefix "*" "/" prefix : (testbench_expr)
+    ]
+    /*
     addsub[
         cg_uastnode me
         u64 a
@@ -276,13 +304,18 @@ end
         this.uast.stackpush(a);
         finish
     ]
+    */
+
     prefix[ //neg compl
         cg_uastnode me
         u64 nid
         do err_on_null
         match[["-"]
             eat
-            me.udata = "unary-";
+            cgstrll* qq = (cgstrll*)__builtin_malloc(sizeof(cgstrll));
+            qq.text = __builtin_strdup("unary-");
+            qq.d = CG_TOK_STRING; //only valid...
+            me.udata = (u8*)qq;
             me.coord = testbench_expr;
             nid = this.uast.push_node(me);
             //do prefix again...
@@ -340,7 +373,7 @@ end
 
 @testbench[
     bigBlock{
-        p 7,3,5-9/3;
+        p 7,3,5-9/3*71*4*5*6;
         littleblock{
             p 7,3,5-9/3;
         
