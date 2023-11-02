@@ -697,9 +697,8 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
                     @cg_bldr_pushqtok ";"
                     //this will handle the name on the stream. DO NOT go ahead!
                     continue;
-                end//end of do
                 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                if(in_rwalk.text streq "go")
+                elif(in_rwalk.text streq "go")
                     //The next thing must be a rule!
                     in_rwalk = in_rwalk.right;
                     //Make sure this thing has text...
@@ -743,9 +742,8 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
                     @cg_bldr_pushqtok [(spec.rules+ruleid).fn_name.s]
                     //this will handle the name on the stream. DO NOT go ahead!
                     continue;
-                end//end of go
                 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                if(in_rwalk.text streq "tok_has_text")
+                elif(in_rwalk.text streq "tok_has_text")
                     @cg_bldr_pushqtok "("
                         @cg_bldr_pushqtok "cast"
                         @cg_bldr_pushqtok "("
@@ -760,9 +758,8 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
                         @cg_bldr_pushqtok ")"
                     @cg_bldr_pushqtok ")"
                     continue;
-                end
                 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                if(in_rwalk.text streq "tok_is_stringlit")
+                elif(in_rwalk.text streq "tok_is_stringlit")
                     @cg_bldr_pushqtok "("
                         @cg_bldr_pushqtok "("
                             @cg_bldr_pushqtok "this"
@@ -782,9 +779,8 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
                         @cg_bldr_pushqtok ")"
                     @cg_bldr_pushqtok ")"
                     continue;
-                end
                 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                if(in_rwalk.text streq "match")
+                elif(in_rwalk.text streq "match")
 
                     //investigate syntactical correctness...
                     cgstrll* investigator
@@ -812,9 +808,8 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
                     @cg_bldr_pushqtok "@"
                     @cg_bldr_pushqtok "cg_rd_parse_match"
                     continue;
-                end
                 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                if(in_rwalk.text streq "stringlit")
+                elif(in_rwalk.text streq "stringlit")
                     cgstrll* investigator
                     investigator = in_rwalk.right;
                     
@@ -829,9 +824,8 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
                     @cg_bldr_pushqtok "@"
                     @cg_bldr_pushqtok "cg_rd_parse_is_stringlit"
                     continue;
-                end
                 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                if(in_rwalk.text streq "eat")
+                elif(in_rwalk.text streq "eat")
                     @cg_bldr_pushqtok "this"
                     @cg_bldr_pushqtok "."
                     @cg_bldr_pushqtok "tok"
@@ -843,9 +837,8 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
                     @cg_bldr_pushqtok "right"
                     @cg_bldr_pushqtok ";"
                     continue;
-                end
                 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                if(
+                elif(
                     in_rwalk.text streq "tok_null" ||
                     in_rwalk.text streq "tok_is_null"
                 )
@@ -862,9 +855,8 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
                         @cg_bldr_pushqtok ")"
                     @cg_bldr_pushqtok ")"
                     continue;
-                end
                 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                if(
+                elif(
                     in_rwalk.text streq "finish_on_tok_null"
                 )
                     @cg_bldr_pushqtok "if"
@@ -892,9 +884,8 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
                         end
                     @cg_bldr_pushqtok "end"
                     continue;
-                end
                 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                if(
+                elif(
                     in_rwalk.text streq "tok_not_null" ||
                     in_rwalk.text streq "tok_is_not_null"
                 )
@@ -910,9 +901,8 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
                         @cg_bldr_pushqtok ")"
                     @cg_bldr_pushqtok ")"
                     continue;
-                end
                 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                if(in_rwalk.text streq "emit")
+                elif(in_rwalk.text streq "emit")
                     if(this.name.s strneq "finish")
                         __builtin_puts("RDPARSER_ERROR!");
                         __builtin_puts("Cannot emit anywhere except finish rule");
@@ -949,9 +939,8 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
                     @cg_bldr_pushqtok "cg_bldr_pushtok"
                     continue; //We need to expand anything like TOK on the line...
                     //so we let ourselves do that.
-                end
                 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                if(in_rwalk.text streq "emitq")
+                elif(in_rwalk.text streq "emitq")
                     if(this.name.s strneq "finish")
                         __builtin_puts("RDPARSER_ERROR!");
                         __builtin_puts("Cannot emitq anywhere except finish rule");
@@ -976,9 +965,8 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
                     @cg_bldr_pushqtok "cg_bldr_pushqtok"
                     continue; //We need to expand anything like TOK on the line...
                     //so we let ourselves do that.
-                end
                 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                if(in_rwalk.text streq "emit_skip")
+                elif(in_rwalk.text streq "emit_skip")
                     if(this.name.s strneq "finish")
                         __builtin_puts("RDPARSER_ERROR!");
                         __builtin_puts("Cannot emit_skip anywhere except finish rule");
@@ -1003,9 +991,8 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
                     @cg_bldr_pushqtok "cg_bldr_rwalk_skip"
                     continue; //We need to expand anything like TOK on the line...
                     //so we let ourselves do that.
-                end
                 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                if(in_rwalk.text streq "finish")
+                elif(in_rwalk.text streq "finish")
                     if(this.name.s strneq "finish")
                         @cg_bldr_pushqtok "return"
                         @cg_bldr_pushqtok ";"
@@ -1017,18 +1004,16 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
                         @cg_bldr_pushqtok ";"
                     end
                     continue;
-                end
                 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                if(in_rwalk.text streq "tok")
+                elif(in_rwalk.text streq "tok")
                     @cg_bldr_pushqtok "("
                     @cg_bldr_pushqtok "this"
                     @cg_bldr_pushqtok "."
                     @cg_bldr_pushqtok "tok"
                     @cg_bldr_pushqtok ")"
                     continue;
-                end
                 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                if((in_rwalk.text streq "tokptr"))
+                elif(in_rwalk.text streq "tokptr")
                     @cg_bldr_pushqtok "("
                     @cg_bldr_pushqtok "this"
                     @cg_bldr_pushqtok ".&"

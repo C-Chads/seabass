@@ -814,7 +814,7 @@ end
 //TOOL 1: THE QTOK PUSHER
 //@pushqtok [expr]
 //expands to
-//rwalk:push_end(cg_qtok(";"));walker = walker.right;
+//rwalk:push_end(cg_qtok(expr));walker = walker.right;
 
 @mkbldr [
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -863,12 +863,12 @@ end
 method codegen cgstrll:freelist():
 	cgstrll* r
 	while(1)
-		if(!cast(uptr)this)
+		if(this == 0)
 			return;
 		end
 		
 		r = this.right;
-		if(cast(uptr)this.text)
+		if(this.text != 0)
 			__builtin_free(this.text);
 		end
 		__builtin_free(cast(u8*)this);
