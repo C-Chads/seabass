@@ -212,8 +212,12 @@ end
         */
         //continue...
     ]
-    expr[ //top level expr
-        go addsub //currentl equivalent to the addsub expression...
+    expr[
+        go logbool
+    ]
+    @binop[
+        logbool
+        addsub "&&" "||" addsub : (testbench_expr)
     ]
     @binop[
         addsub
@@ -225,87 +229,6 @@ end
         leftassoc
         prefix "*" "/" prefix : (testbench_expr)
     ]
-    /*
-    addsub[
-        cg_uastnode me
-        u64 a
-        u64 b
-        u64 c
-        do muldiv
-        a = this.uast.stackpop();
-        while(1)
-            do err_on_null
-            match[["+"]
-                eat
-                me.coord = testbench_expr;
-                me.udata = "+";
-                c = this.uast.push_node(me);
-                do muldiv
-                b = this.uast.stackpop();
-                this.uast.add_link(c,a);
-                this.uast.add_link(c,b);
-                a = c;
-                continue
-            ]
-            match[["-"]
-                eat
-                me.coord = testbench_expr;
-                me.udata = "-";
-                c = this.uast.push_node(me);
-                do muldiv
-                b = this.uast.stackpop();
-                this.uast.add_link(c,a);
-                this.uast.add_link(c,b);
-                a = c;
-                continue            
-            ]
-            break
-        end
-        //return a...
-        this.uast.stackpush(a);
-        finish
-    ]
-    muldiv[
-        cg_uastnode me
-        u64 a
-        u64 b
-        u64 c
-        do prefix
-        a = this.uast.stackpop();
-        while(1)
-            do err_on_null
-            match[["*"]
-                eat
-                me.coord = testbench_expr;
-                me.udata = "*";
-                c = this.uast.push_node(me);
-                do prefix
-                b = this.uast.stackpop();
-                this.uast.add_link(c,a);
-                this.uast.add_link(c,b);
-                a = c;
-                continue
-            ]
-            match[["/"]
-                eat
-                me.coord = testbench_expr;
-                me.udata = "/";
-                c = this.uast.push_node(me);
-                do prefix
-                b = this.uast.stackpop();
-                this.uast.add_link(c,a);
-                this.uast.add_link(c,b);
-                a = c;
-                continue            
-            ]
-            break
-        end
-        //return a...
-        this.uast.stackpush(a);
-        finish
-    ]
-    */
-
     prefix[ //neg compl
         cg_uastnode me
         u64 nid
@@ -362,9 +285,6 @@ end
     ]
     finish[
         emitq ";"
-        /*
-            TODO
-        */
         testbench_print_ast(this.uast, this.uast.nodes[this.rid].rel[0]);
         this.uast.dtor();
         finish
@@ -380,6 +300,7 @@ end
         }
         badblock{
             p 7,15 * -3;
+            p 7+1 || 0;
         }
     }
 ]
