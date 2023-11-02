@@ -285,7 +285,7 @@ fn codegen cgrdparsehook_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
                         errtext.fromstr("\"Language ");
                         tmp.s = spec.name.s;
                         errtext.add(tmp);
-                        tmp.s = " Parse Error! Expected IDENTIFIER or KEYWORD!";
+                        tmp.s = " Parse Error! Expected IDENTIFIER or KEYWORD!\"";
                         errtext.add(tmp);
                         @cg_bldr_pushqtok [errtext.s]
                         errtext.free();
@@ -294,7 +294,6 @@ fn codegen cgrdparsehook_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
                     @cg_bldr_pushqtok "go"
                     @cg_bldr_pushqtok "err"
                 @cg_bldr_pushqtok "end"
-
             elif(iwalker.text streq "STRING")
                 @cg_bldr_pushqtok "if"
                 @cg_bldr_pushqtok "("
@@ -317,7 +316,187 @@ fn codegen cgrdparsehook_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
                         errtext.fromstr("\"Language ");
                         tmp.s = spec.name.s;
                         errtext.add(tmp);
-                        tmp.s = " Parse Error! Expected STRING! ";
+                        tmp.s = " Parse Error! Expected STRING!\"";
+                        errtext.add(tmp);
+                        @cg_bldr_pushqtok [errtext.s]
+                        errtext.free();
+                    end
+                    @cg_bldr_pushqtok ";"
+                    @cg_bldr_pushqtok "go"
+                    @cg_bldr_pushqtok "err"
+                @cg_bldr_pushqtok "end"            
+            elif(iwalker.text streq "NOT_STRING")
+                @cg_bldr_pushqtok "if"
+                @cg_bldr_pushqtok "("
+                    @cg_bldr_pushqtok "tok"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "d"
+                    @cg_bldr_pushqtok "=="
+                    @cg_bldr_pushqtok "CG_TOK_STRING"
+                @cg_bldr_pushqtok ")"
+                    @cg_bldr_pushqtok "this"    
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "errtext"
+                    @cg_bldr_pushqtok "="
+                    /*
+                        Craft an error message...
+                    */
+                    if(1)
+                        cgstr errtext
+                        cgstr tmp
+                        errtext.fromstr("\"Language ");
+                        tmp.s = spec.name.s;
+                        errtext.add(tmp);
+                        tmp.s = " Parse Error! Expected NOT STRING!\"";
+                        errtext.add(tmp);
+                        @cg_bldr_pushqtok [errtext.s]
+                        errtext.free();
+                    end
+                    @cg_bldr_pushqtok ";"
+                    @cg_bldr_pushqtok "go"
+                    @cg_bldr_pushqtok "err"
+                @cg_bldr_pushqtok "end"            
+                
+            elif(iwalker.text streq "UNK")
+                @cg_bldr_pushqtok "if"
+                @cg_bldr_pushqtok "("
+                    @cg_bldr_pushqtok "tok"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "d"
+                    @cg_bldr_pushqtok "!="
+                    @cg_bldr_pushqtok "CG_TOK_UNKNOWN"
+                @cg_bldr_pushqtok ")"
+                    @cg_bldr_pushqtok "this"    
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "errtext"
+                    @cg_bldr_pushqtok "="
+                    /*
+                        Craft an error message...
+                    */
+                    if(1)
+                        cgstr errtext
+                        cgstr tmp
+                        errtext.fromstr("\"Language ");
+                        tmp.s = spec.name.s;
+                        errtext.add(tmp);
+                        tmp.s = " Parse Error! Expected an UNKNOWN! (That might sound confusing...)\"";
+                        errtext.add(tmp);
+                        @cg_bldr_pushqtok [errtext.s]
+                        errtext.free();
+                    end
+                    @cg_bldr_pushqtok ";"
+                    @cg_bldr_pushqtok "go"
+                    @cg_bldr_pushqtok "err"
+                @cg_bldr_pushqtok "end"                
+            elif(iwalker.text streq "OP")
+                @cg_bldr_pushqtok "if"
+                @cg_bldr_pushqtok "("
+                    @cg_bldr_pushqtok "tok"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "d"
+                    @cg_bldr_pushqtok "!="
+                    @cg_bldr_pushqtok "CG_TOK_OPERATOR"
+                @cg_bldr_pushqtok ")"
+                    @cg_bldr_pushqtok "this"    
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "errtext"
+                    @cg_bldr_pushqtok "="
+                    /*
+                        Craft an error message...
+                    */
+                    if(1)
+                        cgstr errtext
+                        cgstr tmp
+                        errtext.fromstr("\"Language ");
+                        tmp.s = spec.name.s;
+                        errtext.add(tmp);
+                        tmp.s = " Parse Error! Expected an OPERATOR!\"";
+                        errtext.add(tmp);
+                        @cg_bldr_pushqtok [errtext.s]
+                        errtext.free();
+                    end
+                    @cg_bldr_pushqtok ";"
+                    @cg_bldr_pushqtok "go"
+                    @cg_bldr_pushqtok "err"
+                @cg_bldr_pushqtok "end"
+            elif(iwalker.text streq "OP_OR_UNK")
+                @cg_bldr_pushqtok "if"
+                @cg_bldr_pushqtok "("
+                    @cg_bldr_pushqtok "tok"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "d"
+                    @cg_bldr_pushqtok "!="
+                    @cg_bldr_pushqtok "CG_TOK_OPERATOR"
+                    @cg_bldr_pushqtok "&&"
+                    @cg_bldr_pushqtok "tok"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "d"
+                    @cg_bldr_pushqtok "!="
+                    @cg_bldr_pushqtok "CG_TOK_UNKNOWN"
+                @cg_bldr_pushqtok ")"
+                    @cg_bldr_pushqtok "this"    
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "errtext"
+                    @cg_bldr_pushqtok "="
+                    /*
+                        Craft an error message...
+                    */
+                    if(1)
+                        cgstr errtext
+                        cgstr tmp
+                        errtext.fromstr("\"Language ");
+                        tmp.s = spec.name.s;
+                        errtext.add(tmp);
+                        tmp.s = " Parse Error! Expected an OPERATOR or UNKNOWN!\"";
+                        errtext.add(tmp);
+                        @cg_bldr_pushqtok [errtext.s]
+                        errtext.free();
+                    end
+                    @cg_bldr_pushqtok ";"
+                    @cg_bldr_pushqtok "go"
+                    @cg_bldr_pushqtok "err"
+                @cg_bldr_pushqtok "end"            
+            elif(iwalker.text streq "SYM")
+                @cg_bldr_pushqtok "if"
+                @cg_bldr_pushqtok "("
+                    @cg_bldr_pushqtok "tok"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "d"
+                    @cg_bldr_pushqtok "!="
+                    @cg_bldr_pushqtok "CG_TOK_OPERATOR"
+                    @cg_bldr_pushqtok "&&"
+                    @cg_bldr_pushqtok "tok"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "d"
+                    @cg_bldr_pushqtok "!="
+                    @cg_bldr_pushqtok "CG_TOK_UNKNOWN"
+                    @cg_bldr_pushqtok "&&"
+                    @cg_bldr_pushqtok "tok"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "d"
+                    @cg_bldr_pushqtok "!="
+                    @cg_bldr_pushqtok "CG_TOK_COMMA"
+                    @cg_bldr_pushqtok "&&"
+                    @cg_bldr_pushqtok "tok"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "d"
+                    @cg_bldr_pushqtok "!="
+                    @cg_bldr_pushqtok "CG_TOK_MACRO_OP"
+                @cg_bldr_pushqtok ")"
+                    @cg_bldr_pushqtok "this"    
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "errtext"
+                    @cg_bldr_pushqtok "="
+                    /*
+                        Craft an error message...
+                    */
+                    if(1)
+                        cgstr errtext
+                        cgstr tmp
+                        errtext.fromstr("\"Language ");
+                        tmp.s = spec.name.s;
+                        errtext.add(tmp);
+                        tmp.s = " Parse Error! Expected a SYMBOL\"";
                         errtext.add(tmp);
                         @cg_bldr_pushqtok [errtext.s]
                         errtext.free();
@@ -348,7 +527,7 @@ fn codegen cgrdparsehook_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
                         errtext.fromstr("\"Language ");
                         tmp.s = spec.name.s;
                         errtext.add(tmp);
-                        tmp.s = " Parse Error! Expected INTEGER LITERAL! ";
+                        tmp.s = " Parse Error! Expected INTEGER LITERAL!\"";
                         errtext.add(tmp);
                         @cg_bldr_pushqtok [errtext.s]
                         errtext.free();
@@ -379,7 +558,7 @@ fn codegen cgrdparsehook_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
                         errtext.fromstr("\"Language ");
                         tmp.s = spec.name.s;
                         errtext.add(tmp);
-                        tmp.s = " Parse Error! Expected FLOAT LITERAL! ";
+                        tmp.s = " Parse Error! Expected FLOAT LITERAL!\"";
                         errtext.add(tmp);
                         @cg_bldr_pushqtok [errtext.s]
                         errtext.free();
@@ -420,7 +599,7 @@ fn codegen cgrdparsehook_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
                         errtext.fromstr("\"Language ");
                         tmp.s = spec.name.s;
                         errtext.add(tmp);
-                        tmp.s = " Parse Error! Expected NUMBER LITERAL! ";
+                        tmp.s = " Parse Error! Expected NUMBER LITERAL!\"";
                         errtext.add(tmp);
                         @cg_bldr_pushqtok [errtext.s]
                         errtext.free();
@@ -429,6 +608,8 @@ fn codegen cgrdparsehook_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
                     @cg_bldr_pushqtok "go"
                     @cg_bldr_pushqtok "err"
                 @cg_bldr_pushqtok "end"
+            elif(iwalker.text streq "ANY")
+                //We don't need to do anything!
             else
                 @pprint[
                     /   "cgrdparsehook_linseq ERROR!"
@@ -1462,7 +1643,9 @@ fn codegen cgrdparsehook_binop_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgst
                     @pprint[
                         /   "cgrdparsehook_binop_linseq ERROR!"
                         /   "Expected identifier inside of brackets."
-                        /   "my_left_rule [IDENT] my_right_rule"
+                        /   "my_left_rule [HUH] my_right_rule"
+                        /   "Where HUH can be one of..."
+                        /   "IDENT INT FLOAT STRING NUM ANY"
                         /   "Language name is:"
                         /   (spec.name.s)
                         /   "Filename is:"
@@ -1826,12 +2009,69 @@ fn codegen cgrdparsehook_binop_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgst
                     @cg_bldr_pushqtok "d"
                     @cg_bldr_pushqtok "=="
                     @cg_bldr_pushqtok "CG_TOK_STRING"
+                elif(in.text streq "NOT_STRING")
+                    @cg_bldr_pushqtok "tok"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "d"
+                    @cg_bldr_pushqtok "!="
+                    @cg_bldr_pushqtok "CG_TOK_STRING"
+                elif(in.text streq "OP")
+                    @cg_bldr_pushqtok "tok"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "d"
+                    @cg_bldr_pushqtok "=="
+                    @cg_bldr_pushqtok "CG_TOK_OPERATOR"
+                elif(in.text streq "UNK")
+                    @cg_bldr_pushqtok "tok"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "d"
+                    @cg_bldr_pushqtok "=="
+                    @cg_bldr_pushqtok "CG_TOK_UNKNOWN"
+                elif(in.text streq "OP_OR_UNK")
+                    @cg_bldr_pushqtok "tok"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "d"
+                    @cg_bldr_pushqtok "=="
+                    @cg_bldr_pushqtok "CG_TOK_OPERATOR"
+                    @cg_bldr_pushqtok "||"
+                    @cg_bldr_pushqtok "tok"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "d"
+                    @cg_bldr_pushqtok "=="
+                    @cg_bldr_pushqtok "CG_TOK_UNKNOWN"
+                elif(in.text streq "SYM")
+                    @cg_bldr_pushqtok "tok"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "d"
+                    @cg_bldr_pushqtok "=="
+                    @cg_bldr_pushqtok "CG_TOK_OPERATOR"
+                    @cg_bldr_pushqtok "||"
+                    @cg_bldr_pushqtok "tok"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "d"
+                    @cg_bldr_pushqtok "=="
+                    @cg_bldr_pushqtok "CG_TOK_UNKNOWN"
+                    @cg_bldr_pushqtok "||"
+                    @cg_bldr_pushqtok "tok"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "d"
+                    @cg_bldr_pushqtok "=="
+                    @cg_bldr_pushqtok "CG_TOK_COMMA"
+                    @cg_bldr_pushqtok "||"
+                    @cg_bldr_pushqtok "tok"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "d"
+                    @cg_bldr_pushqtok "=="
+                    @cg_bldr_pushqtok "CG_TOK_MACRO_OP"
                 elif(in.text streq "ANY")
                     @cg_bldr_pushqtok "1" //accept literally any token...
                 else
                     @pprint[
                         /   "cgrdparsehook_binop_linseq ERROR!"
                         /   "Unknown capture rule..."
+                        /   "The valid rules are:"
+                        /   "IDENT INT FLOAT NUM STRING NOT_STRING OP(==CG_TOK_OPERATOR) UNK(==CG_TOK_UNKNOWN) OP_OR_UNK"
+                        /   "SYM(==CG_TOK_OPERATOR or CG_TOK_UNKNOWN or CG_TOK_COMMA)"
                         /   (in.text)
                     ]
                 end
@@ -1994,6 +2234,408 @@ fn codegen cgrdparsehook_binop_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgst
     
     @cg_bldr_pushqtok "]"
     in_orig:freelist();
+    return retval;
+end
+
+/*
+    The decision maker! Based on the identity of the current token,
+    choose a rule to execute.
+    
+    It can choose based
+    
+    @cond[
+        crule //cruel?!?!
+        //match an identifier with text HOOPLAH
+        d[CG_TOK_IDENT]text["HOOPLAH"]? myrule
+        //match a non-stringliteral with text what
+        d![CG_TOK_STRING]text["what"]? myrule2
+        else my_other_rule
+        
+    ]
+*/
+fn codegen cgrdparsehook_cond(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
+    cgstrll* the_name
+    cgstrll* in_orig = in;
+    if(in == 0 || in.d != CG_TOK_IDENT)
+        @pprint[
+            /   "cgrdparsehook_cond ERROR!!!!"
+            /   "No name?!?!"
+            /   "Language name is:"
+            /   (spec.name.s)
+        ]
+        __builtin_exit(1);
+    end
+    the_name = in;
+    in = in.right;
+    if(in == 0)
+        @pprint[
+            /   "cgrdparsehook_cond ERROR!!!!"
+            /   "Body is EMPTY?!?!"
+            /   "Language name is:"
+            /   (spec.name.s)
+            /   "Rule name is:"
+            /   (the_name.text)
+        ]
+        __builtin_exit(1);        
+    end
+    //begin parsing rules...
+    @cg_bldr_inittok [the_name:dupe()]
+    @cg_bldr_pushqtok "["
+    
+    while(1)
+        //Parsing a condition......
+        u64 indentlevels = 0;
+        u64 is_else_clause = 0;
+        //reached the end?
+        if(in == 0) break end
+        //Make sure the user doesn't commit tax fraud....
+        if(in.d == CG_TOK_OPERATOR && in.text streq "?")
+            //this is not a good situation...
+            @pprint[
+                /   "cgrdparsehook_cond SYNTAX ERROR!!!!"
+                /   "You can't have an empty condition."
+                /   "If you desire to write a clause which"
+                /   "always executes if none of the previous ones"
+                /   "have, try using `else myrule`"
+                /   "Language name is:"
+                /   (spec.name.s)
+                /   "Rule name is:"
+                /   (the_name.text)
+            ]
+            __builtin_exit(1);
+        end
+        //we use this label for handling conditions...
+        if(in.d == CG_TOK_KEYWORD && in.text streq "else")
+            //This is the else clause!
+            in = in.right;
+            is_else_clause = 1;
+            indentlevels = 0;
+            goto rule_doin_part
+        end
+        :local_looptop
+        if(in == 0)
+            @pprint[
+                /   "cgrdparsehook_cond SYNTAX ERROR!!!!"
+                /   "Termination during condition evaluation"
+                /   "You ended without a '?',"
+                /   "Language name is:"
+                /   (spec.name.s)
+                /   "Rule name is:"
+                /   (the_name.text)
+            ]
+            __builtin_exit(1);
+        end
+        //consume superfluous commas
+        if(in.d == CG_TOK_COMMA)
+            in = in.right
+            goto local_looptop
+        end
+        if(in.d == CG_TOK_IDENT && in.text streq "d")
+            u64 is_inverted = 0;
+            cgstrll* folded_out_arg;
+            cgstrll* in_old;
+            in_old = in;
+            in = in.right;
+            if(in == 0)
+                @pprint[
+                    /   "cgrdparsehook_cond SYNTAX ERROR!!!!"
+                    /   "Termination after 'd'?"
+                    /   "Language name is:"
+                    /   (spec.name.s)
+                    /   "Rule name is:"
+                    /   (the_name.text)
+                ]
+                __builtin_exit(1);
+            end
+            if(in.d == CG_TOK_OPERATOR && in.text streq "!")
+                //this is an inversion....
+                is_inverted = 1;
+                in_old = in;
+                in = in.right;
+                if(in == 0)
+                    @pprint[
+                        /   "cgrdparsehook_cond SYNTAX ERROR!!!!"
+                        /   "Termination after 'd!'?"
+                        /   "Language name is:"
+                        /   (spec.name.s)
+                        /   "Rule name is:"
+                        /   (the_name.text)
+                    ]
+                    __builtin_exit(1);
+                end
+            end
+            if(in.d != CG_TOK_OBRACK)
+                @pprint[
+                    /   "cgrdparsehook_cond SYNTAX ERROR!!!!"
+                    /   "d/d! requires a square-bracketed expression."
+                    /   "d[CG_TOK_IDENT] for instance..."
+                    /   "Language name is:"
+                    /   (spec.name.s)
+                    /   "Rule name is:"
+                    /   (the_name.text)
+                ]
+                __builtin_exit(1);            
+            end
+            //we know whether it was d or d!
+            @cg_bldr_foldout_arg folded_out_arg in
+            in_old.right = in; //Keep in_orig valid...
+            if(folded_out_arg == 0)
+                @pprint[
+                    /   "cgrdparsehook_cond SYNTAX ERROR!!!!"
+                    /   "Contents of d/d! expression are EMPTY!!!!"
+                    /   "The square brackets after d/d! may NOT be empty!"
+                    /   "You need to put an expression in there!"
+                    /   "Language name is:"
+                    /   (spec.name.s)
+                    /   "Rule name is:"
+                    /   (the_name.text)
+                ]
+                __builtin_exit(1);
+            end
+            //we have to increase indent levels every time...
+            indentlevels++;
+            //we now have enough to create the if statement...
+            if(is_inverted)
+                @cg_bldr_tokmanip_push_strings[
+                    if(tok.d != //)
+                ]
+            else
+                @cg_bldr_tokmanip_push_strings[
+                    if(tok.d == 
+                ]
+            end
+            @cg_bldr_pushtok [folded_out_arg]
+            @cg_bldr_rwalk_skip ;
+            @cg_bldr_pushqtok ")"
+            
+            goto local_looptop
+        end //eof if d
+        if(in.d == CG_TOK_IDENT && in.text streq "text")
+            u64 is_inverted = 0;
+            cgstrll* folded_out_arg;
+            cgstrll* in_old = in;
+
+            in = in.right;
+            if(in == 0)
+                @pprint[
+                    /   "cgrdparsehook_cond SYNTAX ERROR!!!!"
+                    /   "Termination after 'text'?"
+                    /   "Language name is:"
+                    /   (spec.name.s)
+                    /   "Rule name is:"
+                    /   (the_name.text)
+                ]
+                __builtin_exit(1);
+            end
+            if(in.d == CG_TOK_OPERATOR && in.text streq "!")
+                //this is an inversion....
+                is_inverted = 1;
+                in_old = in;
+                in = in.right;
+                if(in == 0)
+                    @pprint[
+                        /   "cgrdparsehook_cond SYNTAX ERROR!!!!"
+                        /   "Termination after 'text!'?"
+                        /   "Language name is:"
+                        /   (spec.name.s)
+                        /   "Rule name is:"
+                        /   (the_name.text)
+                    ]
+                    __builtin_exit(1);
+                end
+            end
+            if(in.d != CG_TOK_OBRACK)
+                @pprint[
+                    /   "cgrdparsehook_cond SYNTAX ERROR!!!!"
+                    /   "text/text! requires a square-bracketed expression."
+                    /   "text[\"uh\"] for instance..."
+                    /   "Language name is:"
+                    /   (spec.name.s)
+                    /   "Rule name is:"
+                    /   (the_name.text)
+                ]
+                __builtin_exit(1);            
+            end
+            //we know whether it was d or d!
+            @cg_bldr_foldout_arg folded_out_arg in
+            in_old.right = in; //keep in_orig valid...
+            if(folded_out_arg == 0)
+                @pprint[
+                    /   "cgrdparsehook_cond SYNTAX ERROR!!!!"
+                    /   "Contents of text/text! expression are EMPTY!!!!"
+                    /   "The square brackets after text/text! may NOT be empty!"
+                    /   "You need to put an expression in there!"
+                    /   "Language name is:"
+                    /   (spec.name.s)
+                    /   "Rule name is:"
+                    /   (the_name.text)
+                ]
+                __builtin_exit(1);
+            end
+            //we have to increase indent levels every time...
+            indentlevels++;
+            //we now have enough to create the if statement...
+            if(is_inverted)
+                @cg_bldr_tokmanip_push_strings[
+                    if(tok.text strneq //)
+                ]
+            else
+                @cg_bldr_tokmanip_push_strings[
+                    if(tok.text streq
+                ]
+            end
+            @cg_bldr_pushtok [folded_out_arg]
+            @cg_bldr_rwalk_skip ;
+            @cg_bldr_pushqtok ")"
+            
+            goto local_looptop
+        end
+        if(in.d == CG_TOK_IDENT && in.text streq "if")
+            u64 is_inverted = 0;
+            cgstrll* folded_out_arg;
+            cgstrll* in_old = in;
+
+            in = in.right;
+            if(in == 0)
+                @pprint[
+                    /   "cgrdparsehook_cond SYNTAX ERROR!!!!"
+                    /   "Termination after 'if'?"
+                    /   "Language name is:"
+                    /   (spec.name.s)
+                    /   "Rule name is:"
+                    /   (the_name.text)
+                ]
+                __builtin_exit(1);
+            end
+            if(in.d == CG_TOK_OPERATOR && in.text streq "!")
+                //this is an inversion....
+                is_inverted = 1;
+                in_old = in;
+                in = in.right;
+                if(in == 0)
+                    @pprint[
+                        /   "cgrdparsehook_cond SYNTAX ERROR!!!!"
+                        /   "Termination after 'if!'?"
+                        /   "Language name is:"
+                        /   (spec.name.s)
+                        /   "Rule name is:"
+                        /   (the_name.text)
+                    ]
+                    __builtin_exit(1);
+                end
+            end
+            if(in.d != CG_TOK_OBRACK)
+                @pprint[
+                    /   "cgrdparsehook_cond SYNTAX ERROR!!!!"
+                    /   "if/if! requires a square-bracketed expression."
+                    /   "if[2 == (1+1)] for instance..."
+                    /   "Language name is:"
+                    /   (spec.name.s)
+                    /   "Rule name is:"
+                    /   (the_name.text)
+                ]
+                __builtin_exit(1);            
+            end
+            //we know whether it was d or d!
+            @cg_bldr_foldout_arg folded_out_arg in
+            in_old.right = in; //keep in_orig valid....
+            if(folded_out_arg == 0)
+                @pprint[
+                    /   "cgrdparsehook_cond SYNTAX ERROR!!!!"
+                    /   "Contents of if/if! expression are EMPTY!!!!"
+                    /   "The square brackets after if/if! may NOT be empty!"
+                    /   "You need to put an expression in there!"
+                    /   "Language name is:"
+                    /   (spec.name.s)
+                    /   "Rule name is:"
+                    /   (the_name.text)
+                ]
+                __builtin_exit(1);
+            end
+            //we have to increase indent levels every time...
+            indentlevels++;
+            //we now have enough to create the if statement...
+            if(is_inverted)
+                @cg_bldr_tokmanip_push_strings[
+                    if(!( //))
+                ]
+            else
+                @cg_bldr_tokmanip_push_strings[
+                    if((
+                ]
+            end
+            @cg_bldr_pushtok [folded_out_arg]
+            @cg_bldr_rwalk_skip ;
+            @cg_bldr_pushqtok ")"
+            @cg_bldr_pushqtok ")"
+            
+            goto local_looptop
+        end
+        //require a question mark...
+        if(in.d != CG_TOK_OPERATOR || in.text == 0 || in.text strneq "?")
+                @pprint[
+                    /   "cgrdparsehook_cond SYNTAX ERROR!!!!"
+                    /   "Question mark required for conditional...."
+                    /   "Language name is:"
+                    /   (spec.name.s)
+                    /   "Rule name is:"
+                    /   (the_name.text)
+                ]
+                __builtin_exit(1);
+        end
+        //consume it!
+        in = in.right;
+        :rule_doin_part
+        //identifier required...
+        if(in == 0 || in.d != CG_TOK_IDENT)
+            @pprint[
+                /   "cgrdparsehook_cond SYNTAX ERROR!!!!"
+                /   "Identifier required: Name of rule to execute on recognition..."
+                /   "Language name is:"
+                /   (spec.name.s)
+                /   "Rule name is:"
+                /   (the_name.text)
+            ]
+            __builtin_exit(1);
+        end
+        @cg_bldr_pushqtok "go"
+        @cg_bldr_pushtok [in:dupe()]
+        in = in.right; //consume the identifier.
+        u64 i
+        for(i = 0, i < indentlevels, i++)
+            @cg_bldr_pushqtok "end"
+        end
+        //the condition is complete!!!!
+        if(is_else_clause)
+            //verify that there is no more text...
+            if(in != 0)
+                @pprint[
+                    /   "cgrdparsehook_cond SYNTAX ERROR!!!!"
+                    /   "Superfluous stuff after else clause?"
+                    /   "Language name is:"
+                    /   (spec.name.s)
+                    /   "Rule name is:"
+                    /   (the_name.text)
+                ]
+                __builtin_exit(1);
+            end
+            break
+        end
+    end //eof loop over conditions...
+    //conditions are finished...
+    
+    @cg_bldr_pushqtok "]"
+    in_orig:freelist();
+    /*
+    @pprint[
+        /"For debugging purposes, here is your COND rule..."
+        /bar
+    ]
+    retval:debug_print();
+    @pprint[
+        /bar
+    ]
+    */
     return retval;
 end
 

@@ -244,29 +244,55 @@ end
         leftassoc
         prefix "*" "/" prefix : (testbench_expr)
     ]
-    prefix[ //neg compl
+    @cond[
+        prefix
+        d![CG_TOK_STRING]text["-"]?prefix_minus
+        d[CG_TOK_OPERATOR]text["~"]?prefix_compl
+        else terminal
+    ]
+    prefix_minus[
         cg_uastnode me
         u64 nid
         do err_on_null
-        match[["-"]
-            eat
-            cgstrll* qq = (cgstrll*)__builtin_malloc(sizeof(cgstrll));
-            qq.text = __builtin_strdup("unary-");
-            qq.d = CG_TOK_STRING; //only valid...
-            me.udata = (u8*)qq;
-            me.coord = testbench_expr;
-            nid = this.uast.push_node(me);
-            //do prefix again...
-            do prefix
-            //get the node from it
-            u64 cid = this.uast.stackpop();
-            //add a link between our node and that node...
-            this.uast.add_link(nid,cid);
-            //push ourselves and finish...
-            this.uast.stackpush(nid);
-            finish
-        ]
-        do terminal
+
+        eat
+        cgstrll* qq = (cgstrll*)__builtin_malloc(sizeof(cgstrll));
+        qq.text = __builtin_strdup("unary-");
+        qq.d = CG_TOK_STRING; //only valid...
+        me.udata = (u8*)qq;
+        me.coord = testbench_expr;
+        nid = this.uast.push_node(me);
+        //do prefix again...
+        do prefix
+        //get the node from it
+        u64 cid = this.uast.stackpop();
+        //add a link between our node and that node...
+        this.uast.add_link(nid,cid);
+        //push ourselves and finish...
+        this.uast.stackpush(nid);
+        finish
+    ]    
+    prefix_compl[
+        cg_uastnode me
+        u64 nid
+        do err_on_null
+
+        eat
+        cgstrll* qq = (cgstrll*)__builtin_malloc(sizeof(cgstrll));
+        qq.text = __builtin_strdup("unary~");
+        qq.d = CG_TOK_STRING; //only valid...
+        me.udata = (u8*)qq;
+        me.coord = testbench_expr;
+        nid = this.uast.push_node(me);
+        //do prefix again...
+        do prefix
+        //get the node from it
+        u64 cid = this.uast.stackpop();
+        //add a link between our node and that node...
+        this.uast.add_link(nid,cid);
+        //push ourselves and finish...
+        this.uast.stackpush(nid);
+        finish
     ]
     terminal[
         //number only!
@@ -322,7 +348,7 @@ end
         }
         badblock{
             p 7,15 * -3;
-            p 7+1 || 0 THIS WAS = A_FUZZY_WUZZY -1;
+            p 7+1 || 0 THIS WAS = A_FUZZY_WUZZY -~- -~1;
         }
     }
 ]
