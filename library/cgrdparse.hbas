@@ -1,5 +1,6 @@
 
 
+
 #guard compiletime_recursive_descent_parser_library_DMHSW
 
 #include "cgbuilder.hbas"
@@ -1076,6 +1077,7 @@ method codegen cg_rd_parser_spec:gen_struct()->cgstrll*:
         //code to define the struct is pushed on.
         
         @cg_bldr_pushtok [this.structcode]
+        @cg_bldr_rwalk_skip ;
         //tok variable: 
         @cg_bldr_pushqtok "noexport"
         @cg_bldr_pushqtok "cgstrll"

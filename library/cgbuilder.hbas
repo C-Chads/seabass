@@ -812,30 +812,29 @@ end
 
 //Tools for making builders..
 //TOOL 1: THE QTOK PUSHER
-//@pushqtok [expr]
-//expands to
-//rwalk:push_end(cg_qtok(expr));walker = walker.right;
-
+//one of the most often used functions in the entire mp library...
 @mkbldr [
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	    cg_bldr_pushqtok
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	cgstrll* retval
 	cgstrll* rwalk
-
-	@dupell_inlist ;
 	
 	retval =       cg_qtok("rwalk");rwalk = retval;
-	rwalk:push_end(cg_qtok(":"));rwalk = rwalk.right;
-	rwalk:push_end(cg_qtok("push_end"));rwalk = rwalk.right;
+	//rwalk:push_end(cg_qtok(":"));rwalk = rwalk.right;
+	//rwalk:push_end(cg_qtok("push_end"));rwalk = rwalk.right;
+    rwalk:push_end(cg_qtok("."));rwalk = rwalk.right;
+	rwalk:push_end(cg_qtok("right"));rwalk = rwalk.right;
+	rwalk:push_end(cg_qtok("="));rwalk = rwalk.right;
+	
+	//rwalk:push_end(cg_qtok("("));rwalk = rwalk.right;
+	
+	rwalk:push_end(cg_qtok("cg_qtok"));rwalk = rwalk.right;
 	rwalk:push_end(cg_qtok("("));rwalk = rwalk.right;
-	
-    	rwalk:push_end(cg_qtok("cg_qtok"));rwalk = rwalk.right;
-    	rwalk:push_end(cg_qtok("("));rwalk = rwalk.right;
-    	    rwalk:push_end(inlist_dupe);rwalk = rwalk.right;
-    	rwalk:push_end(cg_qtok(")"));rwalk = rwalk.right;
-	
+    rwalk:push_end(inlist:dupell());rwalk = rwalk.right;
 	rwalk:push_end(cg_qtok(")"));rwalk = rwalk.right;
+	
+	//rwalk:push_end(cg_qtok(")"));rwalk = rwalk.right;
 	rwalk:push_end(cg_qtok(";"));rwalk = rwalk.right;
 	
 	rwalk:push_end(cg_qtok("rwalk"));rwalk = retval;
@@ -871,7 +870,10 @@ end
 	@pushqtok "="
 	@pushqtok "cg_qtok"
 	@pushqtok "("
-	 rwalk:push_end(inlist_dupe);rwalk = rwalk.right;
+	rwalk:push_end(inlist_dupe);
+    while(rwalk.right != 0)
+        rwalk = rwalk.right
+    end
 	@pushqtok ")"
 	@pushqtok ";"
 	@pushqtok "rwalk"
@@ -891,7 +893,10 @@ end
 	@pushqtok "="
 	@pushqtok "cg_qtok"
 	@pushqtok "("
-	 rwalk:push_end(inlist:dupe());rwalk = rwalk.right;
+    rwalk:push_end(inlist:dupe());
+    while(rwalk.right != 0)
+        rwalk = rwalk.right
+    end
 	@pushqtok ")"
 	@pushqtok ";"
 	@pushqtok "rwalk"
@@ -986,7 +991,10 @@ end
 	//not qtok!
 	//@pushqtok "cg_qtok"
 	@pushqtok "("
-	 rwalk:push_end(inlist_dupe);rwalk = rwalk.right;
+    rwalk.right = (inlist_dupe);
+    while(rwalk.right != 0)
+        rwalk = rwalk.right
+    end
 	@pushqtok ")"
 	@pushqtok ";"
 	@pushqtok "rwalk"
@@ -1006,7 +1014,10 @@ end
 	@pushqtok "="
 	@pushqtok "cg_qtok"
 	@pushqtok "("
-	 rwalk:push_end(inlist_dupe);rwalk = rwalk.right;
+    rwalk:push_end(inlist_dupe);
+    while(rwalk.right != 0)
+        rwalk = rwalk.right
+    end
 	@pushqtok ")"
 	@pushqtok ";"
 	@pushqtok "rwalk"
@@ -1024,10 +1035,14 @@ end
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 	@initqtok "rwalk"
-	@pushqtok ":"
-	@pushqtok "push_end"
+	@pushqtok "."
+	@pushqtok "right"
+	@pushqtok "="
 	@pushqtok "("
-	    rwalk:push_end(inlist:dupell());rwalk = rwalk.right;
+	    rwalk:push_end(inlist:dupell());
+	    while(rwalk.right != 0)
+	        rwalk = rwalk.right
+	    end
 	@pushqtok ")"
 	@pushqtok ";"
 	@pushqtok "rwalk"
@@ -1038,39 +1053,6 @@ end
 	@pushqtok ";"
 	
 	return retval;
-]
-
-//push token even if you dont know
-//if you've initialized yet or not.
-
-@mkbldr [
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	    cg_bldr_initpushtok
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    @initqtok "if"
-    @pushqtok "("
-        @pushqtok "!"
-        @pushqtok "cast"
-        @pushqtok "("
-            @pushqtok "uptr"
-        @pushqtok ")"
-        @pushqtok "retval"
-    @pushqtok ")"
-        //we must init!
-        @pushqtok "@"
-        @pushqtok "cg_bldr_inittok_nodecl"
-        //the brackets were popped off...
-        @pushqtok "["
-            @pushtok [inlist:dupell()]
-        @pushqtok "]"
-    @pushqtok "else"
-        @pushqtok "@"
-        @pushqtok "cg_bldr_pushtok"
-        @pushqtok "["
-            @pushtok [inlist:dupell()]
-        @pushqtok "]"
-    @pushqtok "end"
-    return retval;
 ]
 
 @mkbldr [

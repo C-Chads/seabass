@@ -2780,7 +2780,10 @@ fn codegen cgrdparsehook_repseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
             //insert terminating condition code...
             had_terminator = 1;
             @cg_bldr_pushtok [termination_check_code:dupell()]
-            in = in.right
+            while(rwalk.right != 0)
+                rwalk = rwalk.right
+            end
+            in = in.right;
             continue
             
         elif(in.d == CG_TOK_IDENT)
@@ -2868,7 +2871,8 @@ fn codegen cgrdparsehook_repseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
     end
     //we always have check code....
     termination_check_code:freelist();
-    in_orig:freelist();    
+    in_orig:freelist();
+    retval:debug_print();
     return retval;
 end
 

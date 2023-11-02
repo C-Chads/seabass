@@ -1723,6 +1723,8 @@ static void validate_function_argument_passing(expr_node* ee){
 			strcat(buf_err, " has the wrong type.\n");
 			strcat(buf_err, " function's name is... ");
 			strcat(buf_err, symbol_table[ee->symid]->name);
+			strcat(buf_err, "\nCurrent function is... ");
+			strcat(buf_err, symbol_table[active_function]->name);
 			strcat(buf_err, "\n");
 			if(ee->kind == EXPR_METHOD)
 				strcat(
