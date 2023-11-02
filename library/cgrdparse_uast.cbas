@@ -248,6 +248,7 @@ end
         prefix
         d![CG_TOK_STRING]text["-"]?prefix_minus
         d[CG_TOK_OPERATOR]text["~"]?prefix_compl
+        if[1]? terminal
         else terminal
     ]
     prefix_minus[

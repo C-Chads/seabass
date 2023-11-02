@@ -2490,7 +2490,7 @@ fn codegen cgrdparsehook_cond(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
             
             goto local_looptop
         end
-        if(in.d == CG_TOK_IDENT && in.text streq "if")
+        if(in.d == CG_TOK_KEYWORD && in.text streq "if")
             u64 is_inverted = 0;
             cgstrll* folded_out_arg;
             cgstrll* in_old = in;
