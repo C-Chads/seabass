@@ -11,10 +11,12 @@ codegen u64 testbench_pstmt = 0xff04;
 codegen u64 testbench_expr_terminal = 0xff05;
 fn codegen testbench_print_ast(cg_uast uast, u64 nid):
     cg_uastnode* pp = uast.nodes[nid];
+    cgstrll* ppn;
     if(pp.coord == testbench_block)
+        ppn = (cgstrll*) pp.udata;
         @pprint[
             /       "BEGIN BLOCK"
-            /       (pp.udata)
+            /       (ppn.text)
         ]
     elif(pp.coord == testbench_pstmt)
         @pprint[
@@ -40,9 +42,10 @@ fn codegen testbench_print_ast(cg_uast uast, u64 nid):
     if(pp.coord == testbench_block)
         @pprint[
             /       "END BLOCK"
-            /       (pp.udata)
+            /       (ppn.text)
         ]
-        __builtin_free(pp.udata)
+        __builtin_free(ppn.text);
+        __builtin_free(pp.udata);
     elif(pp.coord == testbench_pstmt)
         @pprint[
             /       "END PSTMT"
@@ -74,7 +77,12 @@ end
         do block
         finish
     ]
-    block[ //parse a block..
+    @linseq[
+        block
+        [IDENT] "{" stmts "}" : (testbench_block)
+    ]
+    /*
+    block_old[ //parse a block..
         cg_uastnode me
         u64 nid
         u64 pid
@@ -111,6 +119,7 @@ end
         end
         //we have finished this block!
     ]
+    */
     stmts[
         //ON ENTRY: WE ARE INSIDE OF A BLOCK...
         while(1)

@@ -98,6 +98,7 @@ fn codegen cgrdparsehook_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
         if(iwalker.d == CG_TOK_OPERATOR)
             if(iwalker.text streq ":")
                 iwalker = iwalker.right;
+                //iwalker:debug_print();
                 if(iwalker == 0 || iwalker.d != CG_TOK_OPAREN)
                     @pprint[
                         /   "cgrdparsehook_linseq ERROR!"
@@ -112,16 +113,21 @@ fn codegen cgrdparsehook_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
             end
         end
     end
+
+    @cg_bldr_pushqtok ";"
     @cg_bldr_pushqtok "me"
     @cg_bldr_pushqtok "."
     @cg_bldr_pushqtok "coord"
     @cg_bldr_pushqtok "="
     if(iwalker != 0)
         @cg_bldr_pushtok [iwalker.dupell()]
-        @cg_bldr_rwalk_skip
-    else
+        @cg_bldr_rwalk_skip ;
+    else //it was eating the else!
         @cg_bldr_pushqtok "0"
     end
+    //retval:debug_print();
+
+    //@cg_bldr_pushqtok ";"
     @cg_bldr_pushqtok "u64"
     @cg_bldr_pushqtok "nid"
     @cg_bldr_pushqtok "="
@@ -134,6 +140,7 @@ fn codegen cgrdparsehook_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
     @cg_bldr_pushqtok "me"
     @cg_bldr_pushqtok ")"
     @cg_bldr_pushqtok ";"
+
     //u64 pid = this.uast.pstack[this.uast.stackptr-1];
     @cg_bldr_pushqtok "u64"
     @cg_bldr_pushqtok "pid"
@@ -447,6 +454,11 @@ fn codegen cgrdparsehook_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
             @cg_bldr_pushqtok "."
             @cg_bldr_pushqtok "udata"
             @cg_bldr_pushqtok "="
+            @cg_bldr_pushqtok "cast"
+            @cg_bldr_pushqtok "("
+            @cg_bldr_pushqtok "u8"
+            @cg_bldr_pushqtok "*"
+            @cg_bldr_pushqtok ")"
             @cg_bldr_pushqtok "tok"
             @cg_bldr_pushqtok "."
             @cg_bldr_pushqtok "dupe"
@@ -544,19 +556,28 @@ fn codegen cgrdparsehook_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
                 __builtin_exit(1);
             end
             //this is a rule...
+            cgstrll* duped = iwalker:dupe();
+            u64 rule_eval_mode = 0;
+            if(iwalker.right != 0 && iwalker.right.d == CG_TOK_OPERATOR && iwalker.right.text streq "^")
+                iwalker = iwalker.right;
+                rule_eval_mode = 1;
+            end
             //save the stack pointer into stack_checker...
-            @cg_bldr_pushqtok "stack_checker"
-            @cg_bldr_pushqtok "="
-            @cg_bldr_pushqtok "this"
-            @cg_bldr_pushqtok "."
-            @cg_bldr_pushqtok "uast"
-            @cg_bldr_pushqtok "."
-            @cg_bldr_pushqtok "stackptr"
-            @cg_bldr_pushqtok ";"
+            
+            //mode 0
+                @cg_bldr_pushqtok "stack_checker"
+                @cg_bldr_pushqtok "="
+                @cg_bldr_pushqtok "this"
+                @cg_bldr_pushqtok "."
+                @cg_bldr_pushqtok "uast"
+                @cg_bldr_pushqtok "."
+                @cg_bldr_pushqtok "stackptr"
+                @cg_bldr_pushqtok ";"
             //do the rule...
             @cg_bldr_pushqtok "do"
             @cg_bldr_pushtok [iwalker:dupe()]
             //verify stack has changed by exactly one...
+
             @cg_bldr_pushqtok "if"
             @cg_bldr_pushqtok "("
                 @cg_bldr_pushqtok "("
@@ -565,8 +586,10 @@ fn codegen cgrdparsehook_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
                     @cg_bldr_pushqtok "uast"
                     @cg_bldr_pushqtok "."
                     @cg_bldr_pushqtok "stackptr"
+                if(rule_eval_mode)
                     @cg_bldr_pushqtok "-"
                     @cg_bldr_pushqtok "1"
+                end
                 @cg_bldr_pushqtok ")"
                 @cg_bldr_pushqtok "!="
                 @cg_bldr_pushqtok "stack_checker"
@@ -600,31 +623,32 @@ fn codegen cgrdparsehook_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
             
             
             @cg_bldr_pushqtok "end"
-            
-            //the stack _has_ changed by exactly one, pop it off!
-            @cg_bldr_pushqtok "cid"
-            @cg_bldr_pushqtok "="
-            @cg_bldr_pushqtok "this"
-            @cg_bldr_pushqtok "."
-            @cg_bldr_pushqtok "uast"
-            @cg_bldr_pushqtok "."
-            @cg_bldr_pushqtok "stackpop"
-            @cg_bldr_pushqtok "("
-            @cg_bldr_pushqtok ")"
-            @cg_bldr_pushqtok ";"
-            
-            //parent it to ourselves...
-            @cg_bldr_pushqtok "this"
-            @cg_bldr_pushqtok "."
-            @cg_bldr_pushqtok "uast"
-            @cg_bldr_pushqtok "."
-            @cg_bldr_pushqtok "add_link"
-            @cg_bldr_pushqtok "("
-                @cg_bldr_pushqtok "nid"
-                @cg_bldr_pushqtok ","
+            if(rule_eval_mode)
+                //the stack _has_ changed by exactly one, pop it off!
                 @cg_bldr_pushqtok "cid"
-            @cg_bldr_pushqtok ")"
-            @cg_bldr_pushqtok ";"
+                @cg_bldr_pushqtok "="
+                @cg_bldr_pushqtok "this"
+                @cg_bldr_pushqtok "."
+                @cg_bldr_pushqtok "uast"
+                @cg_bldr_pushqtok "."
+                @cg_bldr_pushqtok "stackpop"
+                @cg_bldr_pushqtok "("
+                @cg_bldr_pushqtok ")"
+                @cg_bldr_pushqtok ";"
+                
+                //parent it to ourselves...
+                @cg_bldr_pushqtok "this"
+                @cg_bldr_pushqtok "."
+                @cg_bldr_pushqtok "uast"
+                @cg_bldr_pushqtok "."
+                @cg_bldr_pushqtok "add_link"
+                @cg_bldr_pushqtok "("
+                    @cg_bldr_pushqtok "nid"
+                    @cg_bldr_pushqtok ","
+                    @cg_bldr_pushqtok "cid"
+                @cg_bldr_pushqtok ")"
+                @cg_bldr_pushqtok ";"
+            end
         else
             @pprint[
                 /   "cgrdparsehook_linseq ERROR!"
@@ -678,7 +702,16 @@ fn codegen cgrdparsehook_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
             __builtin_exit(1)
         end
     end
-    //we're done...
+        //pop ourselves off the stack...
+        @cg_bldr_pushqtok "this"
+        @cg_bldr_pushqtok "."
+        @cg_bldr_pushqtok "uast"
+        @cg_bldr_pushqtok "."
+        @cg_bldr_pushqtok "stackpop"
+        @cg_bldr_pushqtok "("
+        @cg_bldr_pushqtok ")"
+        @cg_bldr_pushqtok ";"
+    
     @cg_bldr_pushqtok "]"
     return retval;
 end
