@@ -1371,6 +1371,14 @@ fn codegen cgrdparsehook_binop_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgst
     @cg_bldr_pushqtok "b"
     @cg_bldr_pushqtok "u64"
     @cg_bldr_pushqtok "c"
+    @cg_bldr_pushqtok "u64"
+    @cg_bldr_pushqtok "completed"
+    @cg_bldr_pushqtok "="
+    @cg_bldr_pushqtok "0"
+    @cg_bldr_pushqtok ";"
+    @cg_bldr_pushqtok "cgstrll"
+    @cg_bldr_pushqtok "*"
+    @cg_bldr_pushqtok "tok_fake"
     ;
     in = in.right; //in is now pointing at a modifier, or the name of the lefthand rule...
 
@@ -1452,7 +1460,7 @@ fn codegen cgrdparsehook_binop_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgst
                 iwalker = iwalker.right;
                 if(iwalker == 0 || iwalker.d != CG_TOK_IDENT)
                     @pprint[
-                        /   "cgrdparsehook_binop ERROR!"
+                        /   "cgrdparsehook_binop_linseq ERROR!"
                         /   "Expected identifier inside of brackets."
                         /   "my_left_rule [IDENT] my_right_rule"
                         /   "Language name is:"
@@ -1469,7 +1477,7 @@ fn codegen cgrdparsehook_binop_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgst
                 iwalker = iwalker.right;
                 if(iwalker == 0 || iwalker.d != CG_TOK_CBRACK)
                     @pprint[
-                        /   "cgrdparsehook_binop ERROR!"
+                        /   "cgrdparsehook_binop_linseq ERROR!"
                         /   "Expected closing square bracket."
                         /   "my_left_rule [IDENT] my_right_rule"
                         /   "Language name is:"
@@ -1497,7 +1505,7 @@ fn codegen cgrdparsehook_binop_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgst
             end
             if(iwalker.d == CG_TOK_IDENT)
                 @pprint[
-                    /   "cgrdparsehook_binop ERROR!"
+                    /   "cgrdparsehook_binop_linseq ERROR!"
                     /   "Found identifier in incorrect place?"
                     /   "If you want an identifier operator, please use"
                     /   "the following..."
@@ -1514,7 +1522,7 @@ fn codegen cgrdparsehook_binop_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgst
                 __builtin_exit(1);
             end
             @pprint[
-                /   "cgrdparsehook_binop ERROR!"
+                /   "cgrdparsehook_binop_linseq ERROR!"
                 /   "Unknown... something... in the second spot of binop rule."
                 /   "If you want an identifier operator, please use"
                 /   "the following..."
@@ -1532,7 +1540,7 @@ fn codegen cgrdparsehook_binop_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgst
         elif(walky_talky == 3)
             if(iwalker.d != CG_TOK_IDENT)
                 @pprint[
-                    /   "cgrdparsehook_binop ERROR!"
+                    /   "cgrdparsehook_binop_linseq ERROR!"
                     /   "Missing identifier for rhs!"
                     /   "Language name is:"
                     /   (spec.name.s)
@@ -1553,7 +1561,7 @@ fn codegen cgrdparsehook_binop_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgst
                 iwalker.text strneq ":"
             )
                  @pprint[
-                    /   "cgrdparsehook_binop ERROR!"
+                    /   "cgrdparsehook_binop_linseq ERROR!"
                     /   "Expected :"
                     /   "The syntax of binop requires a colon followed immediately by an opening parentheses,"
                     /   "which provides an expression evaluating to a u64 which is the UAST coordinate"
@@ -1567,7 +1575,7 @@ fn codegen cgrdparsehook_binop_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgst
             break
         elif(walky_talky > 4)
             @pprint[
-                /   "cgrdparsehook_binop ERROR!"
+                /   "cgrdparsehook_binop_linseq ERROR!"
                 /   "This rule has too much in it!"
             ]
             __builtin_exit(1);            
@@ -1577,7 +1585,7 @@ fn codegen cgrdparsehook_binop_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgst
                 iwalker = iwalker.right
                 if(iwalker == 0 || iwalker.d != CG_TOK_OPAREN)
                     @pprint[
-                        /   "cgrdparsehook_binop ERROR!"
+                        /   "cgrdparsehook_binop_linseq ERROR!"
                         /   "The syntax of binop requires a colon followed immediately by an opening parentheses,"
                         /   "which provides an expression evaluating to a u64 which is the UAST coordinate"
                         /   "Of the node type parsed."
@@ -1593,7 +1601,7 @@ fn codegen cgrdparsehook_binop_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgst
     @cg_bldr_pushqtok ";"
     if(walky_talky < 3)
         @pprint[
-            /       "cgrdparsehook_binop ERROR!"
+            /       "cgrdparsehook_binop_linseq ERROR!"
             /       "Some part of the specification was missing...."
             /       "I only got to the part with number..."
             /int    (walky_talky)
@@ -1604,7 +1612,7 @@ fn codegen cgrdparsehook_binop_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgst
     end
     if(n_operators < 1)
         @pprint[
-            /       "cgrdparsehook_binop __INTERNAL__ ERROR!"
+            /       "cgrdparsehook_binop_linseq __INTERNAL__ ERROR!"
             /       "No operators were specified!"
             /       "This should be IMPOSSIBLE! Here is walky_talky:"
             /int    (walky_talky)
@@ -1615,7 +1623,7 @@ fn codegen cgrdparsehook_binop_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgst
     end
     if(rightrulename == 0)
         @pprint[
-            /       "cgrdparsehook_binop __INTERNAL__ ERROR!"
+            /       "cgrdparsehook_binop_linseq __INTERNAL__ ERROR!"
             /       "The right rule name was not set!"
             /       "This should be IMPOSSIBLE!"
             /       "I got to the part with number..."
@@ -1651,6 +1659,13 @@ fn codegen cgrdparsehook_binop_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgst
     @cg_bldr_pushqtok "("
     @cg_bldr_pushqtok ")"
     @cg_bldr_pushqtok ";"
+    //in case we fail to parse the operator,
+    //we need to save `tok`...
+    @cg_bldr_pushqtok "tok_fake"
+    @cg_bldr_pushqtok "="
+    @cg_bldr_pushqtok "tok"
+    @cg_bldr_pushqtok ";"
+
 
     if(is_left)
         @cg_bldr_pushqtok "while"
@@ -1675,8 +1690,7 @@ fn codegen cgrdparsehook_binop_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgst
                 @cg_bldr_pushtok [in:dupe()]
                 in = in.right;
             @cg_bldr_pushqtok "]"
-            //if we do not have a capture element, we capture
-            //the last token we saw.
+            //here, we insert some code...
             if(!has_capture_element && (i == n_operators-1))
                 @cg_bldr_pushqtok "me"
                 @cg_bldr_pushqtok "."
@@ -1697,6 +1711,10 @@ fn codegen cgrdparsehook_binop_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgst
                 @cg_bldr_pushqtok "eat" //consume the operator token...
             //
             if(i == n_operators-1)
+                @cg_bldr_pushqtok "completed"
+                @cg_bldr_pushqtok "="
+                @cg_bldr_pushqtok "1"
+                @cg_bldr_pushqtok ";"
                 @cg_bldr_pushqtok "c"
                 @cg_bldr_pushqtok "="
                 @cg_bldr_pushqtok "this"
@@ -1710,6 +1728,10 @@ fn codegen cgrdparsehook_binop_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgst
                 @cg_bldr_pushqtok ";"
                 @cg_bldr_pushqtok "do"
                 @cg_bldr_pushtok [rightrulename:dupe()]
+                @cg_bldr_pushqtok "tok_fake"
+                @cg_bldr_pushqtok "="
+                @cg_bldr_pushqtok "tok"
+                @cg_bldr_pushqtok ";"
                 @cg_bldr_pushqtok "b"
                 @cg_bldr_pushqtok "="
                 @cg_bldr_pushqtok "this"
@@ -1753,9 +1775,7 @@ fn codegen cgrdparsehook_binop_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgst
                 end
             end
             
-            /*
-            @cg_bldr_pushqtok "]"
-            */
+
             continue
         elif(in.d == CG_TOK_OBRACK)
             //A capture!
@@ -1806,6 +1826,8 @@ fn codegen cgrdparsehook_binop_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgst
                     @cg_bldr_pushqtok "d"
                     @cg_bldr_pushqtok "=="
                     @cg_bldr_pushqtok "CG_TOK_STRING"
+                elif(in.text streq "ANY")
+                    @cg_bldr_pushqtok "1" //accept literally any token...
                 else
                     @pprint[
                         /   "cgrdparsehook_binop_linseq ERROR!"
@@ -1833,6 +1855,10 @@ fn codegen cgrdparsehook_binop_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgst
                 @cg_bldr_pushqtok "eat"
                 //now do our operator stuff...
             if(i == n_operators-1)
+                @cg_bldr_pushqtok "completed"
+                @cg_bldr_pushqtok "="
+                @cg_bldr_pushqtok "1"
+                @cg_bldr_pushqtok ";"
                 @cg_bldr_pushqtok "c"
                 @cg_bldr_pushqtok "="
                 @cg_bldr_pushqtok "this"
@@ -1846,6 +1872,13 @@ fn codegen cgrdparsehook_binop_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgst
                 @cg_bldr_pushqtok ";"
                 @cg_bldr_pushqtok "do"
                 @cg_bldr_pushtok [rightrulename:dupe()]
+                //move tok_fake forward...
+                //this is in case we fail to parse successive operators...
+                @cg_bldr_pushqtok "tok_fake"
+                @cg_bldr_pushqtok "="
+                @cg_bldr_pushqtok "tok"
+                @cg_bldr_pushqtok ";"
+                
                 @cg_bldr_pushqtok "b"
                 @cg_bldr_pushqtok "="
                 @cg_bldr_pushqtok "this"
@@ -1948,16 +1981,16 @@ fn codegen cgrdparsehook_binop_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgst
         @cg_bldr_pushqtok ":"
         @cg_bldr_pushqtok "__autogenerated_label_binop_skip__"
     end
-    @cg_bldr_pushqtok "this"
-    @cg_bldr_pushqtok "."
-    @cg_bldr_pushqtok "uast"
-    @cg_bldr_pushqtok "."
-    @cg_bldr_pushqtok "stackpush"
-    @cg_bldr_pushqtok "("
-    @cg_bldr_pushqtok "a"
-    @cg_bldr_pushqtok ")"
-    @cg_bldr_pushqtok ";"
-    @cg_bldr_pushqtok "finish"
+    @cg_bldr_tokmanip_push_strings[
+        /*
+            If we did not successfully parse the operator,
+            reverse back to just after we parsed the left hand side...
+        */
+        if(completed == 0)
+            tok = tok_fake;
+        end
+        this.uast.stackpush(a); finish
+    ]
     
     @cg_bldr_pushqtok "]"
     in_orig:freelist();

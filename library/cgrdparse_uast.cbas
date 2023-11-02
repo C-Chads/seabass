@@ -213,11 +213,22 @@ end
         //continue...
     ]
     expr[
-        go this_is_not
+        go this_is_something
     ]
     @binop_linseq[
-        this_is_not
-        logbool "THIS" "IS" [IDENT] prefix : (testbench_expr)
+        this_is_something
+        leftassoc
+        this_was_a_something "THIS" "IS" [IDENT] prefix : (testbench_expr)
+    ]
+    @binop_linseq[
+        this_was_a_something
+        leftassoc
+        this_was_something "THIS" "WAS" "=" [IDENT] prefix : (testbench_expr)
+    ]
+    @binop_linseq[
+        this_was_something
+        leftassoc
+        logbool "THIS" "WAS" [IDENT] prefix : (testbench_expr)
     ]
     @binop[
         logbool
@@ -285,6 +296,13 @@ end
             /       (this.errtext)
             /       "Does that help you? No line numbers implemented, unfortunately. Quitting..."
         ]
+        if(tok != 0)
+        
+            @pprint[
+                /   "Here's the contents of tok:debug_print() at the time of the error:"
+            ]
+            tok:debug_print();
+        end
         __builtin_exit(1);
     ]
     finish[
@@ -304,7 +322,7 @@ end
         }
         badblock{
             p 7,15 * -3;
-            p 7+1 || 0 THIS IS BEAUTIFUL -1;
+            p 7+1 || 0 THIS WAS = A_FUZZY_WUZZY -1;
         }
     }
 ]
