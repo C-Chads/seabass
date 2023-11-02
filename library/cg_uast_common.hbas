@@ -556,8 +556,9 @@ fn codegen cgrdparsehook_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
                 __builtin_exit(1);
             end
             //this is a rule...
-            cgstrll* duped = iwalker:dupe();
             u64 rule_eval_mode = 0;
+            //check for the presence of the ^ which indicates that this rule will leave itself on
+            //the stack, for parenting onto the current node.
             if(iwalker.right != 0 && iwalker.right.d == CG_TOK_OPERATOR && iwalker.right.text streq "^")
                 iwalker = iwalker.right;
                 rule_eval_mode = 1;
@@ -713,6 +714,7 @@ fn codegen cgrdparsehook_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
         @cg_bldr_pushqtok ";"
     
     @cg_bldr_pushqtok "]"
+    in:freelist();
     return retval;
 end
 
