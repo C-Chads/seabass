@@ -140,29 +140,6 @@ fn codegen cgrdparsehook_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
     @cg_bldr_pushqtok "me"
     @cg_bldr_pushqtok ")"
     @cg_bldr_pushqtok ";"
-
-    //u64 pid = this.uast.pstack[this.uast.stackptr-1];
-    /*
-    @cg_bldr_pushqtok "u64"
-    @cg_bldr_pushqtok "pid"
-    @cg_bldr_pushqtok "="
-    @cg_bldr_pushqtok "this"
-    @cg_bldr_pushqtok "."
-    @cg_bldr_pushqtok "uast"
-    @cg_bldr_pushqtok "."
-    @cg_bldr_pushqtok "pstack"
-    @cg_bldr_pushqtok "["
-        @cg_bldr_pushqtok "this"
-        @cg_bldr_pushqtok "."
-        @cg_bldr_pushqtok "uast"
-        @cg_bldr_pushqtok "."
-        @cg_bldr_pushqtok "stackptr"
-        @cg_bldr_pushqtok "-"
-        @cg_bldr_pushqtok "1"
-    @cg_bldr_pushqtok "]"
-    @cg_bldr_pushqtok ";"
-    */
-
         //Push ourselves onto the stack...
 
     @cg_bldr_pushqtok "this"
@@ -175,19 +152,7 @@ fn codegen cgrdparsehook_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
     @cg_bldr_pushqtok ")"
     @cg_bldr_pushqtok ";"
     //create a link...
-    /*
-    @cg_bldr_pushqtok "this"
-    @cg_bldr_pushqtok "."
-    @cg_bldr_pushqtok "uast"
-    @cg_bldr_pushqtok "."
-    @cg_bldr_pushqtok "add_link"
-    @cg_bldr_pushqtok "("
-        @cg_bldr_pushqtok "pid"
-    @cg_bldr_pushqtok ","
-        @cg_bldr_pushqtok "nid"
-    @cg_bldr_pushqtok ")"
-    @cg_bldr_pushqtok ";"
-    */
+
     @cg_bldr_pushqtok "u64"
     @cg_bldr_pushqtok "cid" //for future use...
     @cg_bldr_pushqtok ";"
@@ -744,7 +709,6 @@ fn codegen cgrdparsehook_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
             //check for the presence of the ^ which indicates that this rule will leave itself on
             //the stack, for parenting onto the current node.
             if(iwalker.right != 0 && iwalker.right.d == CG_TOK_OPERATOR && iwalker.right.text streq "^")
-                iwalker = iwalker.right;
                 rule_eval_mode = 1;
             end
             //save the stack pointer into stack_checker...
@@ -761,6 +725,9 @@ fn codegen cgrdparsehook_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
             //do the rule...
             @cg_bldr_pushqtok "do"
             @cg_bldr_pushtok [iwalker:dupe()]
+            if(rule_eval_mode)
+                iwalker = iwalker.right; //skip over that...
+            end
             //verify stack has changed by exactly one...
 
             @cg_bldr_pushqtok "if"
@@ -2678,11 +2645,13 @@ fn codegen cgrdparsehook_repseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
     cgstrll* terminating_conditions_list = 0;
     cgstrll* terminating_conditions_list_walker = 0;
     cgstrll* the_name = 0;
-    cgstrll* in_orig = 0;
+    cgstrll* in_orig = in;
     cgstrll* in_old  = 0;
     u64 had_terminator = 0;
     u64 n_terminating_checks = 0;
     u64 had_trivial_terminator = 0;
+
+    
     if(in == 0 || in.d != CG_TOK_IDENT)
         @pprint[
             /   "cgrdparsehook_repseq ERROR!!!!"

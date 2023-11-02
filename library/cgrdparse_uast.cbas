@@ -9,6 +9,7 @@ codegen u64 testbench_stmt = 0xff02;
 codegen u64 testbench_expr = 0xff03;
 codegen u64 testbench_pstmt = 0xff04;
 codegen u64 testbench_expr_terminal = 0xff05;
+codegen u64 testbench_expr_parenthesized = 0xff06;
 fn codegen testbench_print_ast(cg_uast uast, u64 nid):
     cg_uastnode* pp = uast.nodes[nid];
     cgstrll* ppn;
@@ -87,45 +88,7 @@ end
         block
         [IDENT] "{" stmts "}" : (testbench_block)
     ]
-    /*
-    block_old[ //parse a block..
-        cg_uastnode me
-        u64 nid
-        u64 pid
-        me.coord = testbench_block;
-        do err_on_null
-        if(tok.d != CG_TOK_IDENT) this.errtext = "Block expected identifier- name"; go err end
-        me.udata = __builtin_strdup(tok.text);
-        eat
-        do err_on_null
 
-        match[["{"]
-            eat
-        else
-            this.errtext = "Block expected Opening curly brace"; 
-            go err                
-        ]
-
-
-        nid = this.uast.push_node(me);
-        pid = this.uast.pstack[this.uast.stackptr-1];
-        this.uast.add_link(pid,nid);
-        this.uast.stackpush(nid); //push ourselves onto the stack...
-            do err_on_null
-            do stmts
-            do err_on_null
-        this.uast.stackpop(); //pop ourselves off the stack..
-        while(1)
-            match[["}"]
-                eat
-                break
-            ]
-            this.errtext = "Block expected closing curly brace..."; 
-            go err
-        end
-        //we have finished this block!
-    ]
-    */
     stmts[
         //ON ENTRY: WE ARE INSIDE OF A BLOCK...
         while(1)
@@ -193,28 +156,6 @@ end
         
         do exprs_in_pstmt
         finish
-        
-        //don't even bother pushing ourselves onto the stack...
-        while(1)
-            do err_on_null
-            match[[";"]eat break]
-            match[[","]eat continue]
-            do expr
-            //pop off the stack..
-            u64 eid = this.uast.stackpop();
-            this.uast.add_link(nid,eid);
-            match[[","]eat continue]
-            match[[";"]eat break]
-            match[["}"]break]
-            this.errtext = "Expected comma"
-        end
-        
-        //add ourselves to our parent node..
-        /*
-        u64 pid = this.uast.pstack[this.uast.stackptr-1];
-        this.uast.add_link(pid, nid);
-        */
-        //continue...
     ]
     @repseq[
         exprs_in_pstmt
@@ -264,7 +205,7 @@ end
     ]
     @cond[
         prefix
-        d![CG_TOK_STRING]text["-"]?prefix_minus
+        d[CG_TOK_OPERATOR]text["-"]?prefix_minus
         d[CG_TOK_OPERATOR]text["~"]?prefix_compl
         //if[tok!=0 && tok.d == CG_TOK_OPERATOR && tok.text streq "~"]?prefix_compl
         //if[1]? terminal
@@ -314,7 +255,16 @@ end
         this.uast.stackpush(nid);
         finish
     ]
-    terminal[
+    @cond[
+        terminal
+        d[CG_TOK_OPAREN]?parenthesized_expr
+        else terminal_number
+    ]
+    @linseq[
+        parenthesized_expr
+        "(" expr^ ")" : (testbench_expr_parenthesized)
+    ]
+    terminal_number[
         //number only!
         do err_on_null
         if(tok.d != CG_TOK_INT_CONST) this.errtext = "Expected integer constant..."; go err end
@@ -361,7 +311,7 @@ end
 
 @testbench[
     bigBlock{
-        p 7,3,5-9/3*71*4*5*6;
+        p 7,3,5-(9)/3*71*4*5*6;
         littleblock{
             p 7,3,5-9/3;
         
