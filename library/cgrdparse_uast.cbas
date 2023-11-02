@@ -248,7 +248,8 @@ end
         prefix
         d![CG_TOK_STRING]text["-"]?prefix_minus
         d[CG_TOK_OPERATOR]text["~"]?prefix_compl
-        if[1]? terminal
+        //if[tok!=0 && tok.d == CG_TOK_OPERATOR && tok.text streq "~"]?prefix_compl
+        //if[1]? terminal
         else terminal
     ]
     prefix_minus[
