@@ -51,7 +51,7 @@ codegen u64 cg_uast_coord_root_node = (0xf<<(64-4)) | 10;
     
     TEMPLATE 2: BINOP
     @binop[
-        mybinop lfolded
+        mybinop left
         rule1 "*" rule2
     ]
 */
@@ -86,8 +86,8 @@ fn codegen cgrdparsehook_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
         ]
         __builtin_exit(1);
     end
-    //cgstrll* rulename = in:dupe();
-    @cg_bldr_initqtok [in.text]
+    
+    @cg_bldr_inittok [in:dupe()]
     @cg_bldr_pushqtok "["
     /*
         Create a node to represent ourselves...
@@ -715,6 +715,586 @@ fn codegen cgrdparsehook_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
     
     @cg_bldr_pushqtok "]"
     in:freelist();
+    return retval;
+end
+
+/*parse an operator, binary or otherwise.*/
+fn codegen cgrdparsehook_binop(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
+    //
+    cgstrll* iwalker;
+    cgstrll* in_orig = in;
+    cgstrll* rightrulename = 0;
+    iwalker = in;
+    i64 has_capture_element = 0;
+    u64 nelems = 0;
+    u64 is_left = 0;
+    u64 is_mustcomplete =0;
+    u64 n_operators = 0;
+    if(in == 0)
+        @pprint[
+            /   "cgrdparsehook_binop ERROR!"
+            /   "There is nothing in the body of this linseq command!"
+            /   "Language name is:"
+            /   (spec.name.s)
+        ]
+        __builtin_exit(1);
+    end
+    if(in.d != CG_TOK_IDENT)
+        @pprint[
+            /   "cgrdparsehook_binop ERROR!"
+            /   "Missing identifier for rule name!"
+            /   "Language name is:"
+            /   (spec.name.s)
+            /   "Filename is:"
+            /   (iwalker.filename)
+            /   "Linenum is:"
+            /int(iwalker.linenum)
+            /   "Colnum is:"
+            /int(iwalker.colnum)
+        ]
+        __builtin_exit(1);
+    end
+    @cg_bldr_inittok [in:dupe()]
+    @cg_bldr_pushqtok "["
+    @cg_bldr_pushqtok "cg_uastnode"
+    @cg_bldr_pushqtok "me"
+    @cg_bldr_pushqtok "u64"
+    @cg_bldr_pushqtok "a"
+    @cg_bldr_pushqtok "u64"
+    @cg_bldr_pushqtok "b"
+    @cg_bldr_pushqtok "u64"
+    @cg_bldr_pushqtok "c"
+    in = in.right; //in is now pointing at `leftassoc` or the name of the lefthand rule...
+    //modifiers...
+    :checkin_stuff
+        if(
+            in != 0 &&
+            in.d == CG_TOK_IDENT &&
+            in.text streq "leftassoc"
+        )
+            is_left = 1;
+            in = in.right; //in is now pointing 
+            goto checkin_stuff
+        end
+        if(
+            in != 0 &&
+            in.d == CG_TOK_IDENT &&
+            in.text streq "mustcomplete"
+        )
+            is_mustcomplete = 1;
+            in = in.right; //in is now pointing 
+            goto checkin_stuff
+        end
+    u64 walky_talky = 0; //what part of the binop expression spec are we parsing?
+    //preprocessing loop...
+    for(iwalker = in.right, iwalker != 0, iwalker = iwalker.right)
+        walky_talky++;
+        if(walky_talky == 1)
+            if(iwalker.d != CG_TOK_IDENT)
+                @pprint[
+                    /   "cgrdparsehook_binop ERROR!"
+                    /   "Missing identifier for lhs!"
+                    /   "Language name is:"
+                    /   (spec.name.s)
+                    /   "Filename is:"
+                    /   (iwalker.filename)
+                    /   "Linenum is:"
+                    /int(iwalker.linenum)
+                    /   "Colnum is:"
+                    /int(iwalker.colnum)
+                ]
+                __builtin_exit(1);
+            end
+            continue
+        elif(walky_talky == 2)
+            if(iwalker.d == CG_TOK_STRING)
+                //the usual case...
+                n_operators++
+                if(
+                    iwalker.right != 0 &&
+                    (iwalker.right.d == CG_TOK_OBRACK ||
+                    iwalker.right.d == CG_TOK_STRING)
+                )
+                    //an operator follows...
+                    walky_talky--
+                    continue
+                end
+            elif(iwalker.d == CG_TOK_OBRACK)
+                //A capture...
+                has_capture_element = 1;
+                iwalker = iwalker.right;
+                if(iwalker == 0 || iwalker.d != CG_TOK_IDENT)
+                    @pprint[
+                        /   "cgrdparsehook_binop ERROR!"
+                        /   "Expected identifier inside of brackets."
+                        /   "my_left_rule [IDENT] my_right_rule"
+                        /   "Language name is:"
+                        /   (spec.name.s)
+                        /   "Filename is:"
+                        /   (iwalker.filename)
+                        /   "Linenum is:"
+                        /int(iwalker.linenum)
+                        /   "Colnum is:"
+                        /int(iwalker.colnum)
+                    ]
+                    __builtin_exit(1);
+                end
+                iwalker = iwalker.right;
+                if(iwalker == 0 || iwalker.d != CG_TOK_CBRACK)
+                    @pprint[
+                        /   "cgrdparsehook_binop ERROR!"
+                        /   "Expected closing square bracket."
+                        /   "my_left_rule [IDENT] my_right_rule"
+                        /   "Language name is:"
+                        /   (spec.name.s)
+                        /   "Filename is:"
+                        /   (iwalker.filename)
+                        /   "Linenum is:"
+                        /int(iwalker.linenum)
+                        /   "Colnum is:"
+                        /int(iwalker.colnum)
+                    ]
+                    __builtin_exit(1);
+                end
+                n_operators++
+                if(
+                    iwalker.right != 0 &&
+                    (iwalker.right.d == CG_TOK_OBRACK ||
+                    iwalker.right.d == CG_TOK_STRING)
+                )
+                    //an operator follows...
+                    walky_talky--
+                    continue
+                end
+            end
+            if(iwalker.d == CG_TOK_IDENT)
+                @pprint[
+                    /   "cgrdparsehook_binop ERROR!"
+                    /   "Found identifier in incorrect place?"
+                    /   "If you want an identifier operator, please use"
+                    /   "the following..."
+                    /   "my_left_rule [IDENT] my_right_rule"
+                    /   "Language name is:"
+                    /   (spec.name.s)
+                    /   "Filename is:"
+                    /   (iwalker.filename)
+                    /   "Linenum is:"
+                    /int(iwalker.linenum)
+                    /   "Colnum is:"
+                    /int(iwalker.colnum)
+                ]
+                __builtin_exit(1);
+            end
+            @pprint[
+                /   "cgrdparsehook_binop ERROR!"
+                /   "Unknown... something... in the second spot of a "
+                /   "If you want an identifier operator, please use"
+                /   "the following..."
+                /   "my_left_rule [IDENT] my_right_rule"
+                /   "Language name is:"
+                /   (spec.name.s)
+                /   "Filename is:"
+                /   (iwalker.filename)
+                /   "Linenum is:"
+                /int(iwalker.linenum)
+                /   "Colnum is:"
+                /int(iwalker.colnum)
+            ]
+            __builtin_exit(1);
+        elif(walky_talky == 3)
+            if(iwalker.d != CG_TOK_IDENT)
+                @pprint[
+                    /   "cgrdparsehook_binop ERROR!"
+                    /   "Missing identifier for rhs!"
+                    /   "Language name is:"
+                    /   (spec.name.s)
+                    /   "Filename is:"
+                    /   (iwalker.filename)
+                    /   "Linenum is:"
+                    /int(iwalker.linenum)
+                    /   "Colnum is:"
+                    /int(iwalker.colnum)
+                ]
+                __builtin_exit(1);
+            end
+            rightrulename = iwalker; //saved for later!
+            continue
+        elif(walky_talky >= 4)
+            if(iwalker.d != CG_TOK_OPERATOR ||
+                iwalker.text == 0 ||
+                iwalker.text strneq ":"
+            )
+                 @pprint[
+                    /   "cgrdparsehook_binop ERROR!"
+                    /   "Expected :"
+                    /   "The syntax of binop requires a colon followed immediately by an opening parentheses,"
+                    /   "which provides an expression evaluating to a u64 which is the UAST coordinate"
+                    /   "Of the node type parsed."
+                    /   "It must be the entirety of the block after the opening parentheses..."
+                ]
+                __builtin_exit(1);
+            end
+            //It is indeed the colon operator!
+            iwalker = iwalker.right
+            break
+        end
+        if(iwalker.d == CG_TOK_OPERATOR)
+            if(iwalker.text streq ":")
+                iwalker = iwalker.right
+                if(iwalker == 0 || iwalker.d != CG_TOK_OPAREN)
+                    @pprint[
+                        /   "cgrdparsehook_binop ERROR!"
+                        /   "The syntax of binop requires a colon followed immediately by an opening parentheses,"
+                        /   "which provides an expression evaluating to a u64 which is the UAST coordinate"
+                        /   "Of the node type parsed."
+                        /   "It must be the entirety of the block after the opening parentheses..."
+                    ]
+                    __builtin_exit(1);
+                end
+                break
+            end
+        end
+    end
+    @cg_bldr_pushqtok ";"
+    if(walky_talky < 3)
+        @pprint[
+            /       "cgrdparsehook_binop ERROR!"
+            /       "Some part of the specification was missing...."
+            /       "I only got to the part with number..."
+            /int    (walky_talky)
+            /       "where 0 = found nothing, 1 = found lhs, 2 = found operator(s),"
+            /       "3 = found rhs, and 4 = found colon section."
+        ]
+        __builtin_exit(1);
+    end
+    if(n_operators < 1)
+        @pprint[
+            /       "cgrdparsehook_binop __INTERNAL__ ERROR!"
+            /       "No operators were specified!"
+            /       "This should be IMPOSSIBLE! Here is walky_talky:"
+            /int    (walky_talky)
+            /       "where 0 = found nothing, 1 = found lhs, 2 = found operator(s),"
+            /       "3 = found rhs, and 4 = found colon section."
+            /       "CALL YOUR SYSTEM ADMINISTRATOR!!!!"
+        ]
+    end
+    if(rightrulename == 0
+        @pprint[
+            /       "cgrdparsehook_binop __INTERNAL__ ERROR!"
+            /       "The right rule name was not set!"
+            /       "This should be IMPOSSIBLE!"
+            /       "I got to the part with number..."
+            /int    (walky_talky)
+            /       "where 0 = found nothing, 1 = found lhs, 2 = found operator(s),"
+            /       "3 = found rhs, and 4 = found colon section."
+            /       "CALL YOUR SYSTEM ADMINISTRATOR!!!!"
+        ]
+        __builtin_exit(1);
+    end
+
+    if(iwalker != 0)
+        @cg_bldr_pushqtok "me"
+        @cg_bldr_pushqtok "."
+        @cg_bldr_pushqtok "coord"
+        @cg_bldr_pushqtok "="
+        @cg_bldr_pushtok [iwalker.dupell()]
+        @cg_bldr_rwalk_skip ;
+    end
+    //do the lefthand rule, pointed at by in...
+    @cg_bldr_pushqtok "do"
+    @cg_bldr_pushtok [in:dupe()]
+    in = in.right; //now advancing to the first operator...
+    //retrieve the value from the stack...
+    @cg_bldr_pushqtok "a"
+    @cg_bldr_pushqtok "="
+    @cg_bldr_pushqtok "this"
+    @cg_bldr_pushqtok "."
+    @cg_bldr_pushqtok "uast"
+    @cg_bldr_pushqtok "."
+    @cg_bldr_pushqtok "stackpop"
+    @cg_bldr_pushqtok "("
+    @cg_bldr_pushqtok ")"
+    @cg_bldr_pushqtok ";"
+    if(is_left)
+        @cg_bldr_pushqtok "while"
+        @cg_bldr_pushqtok "("
+        @cg_bldr_pushqtok "1"
+        @cg_bldr_pushqtok ")"
+    end
+    u64 i
+    for(i = 0; i < n_operators; i++)
+        @cg_bldr_pushqtok "do"
+        @cg_bldr_pushqtok "err_on_null"
+        //handle every operator, which is of the form
+        //stringlit | [IDENT] | [STRING] | [INT] | [FLOAT] | [NUM]
+        //in every case, the thing is captured...
+        //if we are left associative, we consecutively build AST nodes,
+        //but if not, we simply 
+        if(in.d == CG_TOK_STRING)
+            //we do a simple match
+            @cg_bldr_pushqtok "match"
+            @cg_bldr_pushqtok "["
+            @cg_bldr_pushqtok "["
+                @cg_bldr_pushtok [in:dupe]
+                in = in.right;
+            @cg_bldr_pushqtok "]"
+                //here, we insert some code...
+                @cg_bldr_pushqtok "me"
+                @cg_bldr_pushqtok "."
+                @cg_bldr_pushqtok "udata"
+                @cg_bldr_pushqtok "="
+                @cg_bldr_pushqtok "cast"
+                @cg_bldr_pushqtok "("
+                @cg_bldr_pushqtok "u8"
+                @cg_bldr_pushqtok "*"
+                @cg_bldr_pushqtok ")"
+                @cg_bldr_pushqtok "tok"
+                @cg_bldr_pushqtok ":"
+                @cg_bldr_pushqtok "dupe"
+                @cg_bldr_pushqtok "("
+                @cg_bldr_pushqtok ")"
+                @cg_bldr_pushqtok ";"
+                @cg_bldr_pushqtok "eat" //consume the operator token...
+                
+                @cg_bldr_pushqtok "c"
+                @cg_bldr_pushqtok "="
+                @cg_bldr_pushqtok "this"
+                @cg_bldr_pushqtok "."
+                @cg_bldr_pushqtok "uast"
+                @cg_bldr_pushqtok "."
+                @cg_bldr_pushqtok "push_node"
+                @cg_bldr_pushqtok "("
+                    @cg_bldr_pushqtok "me"
+                @cg_bldr_pushqtok ")"
+                @cg_bldr_pushqtok ";"
+                @cg_bldr_pushqtok "do"
+                @cg_bldr_pushtok [rightrulename:dupe()]
+                @cg_bldr_pushqtok "b"
+                @cg_bldr_pushqtok "="
+                @cg_bldr_pushqtok "this"
+                @cg_bldr_pushqtok "."
+                @cg_bldr_pushqtok "uast"
+                @cg_bldr_pushqtok "."
+                @cg_bldr_pushqtok "stackpop"
+                @cg_bldr_pushqtok "("
+                @cg_bldr_pushqtok ")"
+                @cg_bldr_pushqtok ";"
+                @cg_bldr_pushqtok "this"
+                @cg_bldr_pushqtok "."
+                @cg_bldr_pushqtok "uast"
+                @cg_bldr_pushqtok "."
+                @cg_bldr_pushqtok "add_link"
+                @cg_bldr_pushqtok "("
+                    @cg_bldr_pushqtok "c"
+                    @cg_bldr_pushqtok ","
+                    @cg_bldr_pushqtok "a"
+                @cg_bldr_pushqtok ")"
+                @cg_bldr_pushqtok ";"
+                @cg_bldr_pushqtok "this"
+                @cg_bldr_pushqtok "."
+                @cg_bldr_pushqtok "uast"
+                @cg_bldr_pushqtok "."
+                @cg_bldr_pushqtok "add_link"
+                @cg_bldr_pushqtok "("
+                    @cg_bldr_pushqtok "c"
+                    @cg_bldr_pushqtok ","
+                    @cg_bldr_pushqtok "b"
+                @cg_bldr_pushqtok ")"
+                @cg_bldr_pushqtok ";"
+                @cg_bldr_pushqtok "a"
+                @cg_bldr_pushqtok "="
+                @cg_bldr_pushqtok "c"
+                if(is_left)
+                    @cg_bldr_pushqtok "continue"
+                else
+                    @cg_bldr_pushqtok "goto"
+                    @cg_bldr_pushqtok "__autogenerated_label_binop_skip__"
+                end
+            @cg_bldr_pushqtok "]"
+            continue
+        elif(in.d == CG_TOK_OBRACK)
+            //A capture!
+            in = in.right;
+            //guaranteed to be an operator, we checked...
+            @cg_bldr_pushqtok "if"
+            @cg_bldr_pushqtok "("
+                
+                if(in.text streq "IDENT")
+                    @cg_bldr_pushqtok "tok"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "d"
+                    @cg_bldr_pushqtok "=="
+                    @cg_bldr_pushqtok "CG_TOK_IDENT"
+                    @cg_bldr_pushqtok "||"
+                    @cg_bldr_pushqtok "tok"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "d"
+                    @cg_bldr_pushqtok "=="
+                    @cg_bldr_pushqtok "CG_TOK_KEYWORD"
+                elif(in.text streq "INT")
+                    @cg_bldr_pushqtok "tok"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "d"
+                    @cg_bldr_pushqtok "=="
+                    @cg_bldr_pushqtok "CG_TOK_INT_CONST"
+                elif(in.text streq "FLOAT")
+                    @cg_bldr_pushqtok "tok"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "d"
+                    @cg_bldr_pushqtok "=="
+                    @cg_bldr_pushqtok "CG_TOK_FLOAT_CONST"
+                elif(in.text streq "NUM")
+                    @cg_bldr_pushqtok "tok"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "d"
+                    @cg_bldr_pushqtok "=="
+                    @cg_bldr_pushqtok "CG_TOK_INT_CONST"
+                    @cg_bldr_pushqtok "&&"
+                    @cg_bldr_pushqtok "tok"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "d"
+                    @cg_bldr_pushqtok "!="
+                    @cg_bldr_pushqtok "CG_TOK_FLOAT_CONST"
+                elif(in.text streq "STRING")
+                    @cg_bldr_pushqtok "tok"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "d"
+                    @cg_bldr_pushqtok "=="
+                    @cg_bldr_pushqtok "CG_TOK_STRING"
+                else
+                    @pprint[
+                        /   "cgrdparsehook_binop ERROR!"
+                        /   "Unknown capture rule..."
+                    ]
+                end
+                @cg_bldr_pushqtok ")"
+                @cg_bldr_pushqtok "me"
+                @cg_bldr_pushqtok "."
+                @cg_bldr_pushqtok "udata"
+                @cg_bldr_pushqtok "="
+                @cg_bldr_pushqtok "cast"
+                @cg_bldr_pushqtok "("
+                @cg_bldr_pushqtok "u8"
+                @cg_bldr_pushqtok "*"
+                @cg_bldr_pushqtok ")"
+                @cg_bldr_pushqtok "tok"
+                @cg_bldr_pushqtok ":"
+                @cg_bldr_pushqtok "dupe"
+                @cg_bldr_pushqtok "("
+                @cg_bldr_pushqtok ")"
+                @cg_bldr_pushqtok ";"
+                @cg_bldr_pushqtok "eat"
+                //now do our operator stuff...
+                @cg_bldr_pushqtok "c"
+                @cg_bldr_pushqtok "="
+                @cg_bldr_pushqtok "this"
+                @cg_bldr_pushqtok "."
+                @cg_bldr_pushqtok "uast"
+                @cg_bldr_pushqtok "."
+                @cg_bldr_pushqtok "push_node"
+                @cg_bldr_pushqtok "("
+                    @cg_bldr_pushqtok "me"
+                @cg_bldr_pushqtok ")"
+                @cg_bldr_pushqtok ";"
+                @cg_bldr_pushqtok "do"
+                @cg_bldr_pushtok [rightrulename:dupe()]
+                @cg_bldr_pushqtok "b"
+                @cg_bldr_pushqtok "="
+                @cg_bldr_pushqtok "this"
+                @cg_bldr_pushqtok "."
+                @cg_bldr_pushqtok "uast"
+                @cg_bldr_pushqtok "."
+                @cg_bldr_pushqtok "stackpop"
+                @cg_bldr_pushqtok "("
+                @cg_bldr_pushqtok ")"
+                @cg_bldr_pushqtok ";"
+                @cg_bldr_pushqtok "this"
+                @cg_bldr_pushqtok "."
+                @cg_bldr_pushqtok "uast"
+                @cg_bldr_pushqtok "."
+                @cg_bldr_pushqtok "add_link"
+                @cg_bldr_pushqtok "("
+                    @cg_bldr_pushqtok "c"
+                    @cg_bldr_pushqtok ","
+                    @cg_bldr_pushqtok "a"
+                @cg_bldr_pushqtok ")"
+                @cg_bldr_pushqtok ";"
+                @cg_bldr_pushqtok "this"
+                @cg_bldr_pushqtok "."
+                @cg_bldr_pushqtok "uast"
+                @cg_bldr_pushqtok "."
+                @cg_bldr_pushqtok "add_link"
+                @cg_bldr_pushqtok "("
+                    @cg_bldr_pushqtok "c"
+                    @cg_bldr_pushqtok ","
+                    @cg_bldr_pushqtok "b"
+                @cg_bldr_pushqtok ")"
+                @cg_bldr_pushqtok ";"
+                @cg_bldr_pushqtok "a"
+                @cg_bldr_pushqtok "="
+                @cg_bldr_pushqtok "c"
+                if(is_left)
+                    @cg_bldr_pushqtok "continue"
+                else
+                    @cg_bldr_pushqtok "goto"
+                    @cg_bldr_pushqtok "__autogenerated_label_binop_skip__"
+                end
+
+            @cg_bldr_pushqtok "end"
+            
+            
+            in = in.right; //this moves us to the CBRACK...
+            continue //which will be consumed by the iteration...
+        
+        end
+        @pprint[
+            /   "cgrdparsehook_binop __INTERNAL__ ERROR!"
+            /   "Somehow, the program has reached an invalid state."
+            /   "Call your system administrator!"
+        ]
+        __builtin_exit(1);
+    end
+    //TODO: insert code which causes an error to happen if the expected operator is not present...
+    if(is_mustcomplete)
+        @cg_bldr_pushqtok "this"
+        @cg_bldr_pushqtok "."
+        @cg_bldr_pushqtok "errtext"
+        @cg_bldr_pushqtok "="
+        if(1)
+            cgstr errtext
+            cgstr tmp
+            errtext.fromstr("\"Language ");
+            tmp.s = spec.name.s;
+            errtext.add(tmp);
+            tmp.s = " Parse Error! Expected an operator!\"";
+            errtext.add(tmp);
+            @cg_bldr_pushqtok [errtext.s]
+            errtext.free();
+        end
+        @cg_bldr_pushqtok ";"
+        @cg_bldr_pushqtok "go"
+        @cg_bldr_pushqtok "err"
+    end
+    
+    if(is_left)
+        @cg_bldr_pushqtok "end"
+    else
+        @cg_bldr_pushqtok ":"
+        @cg_bldr_pushqtok "__autogenerated_label_binop_skip__"
+    end
+    @cg_bldr_pushqtok "this"
+    @cg_bldr_pushqtok "."
+    @cg_bldr_pushqtok "uast"
+    @cg_bldr_pushqtok "."
+    @cg_bldr_pushqtok "stackpush"
+    @cg_bldr_pushqtok "("
+    @cg_bldr_pushqtok "a"
+    @cg_bldr_pushqtok ")"
+    @cg_bldr_pushqtok ";"
+    @cg_bldr_pushqtok "finish"
+    
+    @cg_bldr_pushqtok "]"
+    in_orig:freelist();
     return retval;
 end
 
