@@ -936,15 +936,17 @@ fn codegen cg_token_dupe_skip(u64 len)->cgstrll*:
 	return retval;
 end
 
+//Assumes that you pass it a list 
 fn codegen cg_tok_arglist_remove_brackets(cgstrll* in)->cgstrll*:
 	cgstrll* retval
 	cgstrll* walker
     //check if this even is bracketed.
+    
     if(in.d != CG_TOK_OBRACK)
         return in;
     end
     //check for the specific and unusual case that we have an empty arglist.
-    if(cast(uptr)in.right)
+    if(in.right != 0)
         if(in.right.d == CG_TOK_CBRACK)
             in:freelist();
             return cast(cgstrll*)0;
@@ -952,7 +954,7 @@ fn codegen cg_tok_arglist_remove_brackets(cgstrll* in)->cgstrll*:
     end
 	//remove the first element
 	retval = in.right;
-	if(cast(uptr)in.text)
+	if(in.text != 0)
 		__builtin_free(in.text);
 		in.text = cast(char*)0;
 	end
@@ -962,19 +964,21 @@ fn codegen cg_tok_arglist_remove_brackets(cgstrll* in)->cgstrll*:
 	//Travel to the next-to-last element (so the last element is to our right.)
 	walker = retval;
 	while(1)
+	    /*
 		if(walker.right == cast(cgstrll*)0) 
 			__builtin_puts("ERROR! cg_tok_arglist_remove_brackets passed invalid arglist.");
 			__builtin_puts("You may not pass an empty arglist!");
 			__builtin_exit(1);
 	 	end
-		if(walker.right.right == cast(cgstrll*)0) 
+	 	*/
+		if(walker.right.right == cast(cgstrll*)0)
 			break; 
 		end
 		walker = walker.right;
 	end
 	
 	//pop walker's right.
-	if(cast(uptr)walker.right.text)
+	if(walker.right.text != 0)
 		__builtin_free(walker.right.text);
 	end
 	__builtin_free(cast(u8*)walker.right);
@@ -993,12 +997,14 @@ method codegen cgstrll:cg_token_foldout_arglist()->cgstrll*:
 	retval = cast(cgstrll*)0;
 	
 	//if our right is null...
+	/*
 	if(this.right == 0)
 		__builtin_puts("CODEGEN TIME ERROR");
 		__builtin_puts("cgstrll:cg_token_foldout_arglist() called on something");
 		__builtin_puts("Which has null on its right!");
 		__builtin_exit(1);
 	end
+	*/
 	
 	//invalid pass-in.	
 	if(this.right.d != CG_TOK_OBRACK)
@@ -1027,6 +1033,7 @@ method codegen cgstrll:cg_token_foldout_arglist()->cgstrll*:
 		if(level == 0) break; end
 		walker = walker.right;
 	end
+	/*
 	if(level != 0)
 	    __builtin_puts("CODEGEN TIME ERROR");
 	    __builtin_puts("There are unmatched square brackets in the program.");
@@ -1036,6 +1043,7 @@ method codegen cgstrll:cg_token_foldout_arglist()->cgstrll*:
 		retval = cast(cgstrll*)0;
 		return retval;
 	end
+	*/
 	this.right = walker.right; //close up the wound!
 	walker.right = cast(cgstrll*)0;
 	return retval;
@@ -1050,11 +1058,13 @@ fn codegen cg_token_grab_arglist(char* errtext)->cgstrll*:
 	cgstrll* owalker
 	p = cg_peek();
 	//if there are no arguments, return no arguments!
+	
 	if(cast(uptr)p == 0) 		
 		__builtin_puts("INTERNAL SYNTAX ERROR: Token Arglist is EMPTY!");
 		__builtin_puts(errtext);
 		__builtin_exit(1);
 	end
+	
 	
 	//if the argument is a single, return it!
 	
@@ -1083,11 +1093,13 @@ fn codegen cg_token_grab_arglist(char* errtext)->cgstrll*:
 		__builtin_consume();
 		if(level == 0) break; end
 	end
+	
 	if(level != 0)
 		__builtin_puts("INTERNAL SYNTAX ERROR: Token Arglist has mismatched square brackets!");
 		__builtin_puts(errtext);
 		__builtin_exit(1);
 	end
+	
 	return retval;
 end
 

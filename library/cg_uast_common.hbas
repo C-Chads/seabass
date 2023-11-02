@@ -2244,11 +2244,12 @@ end
     It can choose based
     
     @cond[
-        crule //cruel?!?!
+        crule //name of rule
         //match an identifier with text HOOPLAH
         d[CG_TOK_IDENT]text["HOOPLAH"]? myrule
         //match a non-stringliteral with text what
         d![CG_TOK_STRING]text["what"]? myrule2
+        if[some_expression_evaluating_to_int()]? myrule3
         else my_other_rule
         
     ]
@@ -2395,12 +2396,15 @@ fn codegen cgrdparsehook_cond(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
             //we have to increase indent levels every time...
             indentlevels++;
             //we now have enough to create the if statement...
+            //insert do err
             if(is_inverted)
                 @cg_bldr_tokmanip_push_strings[
+                    do err_on_null
                     if(tok.d != //)
                 ]
             else
                 @cg_bldr_tokmanip_push_strings[
+                    do err_on_null
                     if(tok.d == 
                 ]
             end
@@ -2477,10 +2481,12 @@ fn codegen cgrdparsehook_cond(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
             //we now have enough to create the if statement...
             if(is_inverted)
                 @cg_bldr_tokmanip_push_strings[
+                    do err_on_null
                     if(tok.text strneq //)
                 ]
             else
                 @cg_bldr_tokmanip_push_strings[
+                    do err_on_null
                     if(tok.text streq
                 ]
             end
@@ -2626,16 +2632,275 @@ fn codegen cgrdparsehook_cond(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
     
     @cg_bldr_pushqtok "]"
     in_orig:freelist();
-    /*
-    @pprint[
-        /"For debugging purposes, here is your COND rule..."
-        /bar
-    ]
-    retval:debug_print();
-    @pprint[
-        /bar
-    ]
-    */
     return retval;
 end
+
+/*
+    Parse a repeated sequence, until some terminating token or condition.
+    It does not perform any stack operations.
+                     
+    "X" will inject a check for the terminating condition at
+    that point in the sequence
+    @repseq[
+        comma_separated_values
+        [";"]
+        my_expr_rule X "," X
+    ]
+*/
+
+//helpers so that it isn't a pain to write code...
+//this will slow down compiletimes somewhat but... well... that's a problem for
+//later me to solve.
+
+@wksht cgrdparsehook_repseq_termcheckcode_pushqtok[
+    [
+        //assume efficiency
+        termination_check_code_rwalker.right = cg_qtok(ARG1);
+        termination_check_code_rwalker = termination_check_code_rwalker.right;
+    ][
+        ARG1
+    ]
+]
+
+@wksht cgrdparsehook_repseq_termcheckcode_pushtok[
+    [
+        //assume efficiency
+        termination_check_code_rwalker.right = (ARG1);
+        termination_check_code_rwalker = termination_check_code_rwalker.right;
+    ][
+        ARG1
+    ]
+]
+
+fn codegen cgrdparsehook_repseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
+    cgstrll* termination_check_code = 0;
+    cgstrll* termination_check_code_rwalker = 0;
+    cgstrll* terminating_conditions_list = 0;
+    cgstrll* terminating_conditions_list_walker = 0;
+    cgstrll* the_name = 0;
+    cgstrll* in_orig = 0;
+    cgstrll* in_old  = 0;
+    u64 had_terminator = 0;
+    u64 n_terminating_checks = 0;
+    u64 had_trivial_terminator = 0;
+    if(in == 0 || in.d != CG_TOK_IDENT)
+        @pprint[
+            /   "cgrdparsehook_repseq ERROR!!!!"
+            /   "This repseq rule lacks a name!"
+            /   "Language name is:"
+            /   (spec.name.s)
+        ]
+        __builtin_exit(1);
+    end
+    the_name = in;
+    in_old = in;
+    in = in.right;
+    if(in == 0 || in.d != CG_TOK_OBRACK)
+        @pprint[
+            /   "cgrdparsehook_repseq ERROR!!!!"
+            /   "This repseq rule lacks a terminator!"
+            /   "Language name is:"
+            /   (spec.name.s)
+            /   "Rule name is:"
+            /   (the_name.text)
+        ]
+        __builtin_exit(1);
+    end
+    @cg_bldr_foldout_arg terminating_conditions_list in
+    //preserve continuity of in_orig...
+    in_old.right = in;
+    termination_check_code = cg_qtok("if");
+    termination_check_code_rwalker = termination_check_code;
+    if(terminating_conditions_list == 0)
+        had_trivial_terminator = 1;
+        @cgrdparsehook_repseq_termcheckcode_pushqtok "("
+        @cgrdparsehook_repseq_termcheckcode_pushqtok "tok"
+        @cgrdparsehook_repseq_termcheckcode_pushqtok "=="
+        @cgrdparsehook_repseq_termcheckcode_pushqtok  "0"
+        @cgrdparsehook_repseq_termcheckcode_pushqtok ")"
+        @cgrdparsehook_repseq_termcheckcode_pushqtok "finish"
+        @cgrdparsehook_repseq_termcheckcode_pushqtok "end"
+    end
+    
+    if(!had_trivial_terminator)
+        @cgrdparsehook_repseq_termcheckcode_pushqtok "("
+        @cgrdparsehook_repseq_termcheckcode_pushqtok "1"
+        @cgrdparsehook_repseq_termcheckcode_pushqtok ")"
+        @cgrdparsehook_repseq_termcheckcode_pushqtok "cgstrll"
+        @cgrdparsehook_repseq_termcheckcode_pushqtok "*"
+        @cgrdparsehook_repseq_termcheckcode_pushqtok "fake_tok"
+        @cgrdparsehook_repseq_termcheckcode_pushqtok "="
+        @cgrdparsehook_repseq_termcheckcode_pushqtok "tok"
+        @cgrdparsehook_repseq_termcheckcode_pushqtok ";"
+        
+        for(
+            terminating_conditions_list_walker = terminating_conditions_list, 
+            terminating_conditions_list_walker != 0, 
+            terminating_conditions_list_walker = terminating_conditions_list_walker.right
+        )
+            /*
+                Allowed-
+                Stringlit- match a token...
+            */
+            if(terminating_conditions_list_walker.d == CG_TOK_STRING)
+                @cgrdparsehook_repseq_termcheckcode_pushqtok "if"
+                @cgrdparsehook_repseq_termcheckcode_pushqtok "("
+                @cgrdparsehook_repseq_termcheckcode_pushqtok "tok"
+                @cgrdparsehook_repseq_termcheckcode_pushqtok "!="
+                @cgrdparsehook_repseq_termcheckcode_pushqtok "0"
+                @cgrdparsehook_repseq_termcheckcode_pushqtok ")"
+                
+                @cgrdparsehook_repseq_termcheckcode_pushqtok "match"
+                @cgrdparsehook_repseq_termcheckcode_pushqtok "["
+                @cgrdparsehook_repseq_termcheckcode_pushqtok "["
+                @cgrdparsehook_repseq_termcheckcode_pushtok [terminating_conditions_list_walker:dupe()]
+                @cgrdparsehook_repseq_termcheckcode_pushqtok "]"
+                @cgrdparsehook_repseq_termcheckcode_pushqtok "eat"
+                n_terminating_checks++;
+                
+                continue
+            else
+                @pprint[
+                    /   "cgrdparsehook_repseq ERROR!!!!"
+                    /   "This repseq rule has something other than a string literal in its termination list!"
+                    /   "The terminating condition must be a sequence of string literals!"
+                    /   "Language name is:"
+                    /   (spec.name.s)
+                    /   "Rule name is:"
+                    /   (the_name.text)
+                ]
+                __builtin_exit(1);
+            end
+        
+        
+        end //eof for
+        //Finish. This is not a syntax error.
+        @cgrdparsehook_repseq_termcheckcode_pushqtok "finish"
+        
+        u64 i
+        for(i = 0, i < n_terminating_checks, i++)
+            @cgrdparsehook_repseq_termcheckcode_pushqtok "]"
+            @cgrdparsehook_repseq_termcheckcode_pushqtok "end" //the if that wraps it...
+        end
+        //we failed termination, reset tok to tok_fake
+        @cgrdparsehook_repseq_termcheckcode_pushqtok "tok"
+        @cgrdparsehook_repseq_termcheckcode_pushqtok "="
+        @cgrdparsehook_repseq_termcheckcode_pushqtok "fake_tok"
+        @cgrdparsehook_repseq_termcheckcode_pushqtok ";"
+        
+        @cgrdparsehook_repseq_termcheckcode_pushqtok "end" //end of termination check code...
+    end //eof !had_trivial_terminator
+    /*
+        We are now ready to begin parsing the actual repeated sequence.
+        
+        we construct a giant while loop....
+    */
+    @cg_bldr_inittok [the_name:dupe()]
+    @cg_bldr_pushqtok "["
+    @cg_bldr_pushqtok "while"
+    @cg_bldr_pushqtok "("
+    @cg_bldr_pushqtok "1"
+    @cg_bldr_pushqtok ")"
+    //THE LEAK IS ABOVE HERE...
+    /*
+        Check for one instance of the sequence...
+    */
+    while(in != 0)
+        /*Produce _one_ check...*/
+        if(in.d == CG_TOK_IDENT && in.text streq "X")
+            //insert terminating condition code...
+            had_terminator = 1;
+            @cg_bldr_pushtok [termination_check_code:dupell()]
+            in = in.right
+            continue
+            
+        elif(in.d == CG_TOK_IDENT)
+            //this is a rule!
+            @cg_bldr_pushqtok "do"
+            @cg_bldr_pushtok [in:dupe()]
+            in = in.right
+            continue
+        elif(in.d == CG_TOK_STRING)
+            //We are matching a token!
+            //check for null first...
+            @cg_bldr_pushqtok "do"
+            @cg_bldr_pushqtok "err_on_null"
+            
+            @cg_bldr_pushqtok "match"
+            @cg_bldr_pushqtok "["
+            @cg_bldr_pushqtok "["
+            @cg_bldr_pushtok [in:dupe()]
+            @cg_bldr_pushqtok "]"
+            @cg_bldr_pushqtok "eat" //consume it!
+            @cg_bldr_pushqtok "else"
+            //emit a syntax error.
+                @cg_bldr_pushqtok "this"    
+                @cg_bldr_pushqtok "."
+                @cg_bldr_pushqtok "errtext"
+                @cg_bldr_pushqtok "="
+                /*
+                    Craft an error message...
+                */
+                if(1)
+                    cgstr errtext
+                    cgstr tmp
+                    errtext.fromstr("\"Language ");
+                    tmp.s = spec.name.s;
+                    errtext.add(tmp);
+                    tmp.s = " Parse Error! (repeated sequence) Expected ";
+                    errtext.add(tmp);
+                    tmp.s = in.text;
+                    errtext.add(tmp);
+                    tmp.s = "\"";
+                    @cg_bldr_pushqtok [errtext.s]
+                    errtext.free();
+                end
+                @cg_bldr_pushqtok ";"
+                @cg_bldr_pushqtok "go"
+                @cg_bldr_pushqtok "err"
+            @cg_bldr_pushqtok "]"
+            in = in.right
+            continue
+        else
+            //an error!
+            @pprint[
+                /   "cgrdparsehook_repseq SYNTAX ERROR!!!!"
+                /   "repeated sequence contains something other"
+                /   "than a rulename, X, or a string literal."
+                /   "Language name is:"
+                /   (spec.name.s)
+                /   "Rule name is:"
+                /   (the_name.text)
+            ]
+            __builtin_exit(1);
+        end
+    end
+    
+    
+    @cg_bldr_pushqtok "end" //terminating the while...
+    @cg_bldr_pushqtok "]"
+    if(!had_terminator)
+        @pprint[
+            /       "cgrdparsehook_repseq ERROR!!!! There was no terminating condition"
+            /       "for a repeating sequence rule!!!!"
+            /       "That means it will loop forever."
+            /       "To insert a terminating condition, put an X in your sequence,"
+            /       "like so:"
+            /       "my_rule \",\" my_rule2 X"
+            /       "if you want zero or more (*) put an X at the beginning of your sequence."
+            /       "X my_rule \",\" my_rule2 X"
+            /       "Otherwise, put them at the END (or in the middle, somewhere...)"
+        ]
+        __builtin_exit(1);
+    end
+    
+    if(terminating_conditions_list != 0)
+        terminating_conditions_list:freelist();
+    end
+    //we always have check code....
+    termination_check_code:freelist();
+    in_orig:freelist();    
+    return retval;
+end
+
 

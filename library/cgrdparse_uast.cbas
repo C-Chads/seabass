@@ -190,11 +190,14 @@ end
         me.udata = 0;
         nid = this.uast.push_node(me);
         this.uast.stackpush(nid);
+        
+        do exprs_in_pstmt
+        finish
+        
         //don't even bother pushing ourselves onto the stack...
         while(1)
             do err_on_null
             match[[";"]eat break]
-            match[["}"]break]
             match[[","]eat continue]
             do expr
             //pop off the stack..
@@ -205,12 +208,27 @@ end
             match[["}"]break]
             this.errtext = "Expected comma"
         end
+        
         //add ourselves to our parent node..
         /*
         u64 pid = this.uast.pstack[this.uast.stackptr-1];
         this.uast.add_link(pid, nid);
         */
         //continue...
+    ]
+    @repseq[
+        exprs_in_pstmt
+        [";"]
+        X get_expr_push_onto_pstmt X "," X
+    ]
+    get_expr_push_onto_pstmt[
+        //
+        u64 nid = this.uast.pstack[this.uast.stackptr-1];
+        
+        do expr
+        //pop off the stack..
+        u64 eid = this.uast.stackpop();
+        this.uast.add_link(nid,eid);
     ]
     expr[
         go this_is_something
