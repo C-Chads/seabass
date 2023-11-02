@@ -436,6 +436,7 @@ static void* retrieve_variable_memory_pointer(
 	if(is_global){
 		i = symid;
 		{
+		    /*
 			if(symbol_table[i]->is_incomplete){
 				puts("VM Error");
 				puts("This global:");
@@ -450,6 +451,7 @@ static void* retrieve_variable_memory_pointer(
 				puts("Was accessed as a variable, but it's a function!");
 				exit(1);
 			}
+			*/
 			/*if it has no cdata- initialize it!*/
 			if(symbol_table[i]->cdata == NULL){
 				uint64_t sz = type_getsz(symbol_table[i]->t);
@@ -472,10 +474,6 @@ static void* retrieve_variable_memory_pointer(
     if(vm_stack[i].ldata)
         return vm_stack[i].ldata;
     return &(vm_stack[i].smalldata);
-    /*
-	puts("VM ERROR");
-	puts("Could not find local");
-	exit(1);*/
 }
 
 void do_expr(expr_node* ee){
@@ -629,7 +627,7 @@ void do_expr(expr_node* ee){
 		vm_stackpointer = saved_vstack_pointer;
 		//Finally ends with popping everything off.
 		for(i = 0; i < n_subexpressions; i++) {ast_vm_stack_pop();}
-		//Don't! pop the last thing off because THAT'S WHERE THE RETURN VALUE IS!
+		//Don't pop the last thing off because THAT'S WHERE THE RETURN VALUE IS!
 		//ast_vm_stack_pop();
 		return;
 	}
