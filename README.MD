@@ -577,9 +577,13 @@ a few months.
     
         - [X] cgrdparse- compiletime recursive descent parser generator
         
-            - [ ] Parser Rule Templates- Common patterns in recursive descent parsing.
+            - [?] Parser Rule Templates- Common patterns in recursive descent parsing.
+            
+                (It is currently unknown whether this is truly finished...)
         
-        - [ ] cg_uast- the Universal Abstract Syntax Tree (Unfinished)
+        - [X] cg_uast- the Universal Abstract Syntax Tree
+        
+        - [ ] Semantic Analysis Helpers
         
     - [X] Tbas- Templated Seabass
     
