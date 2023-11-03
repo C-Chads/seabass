@@ -259,14 +259,14 @@ method codegen cgexpr_node:gen_code(cgast* ast)->char*:
     elif(this.kind == CG_EXPR_STRINGLIT)
         cgstr ff
         i64 i
-        u64 symid
+        //u64 symid
         char* str_text
-        symid = this.symid;
+        //symid = this.symid;
         buf[1] = 0;
         buf[2] = 0;
         ff.s = buf;
-        str_text = (ast.symbol_table[0] + symid)[0].cdata;
-        retval.s = __builtin_strdup("\"");
+        str_text = this.symname;
+        retval.s = __builtin_strdup("((unsigned char*)\"");
         
         for(0, str_text[0], str_text++)
             char c 
@@ -328,7 +328,7 @@ method codegen cgexpr_node:gen_code(cgast* ast)->char*:
             end
         end
         
-        ff.s = ("\"");
+        ff.s = ("\")");
         retval:add(ff);
         return retval.s;
     elif(this.kind == CG_EXPR_LSYM)

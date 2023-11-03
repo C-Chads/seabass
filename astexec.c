@@ -669,7 +669,8 @@ void do_expr(expr_node* ee){
 	if(ee->kind == EXPR_STRINGLIT){
 		void* p;
 		uint64_t general;
-		p = symbol_table[ee->symid]->cdata;
+		//p = symbol_table[ee->symid]->cdata;
+		p = ee->symname; //new convention.
 		//debug_print("Found String Literal. Address:",(uint64_t)p,0);
 		general = ast_vm_stack_push_temporary();
 		memcpy(&vm_stack[general].smalldata,&p,POINTER_SIZE);

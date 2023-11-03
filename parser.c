@@ -2141,8 +2141,10 @@ void expr_parse_floatlit(expr_node** targ){
 
 void expr_parse_stringlit(expr_node** targ){
 	expr_node f = {0};
-	require(peek()->data == TOK_STRING, "expr_parse_stringlit needs a string literal");
-	f.symid = parse_stringliteral();
+	//require(peek()->data == TOK_STRING, "expr_parse_stringlit needs a string literal");
+	//f.symid = parse_stringliteral();
+	f.symname = strdup(peek()->text);
+	consume();
 	f.kind = EXPR_STRINGLIT;
 	EXPR_PARSE_BOILERPLATE
 }
