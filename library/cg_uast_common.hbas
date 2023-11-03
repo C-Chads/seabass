@@ -1857,6 +1857,7 @@ fn codegen cgrdparsehook_binop_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgst
                 @cg_bldr_pushqtok "("
                 @cg_bldr_pushqtok ")"
                 @cg_bldr_pushqtok ";"
+
             end
                 @cg_bldr_pushqtok "eat" //consume the operator token...
             //
@@ -1876,6 +1877,10 @@ fn codegen cgrdparsehook_binop_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgst
                     @cg_bldr_pushqtok "me"
                 @cg_bldr_pushqtok ")"
                 @cg_bldr_pushqtok ";"
+                @cg_bldr_tokmanip_push_strings[
+                    //set me.udata to null....
+                    me.udata = cast(u8*)0;
+                ]
                 @cg_bldr_pushqtok "do"
                 @cg_bldr_pushtok [rightrulename:dupe()]
                 @cg_bldr_pushqtok "tok_fake"
@@ -2077,6 +2082,11 @@ fn codegen cgrdparsehook_binop_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgst
                     @cg_bldr_pushqtok "me"
                 @cg_bldr_pushqtok ")"
                 @cg_bldr_pushqtok ";"
+                @cg_bldr_tokmanip_push_strings[
+                    //set me.udata to null....
+                    me.udata = cast(u8*)0;
+                ]
+
                 @cg_bldr_pushqtok "do"
                 @cg_bldr_pushtok [rightrulename:dupe()]
                 //move tok_fake forward...
@@ -2194,7 +2204,16 @@ fn codegen cgrdparsehook_binop_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgst
             reverse back to just after we parsed the left hand side...
         */
         if(completed == 0)
+            cgstrll* ppp
             tok = tok_fake;
+            ppp = cast(cgstrll*)me.udata;
+            //if me.udata is not null, we have to handle that!
+            if(ppp != 0)
+                if(ppp.text != 0)
+                    __builtin_free(ppp.text);
+                end
+                __builtin_free((u8*)ppp);
+            end
         end
         this.uast.stackpush(a); finish
     ]
@@ -2650,6 +2669,7 @@ fn codegen cgrdparsehook_repseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
     u64 had_terminator = 0;
     u64 n_terminating_checks = 0;
     u64 had_trivial_terminator = 0;
+    u64 noconsume = 0;
 
     
     if(in == 0 || in.d != CG_TOK_IDENT)
@@ -2664,6 +2684,12 @@ fn codegen cgrdparsehook_repseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
     the_name = in;
     in_old = in;
     in = in.right;
+    if(in != 0 && in.d == CG_TOK_IDENT && in.text streq "noconsume")
+        noconsume = 1;
+        in_old = in;
+        in = in.right;
+    end
+    
     if(in == 0 || in.d != CG_TOK_OBRACK)
         @pprint[
             /   "cgrdparsehook_repseq ERROR!!!!"
@@ -2744,6 +2770,12 @@ fn codegen cgrdparsehook_repseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
         
         end //eof for
         //Finish. This is not a syntax error.
+        if(noconsume) //in noconsume mode, we do not eat the terminating sequence...
+            @cgrdparsehook_repseq_termcheckcode_pushqtok "tok"
+            @cgrdparsehook_repseq_termcheckcode_pushqtok "="
+            @cgrdparsehook_repseq_termcheckcode_pushqtok "fake_tok"
+            @cgrdparsehook_repseq_termcheckcode_pushqtok ";"
+        end
         @cgrdparsehook_repseq_termcheckcode_pushqtok "finish"
         
         u64 i

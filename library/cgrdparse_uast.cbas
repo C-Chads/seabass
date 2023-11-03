@@ -10,6 +10,7 @@ codegen u64 testbench_expr = 0xff03;
 codegen u64 testbench_pstmt = 0xff04;
 codegen u64 testbench_expr_terminal = 0xff05;
 codegen u64 testbench_expr_parenthesized = 0xff06;
+codegen u64 testbench_expr_pre = 0xff07;
 fn codegen testbench_print_ast(cg_uast uast, u64 nid):
     cg_uastnode* pp = uast.nodes[nid];
     cgstrll* ppn;
@@ -29,13 +30,21 @@ fn codegen testbench_print_ast(cg_uast uast, u64 nid):
         @pprint[
             /       "EXPR"
             /       (ppn.text)
+        ]        
+    elif(pp.coord == testbench_expr_pre)
+        ppn = (cgstrll*) pp.udata;
+        @pprint[
+            /       "EXPR_PREFIX"
+            /       (ppn.text)
         ]    
     elif(pp.coord == testbench_expr_terminal)
+        ppn = (cgstrll*) pp.udata;
         @pprint[
             /       "EXPR_TERM"
-            /       (pp.udata)
+            /       (ppn.text)
         ]
-        __builtin_free(pp.udata)
+        __builtin_free(ppn.text);
+        __builtin_free((u8*)ppn);
     end
     u64 i
     for(i = 0, i < pp.n_rel, i++)
@@ -56,6 +65,13 @@ fn codegen testbench_print_ast(cg_uast uast, u64 nid):
     elif(pp.coord == testbench_expr)
         @pprint[
             /       "END EXPR"
+            /       (ppn.text)
+        ]
+        __builtin_free(ppn.text);
+        __builtin_free(pp.udata);    
+    elif(pp.coord == testbench_expr_pre)
+        @pprint[
+            /       "END EXPR_PREFIX"
             /       (ppn.text)
         ]
         __builtin_free(ppn.text);
@@ -88,16 +104,11 @@ end
         block
         [IDENT] "{" stmts "}" : (testbench_block)
     ]
-
-    stmts[
-        //ON ENTRY: WE ARE INSIDE OF A BLOCK...
-        while(1)
-            do err_on_null
-            do stmt
-            match[["}"]
-                finish
-            ]
-        end
+    @repseq[
+        stmts
+        noconsume
+        ["}"]
+        X stmt X
     ]
     stmt[ //parse a stmt
         char* ident_text
@@ -205,55 +216,15 @@ end
     ]
     @cond[
         prefix
-        d[CG_TOK_OPERATOR]text["-"]?prefix_minus
-        d[CG_TOK_OPERATOR]text["~"]?prefix_compl
+        d[CG_TOK_OPERATOR]text["-"]?prefix_single_token_universal
+        d[CG_TOK_OPERATOR]text["~"]?prefix_single_token_universal
         //if[tok!=0 && tok.d == CG_TOK_OPERATOR && tok.text streq "~"]?prefix_compl
         //if[1]? terminal
         else terminal
     ]
-    prefix_minus[
-        cg_uastnode me
-        u64 nid
-        do err_on_null
-
-        eat
-        cgstrll* qq = (cgstrll*)__builtin_malloc(sizeof(cgstrll));
-        qq.text = __builtin_strdup("unary-");
-        qq.d = CG_TOK_STRING; //only valid...
-        me.udata = (u8*)qq;
-        me.coord = testbench_expr;
-        nid = this.uast.push_node(me);
-        //do prefix again...
-        do prefix
-        //get the node from it
-        u64 cid = this.uast.stackpop();
-        //add a link between our node and that node...
-        this.uast.add_link(nid,cid);
-        //push ourselves and finish...
-        this.uast.stackpush(nid);
-        finish
-    ]    
-    prefix_compl[
-        cg_uastnode me
-        u64 nid
-        do err_on_null
-
-        eat
-        cgstrll* qq = (cgstrll*)__builtin_malloc(sizeof(cgstrll));
-        qq.text = __builtin_strdup("unary~");
-        qq.d = CG_TOK_STRING; //only valid...
-        me.udata = (u8*)qq;
-        me.coord = testbench_expr;
-        nid = this.uast.push_node(me);
-        //do prefix again...
-        do prefix
-        //get the node from it
-        u64 cid = this.uast.stackpop();
-        //add a link between our node and that node...
-        this.uast.add_link(nid,cid);
-        //push ourselves and finish...
-        this.uast.stackpush(nid);
-        finish
+    @linseq[
+        prefix_single_token_universal
+        [OP] prefix^ : (testbench_expr_pre)
     ]
     @cond[
         terminal
@@ -264,19 +235,9 @@ end
         parenthesized_expr
         "(" expr^ ")" : (testbench_expr_parenthesized)
     ]
-    terminal_number[
-        //number only!
-        do err_on_null
-        if(tok.d != CG_TOK_INT_CONST) this.errtext = "Expected integer constant..."; go err end
-        //get the contents of the token...
-        u64 nid
-        cg_uastnode me
-        me.udata = __builtin_strdup(tok.text);
-        me.coord = testbench_expr_terminal;
-        eat //don't forget to eat it!!!
-        
-        nid = this.uast.push_node(me);
-        this.uast.stackpush(nid);
+    @linseq[
+        terminal_number
+        [NUM] : (testbench_expr_terminal)
     ]
     //error handling..
     err_on_null[
@@ -317,7 +278,11 @@ end
         }
         badblock{
             p 7,15 * -3;
-            p 7+1 || 0 THIS WAS = A_FUZZY_WUZZY -~- -~1;
+            p 7+1 || 0 THIS WAS = A_FUZZY_WUZZY -~- -~1.5e1;
+        }
+        goodblock{
+            ;;;;;
+            p 1.3e7, 22 THIS WAS = VERY_VERY_GOOD -(5*3);
         }
     }
 ]
