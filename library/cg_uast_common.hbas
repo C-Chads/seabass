@@ -2773,7 +2773,8 @@ fn codegen cgrdparsehook_repseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
             @pprint[
                 /   "cgrdparsehook_repseq ERROR!!!!"
                 /   "This repseq rule has a ? terminating condition,"
-                /   "but there is nothing there!"
+                /   "but there is nothing there! You must include"
+                /   "an expression!"
                 /   "Language name is:"
                 /   (spec.name.s)
                 /   "Rule name is:"
