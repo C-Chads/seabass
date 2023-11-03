@@ -1488,60 +1488,6 @@ void parse_struct_member(uint64_t sid){
 	//consume_semicolon("Struct member declaration requires semicolon.");
 }
 
-/*returns the symdecl id.*/
-uint64_t parse_stringliteral(){
-	type t = {0};
-	char* n;
-	
-	
-	require(peek()->data == TOK_STRING, "String literal parsing requires a string literal.");
-    /*
-        begin by searching the table for a compatible, identical string.
-        this will ultimately serve to save memory during compilation.
-    */
-#ifndef CBAS_NO_STRINGLIT_MERGING
-    {
-        uint64_t i;
-        for(i = 0; i < nsymbols; i++){
-            //incompatible. Reason: Not a string literal.
-            if(symbol_table[i]->is_stringlit == 0)
-                continue;
-            //incompatible. Reason: Not codegen matching.
-            if(symbol_table[i]->is_codegen != symbol_table[active_function]->is_codegen)
-                continue;
-            if(streq((char*)symbol_table[i]->cdata, peek()->text)){
-                //we have a match!
-                consume(); /*Eat the string literal!*/
-                return i;
-            }
-        }
-    }
-#endif
-    n = gen_reserved_sym_name();
-	require(!ident_is_already_used_globally(n),"String literal's anonymous name is already taken.");
-	nsymbols++;
-	
-	//removed
-	symbol_table = re_allocX(symbol_table, (nsymbols) * sizeof(symdecl));
-    symbol_table[nsymbols-1] = malloc(sizeof(symdecl));
-
-	symbol_table[nsymbols-1][0] = symdecl_init();
-
-	/*assign symbol type and cdata.*/
-	t.basetype = BASE_U8;
-	t.pointerlevel = 1;
-	t.arraylen = 0;
-	t.is_function = 0;
-	symbol_table[nsymbols-1]->t = t;
-	symbol_table[nsymbols-1]->cdata = (uint8_t*)strdup(peek()->text);
-	symbol_table[nsymbols-1]->cdata_sz = strlen(peek()->text);
-	symbol_table[nsymbols-1]->name = n;
-	symbol_table[nsymbols-1]->is_stringlit = 1;
-	symbol_table[nsymbols-1]->is_codegen = symbol_table[active_function]->is_codegen;
-	consume(); /*Eat the string literal!*/
-	return nsymbols-1;
-}
-
 void parse_fn(int is_method){
 	type t = {0};
 	type t_method_struct = {0};
