@@ -446,7 +446,7 @@ fn codegen cgrdparsehook_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
                     @cg_bldr_pushqtok ";"
                     @cg_bldr_pushqtok "go"
                     @cg_bldr_pushqtok "err"
-                @cg_bldr_pushqtok "end"            
+                @cg_bldr_pushqtok "end"
             elif(iwalker.text streq "SYM")
                 @cg_bldr_pushqtok "if"
                 @cg_bldr_pushqtok "("
