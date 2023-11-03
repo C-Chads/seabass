@@ -521,7 +521,7 @@ void print_manpage(char* subject){
         l(bar)
         l(oop_syntax_example)
         l(bar)
-        l("[to isolate this example for piping to file, run cbas -m syntax_oop_example]")
+        l("[to isolate this example for piping to file, run cbas -m syntax_oop_example")
         nl
         l(bar)
     };
