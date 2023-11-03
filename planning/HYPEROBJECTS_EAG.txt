@@ -1,0 +1,54 @@
+
+THE LORD HAS BLESSED ME WITH THE IDEA OF THE HYPEROBJECT...
+
+The metaprogramming abstraction to dominate them all.
+
+WHAT ARE HYPEROBJECTS?
+
+Compiletime data structures representing abstract
+control flow, data types, and parsehooks.
+
+The "elephant" would be an example of a hyperobject
+in that it exists inside of a context (a scope) and
+inserts new statements into the control flow to achieve
+its "memory" effect.
+
+CONTEXTS
+
+A list of hyperobjects, and nested contexts.
+
+Hypertypes are potentially also part of a context
+but I see that as part of the "global context".
+
+HOW DO HYPEROBJECTS PERFORM MANIPULATIONS OF THE
+CONTEXT?
+
+Thruogh Seabass codegen code. Hypertypes must be
+implemented in Seabass to be usable. This means
+that defining a hypertype requires a hard context
+transition/nest (I.e. a context that requires 
+its own validation separate from the parent context).
+
+HOW DO CONTEXTS DECAY INTO CODE?
+
+Hyperobjects must implement some sort of method
+to generate a token list. This token list _is_
+the "compiled" hyperobject.
+
+HOW CAN A HYPEROBJECT DEFINE ITS OWN TYPE?
+
+A hyperobject can be of a "metatype" which then
+transforms the original hyperobject such that it
+now has a new type.
+
+WHAT IS THE SYNTAX OF THE EAG?
+
+You can write expressions and/or statements which 
+use hyperobjects. These expressions either cause
+hyperobjects to call methods on the context or
+methods on the expressions, or on themselves or
+other hyperobjects.
+
+Hyperobjects are basically able to transform the
+structure of the EAG unit.
+
