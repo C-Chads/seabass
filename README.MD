@@ -577,13 +577,17 @@ a few months.
     
         - [X] cgrdparse- compiletime recursive descent parser generator
         
-            - [?] Parser Rule Templates- Common patterns in recursive descent parsing.
+            - [X] Parser Rule Templates- Common patterns in recursive descent parsing.
             
-                (It is currently unknown whether this is truly finished...)
+                (I believe there is more work to be done...)
         
         - [X] cg_uast- the Universal Abstract Syntax Tree
         
-        - [ ] Semantic Analysis Helpers
+        - [ ] Semantic Analysis Helpers- Make the authoring of a semantic analyzer easy
+        
+        - [ ] Seabass Code Generation Helpers- Make emitting Seabass easier.
+        
+        - [ ] Tokenizer Helper- Tools to provide help writing tokenizers.
         
     - [X] Tbas- Templated Seabass
     
@@ -612,6 +616,8 @@ a few months.
     - [ ] A functional language
     
     - [ ] A rust-like borrow-checked language.
+    
+    - [ ] EAG- the Extremely Ambiguous (extensible) Grammar.
  
  - [ ] A large set of domain specific languages for solving specific programming problems
 
