@@ -107,80 +107,45 @@ end
     @repseq[
         stmts
         noconsume
+        noparenting
         ["}"]
         X stmt X
     ]
-    stmt[ //parse a stmt
-        char* ident_text
-        i64 kind = 0;
-        u64 pid;
-        u64 nid;
-        do err_on_null
-        if(tok.text!=0)
-        end
-        while(1)
-            match[[";"]
-                eat
-                kind = 0
-                break
-            ]
-            match[["p"]
-                eat
-                kind = 1
-                break
-            ]
-            match[["}"]
-                finish
-            ]
-            if(tok.d == CG_TOK_IDENT)
-                kind = 2
-                break
-            end
-            this.errtext = "Unknown stmt type"; 
-            go err
-        end
-        switch(kind) nothing print blk;
-        this.errtext = "Internal error"; go err ;
-        :print
-            //
-            pid = this.uast.pstack[this.uast.stackptr-1];
-            do pstmt
-            nid = this.uast.stackpop();
-            this.uast.add_link(pid, nid);
-        finish
-        :nothing
-        finish
-        :blk
-            pid = this.uast.pstack[this.uast.stackptr-1];
-            do block
-            nid = this.uast.stackpop();
-            this.uast.add_link(pid, nid);
-        finish
+    @cond[
+        stmt
+        d[CG_TOK_IDENT]text["p"]?pstmt_pickup
+        d[CG_TOK_IDENT]?block_pickup
+        d[CG_TOK_SEMIC]?empty_statement
+        else fail_syntax_unknown_statement_type
     ]
-    pstmt[
-        cg_uastnode me
-        u64 nid
-        me.coord = testbench_pstmt;
-        me.udata = 0;
-        nid = this.uast.push_node(me);
-        this.uast.stackpush(nid);
-        
-        do exprs_in_pstmt
-        finish
+    @linseq[
+        block_pickup
+        nonode
+        block^
+    ]
+    @linseq[
+        pstmt_pickup
+        nonode
+        pstmt^
+    ]
+    fail_syntax_unknown_statement_type[
+        this.errtext = "Unknown statement type.";
+        go err
+    ]
+    @linseq[
+        pstmt
+        "p" exprs_in_pstmt ";" : (testbench_pstmt)
+    ]
+    @linseq[
+        empty_statement
+        nonode //will not create any nodes...
+        ";" //consumes this token
     ]
     @repseq[
         exprs_in_pstmt
+        noconsume
         [";"]
-        X get_expr_push_onto_pstmt X "," X
-    ]
-    get_expr_push_onto_pstmt[
-        //
-        u64 nid = this.uast.pstack[this.uast.stackptr-1];
-        
-        do expr
-        //pop off the stack..
-        u64 eid = this.uast.stackpop();
-        this.uast.add_link(nid,eid);
+        X expr^ X "," X
     ]
     expr[
         go this_is_something

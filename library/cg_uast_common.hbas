@@ -59,10 +59,11 @@ codegen u64 cg_uast_coord_root_node = (0xf<<(64-4)) | 10;
 fn codegen cgrdparsehook_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
     //
     cgstrll* iwalker;
-    
+    cgstrll* in_orig = in;
     iwalker = in;
     i64 capture_element = -1;
     u64 nelems = 0;
+    u64 nonode = 0;
     if(in == 0)
         @pprint[
             /   "cgrdparsehook_linseq ERROR!"
@@ -88,68 +89,93 @@ fn codegen cgrdparsehook_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
         __builtin_exit(1);
     end
     @cg_bldr_inittok [in:dupe()]
+    in = in.right;
+    :modifier_loop
+    if(in != 0 && in.d == CG_TOK_IDENT && in.text streq "nonode")
+        nonode = 1;
+        in = in.right;
+        goto modifier_loop
+    end
     @cg_bldr_pushqtok "["
     /*
         Create a node to represent ourselves...
     */
-    @cg_bldr_pushqtok "cg_uastnode"
-    @cg_bldr_pushqtok "me"
-    for(iwalker = in.right, iwalker != 0, iwalker = iwalker.right)
-        if(iwalker.d == CG_TOK_OPERATOR)
-            if(iwalker.text streq ":")
-                iwalker = iwalker.right;
-                //iwalker:debug_print();
-                if(iwalker == 0 || iwalker.d != CG_TOK_OPAREN)
-                    @pprint[
-                        /   "cgrdparsehook_linseq ERROR!"
-                        /   "The syntax of linseq requires a colon followed immediately by an opening parentheses,"
-                        /   "which provides an expression evaluating to a u64 which is the UAST coordinate"
-                        /   "Of the node type parsed."
-                        /   "It must be the entirety of the block after the opening parentheses..."
-                    ]
-                    __builtin_exit(1);
+    if(!nonode)
+        @cg_bldr_pushqtok "cg_uastnode"
+        @cg_bldr_pushqtok "me"
+        for(iwalker = in, iwalker != 0, iwalker = iwalker.right)
+            if(iwalker.d == CG_TOK_OPERATOR)
+                if(iwalker.text streq ":")
+                    iwalker = iwalker.right;
+                    //iwalker:debug_print();
+                    if(iwalker == 0 || iwalker.d != CG_TOK_OPAREN)
+                        @pprint[
+                            /   "cgrdparsehook_linseq ERROR!"
+                            /   "The syntax of linseq requires a colon followed immediately by an opening parentheses,"
+                            /   "which provides an expression evaluating to a u64 which is the UAST coordinate"
+                            /   "Of the node type parsed."
+                            /   "It must be the entirety of the block after the opening parentheses..."
+                        ]
+                        __builtin_exit(1);
+                    end
+                    break
                 end
-                break
             end
         end
-    end
 
-    @cg_bldr_pushqtok ";"
-    @cg_bldr_pushqtok "me"
-    @cg_bldr_pushqtok "."
-    @cg_bldr_pushqtok "coord"
-    @cg_bldr_pushqtok "="
-    if(iwalker != 0)
-        @cg_bldr_pushtok [iwalker.dupell()]
-        @cg_bldr_rwalk_skip ;
-    else //it was eating the else!
-        @cg_bldr_pushqtok "0"
+        @cg_bldr_pushqtok ";"
+        @cg_bldr_pushqtok "me"
+        @cg_bldr_pushqtok "."
+        @cg_bldr_pushqtok "coord"
+        @cg_bldr_pushqtok "="
+        if(iwalker != 0)
+            @cg_bldr_pushtok [iwalker.dupell()]
+            @cg_bldr_rwalk_skip ;
+        else //it was eating the else!
+            @cg_bldr_pushqtok "0"
+        end
     end
     //retval:debug_print();
 
     //@cg_bldr_pushqtok ";"
-    @cg_bldr_pushqtok "u64"
-    @cg_bldr_pushqtok "nid"
-    @cg_bldr_pushqtok "="
-    @cg_bldr_pushqtok "this"
-    @cg_bldr_pushqtok "."
-    @cg_bldr_pushqtok "uast"
-    @cg_bldr_pushqtok "."
-    @cg_bldr_pushqtok "push_node"
-    @cg_bldr_pushqtok "("
-    @cg_bldr_pushqtok "me"
-    @cg_bldr_pushqtok ")"
-    @cg_bldr_pushqtok ";"
-        //Push ourselves onto the stack...
-
-    @cg_bldr_pushqtok "this"
-    @cg_bldr_pushqtok "."
-    @cg_bldr_pushqtok "uast"
-    @cg_bldr_pushqtok "."
-    @cg_bldr_pushqtok "stackpush"
-    @cg_bldr_pushqtok "("
-    @cg_bldr_pushqtok "nid"
-    @cg_bldr_pushqtok ")"
+        @cg_bldr_pushqtok "u64"
+        @cg_bldr_pushqtok "nid"
+    if(!nonode)
+        @cg_bldr_pushqtok "="
+        @cg_bldr_pushqtok "this"
+        @cg_bldr_pushqtok "."
+        @cg_bldr_pushqtok "uast"
+        @cg_bldr_pushqtok "."
+        @cg_bldr_pushqtok "push_node"
+        @cg_bldr_pushqtok "("
+        @cg_bldr_pushqtok "me"
+        @cg_bldr_pushqtok ")"
+        @cg_bldr_pushqtok ";"
+        @cg_bldr_pushqtok "this"
+        @cg_bldr_pushqtok "."
+        @cg_bldr_pushqtok "uast"
+        @cg_bldr_pushqtok "."
+        @cg_bldr_pushqtok "stackpush"
+        @cg_bldr_pushqtok "("
+        @cg_bldr_pushqtok "nid"
+        @cg_bldr_pushqtok ")"
+    else
+        @cg_bldr_pushqtok "="
+        @cg_bldr_pushqtok "this"
+        @cg_bldr_pushqtok "."
+        @cg_bldr_pushqtok "uast"
+        @cg_bldr_pushqtok "."
+        @cg_bldr_pushqtok "pstack"
+        @cg_bldr_pushqtok "["
+            @cg_bldr_pushqtok "this"
+            @cg_bldr_pushqtok "."
+            @cg_bldr_pushqtok "uast"
+            @cg_bldr_pushqtok "."
+            @cg_bldr_pushqtok "stackptr"
+            @cg_bldr_pushqtok "-"
+            @cg_bldr_pushqtok "1"
+        @cg_bldr_pushqtok "]"
+    end
     @cg_bldr_pushqtok ";"
     //create a link...
 
@@ -160,8 +186,8 @@ fn codegen cgrdparsehook_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
     @cg_bldr_pushqtok "stack_checker" //for future use...
     @cg_bldr_pushqtok ";"
     //begin parsing rules...
-    for(iwalker = in.right, iwalker != 0, iwalker = iwalker.right)
-        //before we do anything, make sure that this isn't null...
+    for(iwalker = in, iwalker != 0, iwalker = iwalker.right)
+        //Don't accidentally walk into the coordinate value section.
         if(iwalker.d == CG_TOK_OPERATOR && iwalker.text streq ":")
             break
         end
@@ -580,6 +606,7 @@ fn codegen cgrdparsehook_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
                     /   "cgrdparsehook_linseq ERROR!"
                     /   "Invalid identifier inside of Capture!"
                     /   "Valid captures are [IDENT], [STRING], [INT], [FLOAT], [NUM]"
+                    /   "and some others."
                     /   "You may not capture a literal token."
                     /   "Language name is:"
                     /   (spec.name.s)
@@ -692,15 +719,22 @@ fn codegen cgrdparsehook_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
             if(
                 iwalker.text streq "IDENT" ||
                 iwalker.text streq "STRING" ||
+                iwalker.text streq "NOT_STRING" ||
                 iwalker.text streq "INT" ||
                 iwalker.text streq "FLOAT" ||
+                iwalker.text streq "ANY" ||
+                iwalker.text streq "OP" ||
+                iwalker.text streq "OP_OR_UNK" ||
+                iwalker.text streq "UNK" ||
+                iwalker.text streq "SYM" ||
                 iwalker.text streq "NUM"
             )
                 @pprint[
                     /   "cgrdparsehook_linseq ERROR!"
-                    /   "You may not have IDENT, STRING, INT, FLOAT, or NUM"
-                    /   "Unless they are being captured!"
-                    /   "That means they must be written inside of square brackets!"
+                    /   "You may not have this:"
+                    /   (iwalker.text)
+                    /   "Unless it is being captured!"
+                    /   "That means it must be written inside of square brackets!"
                 ]
                 __builtin_exit(1);
             end
@@ -708,6 +742,7 @@ fn codegen cgrdparsehook_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
             u64 rule_eval_mode = 0;
             //check for the presence of the ^ which indicates that this rule will leave itself on
             //the stack, for parenting onto the current node.
+            //if we have `nonode` set we still do this...
             if(iwalker.right != 0 && iwalker.right.d == CG_TOK_OPERATOR && iwalker.right.text streq "^")
                 rule_eval_mode = 1;
             end
@@ -801,6 +836,7 @@ fn codegen cgrdparsehook_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
                 @cg_bldr_pushqtok ")"
                 @cg_bldr_pushqtok ";"
             end
+        //eof CG_TOK_IDENT
         else
             @pprint[
                 /   "cgrdparsehook_linseq ERROR!"
@@ -833,6 +869,16 @@ fn codegen cgrdparsehook_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
     end
     if(iwalker != 0 && iwalker.d == CG_TOK_OPERATOR && iwalker.text streq ":")
         //perform a validation of the expression after it.
+        //nonode mode doesnt allow this...
+        if(nonode)
+            @pprint[
+                /   "cgrdparsehook_linseq ERROR!"
+                /   "You may not have a coordinate value section for a 'nonode' linseq!"
+                /   "Language name is:"
+                /   (spec.name.s)
+            ]
+            __builtin_exit(1)
+        end
         iwalker = iwalker.right;
         if(iwalker.d != CG_TOK_OPAREN)
             @pprint[
@@ -854,19 +900,13 @@ fn codegen cgrdparsehook_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
             __builtin_exit(1)
         end
     end
-        //pop ourselves off the stack...
-        /*
-        @cg_bldr_pushqtok "this"
-        @cg_bldr_pushqtok "."
-        @cg_bldr_pushqtok "uast"
-        @cg_bldr_pushqtok "."
-        @cg_bldr_pushqtok "stackpop"
-        @cg_bldr_pushqtok "("
-        @cg_bldr_pushqtok ")"
-        @cg_bldr_pushqtok ";"
-        */
     @cg_bldr_pushqtok "]"
-    in:freelist();
+    in_orig:freelist();
+    /*
+    @pprint[/bar]
+    retval:debug_print();
+    @pprint[/bar]
+    */
     return retval;
 end
 
@@ -2670,6 +2710,7 @@ fn codegen cgrdparsehook_repseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
     u64 n_terminating_checks = 0;
     u64 had_trivial_terminator = 0;
     u64 noconsume = 0;
+    u64 noparenting = 0;
 
     
     if(in == 0 || in.d != CG_TOK_IDENT)
@@ -2684,10 +2725,18 @@ fn codegen cgrdparsehook_repseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
     the_name = in;
     in_old = in;
     in = in.right;
+    :modifiers_top
     if(in != 0 && in.d == CG_TOK_IDENT && in.text streq "noconsume")
         noconsume = 1;
         in_old = in;
         in = in.right;
+        goto modifiers_top
+    end    
+    if(in != 0 && in.d == CG_TOK_IDENT && in.text streq "noparenting")
+        noparenting = 1;
+        in_old = in;
+        in = in.right;
+        goto modifiers_top
     end
     
     if(in == 0 || in.d != CG_TOK_OBRACK)
@@ -2798,6 +2847,32 @@ fn codegen cgrdparsehook_repseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
     */
     @cg_bldr_inittok [the_name:dupe()]
     @cg_bldr_pushqtok "["
+    if(!noparenting)
+        @cg_bldr_pushqtok "u64"
+        @cg_bldr_pushqtok "stack_checker"
+        @cg_bldr_pushqtok "u64"
+        @cg_bldr_pushqtok "cid"
+        @cg_bldr_pushqtok "u64"
+        @cg_bldr_pushqtok "nid"
+        @cg_bldr_pushqtok "="
+        @cg_bldr_pushqtok "this"
+        @cg_bldr_pushqtok "."
+        @cg_bldr_pushqtok "uast"
+        @cg_bldr_pushqtok "."
+        @cg_bldr_pushqtok "pstack"
+        @cg_bldr_pushqtok "["
+        @cg_bldr_pushqtok "this"
+        @cg_bldr_pushqtok "."
+        @cg_bldr_pushqtok "uast"
+        @cg_bldr_pushqtok "."
+        @cg_bldr_pushqtok "stackptr"
+        @cg_bldr_pushqtok "-"
+        @cg_bldr_pushqtok "1"
+        @cg_bldr_pushqtok "]"
+        @cg_bldr_pushqtok ";"
+    end
+    //We assume we are parenting to a node above is... nid is on top of the stack...
+    
     @cg_bldr_pushqtok "while"
     @cg_bldr_pushqtok "("
     @cg_bldr_pushqtok "1"
@@ -2820,8 +2895,109 @@ fn codegen cgrdparsehook_repseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
             
         elif(in.d == CG_TOK_IDENT)
             //this is a rule!
+            if(noparenting)
+                @cg_bldr_pushqtok "do"
+                @cg_bldr_pushtok [in:dupe()]
+                in = in.right
+                continue
+            end
+            
+            u64 rule_eval_mode = 0;
+                        //check for the presence of the ^ which indicates that this rule will leave itself on
+                        //the stack, for parenting onto the current node.
+            if(in.right != 0 && in.right.d == CG_TOK_OPERATOR && in.right.text streq "^")
+                rule_eval_mode = 1;
+            end
+            //save the stack pointer into stack_checker...
+            
+            //mode 0
+                @cg_bldr_pushqtok "stack_checker"
+                @cg_bldr_pushqtok "="
+                @cg_bldr_pushqtok "this"
+                @cg_bldr_pushqtok "."
+                @cg_bldr_pushqtok "uast"
+                @cg_bldr_pushqtok "."
+                @cg_bldr_pushqtok "stackptr"
+                @cg_bldr_pushqtok ";"
+            //do the rule...
             @cg_bldr_pushqtok "do"
             @cg_bldr_pushtok [in:dupe()]
+            if(rule_eval_mode)
+                in = in.right; //skip over that...
+            end
+            //verify stack has changed by exactly one...
+
+            @cg_bldr_pushqtok "if"
+            @cg_bldr_pushqtok "("
+                @cg_bldr_pushqtok "("
+                    @cg_bldr_pushqtok "this"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "uast"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "stackptr"
+                if(rule_eval_mode)
+                    @cg_bldr_pushqtok "-"
+                    @cg_bldr_pushqtok "1"
+                end
+                @cg_bldr_pushqtok ")"
+                @cg_bldr_pushqtok "!="
+                @cg_bldr_pushqtok "stack_checker"
+            @cg_bldr_pushqtok ")"
+            
+                @cg_bldr_pushqtok "this"
+                @cg_bldr_pushqtok "."
+                @cg_bldr_pushqtok "errtext"
+                @cg_bldr_pushqtok "="
+                /*
+                    Craft an error message...
+                */
+                if(1)
+                    cgstr errtext
+                    cgstr tmp
+                    errtext.fromstr("\"Language ");
+                    tmp.s = spec.name.s;
+                    errtext.add(tmp);
+                    tmp.s = " __Internal__ Parse Error! Rule ";
+                    errtext.add(tmp);
+                    tmp.s = in.text;
+                    errtext.add(tmp);
+                    tmp.s = " violated stack rules! Ask compiler author to fix!\"";
+                    errtext.add(tmp);
+                    @cg_bldr_pushqtok [errtext.s]
+                    errtext.free();
+                end
+                @cg_bldr_pushqtok ";"
+                @cg_bldr_pushqtok "go"
+                @cg_bldr_pushqtok "err"
+            
+            
+            @cg_bldr_pushqtok "end"
+            if(rule_eval_mode)
+                //the stack _has_ changed by exactly one, pop it off!
+                @cg_bldr_pushqtok "cid"
+                @cg_bldr_pushqtok "="
+                @cg_bldr_pushqtok "this"
+                @cg_bldr_pushqtok "."
+                @cg_bldr_pushqtok "uast"
+                @cg_bldr_pushqtok "."
+                @cg_bldr_pushqtok "stackpop"
+                @cg_bldr_pushqtok "("
+                @cg_bldr_pushqtok ")"
+                @cg_bldr_pushqtok ";"
+                
+                //parent it to ourselves...
+                @cg_bldr_pushqtok "this"
+                @cg_bldr_pushqtok "."
+                @cg_bldr_pushqtok "uast"
+                @cg_bldr_pushqtok "."
+                @cg_bldr_pushqtok "add_link"
+                @cg_bldr_pushqtok "("
+                    @cg_bldr_pushqtok "nid"
+                    @cg_bldr_pushqtok ","
+                    @cg_bldr_pushqtok "cid"
+                @cg_bldr_pushqtok ")"
+                @cg_bldr_pushqtok ";"
+            end
             in = in.right
             continue
         elif(in.d == CG_TOK_STRING)
