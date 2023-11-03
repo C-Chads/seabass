@@ -905,44 +905,54 @@ void parse_gvardecl(){
 	double fval;
 	uint64_t symid = 0xFFffFFffFFff;
 	set_is_codegen(0);
+	gvar_qualifier_top:;
+	parse_repeatedly_try_metaprogramming();
     if(peek()->data == TOK_KEYWORD)
 		if(ID_KEYW(peek()) == ID_KEYW_STRING("predecl")){
 			consume();
 			is_predecl = 1;
+			goto gvar_qualifier_top;
 		}
 	if(peek()->data == TOK_KEYWORD)
 		if(ID_KEYW(peek()) == ID_KEYW_STRING("codegen")){
 			consume();
 			is_codegen = 1;
 			set_is_codegen(1);
+			goto gvar_qualifier_top;
 		}
 	if(peek()->data == TOK_KEYWORD)
 		if(ID_KEYW(peek()) == ID_KEYW_STRING("noexport")){
 			consume();
 			is_noexport = 1;
+			goto gvar_qualifier_top;
 		}
 	if(peek()->data == TOK_KEYWORD)
 		if(ID_KEYW(peek()) == ID_KEYW_STRING("pub")){
 			is_pub = 1;
 			consume();
+			goto gvar_qualifier_top;
 		}
 	if(peek()->data == TOK_KEYWORD)
 		if(ID_KEYW(peek()) == ID_KEYW_STRING("static")){
 			require(!is_pub, "Cannot have public and static, they are opposites!");
 			is_pub = 0;
 			consume();
+			goto gvar_qualifier_top;
 		}
 	if(peek()->data == TOK_KEYWORD)
 		if(ID_KEYW(peek()) == ID_KEYW_STRING("atomic")){
 			require(is_codegen == 0, "Cannot have both codegen and atomic qualifiers on a global variable declaration.");
+			require(is_volatile == 0, "Cannot have both atomic and volatile qualifiers on a declaration.");
 			is_atomic = 1;
 			consume();
+			goto gvar_qualifier_top;
 		}
 	if(peek()->data == TOK_KEYWORD)
 		if(ID_KEYW(peek()) == ID_KEYW_STRING("volatile")){
 			require(is_atomic == 0, "Cannot have both atomic and volatile qualifiers on a declaration.");
 			is_volatile = 1;
 			consume();
+			goto gvar_qualifier_top;
 		}
     if(!peek_is_typename()){
         puts("You messed up something at global scope.");
@@ -1137,41 +1147,40 @@ void parse_datastmt(){
 	require(ID_KEYW(peek()) == ID_KEYW_STRING("data"), "data statement must begin with \"data\" ");
 	consume();
 	set_is_codegen(0);
-	parse_repeatedly_try_metaprogramming(); //allow parsehooks to generate an entire data statement, immediately after `data`
+    data_qualifiers_top:;
+	parse_repeatedly_try_metaprogramming(); //allow parsehooks to generate an entire data statement, immediately after `data` as well as before/after qualifiers.
     if(peek()->data == TOK_KEYWORD)
 		if(ID_KEYW(peek()) == ID_KEYW_STRING("predecl")){
 			consume();
 			is_predecl = 1;
+			goto data_qualifiers_top;
 		}
-	parse_repeatedly_try_metaprogramming(); //allow parsehooks after `data predecl`
 	if(peek()->data == TOK_KEYWORD)
 		if(ID_KEYW(peek()) == ID_KEYW_STRING("codegen")){
 			consume();
 			set_is_codegen(1);
 			is_codegen = 1;
+			goto data_qualifiers_top;
 		}
-	parse_repeatedly_try_metaprogramming(); //allow parsehooks after `data predecl codegen`
 	if(peek()->data == TOK_KEYWORD)
 	    if(ID_KEYW(peek()) == ID_KEYW_STRING("noexport")){
 			consume();
 			is_noexport = 1;
+			goto data_qualifiers_top;
 		}
-    parse_repeatedly_try_metaprogramming(); //allow parsehooks immediately after noexport too
 	if(peek()->data == TOK_KEYWORD)
 		if(ID_KEYW(peek()) == ID_KEYW_STRING("pub")){
 			is_pub = 1;
 			consume();
-			//if(!peek()) parse_error("Data declaration parsing halted: NULL");
+			goto data_qualifiers_top;
 		}
-	parse_repeatedly_try_metaprogramming(); //Do you get it?
 	if(peek()->data == TOK_KEYWORD)
 		if(ID_KEYW(peek()) == ID_KEYW_STRING("static")){
 			require(!is_pub, "Cannot have public and static at the same time! They are opposites!");
 			is_pub = 0;
 			consume();
-			//if(!peek()) parse_error("Data declaration parsing halted: NULL");
+			goto data_qualifiers_top;
 		}
-    parse_repeatedly_try_metaprogramming(); //I think you understand by now....
 	require(peek_is_typename() || peek()->data == TOK_KEYWORD, "data statement requires typename or keyword.");
 	if(ID_KEYW(peek()) == ID_KEYW_STRING("string")){
 		t.basetype = BASE_U8;
@@ -1514,6 +1523,7 @@ void parse_fn(int is_method){
 		require(ID_KEYW(peek()) == ID_KEYW_STRING("method"), "fn statement must begin with \"fn\"");
 	}
 	consume(); //Eat fn or method
+	fn_qualifier_top:;
 	parse_repeatedly_try_metaprogramming(); //Immediately after fn/method, allow a parsehook invocation...
 
 	//optionally eat any qualifiers...
@@ -1521,47 +1531,47 @@ void parse_fn(int is_method){
 		if(ID_KEYW(peek()) == ID_KEYW_STRING("predecl")){
 			consume();
 			is_predecl = 1;
+			goto fn_qualifier_top;
 		}
-	parse_repeatedly_try_metaprogramming(); //after qualifier
 	if(peek()->data == TOK_KEYWORD)
 		if(ID_KEYW(peek()) == ID_KEYW_STRING("codegen")){
 			consume();
 			is_codegen = 1;
 			set_is_codegen(1);
+			goto fn_qualifier_top;
 		}
-	parse_repeatedly_try_metaprogramming(); //after qualifier
 	if(peek()->data == TOK_KEYWORD)
 		if(ID_KEYW(peek()) == ID_KEYW_STRING("noexport")){
 			consume();
 			is_noexport = 1;
+			goto fn_qualifier_top;
 		}
-	parse_repeatedly_try_metaprogramming(); //after qualifier
 	if(peek()->data == TOK_KEYWORD)
 		if(ID_KEYW(peek()) == ID_KEYW_STRING("pub")){
 			consume();
 			is_pub = 1;
+			goto fn_qualifier_top;
 		}
-	parse_repeatedly_try_metaprogramming(); //after qualifier
 	if(peek()->data == TOK_KEYWORD)
 		if(ID_KEYW(peek()) == ID_KEYW_STRING("static")){
 			require(!is_pub, "Cannot have public and static, they are opposites!");
 			is_pub = 0;
 			consume();
+			goto fn_qualifier_top;
 		}
-	parse_repeatedly_try_metaprogramming(); //after qualifier
 	if(peek()->data == TOK_KEYWORD)
 		if(ID_KEYW(peek()) == ID_KEYW_STRING("inline")){
 			require(!is_pub, "Cannot have public and inline.");
 			is_inline = 1;
 			consume();
+			goto fn_qualifier_top;
 		}
-	parse_repeatedly_try_metaprogramming(); //after qualifier
 	if(peek()->data == TOK_KEYWORD)
 		if(ID_KEYW(peek()) == ID_KEYW_STRING("pure")){
 			is_pure = 1;
 			consume();
+			goto fn_qualifier_top;
 		}
-	parse_repeatedly_try_metaprogramming(); //after qualifier
 
 	if(is_method){
 		require(peek_is_typename(), "method statement requires a typename- the struct it operates on");

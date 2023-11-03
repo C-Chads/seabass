@@ -382,7 +382,6 @@ void print_manpage(char* subject){
         o(goto_labels)
         o(codegen)
         o(metaprogramming)
-        o(qualifier_order)
         o(short_circuiting)
         o(reflection)
         o(parsehook)
@@ -752,32 +751,6 @@ void print_manpage(char* subject){
         nl
         l("codegen functions generally serve two different purposes: To aid in parsing, or to aid in")
         l("final compilation.")
-        l(bar)
-    };
-    m(qualifier_order){
-        b(qualifier_order)
-        l("When defining global symbols, it is possible to attach qualifiers to them, such as `codegen` or `volatile`.")
-        l("Some qualifiers contradict, such as `pub` and `static` or `pub` and `inline`.")
-        l("The order of qualifier specification is rigidly defined. They must be in-order. Here are the orders:")
-        nl
-        ll("fn predecl codegen noexport [pub/static] inline pure myFunction()->int;")
-        ll("method predecl codegen noexport [pub/static] inline pure myClass.myMethod()->float;")
-        ll("predecl codegen noexport [pub/static] [atomic/volatile] i64 myVariable =  73 * 2;")
-        ll("data predecl codegen noexport [pub/static] i64 myData 1, 2, 3+5%2;")
-        nl
-        l("in general, predecl goes before codegen, which goes before noexport, which goes before visibility")
-        l("qualifiers, which go before inline and pure.")
-        nl
-        l("Here is an explanation of what every qualifier means:")
-        nl
-        ll("predecl: Symbol is being predeclared, no definition will be provided now. It may be defined later.")
-        ll("codegen: Symbol is used only at compiletime.")
-        ll("noexport: Symbol should not be exported by codegen_main, regardless of it being codegen or not.")
-        ll("pub: Symbol has public visibility with other compilation units. Symbols defined in this unit are externally visible.")
-        ll("static: Symbol has private visibility with other compilation units. This is the default.")
-        ll("atomic: Symbol can be read/written atomically in a multithreaded environment.")
-        ll("volatile: redundant reads and writes to this variable will not be optimized out. It could be")
-        ll("          a hardware register, or a 'ghetto atomic boolean'")
         l(bar)
     };
     m(undefined_behavior){
@@ -1156,7 +1129,6 @@ void print_manpage(char* subject){
     r(parsehook)
     r(keywords)
     r(types)
-    r(qualifier_order)
     r(constexpr)
     r(switch_syntax)
     r(goto_labels)
