@@ -2764,7 +2764,35 @@ fn codegen cgrdparsehook_repseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
         @cgrdparsehook_repseq_termcheckcode_pushqtok ")"
         @cgrdparsehook_repseq_termcheckcode_pushqtok "finish"
         @cgrdparsehook_repseq_termcheckcode_pushqtok "end"
+    elif(
+        terminating_conditions_list.d == CG_TOK_OPERATOR &&
+        terminating_conditions_list.text streq "?"
+    )
+        //
+        if(terminating_conditions_list.right == 0)
+            @pprint[
+                /   "cgrdparsehook_repseq ERROR!!!!"
+                /   "This repseq rule has a ? terminating condition,"
+                /   "but there is nothing there!"
+                /   "Language name is:"
+                /   (spec.name.s)
+                /   "Rule name is:"
+                /   (the_name.text)
+            ]
+            __builtin_exit(1);
+        end
+        //there is arbitrary expression code here, not wrapped....
+        @cgrdparsehook_repseq_termcheckcode_pushqtok "("
+        //a move...
+        @cgrdparsehook_repseq_termcheckcode_pushtok [terminating_conditions_list.right]
+        terminating_conditions_list.right = 0;
+        @cgrdparsehook_repseq_termcheckcode_pushqtok ")"
+        @cgrdparsehook_repseq_termcheckcode_pushqtok "finish"
+        @cgrdparsehook_repseq_termcheckcode_pushqtok "end"
+        had_trivial_terminator = 1;
     end
+    
+    
     
     if(!had_trivial_terminator)
         @cgrdparsehook_repseq_termcheckcode_pushqtok "("
