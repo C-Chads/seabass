@@ -1,0 +1,62 @@
+
+#guard comptime_tokenizer_tools_basic_DMHSW
+
+#include "cgast.hbas"
+
+/*
+    Basic tools necessary for writing your own tokenizers...
+*/
+
+codegen u8* CG_TOK_BAD = 404;
+codegen u8* CG_TOK_BAD_NOTEXT = 405;
+
+
+//takes in a list of tokens and tags all C identifiers...
+//ignores string literals....
+fn codegen cg_tokenz_tag_C_idents(cgstrll* in):
+    while(in != 0)
+        //check this token to see
+        if(in.text == 0)
+            //check if this is tagged an identifier...
+            if(in.d == CG_TOK_IDENT)
+                in.d = CG_TOK_BAD_NOTEXT
+            end
+            in = in.right
+            continue
+        end
+        if(in.d == CG_TOK_STRING)
+            in = in.right
+            continue
+        end
+        //it has text and it isn't a string! Time to tag it as an identifier!
+        char* pp
+        u64 i = 0;
+        u64 not_an_identifier = 0;
+        for(pp = in.text, pp[0], pp++)
+            if(i == 0)
+                //if the first character is not alpha or underscore it is not an identifier....
+                if(!cgisalpha(pp[0]) && (pp[0] != '_'))
+                    not_an_identifier = 1;
+                    break
+                end
+            else
+                if(!cgisalpha(pp[0]) && (pp[0] != '_') && !cgisdigit(pp[0]))
+                    not_an_identifier = 1;
+                    break                
+                end
+            end
+            i++;
+        end
+        //if it is not an identifier, yet was tagged as one, we should
+        //mark it as bad...
+        if(not_an_identifier && in.d == CG_TOK_IDENT)
+            in.d = CG_TOK_BAD
+        end
+        if(!not_an_identifier)
+            in.d = CG_TOK_IDENT
+        end
+        in = in.right
+    end
+end
+
+
