@@ -834,6 +834,7 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
                         @cg_bldr_pushqtok "("
                         @cg_bldr_pushqtok ")"
                     @cg_bldr_pushqtok ")"
+                    continue
                 elif(in_rwalk.text streq "capture")
                     @cg_bldr_pushqtok ";"
                     @cg_bldr_pushqtok "self"
