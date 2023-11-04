@@ -21,7 +21,7 @@ char* DUP_PATH_STRING(char* L, char* A){
 
 
 
-/*This is a convenient example.*/
+/*This is a convenient $ example.*/
 /*//this is another example*/
 //#include
 //#include "ast.h"

@@ -35,54 +35,6 @@
 */
 
 
-/*
-    Usage:
-    @cg_tokmanip_push_tokens[
-        fn codegen myfunc ( ):
-        
-        end
-    ]
-*/
-
-@mkbldr [ cg_bldr_tokmanip_push_strings
-    
-    
-    //INPUT...
-    cgstrll* in_walker
-    
-    in_walker = inlist;
-    //semicolons are safe.
-    @initqtok ";"
-    
-    
-
-    for(in_walker = inlist, in_walker != cast(cgstrll*)0, in_walker = in_walker.right)
-        char* text
-        text = in_walker:to_cstr();
-        //__builtin_puts("Converted a token to string:");
-        //__builtin_puts(text);
-        if(text == cast(char*)0)
-            char[50] buf
-            __builtin_puts("cg_tokmanip_push_strings ERROR");
-            __builtin_puts("Token was to-string'd and we got nothing!");
-            __builtin_puts("File is:");
-            __builtin_puts(in_walker.filename);
-            __builtin_puts("Line is:");
-            __builtin_itoa(buf, in_walker.linenum);
-            __builtin_puts(buf);
-            __builtin_puts("Col is:");
-            __builtin_itoa(buf, in_walker.colnum);
-            __builtin_puts(buf);
-            __builtin_puts("Go check that out!");
-            __builtin_exit(1);
-        end
-        @pushqtok "@"
-        @pushqtok "cg_bldr_pushqtok"
-        @pushqtok [text]
-        __builtin_free(text);
-    end
-    return retval;
-]
 
 
 /*
@@ -120,6 +72,84 @@
         ARG1 ARG2
     ]
 ]
+
+
+/*
+    Usage:
+    @cg_tokmanip_push_tokens[
+        fn codegen myfunc ( ):
+        
+        end
+    ]
+*/
+@mkbldr [ cg_bldr_tokmanip_push_strings
+    
+    
+    //INPUT...
+    cgstrll* in_walker
+    
+    in_walker = inlist;
+    //semicolons are safe.
+    @initqtok ";"
+    
+    
+
+    for(in_walker = inlist, in_walker != cast(cgstrll*)0, in_walker = in_walker.right)
+        char* text
+        if(in_walker.d == CG_TOK_UNKNOWN && in_walker.text streq "$") //the escape character!
+            cgstrll* in_walker_old = in_walker;
+            in_walker = in_walker.right;
+            if(in_walker == 0) break end
+            //They want to do a pushqtok by-hand inside the sequence...
+            if(in_walker.d == CG_TOK_STRING)
+                @pushqtok "@"
+                @pushqtok "cg_bldr_pushqtok"
+                @pushtok [in_walker:dupe()]
+                continue
+            end
+            //arbitrary code inside of brackets...
+            if(in_walker.d == CG_TOK_OBRACK)
+                cgstrll* code
+                @foldout_arg code in_walker
+                //maintain continuity of inlist...
+                in_walker_old.right = in_walker;
+                if(code != 0)
+                    @pushtok [code]
+                    @rwalk_skip ;
+                end
+            end
+            //if we don't find anything, assume that the escape code
+            //was a mistake, i.e. soft-fail...
+        end
+        
+        text = in_walker:to_cstr();
+        //__builtin_puts("Converted a token to string:");
+        //__builtin_puts(text);
+        if(text == cast(char*)0)
+            char[50] buf
+            __builtin_puts("cg_tokmanip_push_strings ERROR");
+            __builtin_puts("Token was to-string'd and we got nothing!");
+            __builtin_puts("File is:");
+            __builtin_puts(in_walker.filename);
+            __builtin_puts("Line is:");
+            __builtin_itoa(buf, in_walker.linenum);
+            __builtin_puts(buf);
+            __builtin_puts("Col is:");
+            __builtin_itoa(buf, in_walker.colnum);
+            __builtin_puts(buf);
+            __builtin_puts("Go check that out!");
+            __builtin_exit(1);
+        end
+        @pushqtok "@"
+        @pushqtok "cg_bldr_pushqtok"
+        @pushqtok [text]
+        __builtin_free(text);
+    end
+    return retval;
+]
+
+
+
 
 @cgrdparser [
     pprint
