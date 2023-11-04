@@ -14,6 +14,10 @@ codegen u64 testbench_expr_pre = 0xff07;
 codegen u64 testbench_expr_post = 0xff08;
 
 
+/*
+    TODO: Write a toy language in cgrdparse, design some
+    fancy tools for pattern matching and whatnot...
+*/
 
 function codegen codegen_main():
     
