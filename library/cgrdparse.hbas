@@ -4,6 +4,7 @@
 #guard compiletime_recursive_descent_parser_library_DMHSW
 
 #include "cgbuilder.hbas"
+#include "cg_uast.hbas"
 //#include "cgwksht.hbas"
 
 /*
@@ -779,6 +780,18 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
                             @cg_bldr_pushqtok ")"
                         @cg_bldr_pushqtok ")"
                     @cg_bldr_pushqtok ")"
+                    continue;                
+                //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                elif(in_rwalk.text streq "uast")
+                    @cg_bldr_pushqtok "("
+                    @cg_bldr_pushqtok "this"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "uast"
+                    @cg_bldr_pushqtok ")"
+                    continue;
+                //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                elif(in_rwalk.text streq "uastnode")
+                    @cg_bldr_pushqtok "cg_uastnode"
                     continue;
                 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 elif(in_rwalk.text streq "match")
@@ -1087,6 +1100,8 @@ method codegen cg_rd_parser_spec:gen_struct()->cgstrll*:
         @cg_bldr_pushqtok "cgstrll"
         @cg_bldr_pushqtok "*"
         @cg_bldr_pushqtok "tok_root"
+        @cg_bldr_pushqtok "cg_uast"
+        @cg_bldr_pushqtok "uast"
         if(this.is_targeting_cgrdparse)
             @cg_bldr_pushqtok "cg_rd_parser_spec"
             @cg_bldr_pushqtok "*"
