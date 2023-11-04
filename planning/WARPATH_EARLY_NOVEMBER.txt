@@ -1,0 +1,58 @@
+
+November 4th 2023 AD
+~~
+All Glory to the Lord Jesus Christ
+~~
+
+WHAT IS THE ROUTE OF CONQUEST?
+ah! The glories of triumph and victory!
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+First, parsing. Then, the world!
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Foolish? Only if I'm wrong!
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+What needs to be written for Seabass?
+
+* Parser generator rules for postfix operators.
+    * Add a postfix operator or two to my toy language in cgrdparse_uast.cbas
+
+* Semantic analysis tools
+    * Need to be able to quickly write semantic analyzers. I need to template
+    out what it means to create type systems, statements, etcetera.
+    
+* UAST code structuring and manipulation tools
+    * It needs to be downright simple to build out your own
+    ASTs in the UAST (not just a parse tree) and then manipulate/
+    analyze them.
+    
+* Template out stuff for writing complex parsehooks
+    * What kinds of "Common operations" are there for writing
+    your own parsehooks? I've got Parsing down pat, and semantic
+    analysis should come soon after. What else is next?
+    
+* CBAS++
+    * Actor Model
+    * Hyperobjects (Parsehooks but with non-local changes...)
+    * Error handling (try/catch, failable functions)
+    * "Validation units"
+    * Advanced type inferencing
+    * Parsehooks, of course! This is SEABASS!
+    * Use the UAST?
+    * This will teach me a lot about what libraries I need
+    to write for Seabass...
+    
+* Build system standardization. Seabass needs a standard for how
+    source code in projects is organized and how building happens.
+    
+    Each .cbas file obviously denotes a single compilation unit,
+    but what do you do with the outputs of compiling multiple
+    .cbas files?
+    
+* Begin work on the text editor- Bring in SDL2 and start work on
+    the ULTIMATE TEXT EDITOR....
+
+* Self host! Seabass should compile using itself!
+
+* A BASIC dialect. Always wanted one...
+
