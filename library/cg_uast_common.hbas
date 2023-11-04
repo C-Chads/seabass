@@ -760,9 +760,7 @@ fn codegen cgrdparsehook_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
             //do the rule...
             @cg_bldr_pushqtok "do"
             @cg_bldr_pushtok [iwalker:dupe()]
-            if(rule_eval_mode)
-                iwalker = iwalker.right; //skip over that...
-            end
+
             //verify stack has changed by exactly one...
 
             @cg_bldr_pushqtok "if"
@@ -803,6 +801,9 @@ fn codegen cgrdparsehook_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
                     errtext.add(tmp);
                     @cg_bldr_pushqtok [errtext.s]
                     errtext.free();
+                end
+                if(rule_eval_mode)
+                    iwalker = iwalker.right; //skip over that...
                 end
                 @cg_bldr_pushqtok ";"
                 @cg_bldr_pushqtok "go"
@@ -922,6 +923,7 @@ fn codegen cgrdparsehook_binop(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
     u64 is_left = 0;
     u64 is_mustcomplete =0;
     u64 n_operators = 0;
+    u64 noright = 0;
     if(in == 0)
         @pprint[
             /   "cgrdparsehook_binop ERROR!"
@@ -1096,6 +1098,16 @@ fn codegen cgrdparsehook_binop(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
             ]
             __builtin_exit(1);
         elif(walky_talky == 3)
+            if(iwalker.d == CG_TOK_OPERATOR &&
+                iwalker.text != 0 &&
+                iwalker.text streq ":"
+            )
+                //there is no righthand rule... so this is
+                //a fancy postfix operator rule...
+                iwalker = iwalker.right;
+                noright = 1;
+                break
+            end
             if(iwalker.d != CG_TOK_IDENT)
                 @pprint[
                     /   "cgrdparsehook_binop ERROR!"
@@ -1158,6 +1170,9 @@ fn codegen cgrdparsehook_binop(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
 
     @cg_bldr_pushqtok ";"
     if(walky_talky < 3)
+        noright = 1;
+    end
+    if(walky_talky < 2)
         @pprint[
             /       "cgrdparsehook_binop ERROR!"
             /       "Some part of the specification was missing...."
@@ -1179,19 +1194,7 @@ fn codegen cgrdparsehook_binop(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
             /       "CALL YOUR SYSTEM ADMINISTRATOR!!!!"
         ]
     end
-    if(rightrulename == 0)
-        @pprint[
-            /       "cgrdparsehook_binop __INTERNAL__ ERROR!"
-            /       "The right rule name was not set!"
-            /       "This should be IMPOSSIBLE!"
-            /       "I got to the part with number..."
-            /int    (walky_talky)
-            /       "where 0 = found nothing, 1 = found lhs, 2 = found operator(s),"
-            /       "3 = found rhs, and 4 = found colon section."
-            /       "CALL YOUR SYSTEM ADMINISTRATOR!!!!"
-        ]
-        __builtin_exit(1);
-    end
+
 
     if(iwalker != 0)
         @cg_bldr_pushqtok "me"
@@ -1270,18 +1273,20 @@ fn codegen cgrdparsehook_binop(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
                     @cg_bldr_pushqtok "me"
                 @cg_bldr_pushqtok ")"
                 @cg_bldr_pushqtok ";"
-                @cg_bldr_pushqtok "do"
-                @cg_bldr_pushtok [rightrulename:dupe()]
-                @cg_bldr_pushqtok "b"
-                @cg_bldr_pushqtok "="
-                @cg_bldr_pushqtok "this"
-                @cg_bldr_pushqtok "."
-                @cg_bldr_pushqtok "uast"
-                @cg_bldr_pushqtok "."
-                @cg_bldr_pushqtok "stackpop"
-                @cg_bldr_pushqtok "("
-                @cg_bldr_pushqtok ")"
-                @cg_bldr_pushqtok ";"
+                if(!noright)
+                    @cg_bldr_pushqtok "do"
+                    @cg_bldr_pushtok [rightrulename:dupe()]
+                    @cg_bldr_pushqtok "b"
+                    @cg_bldr_pushqtok "="
+                    @cg_bldr_pushqtok "this"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "uast"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "stackpop"
+                    @cg_bldr_pushqtok "("
+                    @cg_bldr_pushqtok ")"
+                    @cg_bldr_pushqtok ";"
+                end
                 @cg_bldr_pushqtok "this"
                 @cg_bldr_pushqtok "."
                 @cg_bldr_pushqtok "uast"
@@ -1293,17 +1298,19 @@ fn codegen cgrdparsehook_binop(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
                     @cg_bldr_pushqtok "a"
                 @cg_bldr_pushqtok ")"
                 @cg_bldr_pushqtok ";"
-                @cg_bldr_pushqtok "this"
-                @cg_bldr_pushqtok "."
-                @cg_bldr_pushqtok "uast"
-                @cg_bldr_pushqtok "."
-                @cg_bldr_pushqtok "add_link"
-                @cg_bldr_pushqtok "("
-                    @cg_bldr_pushqtok "c"
-                    @cg_bldr_pushqtok ","
-                    @cg_bldr_pushqtok "b"
-                @cg_bldr_pushqtok ")"
-                @cg_bldr_pushqtok ";"
+                if(!noright)
+                    @cg_bldr_pushqtok "this"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "uast"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "add_link"
+                    @cg_bldr_pushqtok "("
+                        @cg_bldr_pushqtok "c"
+                        @cg_bldr_pushqtok ","
+                        @cg_bldr_pushqtok "b"
+                    @cg_bldr_pushqtok ")"
+                    @cg_bldr_pushqtok ";"
+                end
                 @cg_bldr_pushqtok "a"
                 @cg_bldr_pushqtok "="
                 @cg_bldr_pushqtok "c"
@@ -1400,18 +1407,20 @@ fn codegen cgrdparsehook_binop(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
                     @cg_bldr_pushqtok "me"
                 @cg_bldr_pushqtok ")"
                 @cg_bldr_pushqtok ";"
-                @cg_bldr_pushqtok "do"
-                @cg_bldr_pushtok [rightrulename:dupe()]
-                @cg_bldr_pushqtok "b"
-                @cg_bldr_pushqtok "="
-                @cg_bldr_pushqtok "this"
-                @cg_bldr_pushqtok "."
-                @cg_bldr_pushqtok "uast"
-                @cg_bldr_pushqtok "."
-                @cg_bldr_pushqtok "stackpop"
-                @cg_bldr_pushqtok "("
-                @cg_bldr_pushqtok ")"
-                @cg_bldr_pushqtok ";"
+                if(!noright)
+                    @cg_bldr_pushqtok "do"
+                    @cg_bldr_pushtok [rightrulename:dupe()]
+                    @cg_bldr_pushqtok "b"
+                    @cg_bldr_pushqtok "="
+                    @cg_bldr_pushqtok "this"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "uast"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "stackpop"
+                    @cg_bldr_pushqtok "("
+                    @cg_bldr_pushqtok ")"
+                    @cg_bldr_pushqtok ";"
+                end
                 @cg_bldr_pushqtok "this"
                 @cg_bldr_pushqtok "."
                 @cg_bldr_pushqtok "uast"
@@ -1423,17 +1432,19 @@ fn codegen cgrdparsehook_binop(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
                     @cg_bldr_pushqtok "a"
                 @cg_bldr_pushqtok ")"
                 @cg_bldr_pushqtok ";"
-                @cg_bldr_pushqtok "this"
-                @cg_bldr_pushqtok "."
-                @cg_bldr_pushqtok "uast"
-                @cg_bldr_pushqtok "."
-                @cg_bldr_pushqtok "add_link"
-                @cg_bldr_pushqtok "("
-                    @cg_bldr_pushqtok "c"
-                    @cg_bldr_pushqtok ","
-                    @cg_bldr_pushqtok "b"
-                @cg_bldr_pushqtok ")"
-                @cg_bldr_pushqtok ";"
+                if(!noright)
+                    @cg_bldr_pushqtok "this"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "uast"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "add_link"
+                    @cg_bldr_pushqtok "("
+                        @cg_bldr_pushqtok "c"
+                        @cg_bldr_pushqtok ","
+                        @cg_bldr_pushqtok "b"
+                    @cg_bldr_pushqtok ")"
+                    @cg_bldr_pushqtok ";"
+                end
                 @cg_bldr_pushqtok "a"
                 @cg_bldr_pushqtok "="
                 @cg_bldr_pushqtok "c"
@@ -1524,6 +1535,7 @@ fn codegen cgrdparsehook_binop_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgst
     u64 is_left = 0;
     u64 is_mustcomplete =0;
     u64 which_element_is_the_capture = 0;
+    u64 noright = 0;
     u64 n_operators = 0; //This now counts the number of tokens in the operator portion...
     if(in == 0)
         @pprint[
@@ -1728,6 +1740,12 @@ fn codegen cgrdparsehook_binop_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgst
             ]
             __builtin_exit(1);
         elif(walky_talky == 3)
+            if(iwalker.d == CG_TOK_OPERATOR && iwalker.text streq ":")
+                //this is the end of the line!
+                noright = 1;
+                iwalker = iwalker.right;
+                break
+            end
             if(iwalker.d != CG_TOK_IDENT)
                 @pprint[
                     /   "cgrdparsehook_binop_linseq ERROR!"
@@ -1789,7 +1807,12 @@ fn codegen cgrdparsehook_binop_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgst
     end
 
     @cg_bldr_pushqtok ";"
+    //this executes if and only if we didn't have
+    //a : specification, and no right
     if(walky_talky < 3)
+        noright = 1
+    end
+    if(walky_talky < 2)
         @pprint[
             /       "cgrdparsehook_binop_linseq ERROR!"
             /       "Some part of the specification was missing...."
@@ -1810,19 +1833,6 @@ fn codegen cgrdparsehook_binop_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgst
             /       "3 = found rhs, and 4 = found colon section."
             /       "CALL YOUR SYSTEM ADMINISTRATOR!!!!"
         ]
-    end
-    if(rightrulename == 0)
-        @pprint[
-            /       "cgrdparsehook_binop_linseq __INTERNAL__ ERROR!"
-            /       "The right rule name was not set!"
-            /       "This should be IMPOSSIBLE!"
-            /       "I got to the part with number..."
-            /int    (walky_talky)
-            /       "where 0 = found nothing, 1 = found lhs, 2 = found operator(s),"
-            /       "3 = found rhs, and 4 = found colon section."
-            /       "CALL YOUR SYSTEM ADMINISTRATOR!!!!"
-        ]
-        __builtin_exit(1);
     end
 
     if(iwalker != 0)
@@ -1921,22 +1931,26 @@ fn codegen cgrdparsehook_binop_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgst
                     //set me.udata to null....
                     me.udata = cast(u8*)0;
                 ]
-                @cg_bldr_pushqtok "do"
-                @cg_bldr_pushtok [rightrulename:dupe()]
+                if(!noright)
+                    @cg_bldr_pushqtok "do"
+                    @cg_bldr_pushtok [rightrulename:dupe()]
+                end
                 @cg_bldr_pushqtok "tok_fake"
                 @cg_bldr_pushqtok "="
                 @cg_bldr_pushqtok "tok"
                 @cg_bldr_pushqtok ";"
-                @cg_bldr_pushqtok "b"
-                @cg_bldr_pushqtok "="
-                @cg_bldr_pushqtok "this"
-                @cg_bldr_pushqtok "."
-                @cg_bldr_pushqtok "uast"
-                @cg_bldr_pushqtok "."
-                @cg_bldr_pushqtok "stackpop"
-                @cg_bldr_pushqtok "("
-                @cg_bldr_pushqtok ")"
-                @cg_bldr_pushqtok ";"
+                if(!noright)
+                    @cg_bldr_pushqtok "b"
+                    @cg_bldr_pushqtok "="
+                    @cg_bldr_pushqtok "this"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "uast"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "stackpop"
+                    @cg_bldr_pushqtok "("
+                    @cg_bldr_pushqtok ")"
+                    @cg_bldr_pushqtok ";"
+                end
                 @cg_bldr_pushqtok "this"
                 @cg_bldr_pushqtok "."
                 @cg_bldr_pushqtok "uast"
@@ -1948,17 +1962,19 @@ fn codegen cgrdparsehook_binop_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgst
                     @cg_bldr_pushqtok "a"
                 @cg_bldr_pushqtok ")"
                 @cg_bldr_pushqtok ";"
-                @cg_bldr_pushqtok "this"
-                @cg_bldr_pushqtok "."
-                @cg_bldr_pushqtok "uast"
-                @cg_bldr_pushqtok "."
-                @cg_bldr_pushqtok "add_link"
-                @cg_bldr_pushqtok "("
-                    @cg_bldr_pushqtok "c"
-                    @cg_bldr_pushqtok ","
-                    @cg_bldr_pushqtok "b"
-                @cg_bldr_pushqtok ")"
-                @cg_bldr_pushqtok ";"
+                if(!noright)
+                    @cg_bldr_pushqtok "this"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "uast"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "add_link"
+                    @cg_bldr_pushqtok "("
+                        @cg_bldr_pushqtok "c"
+                        @cg_bldr_pushqtok ","
+                        @cg_bldr_pushqtok "b"
+                    @cg_bldr_pushqtok ")"
+                    @cg_bldr_pushqtok ";"
+                end
                 @cg_bldr_pushqtok "a"
                 @cg_bldr_pushqtok "="
                 @cg_bldr_pushqtok "c"
@@ -2127,25 +2143,26 @@ fn codegen cgrdparsehook_binop_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgst
                     me.udata = cast(u8*)0;
                 ]
 
-                @cg_bldr_pushqtok "do"
-                @cg_bldr_pushtok [rightrulename:dupe()]
-                //move tok_fake forward...
-                //this is in case we fail to parse successive operators...
+                if(!noright)
+                    @cg_bldr_pushqtok "do"
+                    @cg_bldr_pushtok [rightrulename:dupe()]
+                end
                 @cg_bldr_pushqtok "tok_fake"
                 @cg_bldr_pushqtok "="
                 @cg_bldr_pushqtok "tok"
                 @cg_bldr_pushqtok ";"
-                
-                @cg_bldr_pushqtok "b"
-                @cg_bldr_pushqtok "="
-                @cg_bldr_pushqtok "this"
-                @cg_bldr_pushqtok "."
-                @cg_bldr_pushqtok "uast"
-                @cg_bldr_pushqtok "."
-                @cg_bldr_pushqtok "stackpop"
-                @cg_bldr_pushqtok "("
-                @cg_bldr_pushqtok ")"
-                @cg_bldr_pushqtok ";"
+                if(!noright)
+                    @cg_bldr_pushqtok "b"
+                    @cg_bldr_pushqtok "="
+                    @cg_bldr_pushqtok "this"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "uast"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "stackpop"
+                    @cg_bldr_pushqtok "("
+                    @cg_bldr_pushqtok ")"
+                    @cg_bldr_pushqtok ";"
+                end
                 @cg_bldr_pushqtok "this"
                 @cg_bldr_pushqtok "."
                 @cg_bldr_pushqtok "uast"
@@ -2157,17 +2174,19 @@ fn codegen cgrdparsehook_binop_linseq(cgstrll* in, cg_rd_parser_spec spec)->cgst
                     @cg_bldr_pushqtok "a"
                 @cg_bldr_pushqtok ")"
                 @cg_bldr_pushqtok ";"
-                @cg_bldr_pushqtok "this"
-                @cg_bldr_pushqtok "."
-                @cg_bldr_pushqtok "uast"
-                @cg_bldr_pushqtok "."
-                @cg_bldr_pushqtok "add_link"
-                @cg_bldr_pushqtok "("
-                    @cg_bldr_pushqtok "c"
-                    @cg_bldr_pushqtok ","
-                    @cg_bldr_pushqtok "b"
-                @cg_bldr_pushqtok ")"
-                @cg_bldr_pushqtok ";"
+                if(!noright)
+                    @cg_bldr_pushqtok "this"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "uast"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "add_link"
+                    @cg_bldr_pushqtok "("
+                        @cg_bldr_pushqtok "c"
+                        @cg_bldr_pushqtok ","
+                        @cg_bldr_pushqtok "b"
+                    @cg_bldr_pushqtok ")"
+                    @cg_bldr_pushqtok ";"
+                end
                 @cg_bldr_pushqtok "a"
                 @cg_bldr_pushqtok "="
                 @cg_bldr_pushqtok "c"

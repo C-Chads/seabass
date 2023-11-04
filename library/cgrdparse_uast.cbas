@@ -11,6 +11,7 @@ codegen u64 testbench_pstmt = 0xff04;
 codegen u64 testbench_expr_terminal = 0xff05;
 codegen u64 testbench_expr_parenthesized = 0xff06;
 codegen u64 testbench_expr_pre = 0xff07;
+codegen u64 testbench_expr_post = 0xff08;
 fn codegen testbench_print_ast(cg_uast uast, u64 nid):
     cg_uastnode* pp = uast.nodes[nid];
     cgstrll* ppn;
@@ -35,6 +36,12 @@ fn codegen testbench_print_ast(cg_uast uast, u64 nid):
         ppn = (cgstrll*) pp.udata;
         @pprint[
             /       "EXPR_PREFIX"
+            /       (ppn.text)
+        ] 
+    elif(pp.coord == testbench_expr_post)
+        ppn = (cgstrll*) pp.udata;
+        @pprint[
+            /       "EXPR_POSTFIX"
             /       (ppn.text)
         ]    
     elif(pp.coord == testbench_expr_terminal)
@@ -72,6 +79,13 @@ fn codegen testbench_print_ast(cg_uast uast, u64 nid):
     elif(pp.coord == testbench_expr_pre)
         @pprint[
             /       "END EXPR_PREFIX"
+            /       (ppn.text)
+        ]
+        __builtin_free(ppn.text);
+        __builtin_free(pp.udata);
+    elif(pp.coord == testbench_expr_post)
+        @pprint[
+            /       "END EXPR_POSTFIX"
             /       (ppn.text)
         ]
         __builtin_free(ppn.text);
@@ -179,13 +193,19 @@ end
         leftassoc
         prefix "*" "/" prefix : (testbench_expr)
     ]
+
     @cond[
         prefix
         d[CG_TOK_OPERATOR]text["-"]?prefix_single_token_universal
         d[CG_TOK_OPERATOR]text["~"]?prefix_single_token_universal
-        //if[tok!=0 && tok.d == CG_TOK_OPERATOR && tok.text streq "~"]?prefix_compl
-        //if[1]? terminal
-        else terminal
+        d[CG_TOK_OPERATOR]text["++"]?prefix_single_token_universal
+        d[CG_TOK_OPERATOR]text["--"]?prefix_single_token_universal
+        else postfix_simple
+    ]
+    @binop[
+        postfix_simple
+        leftassoc //the secret sauce!
+        terminal "--" "++" : (testbench_expr_post)
     ]
     @linseq[
         prefix_single_token_universal
@@ -194,6 +214,9 @@ end
     @cond[
         terminal
         d[CG_TOK_OPAREN]?parenthesized_expr
+        d[CG_TOK_IDENT]?terminal_ident
+        d[CG_TOK_FLOAT_CONST]?terminal_number
+        d[CG_TOK_INT_CONST]?terminal_number
         else terminal_number
     ]
     @linseq[
@@ -203,6 +226,10 @@ end
     @linseq[
         terminal_number
         [NUM] : (testbench_expr_terminal)
+    ]
+    @linseq[
+        terminal_ident
+        [IDENT] : (testbench_expr_terminal)
     ]
     //error handling..
     err_on_null[
@@ -243,11 +270,12 @@ end
         }
         badblock{
             p 7,15 * -3;
+            p 3-3;
             p 7+1 || 0 THIS WAS = A_FUZZY_WUZZY -~- -~1.5e1;
         }
         goodblock{
             ;;;;;
-            p 1.3e7, 22 THIS WAS = VERY_VERY_GOOD -(5*3);
+            p 5 + ++--1.3e7--++--++, 22 THIS WAS = VERY_VERY_GOOD -(5*3);
         }
     }
 ]
