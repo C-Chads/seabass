@@ -372,60 +372,86 @@ codegen u64 cg_rd_parse_match_temporary_id = 0;
         @pushqtok ")"
             @pushqtok [temp_var_name2.s]
             @pushqtok "="
-            @pushqtok "1"
-            
+            @pushqtok "1"            
+
+
             
         //IDENT/KEYWORD/OPERATOR
         @pushqtok "elif"
-        @pushqtok "("
             @pushqtok "("
-                @pushqtok "this"
-                @pushqtok "."
-                @pushqtok "tok"
-                @pushqtok "."
-                @pushqtok "d"
-                @pushqtok "=="
-                @pushqtok "CG_TOK_IDENT"
-            @pushqtok ")"
-            @pushqtok "||"
-            @pushqtok "("
-                @pushqtok "this"
-                @pushqtok "."
-                @pushqtok "tok"
-                @pushqtok "."
-                @pushqtok "d"
-                @pushqtok "=="
-                @pushqtok "CG_TOK_OPERATOR"
-            @pushqtok ")"
-            @pushqtok "||"
-            @pushqtok "("
-                @pushqtok "this"
-                @pushqtok "."
-                @pushqtok "tok"
-                @pushqtok "."
-                @pushqtok "d"
-                @pushqtok "=="
-                @pushqtok "CG_TOK_KEYWORD"
-            @pushqtok ")"
-        @pushqtok ")"
-            @pushqtok "if"
-            @pushqtok "("
-                @pushqtok "this"
-                @pushqtok "."
-                @pushqtok "tok"
-                @pushqtok "."
-                @pushqtok "text"
-                @pushqtok "streq"
-                
                 @pushqtok "("
-                @pushqtok [temp_var_name.s] temp_var_name:free(); //our last usage.
+                    @pushqtok "this"
+                    @pushqtok "."
+                    @pushqtok "tok"
+                    @pushqtok "."
+                    @pushqtok "d"
+                    @pushqtok "=="
+                    @pushqtok "CG_TOK_IDENT"
+                @pushqtok ")"
+                @pushqtok "||"
+                @pushqtok "("
+                    @pushqtok "this"
+                    @pushqtok "."
+                    @pushqtok "tok"
+                    @pushqtok "."
+                    @pushqtok "d"
+                    @pushqtok "=="
+                    @pushqtok "CG_TOK_OPERATOR"
+                @pushqtok ")"
+                @pushqtok "||"
+                @pushqtok "("
+                    @pushqtok "this"
+                    @pushqtok "."
+                    @pushqtok "tok"
+                    @pushqtok "."
+                    @pushqtok "d"
+                    @pushqtok "=="
+                    @pushqtok "CG_TOK_KEYWORD"
+                @pushqtok ")"
+            @pushqtok ")"
+                @pushqtok "if"
+                @pushqtok "("
+                    @pushqtok "this"
+                    @pushqtok "."
+                    @pushqtok "tok"
+                    @pushqtok "."
+                    @pushqtok "text"
+                    @pushqtok "streq"
+                    
+                    @pushqtok "("
+                    @pushqtok [temp_var_name.s] 
+                    @pushqtok ")"
+                @pushqtok ")"
+                    @pushqtok [temp_var_name2.s]
+                    @pushqtok "="
+                    @pushqtok "1"
+                @pushqtok "end" //if the text matches
+                //NEWLINE
+        @pushqtok "elif"
+            @pushqtok "("
+                @pushqtok "("
+                        @pushqtok "this"
+                        @pushqtok "."
+                        @pushqtok "tok"
+                        @pushqtok "."
+                        @pushqtok "d"
+                        @pushqtok "=="
+                        @pushqtok "CG_TOK_NEWLINE"
+                @pushqtok ")"
+                @pushqtok "&&"
+                @pushqtok "("
+                    @pushqtok [temp_var_name.s]
+                    @pushqtok "streq"
+                    @pushqtok "\"\\n\""
                 @pushqtok ")"
             @pushqtok ")"
                 @pushqtok [temp_var_name2.s]
                 @pushqtok "="
                 @pushqtok "1"
-            @pushqtok "end" //if the text matches
-        @pushqtok "end"  //if ident, keyword, or operator
+
+        
+        @pushqtok "end" //end of giant elif chain..
+        
 
         @pushqtok "if"
         @pushqtok "("
@@ -438,7 +464,7 @@ codegen u64 cg_rd_parse_match_temporary_id = 0;
     @pushqtok "end" //if (1)
     
     temp_var_name2:free();
-    
+    temp_var_name:free(); //our last usage.
     return retval;
 ]
 
