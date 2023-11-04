@@ -652,6 +652,24 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
                 end
             end
             
+            if(in_rwalk.d == CG_TOK_OPERATOR &&
+                in_rwalk.text streq "." &&
+                in_rwalk.right != 0 &&
+                in_rwalk.right.d == CG_TOK_IDENT &&
+                (
+                    in_rwalk.right.text streq "getcapture"
+                    ||
+                    in_rwalk.right.text streq "capture"
+                )
+            )
+                in_rwalk = in_rwalk.right;
+                @cg_bldr_pushqtok "."
+                @cg_bldr_pushqtok "udata_as_cgstrll"
+                @cg_bldr_pushqtok "("
+                @cg_bldr_pushqtok ")"
+                continue
+            end
+            
             /*
                 TODO: Handle more special stuff for rules.
                 
@@ -807,6 +825,36 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
                 elif(in_rwalk.text streq "mkself")
                     @cg_bldr_pushqtok "cg_uastnode"
                     @cg_bldr_pushqtok "self"
+                    continue
+                elif(in_rwalk.text streq "getcapture")
+                    @cg_bldr_pushqtok "("
+                        @cg_bldr_pushqtok "self"
+                        @cg_bldr_pushqtok "."
+                        @cg_bldr_pushqtok "udata_as_cgstrll"
+                        @cg_bldr_pushqtok "("
+                        @cg_bldr_pushqtok ")"
+                    @cg_bldr_pushqtok ")"
+                elif(in_rwalk.text streq "capture")
+                    @cg_bldr_pushqtok ";"
+                    @cg_bldr_pushqtok "self"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "udata"
+                    @cg_bldr_pushqtok "="
+                    @cg_bldr_pushqtok "cast"
+                    @cg_bldr_pushqtok "("
+                    @cg_bldr_pushqtok "u8"
+                    @cg_bldr_pushqtok "*"
+                    @cg_bldr_pushqtok ")"
+                    @cg_bldr_pushqtok "("
+                        @cg_bldr_pushqtok "this"
+                        @cg_bldr_pushqtok "."
+                        @cg_bldr_pushqtok "tok"
+                        @cg_bldr_pushqtok ":"
+                        @cg_bldr_pushqtok "dupe"
+                        @cg_bldr_pushqtok "("
+                        @cg_bldr_pushqtok ")"
+                    @cg_bldr_pushqtok ")"
+                    @cg_bldr_pushqtok ";"
                     continue
                 elif(in_rwalk.text streq "stash")
                     @cg_bldr_pushqtok ";"

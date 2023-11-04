@@ -293,6 +293,10 @@ method codegen cg_uastnode.push_rel(u64 p)->u64:
     return this.n_rel++;
 end
 
+method codegen cg_uastnode.udata_as_cgstrll()->cgstrll*:
+    return (cgstrll*)this.udata;
+end
+
 /*
     ANALYZER PROTOTYPE
     
