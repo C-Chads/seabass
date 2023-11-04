@@ -447,6 +447,36 @@ codegen u64 cg_rd_parse_match_temporary_id = 0;
             @pushqtok ")"
                 @pushqtok [temp_var_name2.s]
                 @pushqtok "="
+                @pushqtok "1"                
+        //WHITESPACE
+        @pushqtok "elif"
+            @pushqtok "("
+                @pushqtok "("
+                        @pushqtok "this"
+                        @pushqtok "."
+                        @pushqtok "tok"
+                        @pushqtok "."
+                        @pushqtok "d"
+                        @pushqtok "=="
+                        @pushqtok "CG_TOK_SPACE"
+                        @pushqtok "||"
+                        @pushqtok "this"
+                        @pushqtok "."
+                        @pushqtok "tok"
+                        @pushqtok "."
+                        @pushqtok "d"
+                        @pushqtok "=="
+                        @pushqtok "CG_TOK_COMMENT"
+                @pushqtok ")"
+                @pushqtok "&&"
+                @pushqtok "("
+                    @pushqtok [temp_var_name.s]
+                    @pushqtok "streq"
+                    @pushqtok "\" \""
+                @pushqtok ")"
+            @pushqtok ")"
+                @pushqtok [temp_var_name2.s]
+                @pushqtok "="
                 @pushqtok "1"
 
         
