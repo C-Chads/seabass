@@ -1074,7 +1074,7 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
                     @cg_bldr_pushqtok ";"
                     @cg_bldr_pushqtok "@"
                     @cg_bldr_pushqtok "cg_rd_parse_match"
-                    continue;
+                    continue
                 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 elif(in_rwalk.text streq "stringlit")
                     cgstrll* investigator
@@ -1090,7 +1090,7 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
                     //finally, emit
                     @cg_bldr_pushqtok "@"
                     @cg_bldr_pushqtok "cg_rd_parse_is_stringlit"
-                    continue;
+                    continue
                 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 elif(in_rwalk.text streq "eat")
                     @cg_bldr_pushqtok ";"
@@ -1111,16 +1111,13 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
                     in_rwalk.text streq "tok_is_null"
                 )
                     @cg_bldr_pushqtok "("
-                        @cg_bldr_pushqtok "!"
-                        @cg_bldr_pushqtok "cast"
-                        @cg_bldr_pushqtok "("
-                            @cg_bldr_pushqtok "uptr"
-                        @cg_bldr_pushqtok ")"
                         @cg_bldr_pushqtok "("
                             @cg_bldr_pushqtok "this"
                             @cg_bldr_pushqtok "."
                             @cg_bldr_pushqtok "tok"
                         @cg_bldr_pushqtok ")"
+                        @cg_bldr_pushqtok "=="
+                        @cg_bldr_pushqtok "0"
                     @cg_bldr_pushqtok ")"
                     continue;
                 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1129,16 +1126,13 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
                 )
                     @cg_bldr_pushqtok "if"
                     @cg_bldr_pushqtok "("
-                        @cg_bldr_pushqtok "!"
-                        @cg_bldr_pushqtok "cast"
-                        @cg_bldr_pushqtok "("
-                            @cg_bldr_pushqtok "uptr"
-                        @cg_bldr_pushqtok ")"
                         @cg_bldr_pushqtok "("
                             @cg_bldr_pushqtok "this"
                             @cg_bldr_pushqtok "."
                             @cg_bldr_pushqtok "tok"
                         @cg_bldr_pushqtok ")"
+                        @cg_bldr_pushqtok "=="
+                        @cg_bldr_pushqtok "0"
                     @cg_bldr_pushqtok ")"
                         if(this.name.s strneq "finish")
                             @cg_bldr_pushqtok "return"
@@ -1158,15 +1152,13 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
                     in_rwalk.text streq "tok_is_not_null"
                 )
                     @cg_bldr_pushqtok "("
-                        @cg_bldr_pushqtok "cast"
-                        @cg_bldr_pushqtok "("
-                            @cg_bldr_pushqtok "uptr"
-                        @cg_bldr_pushqtok ")"
                         @cg_bldr_pushqtok "("
                             @cg_bldr_pushqtok "this"
                             @cg_bldr_pushqtok "."
                             @cg_bldr_pushqtok "tok"
                         @cg_bldr_pushqtok ")"
+                        @cg_bldr_pushqtok "!="
+                        @cg_bldr_pushqtok "0"
                     @cg_bldr_pushqtok ")"
                     continue;
                 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
