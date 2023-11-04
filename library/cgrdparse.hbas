@@ -589,7 +589,16 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
     
     @cg_bldr_pushqtok ":"
     //For the end function...
-    if(this.name.s streq "finish")
+    if(this.name.s streq "head")
+        @cg_bldr_pushqtok "this"
+        @cg_bldr_pushqtok "."
+        @cg_bldr_pushqtok "uast"
+        @cg_bldr_pushqtok "."
+        @cg_bldr_pushqtok "ctor"
+        @cg_bldr_pushqtok "("
+        @cg_bldr_pushqtok ")"
+        @cg_bldr_pushqtok ";"
+    elif(this.name.s streq "finish")
         //we create special variables...
         @cg_bldr_pushqtok "cgstrll"
         @cg_bldr_pushqtok "retval"
@@ -692,6 +701,7 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
                         __builtin_exit(1);
                     end
                     //we have a rule, now invoke it!
+                    @cg_bldr_pushqtok ";"
                     @cg_bldr_pushqtok [(spec.rules+ruleid).fn_name.s]
                     @cg_bldr_pushqtok "("
                         @cg_bldr_pushqtok "this"
@@ -759,7 +769,7 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
                             @cg_bldr_pushqtok "text"
                         @cg_bldr_pushqtok ")"
                     @cg_bldr_pushqtok ")"
-                    continue;
+                    continue
                 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 elif(in_rwalk.text streq "tok_is_stringlit")
                     @cg_bldr_pushqtok "("
@@ -780,7 +790,7 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
                             @cg_bldr_pushqtok ")"
                         @cg_bldr_pushqtok ")"
                     @cg_bldr_pushqtok ")"
-                    continue;                
+                    continue                
                 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 elif(in_rwalk.text streq "uast")
                     @cg_bldr_pushqtok "("
@@ -788,11 +798,157 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
                     @cg_bldr_pushqtok "."
                     @cg_bldr_pushqtok "uast"
                     @cg_bldr_pushqtok ")"
-                    continue;
+                    continue
                 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 elif(in_rwalk.text streq "uastnode")
                     @cg_bldr_pushqtok "cg_uastnode"
-                    continue;
+                    continue
+                //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                elif(in_rwalk.text streq "mkself")
+                    @cg_bldr_pushqtok "cg_uastnode"
+                    @cg_bldr_pushqtok "self"
+                    continue
+                elif(in_rwalk.text streq "stash")
+                    @cg_bldr_pushqtok ";"
+                    @cg_bldr_pushqtok "this"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "tok_stash"
+                    @cg_bldr_pushqtok "="
+                    @cg_bldr_pushqtok "this"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "tok"
+                    @cg_bldr_pushqtok ";"
+                    continue
+                elif(in_rwalk.text streq "tok_stash")
+                    @cg_bldr_pushqtok "("
+                    @cg_bldr_pushqtok "this"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "tok_stash"
+                    @cg_bldr_pushqtok ")"
+                    continue
+                elif(in_rwalk.text streq "tok_stash_ptr")
+                    @cg_bldr_pushqtok "("
+                    @cg_bldr_pushqtok "this"
+                    @cg_bldr_pushqtok ".&"
+                    @cg_bldr_pushqtok "tok_stash"
+                    @cg_bldr_pushqtok ")"
+                    continue
+                elif(in_rwalk.text streq "reset")
+                    @cg_bldr_pushqtok ";"
+                    @cg_bldr_pushqtok "this"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "tok"
+                    @cg_bldr_pushqtok "="
+                    @cg_bldr_pushqtok "this"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "tok_stash"
+                    @cg_bldr_pushqtok ";"
+                    continue
+                //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                elif(in_rwalk.text streq "stpop")
+                    @cg_bldr_pushqtok "("
+                    @cg_bldr_pushqtok "this"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "uast"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "stackpop"
+                    @cg_bldr_pushqtok "("
+                    @cg_bldr_pushqtok ")"
+                    @cg_bldr_pushqtok ")"
+                    continue
+                //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                elif(in_rwalk.text streq "stpush")
+                    if(in_rwalk.right == 0 ||
+                    in_rwalk.right != CG_TOK_OPAREN)
+                        __builtin_puts("RDPARSER_ERROR!");
+                        __builtin_puts("stpush must be followed by a");
+                        __builtin_puts("parenthesized expression! like so:");
+                        __builtin_puts("stackpush(my_node_variable);");
+                        __builtin_puts("Parser's name is:");
+                        __builtin_puts(spec.name.s);
+                        __builtin_puts("Current Rule's name is:");
+                        __builtin_puts(this.name.s);
+                        __builtin_exit(1);
+                    end
+                    @cg_bldr_pushqtok "this"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "uast"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "stackpush"
+                    continue
+                //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                elif(in_rwalk.text streq "addnode")
+                    in_rwalk = in_rwalk.right;
+                    if(in_rwalk == 0 ||
+                    in_rwalk.d != CG_TOK_IDENT)
+                        __builtin_puts("RDPARSER_ERROR!");
+                        __builtin_puts("addnode on non-identifier!");
+                        __builtin_puts("Parser's name is:");
+                        __builtin_puts(spec.name.s);
+                        __builtin_puts("Current Rule's name is:");
+                        __builtin_puts(this.name.s);
+                        __builtin_exit(1);
+                    end
+                    //we have an addnode command...
+                    //ensure this is compatible with expressions...
+                    @cg_bldr_pushqtok "("
+                    @cg_bldr_pushqtok "this"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "uast"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "push_node"
+                    @cg_bldr_pushqtok "("
+                    @cg_bldr_pushtok [in_rwalk:dupe()]
+                    @cg_bldr_pushqtok ")"
+                    @cg_bldr_pushqtok ")"
+                    //continue will consume it for us...
+                    continue
+                //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                elif(in_rwalk.text streq "addpushnode")
+                    in_rwalk = in_rwalk.right;
+                    if(in_rwalk == 0 ||
+                    in_rwalk.d != CG_TOK_IDENT)
+                        __builtin_puts("RDPARSER_ERROR!");
+                        __builtin_puts("addpushnode on non-identifier!");
+                        __builtin_puts("Parser's name is:");
+                        __builtin_puts(spec.name.s);
+                        __builtin_puts("Current Rule's name is:");
+                        __builtin_puts(this.name.s);
+                        __builtin_exit(1);
+                    end
+                    //we have an addnode command...
+                    //ensure this is compatible with expressions...
+                    @cg_bldr_pushqtok "if"
+                    @cg_bldr_pushqtok "("
+                    @cg_bldr_pushqtok "1"
+                    @cg_bldr_pushqtok ")"
+                    
+                    @cg_bldr_pushqtok "u64"
+                    @cg_bldr_pushqtok "__cgrdparse_temporary_value__"
+                    @cg_bldr_pushqtok "="
+                    @cg_bldr_pushqtok "this"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "uast"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "push_node"
+                    @cg_bldr_pushqtok "("
+                    @cg_bldr_pushtok [in_rwalk:dupe()]
+                    @cg_bldr_pushqtok ")"
+                    @cg_bldr_pushqtok ";"
+                    
+                    @cg_bldr_pushqtok "this"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "uast"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "stackpush"
+                    @cg_bldr_pushqtok "("
+                    @cg_bldr_pushqtok "__cgrdparse_temporary_value__"
+                    @cg_bldr_pushqtok ")"                    
+                    
+                    @cg_bldr_pushqtok "end"
+                    //continue will consume it for us...
+                
+                    continue
                 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 elif(in_rwalk.text streq "match")
 
@@ -1008,9 +1164,19 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
                 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 elif(in_rwalk.text streq "finish")
                     if(this.name.s strneq "finish")
+
                         @cg_bldr_pushqtok "return"
                         @cg_bldr_pushqtok ";"
                     else
+                        @cg_bldr_pushqtok ";"
+                        @cg_bldr_pushqtok "this"
+                        @cg_bldr_pushqtok "."
+                        @cg_bldr_pushqtok "uast"
+                        @cg_bldr_pushqtok "."
+                        @cg_bldr_pushqtok "dtor"
+                        @cg_bldr_pushqtok "("
+                        @cg_bldr_pushqtok ")"
+                        @cg_bldr_pushqtok ";"
                         @cg_bldr_pushqtok "return"
                         @cg_bldr_pushqtok "retval"
                         @cg_bldr_pushqtok "."
@@ -1044,7 +1210,19 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
             @cg_bldr_pushtok [in_rwalk:dupe()]
             //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         end//end of for
-    
+    //if we are the finish rule,
+    //we must destroy the uast...
+    if(this.name.s streq "finish")
+        @cg_bldr_pushqtok ";"
+        @cg_bldr_pushqtok "this"
+        @cg_bldr_pushqtok "."
+        @cg_bldr_pushqtok "uast"
+        @cg_bldr_pushqtok "."
+        @cg_bldr_pushqtok "dtor"
+        @cg_bldr_pushqtok "("
+        @cg_bldr_pushqtok ")"
+        @cg_bldr_pushqtok ";"
+    end
     @cg_bldr_pushqtok "end"
     this.ocode = ocode;
     
@@ -1096,6 +1274,9 @@ method codegen cg_rd_parser_spec:gen_struct()->cgstrll*:
         @cg_bldr_pushqtok "cgstrll"
         @cg_bldr_pushqtok "*"
         @cg_bldr_pushqtok "tok"
+        @cg_bldr_pushqtok "cgstrll"
+        @cg_bldr_pushqtok "*"
+        @cg_bldr_pushqtok "tok_stash"
         
         @cg_bldr_pushqtok "cgstrll"
         @cg_bldr_pushqtok "*"

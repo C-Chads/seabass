@@ -278,7 +278,8 @@
         this.output_code:push_end(cg_qtok("end")); //close up the if statement.
         this.print_command:free();
         this.itoa_command:free();
-        return this.output_code;
+        emit [this.output_code]
+        finish
     ]
 ]
 
