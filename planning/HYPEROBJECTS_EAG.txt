@@ -52,3 +52,6 @@ other hyperobjects.
 Hyperobjects are basically able to transform the
 structure of the EAG unit.
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+HYPEROBJECTS AS THE BASIS FOR SEMANTIC ANALYSIS.
+
