@@ -2925,9 +2925,6 @@ fn codegen cgrdparsehook_repseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
         @cg_bldr_pushqtok ";"
     end
     if(!noparenting)
-        if(make_node)
-
-        end
         @cg_bldr_pushqtok "u64"
         @cg_bldr_pushqtok "stack_checker"
         @cg_bldr_pushqtok "u64"
@@ -2953,7 +2950,6 @@ fn codegen cgrdparsehook_repseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
             @cg_bldr_pushqtok "("
             @cg_bldr_pushqtok "nid"
             @cg_bldr_pushqtok ")"
-            @cg_bldr_pushqtok ";"
         else
             @cg_bldr_pushqtok "="
             @cg_bldr_pushqtok "this"
@@ -2970,8 +2966,8 @@ fn codegen cgrdparsehook_repseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
             @cg_bldr_pushqtok "-"
             @cg_bldr_pushqtok "1"
             @cg_bldr_pushqtok "]"
-            @cg_bldr_pushqtok ";"
         end
+        @cg_bldr_pushqtok ";"
     end
     //We assume we are parenting to a node above is... nid is on top of the stack...
     
