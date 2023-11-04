@@ -1,7 +1,10 @@
 
+//All Glory to the Lord Jesus Christ of Nazareth, who is, and who
+//was, and who is to come, for ever. Amen.
+
+#guard comptime_recursive_descent_parser_library_cbas_metaprogramming
 
 
-#guard compiletime_recursive_descent_parser_library_DMHSW
 
 #include "cgbuilder.hbas"
 #include "cg_uast.hbas"
