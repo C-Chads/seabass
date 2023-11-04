@@ -862,8 +862,8 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
                     in_rwalk.right != CG_TOK_OPAREN)
                         __builtin_puts("RDPARSER_ERROR!");
                         __builtin_puts("stpush must be followed by a");
-                        __builtin_puts("parenthesized expression! like so:");
-                        __builtin_puts("stackpush(my_node_variable);");
+                        __builtin_puts("parenthesized expression! use like so:");
+                        __builtin_puts("u64 myvar = stackpush(my_node_variable);");
                         __builtin_puts("Parser's name is:");
                         __builtin_puts(spec.name.s);
                         __builtin_puts("Current Rule's name is:");
@@ -903,6 +903,22 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
                     @cg_bldr_pushqtok ")"
                     //continue will consume it for us...
                     continue
+                elif(in_rwalk.text streq "addself")
+
+                    //we have an addnode command...
+                    //ensure this is compatible with expressions...
+                    @cg_bldr_pushqtok "("
+                    @cg_bldr_pushqtok "this"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "uast"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "push_node"
+                    @cg_bldr_pushqtok "("
+                    @cg_bldr_pushqtok "self"
+                    @cg_bldr_pushqtok ")"
+                    @cg_bldr_pushqtok ")"
+                    //continue will consume it for us...
+                    continue
                 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 elif(in_rwalk.text streq "addpushnode")
                     in_rwalk = in_rwalk.right;
@@ -916,8 +932,6 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
                         __builtin_puts(this.name.s);
                         __builtin_exit(1);
                     end
-                    //we have an addnode command...
-                    //ensure this is compatible with expressions...
                     @cg_bldr_pushqtok "if"
                     @cg_bldr_pushqtok "("
                     @cg_bldr_pushqtok "1"
@@ -943,7 +957,40 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
                     @cg_bldr_pushqtok "stackpush"
                     @cg_bldr_pushqtok "("
                     @cg_bldr_pushqtok "__cgrdparse_temporary_value__"
-                    @cg_bldr_pushqtok ")"                    
+                    @cg_bldr_pushqtok ")"
+                    
+                    @cg_bldr_pushqtok "end"
+                    //continue will consume it for us...
+                
+                    continue
+                //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                elif(in_rwalk.text streq "addpushself")
+                    @cg_bldr_pushqtok "if"
+                    @cg_bldr_pushqtok "("
+                    @cg_bldr_pushqtok "1"
+                    @cg_bldr_pushqtok ")"
+                    
+                    @cg_bldr_pushqtok "u64"
+                    @cg_bldr_pushqtok "__cgrdparse_temporary_value__"
+                    @cg_bldr_pushqtok "="
+                    @cg_bldr_pushqtok "this"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "uast"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "push_node"
+                    @cg_bldr_pushqtok "("
+                    @cg_bldr_pushqtok "self"
+                    @cg_bldr_pushqtok ")"
+                    @cg_bldr_pushqtok ";"
+                    
+                    @cg_bldr_pushqtok "this"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "uast"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "stackpush"
+                    @cg_bldr_pushqtok "("
+                    @cg_bldr_pushqtok "__cgrdparse_temporary_value__"
+                    @cg_bldr_pushqtok ")"
                     
                     @cg_bldr_pushqtok "end"
                     //continue will consume it for us...
