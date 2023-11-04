@@ -95,6 +95,7 @@
     
 
     for(in_walker = inlist, in_walker != cast(cgstrll*)0, in_walker = in_walker.right)
+        :looptop
         char* text
         if(in_walker.d == CG_TOK_UNKNOWN && in_walker.text streq "$") //the escape character!
             cgstrll* in_walker_old = in_walker;
@@ -117,14 +118,13 @@
                     @pushtok [code]
                     @rwalk_skip ;
                 end
+                goto looptop //we don't want to skip what in_walker is pointing at...
             end
             //if we don't find anything, assume that the escape code
-            //was a mistake, i.e. soft-fail...
+            //was to escape another dollar sign or some other special sequence.
         end
         
         text = in_walker:to_cstr();
-        //__builtin_puts("Converted a token to string:");
-        //__builtin_puts(text);
         if(text == cast(char*)0)
             char[50] buf
             __builtin_puts("cg_tokmanip_push_strings ERROR");
