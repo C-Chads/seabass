@@ -2711,6 +2711,7 @@ fn codegen cgrdparsehook_repseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
     u64 had_trivial_terminator = 0;
     u64 noconsume = 0;
     u64 noparenting = 0;
+    u64 make_node = 0;
 
     
     if(in == 0 || in.d != CG_TOK_IDENT)
@@ -2737,6 +2738,25 @@ fn codegen cgrdparsehook_repseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
         in_old = in;
         in = in.right;
         goto modifiers_top
+    end   
+    if(in != 0 && in.d == CG_TOK_IDENT && in.text streq "makenode")
+        make_node = 1;
+        in_old = in;
+        in = in.right;
+        goto modifiers_top
+    end
+    
+    if(make_node && noparenting)
+        @pprint[
+            /   "cgrdparsehook_repseq ERROR!!!!"
+            /   "This repseq rule has INVALID modifiers!"
+            /   "It cannot be both `noparenting` and `makenode`!"
+            /   "Language name is:"
+            /   (spec.name.s)
+            /   "Rule name is:"
+            /   (the_name.text)
+        ]
+        __builtin_exit(1);
     end
     
     if(in == 0 || in.d != CG_TOK_OBRACK)
@@ -2870,35 +2890,88 @@ fn codegen cgrdparsehook_repseq(cgstrll* in, cg_rd_parser_spec spec)->cgstrll*:
         @cgrdparsehook_repseq_termcheckcode_pushqtok "end" //end of termination check code...
     end //eof !had_trivial_terminator
     /*
+        if we are doing make_node (and )
+    */
+
+    
+    /*
         We are now ready to begin parsing the actual repeated sequence.
         
         we construct a giant while loop....
     */
     @cg_bldr_inittok [the_name:dupe()]
     @cg_bldr_pushqtok "["
+    if(make_node)
+        cgstrll* iwalker
+        iwalker = in;
+        @cg_bldr_pushqtok "cg_uastnode" 
+        @cg_bldr_pushqtok "me"
+
+        //assign the 
+        for(
+            iwalker = in, 
+            iwalker != 0 && !(iwalker.d == CG_TOK_OPERATOR && iwalker.text streq ":"), 
+            iwalker = iwalker.right
+        )
+        end
+        if(iwalker != 0 && iwalker.right != 0)
+            @cg_bldr_pushqtok "me"
+            @cg_bldr_pushqtok "."
+            @cg_bldr_pushqtok "coord"
+            @cg_bldr_pushqtok "="
+            @cg_bldr_pushtok [iwalker.dupell()]
+            @cg_bldr_rwalk_skip ;
+        end
+        @cg_bldr_pushqtok ";"
+    end
     if(!noparenting)
+        if(make_node)
+
+        end
         @cg_bldr_pushqtok "u64"
         @cg_bldr_pushqtok "stack_checker"
         @cg_bldr_pushqtok "u64"
         @cg_bldr_pushqtok "cid"
         @cg_bldr_pushqtok "u64"
         @cg_bldr_pushqtok "nid"
-        @cg_bldr_pushqtok "="
-        @cg_bldr_pushqtok "this"
-        @cg_bldr_pushqtok "."
-        @cg_bldr_pushqtok "uast"
-        @cg_bldr_pushqtok "."
-        @cg_bldr_pushqtok "pstack"
-        @cg_bldr_pushqtok "["
-        @cg_bldr_pushqtok "this"
-        @cg_bldr_pushqtok "."
-        @cg_bldr_pushqtok "uast"
-        @cg_bldr_pushqtok "."
-        @cg_bldr_pushqtok "stackptr"
-        @cg_bldr_pushqtok "-"
-        @cg_bldr_pushqtok "1"
-        @cg_bldr_pushqtok "]"
-        @cg_bldr_pushqtok ";"
+        if(make_node)
+            @cg_bldr_pushqtok "="
+            @cg_bldr_pushqtok "this"
+            @cg_bldr_pushqtok "."
+            @cg_bldr_pushqtok "uast"
+            @cg_bldr_pushqtok "."
+            @cg_bldr_pushqtok "push_node"
+            @cg_bldr_pushqtok "("
+            @cg_bldr_pushqtok "me"
+            @cg_bldr_pushqtok ")"
+            @cg_bldr_pushqtok ";"
+            @cg_bldr_pushqtok "this"
+            @cg_bldr_pushqtok "."
+            @cg_bldr_pushqtok "uast"
+            @cg_bldr_pushqtok "."
+            @cg_bldr_pushqtok "stackpush"
+            @cg_bldr_pushqtok "("
+            @cg_bldr_pushqtok "nid"
+            @cg_bldr_pushqtok ")"
+            @cg_bldr_pushqtok ";"
+        else
+            @cg_bldr_pushqtok "="
+            @cg_bldr_pushqtok "this"
+            @cg_bldr_pushqtok "."
+            @cg_bldr_pushqtok "uast"
+            @cg_bldr_pushqtok "."
+            @cg_bldr_pushqtok "pstack"
+            @cg_bldr_pushqtok "["
+            @cg_bldr_pushqtok "this"
+            @cg_bldr_pushqtok "."
+            @cg_bldr_pushqtok "uast"
+            @cg_bldr_pushqtok "."
+            @cg_bldr_pushqtok "stackptr"
+            @cg_bldr_pushqtok "-"
+            @cg_bldr_pushqtok "1"
+            @cg_bldr_pushqtok "]"
+            @cg_bldr_pushqtok ";"
+        end
     end
     //We assume we are parenting to a node above is... nid is on top of the stack...
     
