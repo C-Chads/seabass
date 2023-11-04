@@ -975,6 +975,7 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
                     //alright, that's good enough.
                     
                     //finally, emit
+                    @cg_bldr_pushqtok ";"
                     @cg_bldr_pushqtok "@"
                     @cg_bldr_pushqtok "cg_rd_parse_match"
                     continue;
@@ -996,6 +997,7 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
                     continue;
                 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 elif(in_rwalk.text streq "eat")
+                    @cg_bldr_pushqtok ";"
                     @cg_bldr_pushqtok "this"
                     @cg_bldr_pushqtok "."
                     @cg_bldr_pushqtok "tok"
@@ -1105,6 +1107,7 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
                         __builtin_exit(1);
                     end
                     //equivalence
+                    @cg_bldr_pushqtok ";"
                     @cg_bldr_pushqtok "@"
                     @cg_bldr_pushqtok "cg_bldr_pushtok"
                     continue; //We need to expand anything like TOK on the line...
@@ -1131,6 +1134,7 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
                         __builtin_exit(1);
                     end
                     //equivalence
+                    @cg_bldr_pushqtok ";"
                     @cg_bldr_pushqtok "@"
                     @cg_bldr_pushqtok "cg_bldr_pushqtok"
                     continue; //We need to expand anything like TOK on the line...
@@ -1157,8 +1161,10 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
                         __builtin_exit(1);
                     end
                     //equivalence
+                    @cg_bldr_pushqtok ";"
                     @cg_bldr_pushqtok "@"
                     @cg_bldr_pushqtok "cg_bldr_rwalk_skip"
+                    @cg_bldr_pushqtok ";"
                     continue; //We need to expand anything like TOK on the line...
                     //so we let ourselves do that.
                 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
