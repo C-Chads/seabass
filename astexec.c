@@ -97,7 +97,11 @@ static uint64_t ast_vm_stack_push_lvar(symdecl* s){
 	vm_stack[placement].identification = VM_VARIABLE;
 	//vm_stack[placement].t = s->t; //NOTE: Includes lvalue information.
     qq = type_getsz(s->t);
+    //align qq to 32...
+    qq = qq + 31;
+    qq = qq & ~(uint64_t)31;
 	if(s->t.arraylen){
+
 	    vm_stack[placement].allocationsize = qq;
 		vm_stack[placement].ldata = vm_bigstack + vm_bigstackptr;
 		vm_bigstackptr += qq;
