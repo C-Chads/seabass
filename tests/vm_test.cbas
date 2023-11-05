@@ -1111,12 +1111,12 @@ proc codegen codegen_main():
     	    if(1)
     	        ctor_dtor_tester quality //5
     	        ctor_dtor_tester quantity //6
-    	        if(bruhmoment == 3)
+    	        if(bruhmoment == 7)
     	            ctor_dtor_tester Velocity //7
     	            break
     	        end
     	    end
-    	    if(bruhmoment == 7)
+    	    if(bruhmoment == 4)
     	        goto nomore
     	    end
     	    continue
