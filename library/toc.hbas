@@ -1901,9 +1901,17 @@ method codegen cgtypedecl:emit_type(cgast* ast, u64 my_structid):
         elif(basetype == CG_BASE_I16)
             printme:fromstr("signed short");
         elif(basetype == CG_BASE_U32)
-            printme:fromstr("unsigned");
+            if(cg_Cemitter_long_32bit)
+                printme:fromstr("unsigned long");
+            else
+                printme:fromstr("unsigned");
+            end
         elif(basetype == CG_BASE_I32)
-            printme:fromstr("int");
+            if(cg_Cemitter_long_32bit)
+                printme:fromstr("long");
+            else
+                printme:fromstr("int");
+            end
         elif(basetype == CG_BASE_U64)
             printme:fromstr("unsigned long long");
         elif(basetype == CG_BASE_I64)
@@ -1972,6 +1980,10 @@ fn codegen cg_emitC(char* prefix):
     //the entire unit has been parsed. Get the AST.
     cgast* ast
     char* ofname
+    if(SEABASS_TARGET_BITS == 16 || SEABASS_TARGET_BITS == 32)
+        //long is almost certainly 32 bit...
+        cg_Cemitter_long_32bit = 1;
+    end
     ofname = "auto_out.c";
     ast = cast(cgast*)__builtin_get_ast();
     if(__builtin_getargc() > 2)
@@ -2018,6 +2030,8 @@ fn codegen cg_emitC(char* prefix):
         ~DMHSW
     */
     cg_quick_emit("\n/*\n* ---- EXPORTED BY TOC.HBAS ----\n* Beloved, if God so loved us, we ought also to love one another.\n* 1 Jn 4:11\n*/",0);
+    cg_quick_emit(SEABASS_BIT_PREFIX,0);
+    
     if(prefix != cast(u8*)0)
         cg_quick_emit(prefix,0);
     end

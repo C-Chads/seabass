@@ -1,4 +1,12 @@
 
+/*
+    IMPLEMENTER'S NOTES:
+    
+    1. You will probably have to modify this file for your target....
+    2. _STRTOU_ and _STRTOI_ are used in the standard library...
+    3. 
+*/
+
 #guard BIT16_TGT_CBAS
 
 
@@ -9,6 +17,13 @@
 
 #__CBAS_TARGET_WORDSZ 16
 #__CBAS_TARGET_DISABLE_FLOAT
+data codegen string SEABASS_BIT_PREFIX "
+#define SEABASS_16_BIT 1
+#define i32 long
+#define u32 unsigned long
+#define _STRTOU_ atou
+#define _STRTOI_ atoi
+";
 
-
+codegen u64 SEABASS_TARGET_BITS = 16;
 

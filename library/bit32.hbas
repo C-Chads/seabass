@@ -9,5 +9,14 @@
 
 #__CBAS_TARGET_WORDSZ 32
 #__CBAS_TARGET_MAX_FLOAT 64
+data codegen string SEABASS_BIT_PREFIX "
+#define SEABASS_32_BIT 1
+#define i32 long
+#define u32 unsigned long
+#define _STRTOU_ strtoul
+#define _STRTOI_ strtol
+";
+
+codegen u64 SEABASS_TARGET_BITS = 32;
 
 
