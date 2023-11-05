@@ -444,6 +444,15 @@ method codegen cg_uastnode.push_rel_vector(cg_uast ast, u64 coord, u64 pushme)->
     return 1;
 end
 
+//add a link with a layer of indirection.
+method codegen cg_uast.add_link_ind(u64 daddy, u64 coord, u64 child)->i64:
+    if(daddy >= this.n_nodes || child >= this.n_nodes) return -1 end;
+    cg_uastnode* pp = this.nodes[daddy];
+    pp.push_rel_vector(this, coord, child);
+    
+    return 0
+end
+
 /*
 *   THE CORE OF THE MACHINE
 */
