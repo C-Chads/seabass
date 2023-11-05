@@ -155,6 +155,14 @@ static inline size_t __CBAS__fread(size_t fhandle, unsigned char* buf, size_t nb
 static inline size_t __CBAS__get_utime(){
     return time(0);
 }
+static inline size_t __CBAS__time(size_t* a){
+    return time(a);
+}
+static inline size_t __CBAS__clock(){
+    return clock();
+}static inline size_t __CBAS__CLOCKS_PER_SEC(){
+    return CLOCKS_PER_SEC;
+}
 
 
 static inline void __CBAS__set_errno(i32 new_errno){
@@ -492,7 +500,117 @@ static inline void __CBAS__sys_exit(i32 a){
         *q = p;
         return retval;
     }
-
+//copysign
+    static inline double __CBAS__copysign(double a, double b){
+        return copysign(a,b);
+    }
+    static inline float __CBAS__copysignf(float a, float b){
+        return copysignf(a,b);
+    }
+//nan
+    static inline double __CBAS__nan(unsigned char* tagp){
+        return nan((const char*)tagp);
+    }
+    static inline float __CBAS__nanf(unsigned char* tagp){
+        return nanf((const char*)tagp);
+    }
+//nextafter
+    static inline double __CBAS__nextafter(double a, double b){
+        return nextafter(a,b);
+    }
+    static inline float __CBAS__nextafterf(float a, float b){
+        return nextafterf(a,b);
+    }
+    static inline double __CBAS__fdim(double a, double b){
+        return fdim(a,b);
+    }
+    static inline float __CBAS__fdimf(float a, float b){
+        return fdimf(a,b);
+    }
+//fmaxmin
+    static inline double __CBAS__fmax(double a, double b){
+        return fmax(a,b);
+    }
+    static inline float __CBAS__fmaxf(float a, float b){
+        return fmaxf(a,b);
+    }
+    static inline double __CBAS__fmin(double a, double b){
+        return fmin(a,b);
+    }
+    static inline float __CBAS__fminf(float a, float b){
+        return fminf(a,b);
+    }
+//fabs
+    static inline double __CBAS__fabs(double a){
+        return fabs(a);
+    }
+    static inline float __CBAS__fabsf(float a){
+        return fabsf(a);
+    }
+    static inline double __CBAS__fma(double a, double b, double z){
+        return fma(a,b,z);
+    }
+    static inline float __CBAS__fmaf(float a, float b, float z){
+        return fmaf(a,b,z);
+    }
+//fpclassify
+    static inline i32 __CBAS__fpclassify(double q){
+        return fpclassify(q);
+    }
+    static inline i32 __CBAS__isfinite(double q){
+        return isfinite(q);
+    }
+    static inline i32 __CBAS__isinf(double q){
+        return isinf(q);
+    }
+    static inline i32 __CBAS__isnan(double q){
+        return isnan(q);
+    }
+    static inline i32 __CBAS__isnormal(double q){
+        return isnormal(q);
+    }
+    static inline i32 __CBAS__signbit(double q){
+        return signbit(q);
+    }
+//fpclassify
+    static inline i32 __CBAS__fpclassifyf(float q){
+        return fpclassify(q);
+    }
+    static inline i32 __CBAS__isfinitef(float q){
+        return isfinite(q);
+    }
+    static inline i32 __CBAS__isinff(float q){
+        return isinf(q);
+    }
+    static inline i32 __CBAS__isnanf(float q){
+        return isnan(q);
+    }
+    static inline i32 __CBAS__isnormalf(float q){
+        return isnormal(q);
+    }
+    static inline i32 __CBAS__signbitf(float q){
+        return signbit(q);
+    }
+//isunordered
+    static inline i32 __CBAS__isunordered(double a, double b){
+        return isunordered(a,b);
+    }
+    static inline i32 __CBAS__isunorderedf(float a, float b){
+        return isunordered(a,b);
+    }
+//infinity, nan, huge_val
+    static inline float __CBAS__INFINITY(){
+        return INFINITY;
+    }
+    static inline float __CBAS__NAN(){
+        return NAN;
+    }
+    static inline double __CBAS__HUGE_VAL(){
+        return HUGE_VAL;
+    }
+    static inline float __CBAS__HUGE_VALF(){
+        return HUGE_VALF;
+    }
 
 //MULTITHREADING LIBRARY
 #ifndef __APPLE__
@@ -623,6 +741,9 @@ fn predecl noexport fread(TGT_UMAX fhandle, char* buf, TGT_UMAX nbytes)->TGT_UMA
 
 //get unix time...
 fn predecl pure noexport get_utime()->TGT_UMAX;
+fn predecl pure noexport time(TGT_UMAX* a)->TGT_UMAX;
+fn predecl pure noexport clock()->TGT_UMAX;
+fn predecl pure noexport CLOCKS_PER_SEC()->TGT_UMAX;
 
 fn predecl noexport set_errno(int new_errno);
 fn predecl noexport get_errno()->int;
@@ -649,115 +770,160 @@ fn predecl noexport sys_exit(int a);
     doing 
 */
 //trig
-fn predecl noexport sin(double a)->double;
-fn predecl noexport cos(double a)->double;
-fn predecl noexport tan(double a)->double;
+fn predecl pure noexport sin(double a)->double;
+fn predecl pure noexport cos(double a)->double;
+fn predecl pure noexport tan(double a)->double;
 
-fn predecl noexport sinf(f32 a)->f32;
-fn predecl noexport cosf(f32 a)->f32;
-fn predecl noexport tanf(f32 a)->f32;
+fn predecl pure noexport sinf(f32 a)->f32;
+fn predecl pure noexport cosf(f32 a)->f32;
+fn predecl pure noexport tanf(f32 a)->f32;
 
 //arcs...
-fn predecl noexport asin(double a)->double;
-fn predecl noexport acos(double a)->double;
-fn predecl noexport atan(double a)->double;
+fn predecl pure noexport asin(double a)->double;
+fn predecl pure noexport acos(double a)->double;
+fn predecl pure noexport atan(double a)->double;
 
-fn predecl noexport asinf(f32 a)->f32;
-fn predecl noexport acosf(f32 a)->f32;
-fn predecl noexport atanf(f32 a)->f32;
+fn predecl pure noexport asinf(f32 a)->f32;
+fn predecl pure noexport acosf(f32 a)->f32;
+fn predecl pure noexport atanf(f32 a)->f32;
 //atan2
-fn predecl noexport atan2(double a, double b)->double;
-fn predecl noexport atan2f(f32 a, f32 b)->f32;
+fn predecl pure noexport atan2(double a, double b)->double;
+fn predecl pure noexport atan2f(f32 a, f32 b)->f32;
 
 //hyperbolics...
-fn predecl noexport sinh(double a)->double;
-fn predecl noexport cosh(double a)->double;
-fn predecl noexport tanh(double a)->double;
-fn predecl noexport asinh(double a)->double;
-fn predecl noexport acosh(double a)->double;
-fn predecl noexport atanh(double a)->double;
+fn predecl pure noexport sinh(double a)->double;
+fn predecl pure noexport cosh(double a)->double;
+fn predecl pure noexport tanh(double a)->double;
+fn predecl pure noexport asinh(double a)->double;
+fn predecl pure noexport acosh(double a)->double;
+fn predecl pure noexport atanh(double a)->double;
 
-fn predecl noexport sinhf(f32 a)->f32;
-fn predecl noexport coshf(f32 a)->f32;
-fn predecl noexport tanhf(f32 a)->f32;
-fn predecl noexport asinhf(f32 a)->f32;
-fn predecl noexport acoshf(f32 a)->f32;
-fn predecl noexport atanhf(f32 a)->f32;
+fn predecl pure noexport sinhf(f32 a)->f32;
+fn predecl pure noexport coshf(f32 a)->f32;
+fn predecl pure noexport tanhf(f32 a)->f32;
+fn predecl pure noexport asinhf(f32 a)->f32;
+fn predecl pure noexport acoshf(f32 a)->f32;
+fn predecl pure noexport atanhf(f32 a)->f32;
 //exponentiation...
-fn predecl noexport exp(double a)->double;
-fn predecl noexport expf(f32 a)->f32;
+fn predecl pure noexport exp(double a)->double;
+fn predecl pure noexport expf(f32 a)->f32;
 //frexp
-fn predecl noexport frexp(f64 a, i32* b)->f64;
-fn predecl noexport frexpf(f32 a, i32* b)->f32;
+fn predecl pure noexport frexp(f64 a, i32* b)->f64;
+fn predecl pure noexport frexpf(f32 a, i32* b)->f32;
 //ldexp (Notice: Not pointers in the second argument...)
-fn predecl noexport ldexp(f64 a, i32 b)->f64;
-fn predecl noexport ldexpf(f32 a, i32 b)->f32;
+fn predecl pure noexport ldexp(f64 a, i32 b)->f64;
+fn predecl pure noexport ldexpf(f32 a, i32 b)->f32;
 //log
-fn predecl noexport log(double a)->double;
-fn predecl noexport logf(f32 a)->f32;
-fn predecl noexport log10(double a)->double;
-fn predecl noexport log10f(f32 a)->f32;
-fn predecl noexport log2(double a)->double;
-fn predecl noexport log2f(f32 a)->f32;
-fn predecl noexport logb(double a)->double;
-fn predecl noexport logbf(f32 a)->f32;
+fn predecl pure noexport log(double a)->double;
+fn predecl pure noexport logf(f32 a)->f32;
+fn predecl pure noexport log10(double a)->double;
+fn predecl pure noexport log10f(f32 a)->f32;
+fn predecl pure noexport log2(double a)->double;
+fn predecl pure noexport log2f(f32 a)->f32;
+fn predecl pure noexport logb(double a)->double;
+fn predecl pure noexport logbf(f32 a)->f32;
 //modf
-fn predecl noexport modf(f64 a, f64* b)->f64;
-fn predecl noexport modff(f32 a, f32* b)->f32;
+fn predecl pure noexport modf(f64 a, f64* b)->f64;
+fn predecl pure noexport modff(f32 a, f32* b)->f32;
 //exponentiation2...
-fn predecl noexport exp2(double a)->double;
-fn predecl noexport exp2f(f32 a)->f32;
-fn predecl noexport expm1(double a)->double;
-fn predecl noexport expm1f(f32 a)->f32;
+fn predecl pure noexport exp2(double a)->double;
+fn predecl pure noexport exp2f(f32 a)->f32;
+fn predecl pure noexport expm1(double a)->double;
+fn predecl pure noexport expm1f(f32 a)->f32;
 //ilogb
-fn predecl noexport ilogbf(f32 a)->int;
-fn predecl noexport ilogb(f64 a)->int;
+fn predecl pure noexport ilogbf(f32 a)->int;
+fn predecl pure noexport ilogb(f64 a)->int;
 
-fn predecl noexport log1p(double a)->double;
-fn predecl noexport log1pf(f32 a)->f32;
-fn predecl noexport scalbnf(f32 a, i32 n)->f32;
-fn predecl noexport scalbn(f64 a, i32 n)->f64;
+fn predecl pure noexport log1p(double a)->double;
+fn predecl pure noexport log1pf(f32 a)->f32;
+fn predecl pure noexport scalbnf(f32 a, i32 n)->f32;
+fn predecl pure noexport scalbn(f64 a, i32 n)->f64;
 //pow
-fn predecl noexport pow(double a, double b)->double;
-fn predecl noexport powf(f32 a, f32 b)->f32;
+fn predecl pure noexport pow(double a, double b)->double;
+fn predecl pure noexport powf(f32 a, f32 b)->f32;
 //roots
-fn predecl noexport sqrt(double a)->double;
-fn predecl noexport sqrtf(f32 a)->f32;
-fn predecl noexport cbrt(double a)->double;
-fn predecl noexport cbrtf(f32 a)->f32;
+fn predecl pure noexport sqrt(double a)->double;
+fn predecl pure noexport sqrtf(f32 a)->f32;
+fn predecl pure noexport cbrt(double a)->double;
+fn predecl pure noexport cbrtf(f32 a)->f32;
 
-fn predecl noexport hypot(double a, double b)->double;
-fn predecl noexport hypotf(f32 a, f32 b)->f32;
+fn predecl pure noexport hypot(double a, double b)->double;
+fn predecl pure noexport hypotf(f32 a, f32 b)->f32;
 
-fn predecl noexport erf(double a)->double;
-fn predecl noexport erff(f32 a)->f32;
+fn predecl pure noexport erf(double a)->double;
+fn predecl pure noexport erff(f32 a)->f32;
 
-fn predecl noexport erfc(double a)->double;
-fn predecl noexport erfcf(f32 a)->f32;
-fn predecl noexport tgamma(double a)->double;
-fn predecl noexport tgammaf(f32 a)->f32;
-fn predecl noexport lgamma(double a)->double;
-fn predecl noexport lgammaf(f32 a)->f32;
+fn predecl pure noexport erfc(double a)->double;
+fn predecl pure noexport erfcf(f32 a)->f32;
+fn predecl pure noexport tgamma(double a)->double;
+fn predecl pure noexport tgammaf(f32 a)->f32;
+fn predecl pure noexport lgamma(double a)->double;
+fn predecl pure noexport lgammaf(f32 a)->f32;
 
-fn predecl noexport ceil(double a)->double;
-fn predecl noexport ceilf(f32 a)->f32;
-fn predecl noexport floor(double a)->double;
-fn predecl noexport floorf(f32 a)->f32;
-fn predecl noexport trunc(double a)->double;
-fn predecl noexport truncf(f32 a)->f32;
-fn predecl noexport round(double a)->double;
-fn predecl noexport roundf(f32 a)->f32;
+fn predecl pure noexport ceil(double a)->double;
+fn predecl pure noexport ceilf(f32 a)->f32;
+fn predecl pure noexport floor(double a)->double;
+fn predecl pure noexport floorf(f32 a)->f32;
+fn predecl pure noexport trunc(double a)->double;
+fn predecl pure noexport truncf(f32 a)->f32;
+fn predecl pure noexport round(double a)->double;
+fn predecl pure noexport roundf(f32 a)->f32;
 //fmod
-fn predecl noexport fmod(f64 a, f64 b)->f64;
-fn predecl noexport fmodf(f32 a, f32 b)->f32;
+fn predecl pure noexport fmod(f64 a, f64 b)->f64;
+fn predecl pure noexport fmodf(f32 a, f32 b)->f32;
 //nearby int
-fn predecl noexport nearbyint(double a)->double;
-fn predecl noexport nearbyintf(f32 a)->f32;
+fn predecl pure noexport nearbyint(double a)->double;
+fn predecl pure noexport nearbyintf(f32 a)->f32;
 //remainder
-fn predecl noexport remainder(f64 a, f64 b)->f64;
-fn predecl noexport remainderf(f32 a, f32 b)->f32;
-fn predecl noexport remquo(f64 a, f64 b, i32* q)->f64;
-fn predecl noexport remquof(f32 a, f32 b, i32* q)->f32;
+fn predecl pure noexport remainder(f64 a, f64 b)->f64;
+fn predecl pure noexport remainderf(f32 a, f32 b)->f32;
+fn predecl pure noexport remquo(f64 a, f64 b, i32* q)->f64;
+fn predecl pure noexport remquof(f32 a, f32 b, i32* q)->f32;
+//copysign
+fn predecl pure noexport copysign(f64 a, f64 b)->f64;
+fn predecl pure noexport copysignf(f32 a, f32 b)->f32;
+//nan
+fn predecl pure noexport nan(char* tagp)->f64;
+fn predecl pure noexport nanf(char* tagp)->f32;
+//nextafter
+fn predecl pure noexport nextafter(f64 a, f64 b)->f64;
+fn predecl pure noexport nextafterf(f32 a, f32 b)->f32;
+//fdim
+fn predecl pure noexport fdim(f64 a, f64 b)->f64;
+fn predecl pure noexport fdimf(f32 a, f32 b)->f32;
+//fmaxmin
+fn predecl pure noexport fmax(f64 a, f64 b)->f64;
+fn predecl pure noexport fmaxf(f32 a, f32 b)->f32;
+fn predecl pure noexport fmin(f64 a, f64 b)->f64;
+fn predecl pure noexport fminf(f32 a, f32 b)->f32;
+//fabs
+fn predecl pure noexport fabs(double a)->double;
+fn predecl pure noexport fabsf(f32 a)->f32;
+
+fn predecl pure noexport fma(f64 a, f64 b, f64 z)->f64;
+fn predecl pure noexport fmaf(f32 a, f32 b, f32 z)->f32;
+//double-only float classification functions...
+fn predecl pure noexport fpclassify(f64 q)->i32;
+fn predecl pure noexport isfinite(f64 q)->i32;
+fn predecl pure noexport isinf(f64 q)->i32;
+fn predecl pure noexport isnan(f64 q)->i32;
+fn predecl pure noexport isnormal(f64 q)->i32;
+fn predecl pure noexport signbit(f64 q)->i32;
+//float-only float classification functions...
+fn predecl pure noexport fpclassifyf(f32 q)->i32;
+fn predecl pure noexport isfinitef(f32 q)->i32;
+fn predecl pure noexport isinff(f32 q)->i32;
+fn predecl pure noexport isnanf(f32 q)->i32;
+fn predecl pure noexport isnormalf(f32 q)->i32;
+fn predecl pure noexport signbitf(f32 q)->i32;
+//comparison functions... didn't bother porting isgreater et al
+fn predecl pure noexport isunordered(f64 a, f64 b)->i32;
+fn predecl pure noexport isunorderedf(f32 a, f32 b)->i32;
+//get constants...
+fn predecl pure noexport INFINITY()->f32;
+fn predecl pure noexport NAN()->f32;
+fn predecl pure noexport HUGE_VAL()->f64;
+fn predecl pure noexport HUGE_VALF()->f32;
 
 /*
 
