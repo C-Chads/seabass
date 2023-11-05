@@ -2009,6 +2009,7 @@ fn codegen cg_emitC(char* prefix):
             __builtin_exit(1);
         end
     end
+    cg_quick_emit("/*\n* ---- EXPORTED BY TOC.HBAS ----\n* Beloved, if God so loved us, we ought also to love one another.\n* 1 Jn 4:11\n*/",0);
     if(prefix != cast(u8*)0)
         cg_quick_emit(prefix,0);
     end
@@ -2016,7 +2017,6 @@ fn codegen cg_emitC(char* prefix):
         cg_quick_emit("\n/*GASM_BLOCK*/\n",0);
         cg_quick_emit(cg_Cemitter_gasm, 0);
     end
-    cg_quick_emit("/*\nEXPORTED CODE FROM SEABASS METAPROGRAMMING LANGUAGE\nLet all your things be done with charity\n*/",0);
     //emit all of the types...
     i64 i
     cg_quick_emit("/*\nTYPEDECLS\n*/",0);
