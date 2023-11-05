@@ -62,16 +62,9 @@ q: clean install
 
 toc_test:
 	cd library && \
-	cbas toc.cbas && \
+	cbas toc_test.cbas && \
 	mv auto_out.c ../
 	$(CC) -m32 $(CFLAGS_CBAS) auto_out.c -o toc_test
-
-	
-toc_gnuc_test:
-	cd library && \
-	cbas toc_gnuc.cbas && \
-	mv auto_out.c ../
-	$(CC) -m32 $(CFLAGS_CBAS) -lpthread auto_out.c -o toc_test
 
 fib:
 	cd library && \

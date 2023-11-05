@@ -188,7 +188,7 @@ end
 
 
 fn whosa_yousa(int a): 
-    @pprint[ println mutoa
+    @cpprint[
         /   "Whosa programmer? Yousa programmer!"
         /   "Here's that integer..."
         /int (a)
