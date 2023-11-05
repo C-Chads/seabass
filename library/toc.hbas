@@ -35,9 +35,28 @@ fn codegen cg_Cemitter_make_dtable_name()->char*:
     return retval.s;
 end
 
+fn codegen cg_Cemitter_mangle_global_name(char* s)->char*:
+    //the main function is special...
+    if(s streq "main")
+        return __builtin_strdup(s);
+    end
+    //this is not main!
+    cgstr r
+    r.fromstr("__CBAS__");
+    r.addstr(s);
+    return r.s;
+end
+
+fn codegen cg_Cemitter_mangle_type_name(char* s)->char*:
+    //this is not main!
+    cgstr r
+    r.fromstr("__CBAS__type__");
+    r.addstr(s);
+    return r.s;
+end
+
 fn codegen cg_cemitter_utoa(char* buf, u64 v):
     char* suffix;
-    
     cgast* ast = (cgast*)__builtin_get_ast();
     if(ast.target_word == CG_BASE_U64)
         suffix = "ull";
@@ -100,8 +119,8 @@ method codegen cgtype:gen_code(cgast* ast)->char*:
     //but on linux x86_64, `long` is 64 bit. So we can't
     //make that choice there. 
     
-    if(basetype == CG_BASE_STRUCT)
-        printme:fromstr((ast.type_table[0]+structid).name);
+    if(basetype == CG_BASE_STRUCT)  
+        printme.s = cg_Cemitter_mangle_type_name(ast.type_table[0][structid].name);
     elif(basetype == CG_BASE_VOID)
         printme:fromstr("void");
     elif(basetype == CG_BASE_U8)
@@ -222,7 +241,7 @@ method codegen cgexpr_node:gen_code(cgast* ast)->char*:
         cgsymdecl* sym
         symid = this.symid;
         sym = (ast.symbol_table[0] + symid)[0];
-        retval.s = __builtin_strdup(this.symname);
+        retval.s = cg_Cemitter_mangle_global_name(this.symname);
         ff.s = "("; retval:add(ff);
             nargs = sym.nargs;
             for(i = 0, i < nargs, i++)
@@ -336,19 +355,17 @@ method codegen cgexpr_node:gen_code(cgast* ast)->char*:
         //local variable names are mangled...
         cgstr ff
         retval.s = __builtin_strdup("__cbas_local_variable_mangled_name_");
-        ff.s = this.symname;
-        retval:add(ff);
+        retval:addstr(this.symname);
         if(this.was_struct_var) //If this was a struct variable, we need to convert it to a pointer!
             cgstr retval2
             retval2:fromstr("(&");
             retval2:add(retval); retval:free();
-            ff.s = ")";
-            retval2:add(ff);
+            retval2:addstr(")");
             return retval2.s;
         end
         return retval.s;
     elif(this.kind == CG_EXPR_GSYM)
-        retval.s = __builtin_strdup(this.symname);
+        retval.s = cg_Cemitter_mangle_global_name(this.symname);
         if(this.was_struct_var) //If this was a struct variable, we need the pointer!
             cgstr retval2
             
@@ -719,7 +736,7 @@ method codegen cgexpr_node:gen_code(cgast* ast)->char*:
     elif(this.kind == CG_EXPR_STREQ)
         cgstr ff
 
-        retval:fromstr("impl_streq((");
+        retval:fromstr("__CBAS__impl_streq((");
             ff.s = this.subnodes[0]:gen_code(ast);
             retval:add(ff); ff:free();
             ff.s = "),(";
@@ -779,8 +796,9 @@ method codegen cgexpr_node:gen_code(cgast* ast)->char*:
         //Return the name 
         retval:fromstr("(unsigned char*)&");
         cgstr ff
-        ff.s = this.symname;
+        ff.s = cg_Cemitter_mangle_global_name(this.symname);
         retval:add(ff);
+        ff:free();
         return retval.s;
     elif(this.kind == CG_EXPR_CALLFNPTR) 
         //a c function pointer of that prototype, and call it with the arguments...
@@ -871,8 +889,7 @@ method codegen cgexpr_node:gen_code(cgast* ast)->char*:
         sym_to_get_pointer_of = (ast.symbol_table[0]+symid)[0];
         if(sym_to_get_pointer_of.t.arraylen || sym_to_get_pointer_of.is_data)
             //simply strdup it...
-            retval:fromstr(this.symname);
-            return retval.s;
+            return cg_Cemitter_mangle_global_name(this.symname);
         end
         /*
             We want to generate a cast so that if you getglobalptr on a data statement
@@ -1249,7 +1266,7 @@ method codegen cgstmt:gen_code(cgast* ast, char* disptablename, u64 active_fun_s
             qq.s = __builtin_strdup("\n    ");
         
         end
-        qq2.s = target_fn.name; qq:add(qq2);
+        qq2.s = cg_Cemitter_mangle_global_name(target_fn.name); qq:add(qq2); qq2.free();
         
         qq2.s = "(";            qq:add(qq2);
         
@@ -1342,8 +1359,9 @@ method codegen cgsymdecl:gen_code(cgast* ast, char is_local, u64 my_symid)->char
         ff:free();
         ff.s = " ";
         retval:add(ff);
-        ff.s = this.name;
+        ff.s = cg_Cemitter_mangle_global_name(this.name);
         retval:add(ff);
+        ff:free();
         //now we do the arglist...
         ff.s = "(";
         retval:add(ff);
@@ -1413,8 +1431,9 @@ method codegen cgsymdecl:gen_code(cgast* ast, char is_local, u64 my_symid)->char
         out:add(ff); ff:free();
         ff.s = " ";
         out:add(ff);
-        ff.s = this.name;
+        ff.s = cg_Cemitter_mangle_global_name(this.name);
         out:add(ff);
+        ff:free();
         ff.s = "[";
         out:add(ff);
         //__builtin_itoa(buf, arraylen);
@@ -1580,8 +1599,9 @@ method codegen cgsymdecl:gen_code(cgast* ast, char is_local, u64 my_symid)->char
             out:add(ff);
             ff:free();
         else
-            ff.s = this.name;
+            ff.s = cg_Cemitter_mangle_global_name(this.name);
             out:add(ff);
+            ff:free();
         end
         if(arraylen)
             
@@ -1805,9 +1825,9 @@ method codegen cgtypedecl:emit_type(cgast* ast, u64 my_structid):
     end
 
     
-    t.s = this.name;
+    t.s = cg_Cemitter_mangle_type_name(this.name);
     f:add(t);
-
+    t:free();
     t.s = "{";
     f:add(t);
     cg_quick_emit(f.s,0);
@@ -1834,10 +1854,11 @@ method codegen cgtypedecl:emit_type(cgast* ast, u64 my_structid):
                     t.s = "struct ";
                 end
                 printme:fromstr(t.s);
-                t.s = (ast.type_table[0]+structid).name;
+                t.s = cg_Cemitter_mangle_type_name(ast.type_table[0][structid].name);
                 printme:add(t);
+                t:free();
             else
-                printme:fromstr((ast.type_table[0]+structid).name);
+                printme.s = cg_Cemitter_mangle_type_name(ast.type_table[0][structid].name);
             end
         elif(basetype == CG_BASE_VOID)
             printme:fromstr("void");
@@ -1913,9 +1934,10 @@ method codegen cgtypedecl:emit_type(cgast* ast, u64 my_structid):
         f:add(t);
     end
     
-    t.s = this.name;
+    t.s = cg_Cemitter_mangle_type_name(this.name);
     f:add(t);
-
+    t:free();
+    
     t.s = ";";
     f:add(t);
     cg_quick_emit(f.s, 0);

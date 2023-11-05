@@ -64,26 +64,20 @@ toc_test:
 	cd library && \
 	cbas toc.cbas && \
 	mv auto_out.c ../
-	$(CC) -m32 $(CFLAGS_CBAS) auto_out.c library/companion.c -o toc_test
+	$(CC) -m32 $(CFLAGS_CBAS) auto_out.c -o toc_test
 
 	
 toc_gnuc_test:
 	cd library && \
 	cbas toc_gnuc.cbas && \
 	mv auto_out.c ../
-	$(CC) -m32 $(CFLAGS_CBAS) -lpthread auto_out.c library/companion_gnuc.c -o toc_test
+	$(CC) -m32 $(CFLAGS_CBAS) -lpthread auto_out.c -o toc_test
 
 fib:
 	cd library && \
 	cbas toc_fib_example.cbas && \
 	mv auto_out.c ../
-	$(CC) $(CFLAGS_CBAS) auto_out.c library/companion.c -o fib
-
-fib_realpath:
-
-	cbas library/toc_fib_example.cbas
-	$(CC) $(CFLAGS_CBAS) auto_out.c library/companion.c -o fib
-	
+	$(CC) $(CFLAGS_CBAS) auto_out.c -o fib
 
 uninstall:
 	rm -f /usr/local/bin/cbas_dirty

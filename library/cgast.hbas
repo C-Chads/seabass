@@ -387,6 +387,12 @@ method codegen cgstr:add(cgstr* o):
 	this.s = s_new;
 end
 
+method codegen cgstr:addstr(char* s):
+    cgstr o
+    o.s = s;
+    this:add(o);
+end
+
 //predeclaration being used?!?!
 method predecl codegen cgstr:fromstr(char* s);
 
