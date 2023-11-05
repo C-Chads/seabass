@@ -446,13 +446,51 @@ static inline void __CBAS__sys_exit(i32 a){
     }
     static inline float __CBAS__floorf(float a){
         return floorf(a);
+    }    
+    static inline double __CBAS__trunc(double a){
+        return trunc(a);
+    }
+    static inline float __CBAS__truncf(float a){
+        return truncf(a);
+    }
+    static inline double __CBAS__round(double a){
+        return round(a);
+    }
+    static inline float __CBAS__roundf(float a){
+        return roundf(a);
     }
 //fmod
     static inline double __CBAS__fmod(double a, double b){
         return fmod(a,b);
     }
-    static inline float __CBAS__fmodf(float a, double b){
+    static inline float __CBAS__fmodf(float a, float b){
         return fmodf(a,b);
+    }
+//nearbyint
+    static inline double __CBAS__nearbyint(double a){
+        return nearbyint(a);
+    }
+    static inline float __CBAS__nearbyintf(float a){
+        return nearbyintf(a);
+    }
+//remainder
+    static inline double __CBAS__remainder(double a, double b){
+        return remainder(a,b);
+    }
+    static inline float __CBAS__remainderf(float a, float b){
+        return remainderf(a,b);
+    }    
+    static inline double __CBAS__remquo(double a, double b, i32* q){
+        int p = *q;
+        double retval = remquo(a,b,&p);
+        *q = p;
+        return retval;
+    }
+    static inline float __CBAS__remquof(float a, float b, i32* q){
+        int p = *q;
+        float retval = remquof(a,b,&p);
+        *q = p;
+        return retval;
     }
 
 
@@ -705,9 +743,21 @@ fn predecl noexport ceil(double a)->double;
 fn predecl noexport ceilf(f32 a)->f32;
 fn predecl noexport floor(double a)->double;
 fn predecl noexport floorf(f32 a)->f32;
+fn predecl noexport trunc(double a)->double;
+fn predecl noexport truncf(f32 a)->f32;
+fn predecl noexport round(double a)->double;
+fn predecl noexport roundf(f32 a)->f32;
 //fmod
 fn predecl noexport fmod(f64 a, f64 b)->f64;
 fn predecl noexport fmodf(f32 a, f32 b)->f32;
+//nearby int
+fn predecl noexport nearbyint(double a)->double;
+fn predecl noexport nearbyintf(f32 a)->f32;
+//remainder
+fn predecl noexport remainder(f64 a, f64 b)->f64;
+fn predecl noexport remainderf(f32 a, f32 b)->f32;
+fn predecl noexport remquo(f64 a, f64 b, i32* q)->f64;
+fn predecl noexport remquof(f32 a, f32 b, i32* q)->f32;
 
 /*
 
