@@ -60,7 +60,7 @@ Sharing mutable data structures without locks. So if you share a mutable data st
 I should come up with a scheme for explicitly defining state as shared between threads or not.
 
 
-THE AGENT MODEL
+THE AGENT/ACTOR MODEL
 
 Agents will basically be special kinds of classes in Cbas++. They will have special
 reference pointers to shared mutable data as well as owning pointers to private, owned data which
