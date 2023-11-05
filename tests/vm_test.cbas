@@ -83,6 +83,28 @@ class containsArrayOfSubclasses
 	int[400] integers
 end
 
+class ctor_dtor_tester
+    int a;
+end
+
+codegen int level_up = 1;
+
+method codegen ctor_dtor_tester.ctor():
+    this.a = level_up++;
+    char[50] buf
+    __builtin_itoa(buf, this.a);
+    __builtin_puts("Hello! I am:");
+    __builtin_puts(buf);
+end
+
+method codegen ctor_dtor_tester.dtor():
+    char[50] buf
+    __builtin_itoa(buf, this.a);
+    __builtin_puts("Bye! My id was...");
+    __builtin_puts(buf);
+    level_up--;
+end
+
 
 method codegen myClass:doStuff()->u64:
 	if(this.x eq 3)
@@ -1077,6 +1099,34 @@ proc codegen codegen_main():
 	    __builtin_puts("1 1_2 1_3");
 	end
 	test_type_conversion();
+	//test construction and destruction...
+	
+	if(1)
+    	ctor_dtor_tester a //1
+    	ctor_dtor_tester b //2
+    	ctor_dtor_tester c //3
+    	i64 bruhmoment
+    	for(bruhmoment = 0, bruhmoment != 20, bruhmoment++)
+            ctor_dtor_tester Exacerbated //4
+    	    if(1)
+    	        ctor_dtor_tester quality //5
+    	        ctor_dtor_tester quantity //6
+    	        if(bruhmoment == 3)
+    	            ctor_dtor_tester Velocity //7
+    	            break
+    	        end
+    	    end
+    	    if(bruhmoment == 7)
+    	        goto nomore
+    	    end
+    	    continue
+    	    
+    	end
+	
+	end
+	:nomore
+	
+	
 	return;
 end
 
