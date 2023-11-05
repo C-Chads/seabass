@@ -13,7 +13,7 @@
 #guard SEABASS_STDLIB_GNUC
 
 //The glories of a multi-line string literal!
-data codegen string SEABASS_STDLIB_PREFIX "\n\n
+data codegen string SEABASS_STDLIB_PREFIX "
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
