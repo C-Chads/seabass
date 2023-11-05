@@ -24,9 +24,10 @@ however it is close cousins with Lua, BASIC, and C.
 
 ## Tool
 
-Seabass is also a programming tool. Because of its nature, it is
-useful for more than just writing programs in its own language, 
-but also implementing your own programming languages.
+Seabass is more than just a single language and single compiler,
+it is a general-purpose software creation assistance tool. Using
+Seabass, you can compile arbitrary code for arbitrary targets with
+as many (or as few) layers of abstraction in-between as you desire.
 
 ## General-Purpose
 
