@@ -188,7 +188,11 @@ end
 
 
 fn whosa_yousa(int a): 
-    println("Whosa programmer? Yousa programmer!");
+    @pprint[ println mutoa
+        /   "Whosa programmer? Yousa programmer!"
+        /   "Here's that integer..."
+        /int (a)
+    ]
 end
 
 fn wadda(int iters):
