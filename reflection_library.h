@@ -458,7 +458,6 @@
 "\tu64 is_impure_globals_or_asm\n"
 "\tu64 is_impure_uses_incomplete_symbols\n"
 "\tu64 is_data\n"
-"\tu64 is_stringlit\n"
 "    u64 is_noexport\n"
 "\tu64 VM_function_stackframe_placement\n"
 "\tu8* cgen_udata\n"

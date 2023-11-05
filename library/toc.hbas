@@ -1948,8 +1948,7 @@ fn codegen cg_emitC(char* prefix):
         if
         (
             (ast.symbol_table[0]+i)[0].t.is_function ||
-            (ast.symbol_table[0]+i)[0].is_codegen ||
-            (ast.symbol_table[0]+i)[0].is_stringlit
+            (ast.symbol_table[0]+i)[0].is_codegen
         )
             continue
         end
