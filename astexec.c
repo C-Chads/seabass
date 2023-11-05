@@ -1511,7 +1511,7 @@ void do_expr(expr_node* ee){
 			u64data1 = vm_stack[vm_stackpointer-2].smalldata;
 			u64data2 = vm_stack[vm_stackpointer-1].smalldata;
 			if(op == EXPR_DIV) u64data1 = u64data1 / u64data2;
-			if(op == EXPR_MOD) u64data1 = u64data1 % u64data2;
+			else u64data1 = u64data1 % u64data2;
 			memcpy(
 				&vm_stack[vm_stackpointer-2].smalldata, 
 				&u64data1, 
@@ -1528,7 +1528,7 @@ void do_expr(expr_node* ee){
 			i64data1 = vm_stack[vm_stackpointer-2].smalldata;
 			i64data2 = vm_stack[vm_stackpointer-1].smalldata;
 			if(op == EXPR_DIV) i64data1 = i64data1 / i64data2;
-			if(op == EXPR_MOD) i64data1 = i64data1 % i64data2;
+			else i64data1 = i64data1 % i64data2;
 			memcpy(
 				&vm_stack[vm_stackpointer-2].smalldata, 
 				&i64data1, 
@@ -1554,7 +1554,7 @@ void do_expr(expr_node* ee){
 				SIZE_TO_COPY
 			);
 			if(op == EXPR_DIV) u32data1 = u32data1 / u32data2;
-			if(op == EXPR_MOD) u32data1 = u32data1 % u32data2;
+			else u32data1 = u32data1 % u32data2;
 			memcpy(
 				&vm_stack[vm_stackpointer-2].smalldata, 
 				&u32data1, 
@@ -1579,7 +1579,7 @@ void do_expr(expr_node* ee){
 				SIZE_TO_COPY
 			);
 			if(op == EXPR_DIV) i32data1 = i32data1 / i32data2;
-			if(op == EXPR_MOD) i32data1 = i32data1 % i32data2;
+			else i32data1 = i32data1 % i32data2;
 			memcpy(
 				&vm_stack[vm_stackpointer-2].smalldata, 
 				&i32data1, 
@@ -1605,7 +1605,7 @@ void do_expr(expr_node* ee){
 				SIZE_TO_COPY
 			);
 			if(op == EXPR_DIV) u16data1 = u16data1 / u16data2;
-			if(op == EXPR_MOD) u16data1 = u16data1 % u16data2;
+			else u16data1 = u16data1 % u16data2;
 			memcpy(
 				&vm_stack[vm_stackpointer-2].smalldata, 
 				&u16data1, 
@@ -1630,7 +1630,7 @@ void do_expr(expr_node* ee){
 				SIZE_TO_COPY
 			);
 			if(op == EXPR_DIV) i16data1 = i16data1 / i16data2;
-			if(op == EXPR_MOD) i16data1 = i16data1 % i16data2;
+			else i16data1 = i16data1 % i16data2;
 			memcpy(
 				&vm_stack[vm_stackpointer-2].smalldata, 
 				&i16data1, 
@@ -1656,7 +1656,7 @@ void do_expr(expr_node* ee){
 				SIZE_TO_COPY
 			);
 			if(op == EXPR_DIV) u8data1 = u8data1 / u8data2;
-			if(op == EXPR_MOD) u8data1 = u8data1 % u8data2;
+			else u8data1 = u8data1 % u8data2;
 			memcpy(
 				&vm_stack[vm_stackpointer-2].smalldata, 
 				&u8data1, 
@@ -1681,7 +1681,7 @@ void do_expr(expr_node* ee){
 				SIZE_TO_COPY
 			);
 			if(op == EXPR_DIV) i8data1 = i8data1 / i8data2;
-			if(op == EXPR_MOD) i8data1 = i8data1 % i8data2;
+			else i8data1 = i8data1 % i8data2;
 			memcpy(
 				&vm_stack[vm_stackpointer-2].smalldata, 
 				&i8data1, 
@@ -1740,11 +1740,6 @@ void do_expr(expr_node* ee){
 			);
 			goto end_expr_div;
 		}
-		/*
-		puts("VM ERROR");
-		puts("Unhandled div/mod type.");
-		exit(1);
-		*/
 		end_expr_div:;
 		ast_vm_stack_pop(); //get rid of the second operand.
 		//vm_stack[vm_stackpointer-1].t = ee->t;
