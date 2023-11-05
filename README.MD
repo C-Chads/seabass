@@ -577,13 +577,9 @@ a few months.
     
         - [X] cgrdparse- compiletime recursive descent parser generator
         
-            - [X] Parser Rule Templates- Common patterns in recursive descent parsing.
-            
-                (I believe there is more work to be done...)
-        
         - [X] cg_uast- the Universal Abstract Syntax Tree
         
-        - [ ] Semantic Analysis Helpers- Make the authoring of a semantic analyzer easy
+        - [ ] Semantic Analysis Helpers- Make the authoring of a semantic analyzers easy
         
         - [ ] Seabass Code Generation Helpers- Make emitting Seabass easier.
         
