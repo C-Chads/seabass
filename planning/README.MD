@@ -47,8 +47,8 @@ his own reasoning.
 Stroustrup wanted to design a language with abstractions that did the same thing, but base it
 on C.
 
-The result is the most powerful language currently in production (that I know). C++ is unmatched
-in raw power among languages in common use (Perhaps Rust beats it).
+The result is the most powerful language currently in production (that I know). C++ is the
+juggernaut of powerful languages, with only a few close contenders (Rust being one of them).
 
 I am making a language designed to let programmers write their own abstractions arbitrarily, letting
 them make advancements like Stroustrup did *on their own*.
