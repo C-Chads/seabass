@@ -2017,7 +2017,7 @@ fn codegen cg_emitC(char* prefix):
         Please do not remove it
         ~DMHSW
     */
-    cg_quick_emit("/*\n* ---- EXPORTED BY TOC.HBAS ----\n* Beloved, if God so loved us, we ought also to love one another.\n* 1 Jn 4:11\n*/",0);
+    cg_quick_emit("\n/*\n* ---- EXPORTED BY TOC.HBAS ----\n* Beloved, if God so loved us, we ought also to love one another.\n* 1 Jn 4:11\n*/",0);
     if(prefix != cast(u8*)0)
         cg_quick_emit(prefix,0);
     end
