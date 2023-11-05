@@ -305,7 +305,7 @@ static inline void __CBAS__mutex_unlock(unsigned char* mtx){
     return;
 }
 
-#endif";
+#endif\n";
 
 fn predecl noexport openfile(char* fname, char* mode)->TGT_UMAX; //returns a handle...
 fn predecl noexport closefile(TGT_UMAX p)->int;
