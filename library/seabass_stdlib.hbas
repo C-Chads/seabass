@@ -156,12 +156,93 @@ static inline size_t __CBAS__get_utime(){
     return time(0);
 }
 static inline size_t __CBAS__time(size_t* a){
-    return time(a);
+    time_t qq;
+    qq = *a;
+    time_t retval = time(&qq);
+    *a = qq;
+    return retval;
+}
+static inline unsigned char* __CBAS__ctime(size_t* a){
+    time_t qq;
+    qq = *a;
+    unsigned char* retval = (unsigned char*)ctime(&qq);
+    *a = qq;
+    return retval;
+}
+static inline double __CBAS__difftime(size_t a, size_t b){
+    return difftime(a,b);
 }
 static inline size_t __CBAS__clock(){
     return clock();
-}static inline size_t __CBAS__CLOCKS_PER_SEC(){
+}
+static inline size_t __CBAS__CLOCKS_PER_SEC(){
     return CLOCKS_PER_SEC;
+}
+static inline unsigned char* __CBAS__localtime(size_t a){
+    time_t tt = a;
+    struct tm * timeinfo;
+    timeinfo = localtime(&tt);
+    return (unsigned char*)timeinfo;
+}
+static inline unsigned char* __CBAS__asctime(unsigned char* tm_struct){
+   struct tm timeinfo;
+   memcpy(&timeinfo, tm_struct, sizeof(struct tm));
+   return (unsigned char*)asctime(&timeinfo);
+}
+
+static inline i32 __CBAS__tm_sec(unsigned char* tm_struct){
+   struct tm timeinfo;
+   
+   memcpy(&timeinfo, tm_struct, sizeof(struct tm));
+   return timeinfo.tm_sec;
+}
+static inline i32 __CBAS__tm_min(unsigned char* tm_struct){
+   struct tm timeinfo;
+   
+   memcpy(&timeinfo, tm_struct, sizeof(struct tm));
+   return timeinfo.tm_min;
+}
+static inline i32 __CBAS__tm_hour(unsigned char* tm_struct){
+   struct tm timeinfo;
+   
+   memcpy(&timeinfo, tm_struct, sizeof(struct tm));
+   return timeinfo.tm_hour;
+}
+static inline i32 __CBAS__tm_mday(unsigned char* tm_struct){
+   struct tm timeinfo;
+   
+   memcpy(&timeinfo, tm_struct, sizeof(struct tm));
+   return timeinfo.tm_mday;
+}
+static inline i32 __CBAS__tm_mon(unsigned char* tm_struct){
+   struct tm timeinfo;
+   
+   memcpy(&timeinfo, tm_struct, sizeof(struct tm));
+   return timeinfo.tm_mon;
+}
+static inline i32 __CBAS__tm_year(unsigned char* tm_struct){
+   struct tm timeinfo;
+   
+   memcpy(&timeinfo, tm_struct, sizeof(struct tm));
+   return timeinfo.tm_year;
+}
+static inline i32 __CBAS__tm_wday(unsigned char* tm_struct){
+   struct tm timeinfo;
+   
+   memcpy(&timeinfo, tm_struct, sizeof(struct tm));
+   return timeinfo.tm_wday;
+}
+static inline i32 __CBAS__tm_yday(unsigned char* tm_struct){
+   struct tm timeinfo;
+   
+   memcpy(&timeinfo, tm_struct, sizeof(struct tm));
+   return timeinfo.tm_yday;
+}
+static inline i32 __CBAS__tm_isdst(unsigned char* tm_struct){
+   struct tm timeinfo;
+   
+   memcpy(&timeinfo, tm_struct, sizeof(struct tm));
+   return timeinfo.tm_isdst;
 }
 
 
@@ -739,11 +820,28 @@ fn predecl noexport get_stderr_handle()->TGT_UMAX;
 fn predecl noexport fwrite(TGT_UMAX fhandle, char* buf, TGT_UMAX nbytes)->TGT_UMAX;
 fn predecl noexport fread(TGT_UMAX fhandle, char* buf, TGT_UMAX nbytes)->TGT_UMAX;
 
-//get unix time...
+//time library...
 fn predecl pure noexport get_utime()->TGT_UMAX;
 fn predecl pure noexport time(TGT_UMAX* a)->TGT_UMAX;
+//ctime is not pure! It modifies an internal buffer..
+fn predecl noexport ctime(TGT_UMAX* a)->char*;
+fn predecl pure noexport difftime(TGT_UMAX a, TGT_UMAX b)->double;
 fn predecl pure noexport clock()->TGT_UMAX;
 fn predecl pure noexport CLOCKS_PER_SEC()->TGT_UMAX;
+//Dealing with the `tm` struct...
+//these functions are not pure...
+fn predecl noexport localtime(TGT_UMAX a)->byte*;
+fn predecl noexport asctime(byte* tm_struct)->char*;
+//accessing members of the tm struct...
+fn predecl pure noexport tm_sec(byte* tm_struct)->int;
+fn predecl pure noexport tm_min(byte* tm_struct)->int;
+fn predecl pure noexport tm_hour(byte* tm_struct)->int;
+fn predecl pure noexport tm_mday(byte* tm_struct)->int;
+fn predecl pure noexport tm_mon(byte* tm_struct)->int;
+fn predecl pure noexport tm_year(byte* tm_struct)->int;
+fn predecl pure noexport tm_wday(byte* tm_struct)->int;
+fn predecl pure noexport tm_yday(byte* tm_struct)->int;
+fn predecl pure noexport tm_isdst(byte* tm_struct)->int;
 
 fn predecl noexport set_errno(int new_errno);
 fn predecl noexport get_errno()->int;
@@ -836,8 +934,8 @@ fn predecl pure noexport ilogb(f64 a)->int;
 
 fn predecl pure noexport log1p(double a)->double;
 fn predecl pure noexport log1pf(f32 a)->f32;
-fn predecl pure noexport scalbnf(f32 a, i32 n)->f32;
 fn predecl pure noexport scalbn(f64 a, i32 n)->f64;
+fn predecl pure noexport scalbnf(f32 a, i32 n)->f32;
 //pow
 fn predecl pure noexport pow(double a, double b)->double;
 fn predecl pure noexport powf(f32 a, f32 b)->f32;
