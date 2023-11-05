@@ -54,6 +54,13 @@ fn codegen cg_Cemitter_mangle_type_name(char* s)->char*:
     r.addstr(s);
     return r.s;
 end
+fn codegen cg_Cemitter_mangle_member_name(char* s)->char*:
+    //this is not main!
+    cgstr r
+    r.fromstr("__CBAS__member__");
+    r.addstr(s);
+    return r.s;
+end
 
 fn codegen cg_cemitter_utoa(char* buf, u64 v):
     char* suffix;
@@ -453,8 +460,10 @@ method codegen cgexpr_node:gen_code(cgast* ast)->char*:
             retval:add(ff); ff:free();
         ff.s = ")->";
         retval:add(ff);
-        ff.s = this.symname;
+        //ff.s = this.symname;
+        ff.s = cg_Cemitter_mangle_member_name(this.symname);
         retval:add(ff);
+        ff:free();
         ff.s = ")";
         retval:add(ff);
         return retval.s;
@@ -787,8 +796,10 @@ method codegen cgexpr_node:gen_code(cgast* ast)->char*:
             ff.s = ")->";  retval:add(ff);
             
             //part 2: get the member
-            ff.s = this.symname;
+            //ff.s = this.symname;
+            ff.s = cg_Cemitter_mangle_member_name(this.symname);
             retval:add(ff);
+            ff:free();
         ff.s = ")"; //this closes out the greater parentheses...
         retval:add(ff);
         return retval.s;
@@ -1900,8 +1911,9 @@ method codegen cgtypedecl:emit_type(cgast* ast, u64 my_structid):
         t.s = "  ";
         printme:add(t);
         //now the name.
-        t.s = (this.members+i).membername;
+        t.s = cg_Cemitter_mangle_member_name((this.members+i).membername);
         printme:add(t);
+        t:free();
         //now, if we have an arraylen...
         if(arraylen)
             t.s = "[";printme:add(t);
