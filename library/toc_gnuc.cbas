@@ -29,6 +29,7 @@ struct bbb
     float b
     int a
     bbb* beebeebee
+    32 //32 byte alignment...
 end
 
 struct bbb2

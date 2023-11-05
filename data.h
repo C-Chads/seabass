@@ -106,6 +106,7 @@ typedef struct{
 	uint64_t is_incomplete; /*incomplete struct declaration*/
 	uint64_t is_noexport;
 	uint64_t is_union;
+	uint64_t algn; //alignment
 	/*Code generator data.*/
 	uint8_t* cgen_udata;
 } typedecl;

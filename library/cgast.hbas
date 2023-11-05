@@ -435,6 +435,7 @@ class cgtypedecl
 	u64 is_incomplete
 	u64 is_noexport
 	u64 is_union
+	u64 algn
 	u8* cgen_data
 end
 

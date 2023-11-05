@@ -1412,6 +1412,10 @@ void parse_datastmt(){
 }
 
 
+typedef struct mystruct{
+    int a;
+}_Alignas(32) mystruct ;
+
 //parse_typedecl
 void parse_structdecl(){
 	typedecl* me;
@@ -1429,6 +1433,7 @@ void parse_structdecl(){
 	me->is_incomplete = 1;
 	me->is_noexport = 0;
 	me->is_union = 0;
+	me->algn = 0;
 	consume(); /*eat the identifier*/
 
 	while(1){
@@ -1449,7 +1454,11 @@ void parse_structdecl(){
         }
 		/*Parse a struct member. This may include a semicolon.*/
 		while(peek()->data == TOK_SEMIC) {consume();continue;}
-
+        if(peek()->data == TOK_INT_CONST){
+            me->algn = matou(peek()->text);
+            consume();
+            continue;
+        }
 		parse_struct_member(ntypedecls-1);
 		while(peek()->data == TOK_SEMIC) {consume();continue;}
 	}
