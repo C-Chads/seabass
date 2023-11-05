@@ -757,7 +757,7 @@ method codegen cgexpr_node:gen_code(cgast* ast)->char*:
         return retval.s;
     elif(this.kind == CG_EXPR_STRNEQ)
         cgstr ff
-        retval:fromstr("!impl_streq((");
+        retval:fromstr("!__CBAS__impl_streq((");
             ff.s = this.subnodes[0]:gen_code(ast);
             retval:add(ff); ff:free();
             ff.s = "),(";

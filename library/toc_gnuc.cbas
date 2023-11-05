@@ -310,7 +310,7 @@ fn pub main()->int:
         /   "This is intentional..."
     ]
     (my_bbbs+23).a = 17;
-    (my_bbbs+24).a = 90;
+    (my_bbbs[24]).a = 97.3;
     (my_bbbs+23).do_stuff(1);
     @cpprint[
         /   "Here's what happened to my_bbbs+23:"
