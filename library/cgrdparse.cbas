@@ -51,7 +51,7 @@ end
         while(tok_not_null)
             char* p
             p = "(";
-            match [["Here_is_the_name"]
+            match[["Here_is_the_name"]
                 eat
                 if(tok_null)
                     __builtin_puts(">:( THERE IS NO NAME HERE GRRRRRR");
@@ -70,10 +70,21 @@ end
                 __builtin_puts("semicolon???");
             ]            
             match[ [","]
+                ^^";"[
+                    __builtin_puts("COMMA IS NOT SEMICOLON?!?!");
+                ]
+                ^^","[
+                    __builtin_puts("COMMA IS NOT COMMA?!?!");
+                ]
                 __builtin_puts("COMMA???");
+                continue
             ]
             stringlit[
                 __builtin_puts("A string? Oh, I can print that for you!");
+                __builtin_puts(tok.text);
+            ]
+            ident[
+                __builtin_puts("An identifier? Don't mind if I do!");
                 __builtin_puts(tok.text);
             ]
             if(tok_null) break; end
@@ -114,7 +125,7 @@ end
 ]
 
 @Declare_An_Integer [
-    data data char;;;,,,, (char) "Yes, I want this printed" if if Here_is_the_name my_int_name
+    data data char;;;,; (char) agga "Yes, I want this printed" if if Here_is_the_name my_int_name
 ]
 
 @global

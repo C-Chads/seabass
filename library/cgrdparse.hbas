@@ -109,12 +109,26 @@ end
         @pushqtok "."
         @pushqtok "d"
         @pushqtok "=="
-        @pushqtok "cast"
-        @pushqtok "("
-        @pushqtok "u8"
-        @pushqtok "*"
-        @pushqtok ")"
-        @pushqtok "2"
+        @pushqtok "CG_TOK_STRING"
+    @pushqtok ")"
+    @pushtok inlist_dupe
+    @rwalk_skip ;
+    @pushqtok "end"
+    return retval;
+]
+@mkbldr[
+    cg_rd_parse_is_ident
+    
+    @dupell_inlist ;
+    @initqtok "if"
+    @pushqtok "("
+        @pushqtok "this"
+        @pushqtok "."
+        @pushqtok "tok"
+        @pushqtok "."
+        @pushqtok "d"
+        @pushqtok "=="
+        @pushqtok "CG_TOK_IDENT"
     @pushqtok ")"
     @pushtok inlist_dupe
     @rwalk_skip ;
@@ -669,6 +683,241 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
                 continue
             end
             
+            if(in_rwalk.d == CG_TOK_OPERATOR &&
+                in_rwalk.text streq "^" &&
+                in_rwalk.right != 0 &&
+                in_rwalk.right.d == CG_TOK_OPERATOR &&
+                in_rwalk.right.text streq "^" 
+            )
+                cgstrll* failcode = 0;
+                in_rwalk = in_rwalk.right;
+                in_rwalk = in_rwalk.right;
+                if(in_rwalk == 0 || (in_rwalk.d != CG_TOK_IDENT && in_rwalk.d != CG_TOK_STRING))
+                    __builtin_puts("RDPARSER_ERROR!");
+                    __builtin_puts("^^CAPTURE syntax requires STRING LITERAL or IDENTIFER!");
+                    __builtin_puts("Parser's name is:");
+                    __builtin_puts(spec.name.s);
+                    __builtin_puts("Current Rule's name is:");
+                    __builtin_puts(this.name.s);
+                    __builtin_exit(1);
+                end
+                @cg_bldr_pushqtok "if"
+                @cg_bldr_pushqtok "("
+                    @cg_bldr_pushqtok "this"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "tok"
+                    @cg_bldr_pushqtok "!="
+                    @cg_bldr_pushqtok "0"
+                @cg_bldr_pushqtok ")"
+                if(in_rwalk.d == CG_TOK_IDENT)
+                    //difficult case...
+                    @cg_bldr_pushqtok "if"
+                    @cg_bldr_pushqtok "("
+
+                    if(in_rwalk.text streq "IDENT")
+                        @cg_bldr_pushqtok "this"
+                        @cg_bldr_pushqtok "."
+                        @cg_bldr_pushqtok "tok"
+                        @cg_bldr_pushqtok "."
+                        @cg_bldr_pushqtok "d"
+                        @cg_bldr_pushqtok "=="
+                        @cg_bldr_pushqtok "CG_TOK_IDENT"
+                    elif(in_rwalk.text streq "KEYW" ||in_rwalk.text streq "KEYWORD")
+                        @cg_bldr_pushqtok "this"
+                        @cg_bldr_pushqtok "."
+                        @cg_bldr_pushqtok "tok"
+                        @cg_bldr_pushqtok "."
+                        @cg_bldr_pushqtok "d"
+                        @cg_bldr_pushqtok "=="
+                        @cg_bldr_pushqtok "CG_TOK_KEYWORD"
+                    elif(in_rwalk.text streq "STRING")
+                        @cg_bldr_pushqtok "this"
+                        @cg_bldr_pushqtok "."
+                        @cg_bldr_pushqtok "tok"
+                        @cg_bldr_pushqtok "."
+                        @cg_bldr_pushqtok "d"
+                        @cg_bldr_pushqtok "=="
+                        @cg_bldr_pushqtok "CG_TOK_STRING"
+                    elif(in_rwalk.text streq "NOTSTRING")
+                        @cg_bldr_pushqtok "this"
+                        @cg_bldr_pushqtok "."
+                        @cg_bldr_pushqtok "tok"
+                        @cg_bldr_pushqtok "."
+                        @cg_bldr_pushqtok "d"
+                        @cg_bldr_pushqtok "!="
+                        @cg_bldr_pushqtok "CG_TOK_STRING"
+                    elif(in_rwalk.text streq "NUM" || in_rwalk.text streq "NUMBER")
+                        @cg_bldr_pushqtok "this"
+                        @cg_bldr_pushqtok "."
+                        @cg_bldr_pushqtok "tok"
+                        @cg_bldr_pushqtok "."
+                        @cg_bldr_pushqtok "d"
+                        @cg_bldr_pushqtok "=="
+                        @cg_bldr_pushqtok "CG_TOK_INT_CONST"
+                        @cg_bldr_pushqtok "||"
+                        @cg_bldr_pushqtok "this"
+                        @cg_bldr_pushqtok "."
+                        @cg_bldr_pushqtok "tok"
+                        @cg_bldr_pushqtok "."
+                        @cg_bldr_pushqtok "d"
+                        @cg_bldr_pushqtok "=="
+                        @cg_bldr_pushqtok "CG_TOK_FLOAT_CONST"
+                    elif(in_rwalk.text streq "INT")
+                        @cg_bldr_pushqtok "this"
+                        @cg_bldr_pushqtok "."
+                        @cg_bldr_pushqtok "tok"
+                        @cg_bldr_pushqtok "."
+                        @cg_bldr_pushqtok "d"
+                        @cg_bldr_pushqtok "=="
+                        @cg_bldr_pushqtok "CG_TOK_INT_CONST"
+                    elif(in_rwalk.text streq "FLOAT")
+                        @cg_bldr_pushqtok "this"
+                        @cg_bldr_pushqtok "."
+                        @cg_bldr_pushqtok "tok"
+                        @cg_bldr_pushqtok "."
+                        @cg_bldr_pushqtok "d"
+                        @cg_bldr_pushqtok "=="
+                        @cg_bldr_pushqtok "CG_TOK_FLOAT_CONST"
+                    elif(in_rwalk.text streq "SYM")
+                        @cg_bldr_pushqtok "this"
+                        @cg_bldr_pushqtok "."
+                        @cg_bldr_pushqtok "tok"
+                        @cg_bldr_pushqtok "."
+                        @cg_bldr_pushqtok "d"
+                        @cg_bldr_pushqtok "=="
+                        @cg_bldr_pushqtok "CG_TOK_OPERATOR"
+                        
+                        @cg_bldr_pushqtok "||"
+                        
+                        @cg_bldr_pushqtok "this"
+                        @cg_bldr_pushqtok "."
+                        @cg_bldr_pushqtok "tok"
+                        @cg_bldr_pushqtok "."
+                        @cg_bldr_pushqtok "d"
+                        @cg_bldr_pushqtok "=="
+                        @cg_bldr_pushqtok "CG_TOK_UNKNOWN"
+                        
+                        @cg_bldr_pushqtok "||"
+                        
+                        @cg_bldr_pushqtok "this"
+                        @cg_bldr_pushqtok "."
+                        @cg_bldr_pushqtok "tok"
+                        @cg_bldr_pushqtok "."
+                        @cg_bldr_pushqtok "d"
+                        @cg_bldr_pushqtok "=="
+                        @cg_bldr_pushqtok "CG_TOK_MACRO_OP"
+                    elif(in_rwalk.text streq "UNK" || in_rwalk.text streq "UNKNOWN")
+                        @cg_bldr_pushqtok "this"
+                        @cg_bldr_pushqtok "."
+                        @cg_bldr_pushqtok "tok"
+                        @cg_bldr_pushqtok "."
+                        @cg_bldr_pushqtok "d"
+                        @cg_bldr_pushqtok "=="
+                        @cg_bldr_pushqtok "CG_TOK_UNKNOWN"
+                    elif(in_rwalk.text streq "OP" || in_rwalk.text streq "OPERATOR")
+                        @cg_bldr_pushqtok "this"
+                        @cg_bldr_pushqtok "."
+                        @cg_bldr_pushqtok "tok"
+                        @cg_bldr_pushqtok "."
+                        @cg_bldr_pushqtok "d"
+                        @cg_bldr_pushqtok "=="
+                        @cg_bldr_pushqtok "CG_TOK_OPERATOR"                        
+                        @cg_bldr_pushqtok "||"
+                        @cg_bldr_pushqtok "this"
+                        @cg_bldr_pushqtok "."
+                        @cg_bldr_pushqtok "tok"
+                        @cg_bldr_pushqtok "."
+                        @cg_bldr_pushqtok "d"
+                        @cg_bldr_pushqtok "=="
+                        @cg_bldr_pushqtok "CG_TOK_MACRO_OP"
+                    elif(in_rwalk.text streq "ANY")
+                        @cg_bldr_pushqtok "1"
+                    else
+                        __builtin_puts("RDPARSER_ERROR!");
+                        __builtin_puts("^^CAPTURE syntax unknown identifier!!");
+                        __builtin_puts("Parser's name is:");
+                        __builtin_puts(spec.name.s);
+                        __builtin_puts("Current Rule's name is:");
+                        __builtin_puts(this.name.s);
+                        __builtin_exit(1);
+                    end
+                    @cg_bldr_pushqtok ")"
+                    //TODO: insert acceptance code here....
+                        @cg_bldr_pushqtok ";"
+                        @cg_bldr_pushqtok "self"
+                        @cg_bldr_pushqtok "."
+                        @cg_bldr_pushqtok "udata"
+                        @cg_bldr_pushqtok "="
+                        @cg_bldr_pushqtok "cast"
+                        @cg_bldr_pushqtok "("
+                        @cg_bldr_pushqtok "u8"
+                        @cg_bldr_pushqtok "*"
+                        @cg_bldr_pushqtok ")"
+                        @cg_bldr_pushqtok "this"
+                        @cg_bldr_pushqtok "."
+                        @cg_bldr_pushqtok "tok"
+                        @cg_bldr_pushqtok ":"
+                        @cg_bldr_pushqtok "dupe"
+                        @cg_bldr_pushqtok "("
+                        @cg_bldr_pushqtok ")"
+                        @cg_bldr_pushqtok ";"
+                        //eat..
+                        @cg_bldr_pushqtok "this"
+                        @cg_bldr_pushqtok "."
+                        @cg_bldr_pushqtok "tok"
+                        @cg_bldr_pushqtok "="
+                        @cg_bldr_pushqtok "this"
+                        @cg_bldr_pushqtok "."
+                        @cg_bldr_pushqtok "tok"
+                        @cg_bldr_pushqtok "."
+                        @cg_bldr_pushqtok "right"
+                        @cg_bldr_pushqtok ";"
+                    if(in_rwalk.right.d == CG_TOK_OBRACK)
+                        @cg_bldr_pushqtok "else"
+                        failcode = in_rwalk:cg_token_foldout_arglist();
+                        failcode = cg_tok_arglist_remove_brackets(failcode);
+                        @cg_bldr_pushtok [failcode:dupell()]
+                        @cg_bldr_rwalk_skip ;
+                    end
+                    @cg_bldr_pushqtok "end"
+                elif(in_rwalk.d == CG_TOK_STRING)
+                    //easy case...
+                    @cg_bldr_pushqtok "@"
+                    @cg_bldr_pushqtok "cg_rd_parse_match"
+                    @cg_bldr_pushqtok "["
+                    @cg_bldr_pushqtok "["
+                    @cg_bldr_pushtok [in_rwalk:dupe()]
+                    @cg_bldr_pushqtok "]"
+                    @cg_bldr_pushqtok "this"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "tok"
+                    @cg_bldr_pushqtok "="
+                    @cg_bldr_pushqtok "this"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "tok"
+                    @cg_bldr_pushqtok "."
+                    @cg_bldr_pushqtok "right"
+                    @cg_bldr_pushqtok ";"
+                    if(in_rwalk.right.d == CG_TOK_OBRACK)
+                        @cg_bldr_pushqtok "else"
+                        failcode = in_rwalk:cg_token_foldout_arglist();
+                        failcode = cg_tok_arglist_remove_brackets(failcode);
+                        @cg_bldr_pushtok [failcode:dupell()]
+                        @cg_bldr_rwalk_skip ;
+                    end
+                    @cg_bldr_pushqtok "]"
+                end
+                if(failcode != 0)
+                    @cg_bldr_pushqtok "else"
+                    @cg_bldr_pushtok [failcode] //move!
+                    @cg_bldr_rwalk_skip ;
+                end
+                @cg_bldr_pushqtok "end"
+                //in_rwalk actually points just past whatever
+                //we captured...
+                continue
+            end
+            
             /*
                 TODO: Handle more special stuff for rules.
                 
@@ -1090,6 +1339,22 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
                     //finally, emit
                     @cg_bldr_pushqtok "@"
                     @cg_bldr_pushqtok "cg_rd_parse_is_stringlit"
+                    continue            
+                //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                elif(in_rwalk.text streq "ident")
+                    cgstrll* investigator
+                    investigator = in_rwalk.right;
+                    
+                    //step 1: verify that in_rwalk points at an OBRACK.
+                    if(investigator == cast(cgstrll*)0)
+                        cg_rd_parse_fail_stringlit_syntax("ident at end of rule?", spec.name.s, this.name.s);
+                    end
+                    if(investigator.d != CG_TOK_OBRACK)
+                        cg_rd_parse_fail_stringlit_syntax("ident without opening obrack.", spec.name.s, this.name.s);
+                    end
+                    //finally, emit
+                    @cg_bldr_pushqtok "@"
+                    @cg_bldr_pushqtok "cg_rd_parse_is_ident"
                     continue
                 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 elif(in_rwalk.text streq "eat")
