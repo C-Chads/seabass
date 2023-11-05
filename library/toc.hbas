@@ -1326,7 +1326,7 @@ method codegen cgsymdecl:gen_code(cgast* ast, char is_local, u64 my_symid)->char
         
         if(this.is_incomplete)
             ff.s = "extern ";
-            retval:add(ff);            
+            retval:add(ff);
         elif(!this.is_pub)
             ff.s = "static ";
             retval:add(ff);
@@ -1549,6 +1549,23 @@ method codegen cgsymdecl:gen_code(cgast* ast, char is_local, u64 my_symid)->char
                 out:add(ff);
             end
         end
+        /*
+            Check to see if the object is a struct with an algn...
+        */
+        /*
+        if(this.t.basetype == CG_BASE_STRUCT && this.t.pointerlevel == 0)
+            cgtypedecl* stt = ast.type_table[0][this.t.structid];
+            if(stt.algn)
+                ff.s = " _Alignas(";
+                out:add(ff);
+                cg_cemitter_utoa(buf, stt.algn);
+                ff.s = buf;
+                out:add(ff);
+                ff.s = ") ";
+                out:add(ff);
+            end
+        end
+        */
         ff.s = this.t:gen_code(ast);
         out:add(ff); ff:free();
         ff.s = " ";
@@ -1883,6 +1900,7 @@ method codegen cgtypedecl:emit_type(cgast* ast, u64 my_structid):
     end
     //emit a closing curly brace and then the name and semicolon
     f:fromstr("} ");
+    
     if(this.algn != 0)
         char[50] buf
         t.s = "__attribute__((aligned(";
@@ -1893,6 +1911,7 @@ method codegen cgtypedecl:emit_type(cgast* ast, u64 my_structid):
         t.s = "))) ";
         f:add(t);
     end
+    
     t.s = this.name;
     f:add(t);
 
