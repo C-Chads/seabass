@@ -17,7 +17,8 @@
 
 codegen u64 cg_Cemitter_Switch_DtableGen = 0;
 codegen u64 cg_Cemitter_indentlevel = 0;
-codegen u64 cg_Cemitter_explicit_signed_char = 1;
+//for clang compatibility...
+codegen u64 cg_Cemitter_explicit_signed_char = 0;
 codegen u64 cg_Cemitter_long_32bit = 0;
 codegen char* cg_Cemitter_gasm = 0;
 

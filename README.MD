@@ -291,6 +291,10 @@ wish.
 Struct can be given an alignment. Simply enter an integer value somewhere
 inside the struct definition, and that will be its alignment.
 
+This feature requires a compiler that supports __attribute__((aligned(X)))
+
+(your compiler is probably one of them...)
+
 Alignment only applies for TARGET (not compiletime) code.
 
 ### Are there any "gotchas"? 
