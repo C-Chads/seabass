@@ -1522,10 +1522,8 @@ method codegen cgsymdecl:gen_code(cgast* ast, char is_local, u64 my_symid)->char
             
             //emit it as a string...
             if(kind == 0)
-                //__builtin_utoa(buf, uval[0]);
                cg_cemitter_utoa(buf, uval[0]);
             elif(kind == 1)
-                //__builtin_itoa(buf, ival[0]);
                 cg_cemitter_itoa(buf, ival[0]);
             elif(kind == 2)
                 __builtin_ftoa(buf, fval[0]);
@@ -1635,98 +1633,7 @@ method codegen cgsymdecl:gen_code(cgast* ast, char is_local, u64 my_symid)->char
     
             ff.s = "]";
             out:add(ff);
-            if(this.cdata != cast(u8*)0 && !is_local )
-                ff.s = " = {\n";
-                out:add(ff);
-                i64 i
-                for(i = 0, i < arraylen, i++)
-                    u64 kind    //is this 0=unsigned, 1=signed, 2=float, 3=double
-                    u64[1] uval
-                    i64[1] ival
-                    f64[1] dval
-                    f32[1] fval
-                    kind = 10;
-                    if(this.t.pointerlevel || this.t.basetype == CG_BASE_U64)
-                        kind = 0;
-                        __builtin_memcpy(cast(u8*)uval, this.cdata + i * 8, 8);
-                    elif(this.t.basetype == CG_BASE_I64)
-                        kind = 1;
-                        __builtin_memcpy(cast(u8*)ival, this.cdata + i * 8, 8);
-                    elif(this.t.basetype == CG_BASE_U32)
-                        kind = 0;
-                        u32[1] t
-                        __builtin_memcpy(cast(u8*)t, this.cdata + i * 4, 4);
-                        uval[0] = t[0];
-                    elif(this.t.basetype == CG_BASE_I32)
-                        kind = 1;
-                        i32[1] t
-                        __builtin_memcpy(cast(u8*)t, this.cdata + i * 4, 4);
-                        ival[0] = t[0];
-                    elif(this.t.basetype == CG_BASE_U16)
-                        kind = 0;
-                        u16[1] t
-                        __builtin_memcpy(cast(u8*)t, this.cdata + i * 2, 2);
-                        uval[0] = t[0];
-                    elif(this.t.basetype == CG_BASE_I16)
-                        kind = 1;
-                        i16[1] t
-                        __builtin_memcpy(cast(u8*)t, this.cdata + i * 2, 2);
-                        ival[0] = t[0];
-                    elif(this.t.basetype == CG_BASE_U8)
-                        kind = 0;
-                        u8[1] t
-                        __builtin_memcpy(cast(u8*)t, this.cdata + i * 1, 1);
-                        uval[0] = t[0];
-                    elif(this.t.basetype == CG_BASE_I8)
-                        kind = 1;
-                        i8[1] t
-                        __builtin_memcpy(cast(u8*)t, this.cdata + i * 1, 1);
-                        ival[0] = t[0];
-                    elif(this.t.basetype == CG_BASE_F32)
-                        kind = 2;
-                        __builtin_memcpy(cast(u8*)fval, this.cdata + i * 4, 4);
-                    elif(this.t.basetype == CG_BASE_F64)
-                        kind = 3;
-                        __builtin_memcpy(cast(u8*)dval, this.cdata + i * 8, 8);
-                    else
-                        @pprint[
-                            /       "C CODE GENERATOR ERROR!"
-                            /       "Somehow, a variable with incompatible type has cdata (Constant data)!"
-                            /       "This should be impossible! Its name is:"
-                            /       (this.name)
-                            /       "Look for that in your source code!"
-                        ]
-                        __builtin_exit(1);
-                    end
-                    //emit it as a string...
-                    if(kind == 0)
-                        //__builtin_utoa(buf, uval[0]);
-                        cg_cemitter_utoa(buf, uval[0]);
-                    elif(kind == 1)
-                        //__builtin_itoa(buf, ival[0]);
-                        cg_cemitter_itoa(buf, uval[0]);
-                    elif(kind == 2)
-                        __builtin_ftoa(buf, fval[0]);
-                    elif(kind == 3)
-                        __builtin_ftoa(buf, dval[0]);
-                    end
-                    ff.s = buf;
-                    out:add(ff);
-                    if(i < arraylen - 1)
-                        //add a comma because there are more things to come...
-                        ff.s = ", ";
-                        out:add(ff);
-                    end
-                    //emit line endings...
-                    if(i%8 == 7)
-                        ff.s = "\n";
-                        out:add(ff);
-                    end
-                end
-                
-                ff.s = "\n}";
-                out:add(ff);
-            end //eof has array WITH cdata (previous indent level was checking arraylen to see if it was an array...) 
+            //ignore cdata....
         //arraylen == 0, but it has cdata...
         elif
         (
@@ -1803,11 +1710,9 @@ method codegen cgsymdecl:gen_code(cgast* ast, char is_local, u64 my_symid)->char
             
             //emit it as a string...
             if(kind == 0)
-                //__builtin_utoa(buf, uval[0]);
                 cg_cemitter_utoa(buf, uval[0]);
             elif(kind == 1)
-                //__builtin_itoa(buf, ival[0]);
-                cg_cemitter_itoa(buf, uval[0]);
+                cg_cemitter_itoa(buf, ival[0]);
             elif(kind == 2)
                 __builtin_ftoa(buf, fval[0]);
             elif(kind == 3)

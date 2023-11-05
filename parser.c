@@ -1070,13 +1070,13 @@ void parse_gvardecl(){
 		consume(); //eat the equals sign!
         parse_repeatedly_try_metaprogramming(); //allow parsehooks to generate the constant expression used by a global variable.
 		if(type_should_be_assigned_float_literal(t)){
+		    //
 			symbol_table[symid]->cdata = c_allocX(8);
 			symbol_table[symid]->cdata_sz = 8;
 			fval = parse_cexpr_double();
 			if(t.basetype == BASE_F32){
 				float t;
 				t = fval;
-				//printf("%f",t);
 				memcpy(symbol_table[symid]->cdata, &t, 4);
 				symbol_table[symid]->cdata_sz = 4;
 				goto end;
@@ -1084,7 +1084,6 @@ void parse_gvardecl(){
 			if(t.basetype == BASE_F64){
 				double t;
 				t = fval;
-				//printf("%f",t);
 				memcpy(symbol_table[symid]->cdata, &t, 8);
 				symbol_table[symid]->cdata_sz = 8;
 				goto end;
