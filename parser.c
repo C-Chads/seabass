@@ -22,6 +22,21 @@ uint64_t symbol_generator_count = 1;
 
 /*
     
+struct mystruct{
+    _Alignas(16) int a;
+};
+
+struct mystruct* myfunction(struct mystruct* b){
+    return b+1;
+}
+union myunion{
+    _Alignas(16) int a;
+    float b;
+};
+
+union myunion* myfunction2(union myunion* b){
+    return b+1;
+}
 */
 
 

@@ -126,8 +126,15 @@ method codegen cgtype:gen_code(cgast* ast)->char*:
     //but on linux x86_64, `long` is 64 bit. So we can't
     //make that choice there. 
     
-    if(basetype == CG_BASE_STRUCT)  
-        printme.s = cg_Cemitter_mangle_type_name(ast.type_table[0][structid].name);
+    if(basetype == CG_BASE_STRUCT)
+        t.s = cg_Cemitter_mangle_type_name(ast.type_table[0][structid].name);
+        if(ast.type_table[0][structid].is_union)
+            printme:fromstr("union ")
+        
+        else
+            printme:fromstr("struct ")
+        end
+        printme:add(t);
     elif(basetype == CG_BASE_VOID)
         printme:fromstr("void");
     elif(basetype == CG_BASE_U8)
@@ -1825,7 +1832,7 @@ method codegen cgtypedecl:emit_type(cgast* ast, u64 my_structid):
         return;
     end
     is_union = this.is_union;
-    f:fromstr("typedef ");
+    f:fromstr("");
 
     if(is_union)
         t.s = "union ";
@@ -1843,6 +1850,17 @@ method codegen cgtypedecl:emit_type(cgast* ast, u64 my_structid):
     f:add(t);
     cg_quick_emit(f.s,0);
     f:free();
+    
+    if(this.algn != 0)
+        char[50] buf
+        t.s = "_Alignas(";
+        f:add(t);
+        __builtin_utoa(buf, this.algn);
+        t.s = buf;
+        f:add(t);
+        t.s = ") ";
+        f:add(t);
+    end
     //now emit our members...
     u64 i
     for(i = 0, i < this.nmembers, i++)
@@ -1858,19 +1876,17 @@ method codegen cgtypedecl:emit_type(cgast* ast, u64 my_structid):
         if(basetype == CG_BASE_STRUCT)
             //we must emit the name of the struct...
             //if this is the same struct
-            if(structid == my_structid)
-                if(is_union)
-                    t.s = "union ";
-                else
-                    t.s = "struct ";
-                end
-                printme:fromstr(t.s);
-                t.s = cg_Cemitter_mangle_type_name(ast.type_table[0][structid].name);
-                printme:add(t);
-                t:free();
+
+            if(ast.type_table[0][structid].is_union)
+                t.s = "union ";
             else
-                printme.s = cg_Cemitter_mangle_type_name(ast.type_table[0][structid].name);
+                t.s = "struct ";
             end
+            printme:fromstr(t.s);
+            t.s = cg_Cemitter_mangle_type_name(ast.type_table[0][structid].name);
+            printme:add(t);
+            t:free();
+
         elif(basetype == CG_BASE_VOID)
             printme:fromstr("void");
         elif(basetype == CG_BASE_U8)
@@ -1935,20 +1951,12 @@ method codegen cgtypedecl:emit_type(cgast* ast, u64 my_structid):
     //emit a closing curly brace and then the name and semicolon
     f:fromstr("} ");
     
-    if(this.algn != 0)
-        char[50] buf
-        t.s = "__attribute__((aligned(";
-        f:add(t);
-        __builtin_utoa(buf, this.algn);
-        t.s = buf;
-        f:add(t);
-        t.s = "))) ";
-        f:add(t);
-    end
-    
+
+    /*
     t.s = cg_Cemitter_mangle_type_name(this.name);
     f:add(t);
     t:free();
+    */
     
     t.s = ";";
     f:add(t);
