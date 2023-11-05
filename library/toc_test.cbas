@@ -52,13 +52,13 @@ method membuf.ctor():
 end
 method membuf.dtor():
     if(this.d != 0)
-        mem_free(this.d)
+        free(this.d)
     end
 end
 method membuf.req(u32 sz):
-    this.d = mem_alloc(sz)
+    this.d = malloc(sz)
     if(this.d == 0)
-        println("mem_alloc failed!");
+        println("malloc failed!");
         sys_exit(1);
     end
 end
@@ -120,7 +120,7 @@ method inline this_type_has_a_destructor.dtor():
         /int    (this.a)
     ]
     if(this.qq != 0)
-        mem_free(this.qq)
+        free(this.qq)
     end
 end
 
@@ -128,9 +128,9 @@ method inline this_type_has_a_destructor.ctor():
     println("Hello Mom!");
     this.a = 5;
     this.b = 7;
-    this.qq = mem_alloc(20);
+    this.qq = malloc(20);
     if(this.qq == 0)
-        println("mem_alloc failed!");
+        println("malloc failed!");
     end
 end
 
