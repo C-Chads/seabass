@@ -1980,11 +1980,6 @@ void do_expr(expr_node* ee){
 			memcpy(&vm_stack[vm_stackpointer-2].smalldata, &i64data1, 8);
 			goto end_expr_lt;
 		}
-		/*
-		puts("VM ERROR");
-		puts("Unhandled lt/lte/gte/gt/==/!= type.");
-		exit(1);
-		*/
 		end_expr_lt:;
 		ast_vm_stack_pop(); //we no longer need the index itself.
 		//vm_stack[vm_stackpointer-1].t = ee->t;
