@@ -286,6 +286,13 @@ and destructors.
 You can implement your own memory management schemes in higher level languages if you
 wish.
 
+### Does seabass support alignment?
+
+Struct can be given an alignment. Simply enter an integer value somewhere
+inside the struct definition, and that will be its alignment.
+
+Alignment only applies for TARGET (not compiletime) code.
+
 ### Are there any "gotchas"? 
 
 I don't really think so. 

@@ -1412,10 +1412,6 @@ void parse_datastmt(){
 }
 
 
-typedef struct mystruct{
-    int a;
-}_Alignas(32) mystruct ;
-
 //parse_typedecl
 void parse_structdecl(){
 	typedecl* me;
