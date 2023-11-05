@@ -183,8 +183,8 @@ static inline unsigned char* __CBAS__realloc(unsigned char* b, size_t amt){
     return realloc(b, amt);
 }
 
-static inline void __CBAS__println(char* s){
-    puts(s);
+static inline void __CBAS__println(unsigned char* s){
+    puts((char*)s);
 }
 
 static inline void __CBAS__sys_exit(int a){
