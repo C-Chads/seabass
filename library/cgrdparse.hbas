@@ -1074,6 +1074,7 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
                     @cg_bldr_pushqtok "@"
                     @cg_bldr_pushqtok "cg_rd_parse_match"
                     continue
+                    
                 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 elif(in_rwalk.text streq "stringlit")
                     cgstrll* investigator
