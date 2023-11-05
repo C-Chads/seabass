@@ -1848,12 +1848,11 @@ method codegen cgtypedecl:emit_type(cgast* ast, u64 my_structid):
     t:free();
     t.s = "{";
     f:add(t);
-    cg_quick_emit(f.s,0);
-    f:free();
+
     
     if(this.algn != 0)
         char[50] buf
-        t.s = "_Alignas(";
+        t.s = " _Alignas(";
         f:add(t);
         __builtin_utoa(buf, this.algn);
         t.s = buf;
@@ -1861,6 +1860,8 @@ method codegen cgtypedecl:emit_type(cgast* ast, u64 my_structid):
         t.s = ") ";
         f:add(t);
     end
+    cg_quick_emit(f.s,0);
+    f:free();
     //now emit our members...
     u64 i
     for(i = 0, i < this.nmembers, i++)

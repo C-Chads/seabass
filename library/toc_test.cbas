@@ -29,12 +29,13 @@ struct bbb
     float b
     int a
     bbb* beebeebee
-    32 //32 byte alignment...
+    16
 end
 
 struct bbb2
     bbb mymember
     float q
+    32
 end
 
 method bbb2.ctor():
