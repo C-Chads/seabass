@@ -21,6 +21,8 @@ codegen u64 cg_Cemitter_indentlevel = 0;
 codegen u64 cg_Cemitter_explicit_signed_char = 0;
 codegen u64 cg_Cemitter_long_32bit = 0;
 codegen char* cg_Cemitter_gasm = 0;
+codegen char* cg_Cemitter_gasm_post_declarations = 0;
+codegen char* cg_Cemitter_gasm_typedecls = 0;
 
 fn codegen cg_Cemitter_make_dtable_name()->char*:
     cgstr retval
@@ -2021,6 +2023,10 @@ fn codegen cg_emitC(char* prefix):
     for(i = 0; i < ast.ntypedecls[0]; i++)
         (ast.type_table[0] + i):emit_type(ast, i);
     end
+    if(cg_Cemitter_gasm_typedecls != 0)
+        cg_quick_emit("\n/*GASM_BLOCK TYPEDECLS*/\n",0);
+        cg_quick_emit(cg_Cemitter_gasm_typedecls, 0);
+    end
     //emit all global variables and data statements...
     
     cg_quick_emit("/*\nGLOBAL VARIABLES\n*/",0);
@@ -2058,7 +2064,11 @@ fn codegen cg_emitC(char* prefix):
             cg_quick_emit(p,0);
             __builtin_free(p);
         end
-    end    
+    end
+    if(cg_Cemitter_gasm_post_declarations != 0)
+        cg_quick_emit("\n/*GASM_BLOCK POST DECLARATIONS*/\n",0);
+        cg_quick_emit(cg_Cemitter_gasm_post_declarations, 0);
+    end
     
     //emit all functions (bodies!)
     cg_quick_emit("/*\nFUNCTION BODIES\n*/",0);
