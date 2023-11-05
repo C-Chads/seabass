@@ -581,6 +581,7 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
     cgstrll* ocode
     cgstrll* rwalk
     cgstrll* in_rwalk
+    u64 has_made_self = 0;
     
     
     ocode = cg_qtok("fn"); rwalk = ocode;
@@ -711,6 +712,15 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
                 @cg_bldr_pushqtok ")"
                 if(in_rwalk.d == CG_TOK_IDENT)
                     //difficult case...
+                    if(!has_made_self)
+                        __builtin_puts("RDPARSER_ERROR!");
+                        __builtin_puts("^^CAPTURE requires `self` to exist, please insert `mkself` somewhere to create the self node for this rule...");
+                        __builtin_puts("Parser's name is:");
+                        __builtin_puts(spec.name.s);
+                        __builtin_puts("Current Rule's name is:");
+                        __builtin_puts(this.name.s);
+                        __builtin_exit(1);
+                    end
                     @cg_bldr_pushqtok "if"
                     @cg_bldr_pushqtok "("
 
@@ -1073,8 +1083,18 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
                 elif(in_rwalk.text streq "mkself")
                     @cg_bldr_pushqtok "cg_uastnode"
                     @cg_bldr_pushqtok "self"
+                    has_made_self = 1;
                     continue
                 elif(in_rwalk.text streq "getcapture")
+                    if(!has_made_self)
+                        __builtin_puts("RDPARSER_ERROR!");
+                        __builtin_puts("getcapture requires `self` to exist, please insert `mkself` somewhere to create the self node for this rule...");
+                        __builtin_puts("Parser's name is:");
+                        __builtin_puts(spec.name.s);
+                        __builtin_puts("Current Rule's name is:");
+                        __builtin_puts(this.name.s);
+                        __builtin_exit(1);
+                    end
                     @cg_bldr_pushqtok "("
                         @cg_bldr_pushqtok "self"
                         @cg_bldr_pushqtok "."
@@ -1084,6 +1104,15 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
                     @cg_bldr_pushqtok ")"
                     continue
                 elif(in_rwalk.text streq "capture")
+                    if(!has_made_self)
+                        __builtin_puts("RDPARSER_ERROR!");
+                        __builtin_puts("capture requires `self` to exist, please insert `mkself` somewhere to create the self node for this rule...");
+                        __builtin_puts("Parser's name is:");
+                        __builtin_puts(spec.name.s);
+                        __builtin_puts("Current Rule's name is:");
+                        __builtin_puts(this.name.s);
+                        __builtin_exit(1);
+                    end
                     @cg_bldr_pushqtok ";"
                     @cg_bldr_pushqtok "self"
                     @cg_bldr_pushqtok "."
@@ -1201,7 +1230,15 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
                     //continue will consume it for us...
                     continue
                 elif(in_rwalk.text streq "addself")
-
+                    if(!has_made_self)
+                        __builtin_puts("RDPARSER_ERROR!");
+                        __builtin_puts("addself requires `self` to exist, please insert `mkself` somewhere to create the self node for this rule...");
+                        __builtin_puts("Parser's name is:");
+                        __builtin_puts(spec.name.s);
+                        __builtin_puts("Current Rule's name is:");
+                        __builtin_puts(this.name.s);
+                        __builtin_exit(1);
+                    end
                     //we have an addnode command...
                     //ensure this is compatible with expressions...
                     @cg_bldr_pushqtok "("
@@ -1262,6 +1299,15 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
                     continue
                 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 elif(in_rwalk.text streq "addpushself")
+                    if(!has_made_self)
+                        __builtin_puts("RDPARSER_ERROR!");
+                        __builtin_puts("addpushself requires `self` to exist, please insert `mkself` somewhere to create the self node for this rule...");
+                        __builtin_puts("Parser's name is:");
+                        __builtin_puts(spec.name.s);
+                        __builtin_puts("Current Rule's name is:");
+                        __builtin_puts(this.name.s);
+                        __builtin_exit(1);
+                    end
                     @cg_bldr_pushqtok "if"
                     @cg_bldr_pushqtok "("
                     @cg_bldr_pushqtok "1"
