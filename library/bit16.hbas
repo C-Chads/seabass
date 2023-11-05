@@ -13,6 +13,7 @@
 
 #define TGT_UMAX u16
 #define TGT_IMAX i16
+//prohibit usage of floats...
 #define TGT_FMAX __ERROR__
 
 
