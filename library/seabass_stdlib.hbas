@@ -122,11 +122,11 @@ static inline void start_lsthread(lsthread* t){
 
 #endif
 
-static inline size_t __CBAS__openfile(unsigned char* fname, unsigned char* mode){
+static inline size_t __CBAS__fopen(unsigned char* fname, unsigned char* mode){
     return (size_t)fopen((char*)fname, (char*)mode);
 }
 
-static inline int __CBAS__closefile(size_t p){
+static inline int __CBAS__fclose(size_t p){
     return fclose((FILE*)p);
 }
 
@@ -142,11 +142,11 @@ static inline size_t __CBAS__get_stderr_handle(){
     return (size_t)stderr;
 }
 
-static inline size_t __CBAS__write_bytes(size_t fhandle, unsigned char* buf, size_t nbytes){
+static inline size_t __CBAS__fwrite(size_t fhandle, unsigned char* buf, size_t nbytes){
     return fwrite(buf, 1, nbytes,(FILE*)fhandle);
 }
 
-static inline size_t __CBAS__read_bytes(size_t fhandle, unsigned char* buf, size_t nbytes){
+static inline size_t __CBAS__fread(size_t fhandle, unsigned char* buf, size_t nbytes){
     return fread(buf, 1, nbytes,(FILE*)fhandle);
 }
 
@@ -307,8 +307,8 @@ static inline void __CBAS__mutex_unlock(unsigned char* mtx){
 
 #endif\n";
 
-fn predecl noexport openfile(char* fname, char* mode)->TGT_UMAX; //returns a handle...
-fn predecl noexport closefile(TGT_UMAX p)->int;
+fn predecl noexport fopen(char* fname, char* mode)->TGT_UMAX; //returns a handle...
+fn predecl noexport fclose(TGT_UMAX p)->int;
 
 
 fn predecl noexport get_stdout_handle()->TGT_UMAX;
@@ -316,8 +316,8 @@ fn predecl noexport get_stdin_handle()->TGT_UMAX;
 fn predecl noexport get_stderr_handle()->TGT_UMAX;
 
 //returns number of bytes read/written
-fn predecl noexport write_bytes(TGT_UMAX fhandle, char* buf, TGT_UMAX nbytes)->TGT_UMAX;
-fn predecl noexport read_bytes(TGT_UMAX fhandle, char* buf, TGT_UMAX nbytes)->TGT_UMAX;
+fn predecl noexport fwrite(TGT_UMAX fhandle, char* buf, TGT_UMAX nbytes)->TGT_UMAX;
+fn predecl noexport fread(TGT_UMAX fhandle, char* buf, TGT_UMAX nbytes)->TGT_UMAX;
 
 //get unix time...
 fn predecl pure noexport get_utime()->TGT_UMAX;

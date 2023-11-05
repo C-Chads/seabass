@@ -371,9 +371,9 @@ fn pub main()->int:
         membuf buffer
         buffer.req((1<<10));
         println("Enter 10 characters");
-        read_bytes(get_stdin_handle(), buffer.d, 10);
+        fread(get_stdin_handle(), buffer.d, 10);
         println("Here are your characters back:");
-        write_bytes(get_stdout_handle(), buffer.d, 10);
+        fwrite(get_stdout_handle(), buffer.d, 10);
     end
     
     :real_end
