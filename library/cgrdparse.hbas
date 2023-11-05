@@ -98,7 +98,7 @@ fn codegen cg_rd_parse_fail_stringlit_syntax(char* msg, char* langname, char* ru
 end
 
 @mkbldr[
-    cg_rd_parse_is_stringlit
+    cg__rd__parse__is__stringlit
     
     @dupell_inlist ;
     @initqtok "if"
@@ -117,7 +117,7 @@ end
     return retval;
 ]
 @mkbldr[
-    cg_rd_parse_is_ident
+    cg__rd__parse__is__ident
     
     @dupell_inlist ;
     @initqtok "if"
@@ -137,11 +137,11 @@ end
 ]
 
 
-codegen u64 cg_rd_parse_match_temporary_id = 0;
+codegen u64 cg__rd__p__m_temporary_id = 0;
 
 
 @mkbldr[
-    cg_rd_parse_match
+    cg__rd__p__m
     
     @dupell_inlist ;
     //we need a dumy on the front.
@@ -188,7 +188,7 @@ codegen u64 cg_rd_parse_match_temporary_id = 0;
             char[50] buf
             cgstr t
             t.s = buf;
-            __builtin_itoa(buf, cg_rd_parse_match_temporary_id++);
+            __builtin_itoa(buf, cg__rd__p__m_temporary_id++);
             temp_var_name:add(t);
             temp_var_name2:add(t);
         end
@@ -883,7 +883,7 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
                 elif(in_rwalk.d == CG_TOK_STRING)
                     //easy case...
                     @cg_bldr_pushqtok "@"
-                    @cg_bldr_pushqtok "cg_rd_parse_match"
+                    @cg_bldr_pushqtok "cg__rd__p__m"
                     @cg_bldr_pushqtok "["
                     @cg_bldr_pushqtok "["
                     @cg_bldr_pushtok [in_rwalk:dupe()]
@@ -1321,7 +1321,7 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
                     //finally, emit
                     @cg_bldr_pushqtok ";"
                     @cg_bldr_pushqtok "@"
-                    @cg_bldr_pushqtok "cg_rd_parse_match"
+                    @cg_bldr_pushqtok "cg__rd__p__m"
                     continue
                     
                 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1338,7 +1338,7 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
                     end
                     //finally, emit
                     @cg_bldr_pushqtok "@"
-                    @cg_bldr_pushqtok "cg_rd_parse_is_stringlit"
+                    @cg_bldr_pushqtok "cg__rd__parse__is__stringlit"
                     continue            
                 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 elif(in_rwalk.text streq "ident")
@@ -1354,7 +1354,7 @@ method codegen cg_rd_parser_rule:gen_ocode(cg_rd_parser_spec* spec):
                     end
                     //finally, emit
                     @cg_bldr_pushqtok "@"
-                    @cg_bldr_pushqtok "cg_rd_parse_is_ident"
+                    @cg_bldr_pushqtok "cg__rd__parse__is__ident"
                     continue
                 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 elif(in_rwalk.text streq "eat")
