@@ -4,7 +4,8 @@
     
     1. You will probably have to modify this file for your target....
     2. _STRTOU_ and _STRTOI_ are used in the standard library...
-    3. 
+    3. some platforms may be non-compliant with the standard or
+        do weird things with `short` and etcetera.
 */
 
 #guard BIT16_TGT_CBAS
