@@ -284,8 +284,6 @@ static inline i32 __CBAS__tm_isdst(unsigned char* tm_struct){
    memcpy(&timeinfo, tm_struct, sizeof(struct tm));
    return timeinfo.tm_isdst;
 }
-
-
 static inline void __CBAS__set_errno(i32 new_errno){
     errno = new_errno;
 }
