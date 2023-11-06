@@ -25,6 +25,8 @@ data codegen string SEABASS_BIT_PREFIX "
 #define u32 unsigned long
 #define _STRTOU_ atou
 #define _STRTOI_ atoi
+#define TGT_UMAX unsigned short
+#define TGT_IMAX short
 ";
 
 codegen u64 SEABASS_TARGET_BITS = 16;

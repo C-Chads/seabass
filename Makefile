@@ -72,6 +72,12 @@ fib:
 	mv auto_out.c ../
 	$(CC) $(CFLAGS_CBAS) auto_out.c -o fib
 
+string_stdlib_test:
+	cd library && \
+	cbas stdlib_strings_test.cbas && \
+	mv auto_out.c ../
+	$(CC) $(CFLAGS_CBAS) auto_out.c -o strtest
+
 uninstall:
 	rm -f /usr/local/bin/cbas_dirty
 	rm -f /usr/local/bin/cbas_clean
@@ -87,4 +93,4 @@ push: clean
 	git push
 
 clean:
-	rm -f *.exe *.out *.bin *.o library/*.exe library/*.out library/*.bin library/*.o library/auto_out.c cbas cbas_dirty cbas_pure cbas_dbg cbas_dbg2 cbas_clean cbas_tcc auto_out.c toc_test fib
+	rm -f *.exe *.out *.bin *.o library/*.exe library/*.out library/*.bin library/*.o library/auto_out.c cbas cbas_dirty cbas_pure cbas_dbg cbas_dbg2 cbas_clean cbas_tcc auto_out.c toc_test fib strtest

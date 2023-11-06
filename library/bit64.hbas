@@ -14,6 +14,8 @@ data codegen string SEABASS_BIT_PREFIX "
 #define u32 unsigned int
 #define _STRTOU_ strtoull
 #define _STRTOI_ strtoll
+#define TGT_UMAX unsigned long long
+#define TGT_IMAX long long
 
 ";
 

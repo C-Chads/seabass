@@ -127,14 +127,14 @@ static inline void start_lsthread(lsthread* t){
 static inline double __CBAS__atof(unsigned char* text){
     return atof((char*)text);
 }
-static inline size_t __CBAS__atou(unsigned char* text){
+static inline TGT_UMAX __CBAS__atou(unsigned char* text){
 #ifndef SEABASS_16_BIT
     return _STRTOU_((char*)text, NULL, 0);
 #else
     return _STRTOU_((char*)text);
 #endif
 }
-static inline ssize_t __CBAS__atoi(unsigned char* text){
+static inline TGT_IMAX __CBAS__atoi(unsigned char* text){
 #ifndef SEABASS_16_BIT
     return _STRTOI_((char*)text, NULL, 0);
 #else
@@ -148,77 +148,77 @@ static inline void __CBAS__srand(u32 seed){
 static inline i32 __CBAS__rand(){
     return rand();
 }
-static inline ssize_t __CBAS__strcmp(unsigned char* a, unsigned char* b){
+static inline TGT_IMAX __CBAS__strcmp(unsigned char* a, unsigned char* b){
     return strcmp((char*)a,(char*)b);
 }
-static inline ssize_t __CBAS__memcmp(unsigned char* a, unsigned char* b, size_t sz){
+static inline TGT_IMAX __CBAS__memcmp(unsigned char* a, unsigned char* b, TGT_UMAX sz){
     return memcmp((char*)a,(char*)b, sz);
 }
-static inline size_t __CBAS__strlen(unsigned char* s){
+static inline TGT_UMAX __CBAS__strlen(unsigned char* s){
     return strlen((char*)s);
 }
 
-static inline size_t __CBAS__fopen(unsigned char* fname, unsigned char* mode){
-    return (size_t)fopen((char*)fname, (char*)mode);
+static inline TGT_UMAX __CBAS__fopen(unsigned char* fname, unsigned char* mode){
+    return (TGT_UMAX)fopen((char*)fname, (char*)mode);
 }
 
-static inline i32 __CBAS__fclose(size_t p){
+static inline i32 __CBAS__fclose(TGT_UMAX p){
     return fclose((FILE*)p);
 }
 
-static inline size_t __CBAS__get_stdout_handle(){
-    return (size_t)stdout;
+static inline TGT_UMAX __CBAS__get_stdout_handle(){
+    return (TGT_UMAX)stdout;
 }
 
-static inline size_t __CBAS__get_stdin_handle(){
-    return (size_t)stdin;
+static inline TGT_UMAX __CBAS__get_stdin_handle(){
+    return (TGT_UMAX)stdin;
 }
 
-static inline size_t __CBAS__get_stderr_handle(){
-    return (size_t)stderr;
+static inline TGT_UMAX __CBAS__get_stderr_handle(){
+    return (TGT_UMAX)stderr;
 }
 
-static inline size_t __CBAS__fwrite(size_t fhandle, unsigned char* buf, size_t nbytes){
+static inline TGT_UMAX __CBAS__fwrite(TGT_UMAX fhandle, unsigned char* buf, TGT_UMAX nbytes){
     return fwrite(buf, 1, nbytes,(FILE*)fhandle);
 }
 
-static inline size_t __CBAS__fread(size_t fhandle, unsigned char* buf, size_t nbytes){
+static inline TGT_UMAX __CBAS__fread(TGT_UMAX fhandle, unsigned char* buf, TGT_UMAX nbytes){
     return fread(buf, 1, nbytes,(FILE*)fhandle);
 }
 
-static inline size_t __CBAS__unixtime(){
+static inline TGT_UMAX __CBAS__unixtime(){
     return time(0);
 }
-static inline size_t __CBAS__time(size_t* a){
+static inline TGT_UMAX __CBAS__time(TGT_UMAX* a){
     time_t qq;
     qq = *a;
     time_t retval = time(&qq);
     *a = qq;
     return retval;
 }
-static inline unsigned char* __CBAS__ctime(size_t* a){
+static inline unsigned char* __CBAS__ctime(TGT_UMAX* a){
     time_t qq;
     qq = *a;
     unsigned char* retval = (unsigned char*)ctime(&qq);
     *a = qq;
     return retval;
 }
-static inline double __CBAS__difftime(size_t a, size_t b){
+static inline double __CBAS__difftime(TGT_UMAX a, TGT_UMAX b){
     return difftime(a,b);
 }
-static inline size_t __CBAS__clock(){
+static inline TGT_UMAX __CBAS__clock(){
     return clock();
 }
-static inline size_t __CBAS__CLOCKS_PER_SEC(){
+static inline TGT_UMAX __CBAS__CLOCKS_PER_SEC(){
     return CLOCKS_PER_SEC;
 }
-static inline unsigned char* __CBAS__localtime(size_t a){
+static inline unsigned char* __CBAS__localtime(TGT_UMAX a){
     time_t tt = a;
     struct tm * timeinfo;
     timeinfo = localtime(&tt);
     return (unsigned char*)timeinfo;
 }
-static inline unsigned char* __CBAS__gmtime(size_t a){
+static inline unsigned char* __CBAS__gmtime(TGT_UMAX a){
     time_t tt = a;
     struct tm * timeinfo;
     timeinfo = gmtime(&tt);
@@ -290,19 +290,19 @@ static inline void __CBAS__set_errno(i32 new_errno){
 static inline i32 __CBAS__get_errno(){
     return errno;
 }
-static inline void __CBAS__mcpy(unsigned char* dst, unsigned char* src, size_t sz){
+static inline void __CBAS__mcpy(unsigned char* dst, unsigned char* src, TGT_UMAX sz){
     memcpy(dst, src, sz);
 }
-static inline void __CBAS__mmove(unsigned char* dst, unsigned char* src, size_t sz){
+static inline void __CBAS__mmove(unsigned char* dst, unsigned char* src, TGT_UMAX sz){
     memmove(dst, src, sz);
 }
-static inline unsigned char* __CBAS__malloc(size_t amt){
+static inline unsigned char* __CBAS__malloc(TGT_UMAX amt){
     return malloc(amt);
 }
 static inline void __CBAS__free(unsigned char* p){
     free(p);
 }
-static inline unsigned char* __CBAS__realloc(unsigned char* b, size_t amt){
+static inline unsigned char* __CBAS__realloc(unsigned char* b, TGT_UMAX amt){
     return realloc(b, amt);
 }
 static inline void __CBAS__println(unsigned char* s){
