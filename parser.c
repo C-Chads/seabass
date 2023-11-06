@@ -512,32 +512,32 @@ void compile_unit(strll* _unit){
             uint64_t i;
 			uint64_t id;
 			int found = 0;
-				consume();
-				require(peek() != NULL, "__cbas_run_fn requires identifier.");
-				require(peek()->data == TOK_IDENT, "__cbas_run_fn requires identifier");
-				t = strdup(peek()->text);
-				for(i = 0; i < nsymbols; i++){
-					if(streq(t, symbol_table[i]->name)){
-						id = i;
-						found = 1;
-						break;
-					}
-				}
-				require(found != 0, "Could not find __cbas_run_fn function");
-				free(t);
-				consume();
-				require(symbol_table[id]->t.is_function != 0, "__cbas_run_fn- must be a function.");
-				require(symbol_table[id]->is_codegen == 1, "__cbas_run_fn- must be is_codegen.");
-				require(symbol_table[id]->is_incomplete == 0, "__cbas_run_fn- definition must be completed.");
-				require(symbol_table[id]->fbody != NULL, "__cbas_run_fn- function body must not be null.");
-				require(symbol_table[id]->t.basetype == BASE_VOID, "__cbas_run_fn- must return nothing!");
-				require(symbol_table[id]->t.pointerlevel == 0 , "__cbas_run_fn- must return nothing");
-				require(symbol_table[id]->nargs == 0, "__cbas_run_fn- must take zero arguments. That's how I call it.");
-				//ast_execute_function(symbol_table+id);
-                ast_vm_stack_push_temporary();
-		        ast_execute_function((symbol_table+id)[0]);
-		        ast_vm_stack_pop();
-				continue;
+            consume();
+            require(peek() != NULL, "__cbas_run_fn requires identifier.");
+            require(peek()->data == TOK_IDENT, "__cbas_run_fn requires identifier");
+            t = strdup(peek()->text);
+            for(i = 0; i < nsymbols; i++){
+            	if(streq(t, symbol_table[i]->name)){
+            		id = i;
+            		found = 1;
+            		break;
+            	}
+            }
+            require(found != 0, "Could not find __cbas_run_fn function");
+            free(t);
+            consume();
+            require(symbol_table[id]->t.is_function != 0, "__cbas_run_fn- must be a function.");
+            require(symbol_table[id]->is_codegen == 1, "__cbas_run_fn- must be is_codegen.");
+            require(symbol_table[id]->is_incomplete == 0, "__cbas_run_fn- definition must be completed.");
+            require(symbol_table[id]->fbody != NULL, "__cbas_run_fn- function body must not be null.");
+            require(symbol_table[id]->t.basetype == BASE_VOID, "__cbas_run_fn- must return nothing!");
+            require(symbol_table[id]->t.pointerlevel == 0 , "__cbas_run_fn- must return nothing");
+            require(symbol_table[id]->nargs == 0, "__cbas_run_fn- must take zero arguments. That's how I call it.");
+            //ast_execute_function(symbol_table+id);
+                        ast_vm_stack_push_temporary();
+                  ast_execute_function((symbol_table+id)[0]);
+                  ast_vm_stack_pop();
+            continue;
 		}
 
 		if(peek()->data == TOK_SEMIC){
