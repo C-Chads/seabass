@@ -250,7 +250,7 @@ static void assign_lsym_gsym(expr_node* ee){
 			}
 		}
 
-	/*Mut search active_function's fargs...*/
+	/*Must search active_function's fargs...*/
 	if(ee->kind == EXPR_SYM)
 		for(i = 0; i < (int64_t)symbol_table[active_function]->nargs; i++){
 			if(
@@ -3352,18 +3352,7 @@ void validate_function(symdecl* funk){
 
 	/*
 		TODO: 
-		For each if() or elif(), assign the "goto_where_in_scope" member of the stmt struct,
-		to the statement immediately following the else chain. (?? I don't know if I ever did it ??)
-		
-		TODO:
-		Insert ctor and dtor calls for all structs that have those methods defined with the ()->void protytpe.
-		
-		It'll make doing programming with Seabass so much nicer, so I ought to do it. It isn't very difficult, methinks...
-		
-		All I have to do is insert some extra statements into every scope at the beginning and end which
-		invoke `ctor` and `dtor`. 
-		
-		After that, all previous processing must be redone...
+		Fix big: You can shadow variables by accident...
 	*/
 	
 	if(nscopes > 0){

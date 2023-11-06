@@ -3236,7 +3236,8 @@ void parse_lvardecl(){
 		}
 	}
 	//TODO: check for invalid declarations... ?
-	require(!ident_is_used_locally(peek()->text), "That identifier is already in use for a local variable. Aliasing/shadowing is not allowed.");
+	//TODO: Fix bug... you can actually shadow variables...
+	require(!ident_forbidden_declaration_check(peek()->text), "Identifier is already in use for a local variable in the current scope!");
 
 	s.name = strdup(peek()->text);
 	

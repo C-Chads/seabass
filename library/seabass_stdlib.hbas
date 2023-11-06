@@ -1110,6 +1110,10 @@ class str
     char* d
     TGT_UMAX len
 end
+class pstr
+    char* d
+    TGT_UMAX len
+end
 
 method inline pure str.ctor():
     this.d = 0;
@@ -1123,9 +1127,26 @@ method inline str.dtor():
     //calling the constructor in the destructor? OF COURSE!
     this.ctor();
 end
+method inline pure pstr.ctor():
+    this.d = 0;
+    this.len = 0;
+end
+
+method inline pstr.dtor():
+    if(this.d != 0)
+        free(this.d);
+    end
+    //calling the constructor in the destructor? OF COURSE!
+    this.ctor();
+end
 
 //free self...
 method inline str.free():
+    this.dtor();
+    free((u8*)this);
+end
+//free self...
+method inline pstr.free():
     this.dtor();
     free((u8*)this);
 end
@@ -1133,10 +1154,18 @@ end
 method inline pure str.equal(str o)->TGT_IMAX:
     if(this.len != o.len) return 0 end //can't be equal if they're not even the same length!
     if(this.len == 0) return 1 end //they are both length zero, meaning they are equal.
-    return this.d streq o.d
+    return (memcmp(this.d, o.d, this.len) == 0)
+end
+method inline pure str.nequal(str o)->TGT_IMAX:
+    return !this.equal(o)
 end
 
-method inline pure str.nequal(str o)->TGT_IMAX:
+method inline pure pstr.equal(str o)->TGT_IMAX:
+    if(this.len != o.len) return 0 end //can't be equal if they're not even the same length!
+    if(this.len == 0) return 1 end //they are both length zero, meaning they are equal.
+    return (memcmp(this.d, o.d, this.len) == 0)
+end
+method inline pure pstr.nequal(str o)->TGT_IMAX:
     return !this.equal(o)
 end
 
@@ -1151,6 +1180,46 @@ method inline str.copy(str* o)->str*:
     end
     //MALLOC NEVER FAILS...
     mcpy(this.d, o.d, this.len+1);
+    return this
+end
+//string copy from pstr
+method inline str.frompstr(pstr* o)->str*:
+    this.dtor();
+    this.len = o.len;
+    this.d = realloc((byte*)0,o.len+1);
+    if(this.d == 0)
+        //an error has occurred!
+        return (str*)0;
+    end
+    //MALLOC NEVER FAILS...
+    mcpy(this.d, o.d, this.len+1);
+    return this
+end
+
+//pstr copy from another pascal string
+method inline pstr.copy(pstr* o)->pstr*:
+    this.dtor();
+    this.len = o.len;
+    this.d = realloc((byte*)0,o.len);
+    if(this.d == 0)
+        //an error has occurred!
+        return (pstr*)0;
+    end
+    //MALLOC NEVER FAILS...
+    mcpy(this.d, o.d, this.len);
+    return this
+end
+//pascal string copying c string
+method inline pstr.fromstr(str* o)->pstr*:
+    this.dtor();
+    this.len = o.len;
+    this.d = realloc((byte*)0,o.len);
+    if(this.d == 0)
+        //an error has occurred!
+        return (pstr*)0;
+    end
+    //MALLOC NEVER FAILS...
+    mcpy(this.d, o.d, this.len);
     return this
 end
 
@@ -1169,8 +1238,28 @@ method inline str.new(char* o)->str*:
     mcpy(this.d, o, qq+1);
     return this
 end
+//pascal string from charpy
+method inline pstr.new(char* o)->pstr*:
+    this.dtor();
+    TGT_UMAX qq;
+    qq = strlen(o);
+    //qq is now strlen
+    this.len = qq;
+    this.d = realloc((byte*)0, qq);
+    if(this.d == 0)
+        //an error has occurred!
+        return (pstr*)0;
+    end
+    //MALLOC NEVER FAILS...
+    mcpy(this.d, o, qq);
+    return this
+end
 
 method inline str.copyto(str* o):
+    o.copy(this);
+end
+
+method inline pstr.copyto(pstr* o):
     o.copy(this);
 end
 
@@ -1181,7 +1270,18 @@ method inline str.move(str* o):
     o.len = 0;
 end
 
+method inline pstr.move(pstr* o):
+    this.d = o.d;
+    this.len = o.len;
+    o.d = 0;
+    o.len = 0;
+end
+
 method inline str.moveto(str* o):
+    o.move(this);
+end
+
+method inline pstr.moveto(pstr* o):
     o.move(this);
 end
 
@@ -1196,8 +1296,22 @@ method inline str.clone()->str*:
     p.copy(this);
     return p;
 end
+method inline pstr.clone()->pstr*:
+    pstr* p
+    p = (pstr*)malloc(sizeof(pstr));
+    if(p == 0)
+        //an error has occurred!
+        return (pstr*)0;
+    end
+    //MALLOC NEVER FAILS...
+    p.copy(this);
+    return p;
+end
 
 method inline pure str.isnull()->TGT_UMAX:
+    return this.d == 0
+end
+method inline pure pstr.isnull()->TGT_UMAX:
     return this.d == 0
 end
 
@@ -1206,6 +1320,14 @@ method inline pure str.isempty()->TGT_UMAX:
     return 0
 end
 method inline pure str.empty()->TGT_UMAX:
+    return this.isempty()
+end
+
+method inline pure pstr.isempty()->TGT_UMAX:
+    if(this.len == 0 || this.d == 0) return 1 end
+    return 0
+end
+method inline pure pstr.empty()->TGT_UMAX:
     return this.isempty()
 end
 
@@ -1226,6 +1348,26 @@ method inline pure str.prefixed(str o)->TGT_UMAX:
         a++; b++;
     end
 end
+//is this string prefixed by another?
+method inline pure pstr.prefixed(pstr o)->TGT_UMAX:
+    if(o.isempty()) return 1 end
+    //he's not empty, but we are? CANCEL!
+    if(this.isempty()) return 0 end
+    //can't be prefixed by a string longer than ourselves!
+    if(o.len > this.len) return 0 end
+    //neither of us are empty, meaning we both have valid pointers...
+    //perform the check...
+    char* a = o.d;
+    char* b = this.d;
+    TGT_UMAX i
+    for(i = 0, i < o.len, i++)
+        if(a[0] != b[0]) return 0 end
+        a++;
+        b++;
+    end
+    //they are in fact equal...
+    return 1
+end
 
 method inline pure str.postfixed(str o)->TGT_UMAX:
     if(o.isempty()) return 1 end
@@ -1240,6 +1382,23 @@ method inline pure str.postfixed(str o)->TGT_UMAX:
         if(a[0] != b[0]) return 0 end
         a++; b++;
     end
+end
+
+method inline pure pstr.postfixed(pstr o)->TGT_UMAX:
+    if(o.isempty()) return 1 end
+    //he's not empty, but we are? CANCEL!
+    if(this.isempty()) return 0 end
+    //can't be postfixed by a string longer than ourselves!
+    if(o.len > this.len) return 0 end
+    char* a = o.d;
+    char* b = this.d + (this.len-o.len);
+    TGT_UMAX i
+    for(i = 0, i < o.len, i++)
+        if(a[0] != b[0]) return 0 end
+        a++; 
+        b++;
+    end
+    return 1
 end
 
 //find an instance from a particular location...
@@ -1270,9 +1429,42 @@ method inline pure str.findfrom(str findme, TGT_UMAX where)->TGT_IMAX:
     end
     return -1
 end
+//find an instance from a particular location...
+method inline pure pstr.findfrom(pstr findme, TGT_UMAX where)->TGT_IMAX:
+    TGT_IMAX retval = -1;
+    if(findme.isempty()) return 0 end
+    if(this.isempty()) return -1 end
+    if(findme.len > this.len) return -1 end
+    if(where >= this.len) return -1 end
+    char* text = this.d;
+    char* subtext = findme.d;
+    
+    TGT_IMAX ti = where;
+    TGT_IMAX si = 0;
+    TGT_IMAX st = findme.len;
+    for(0,ti < this.len,ti++)
+        if(text[ti] == subtext[si])
+            si++
+            if(si >= (findme.len))
+                return (ti-st)+1
+            end
+        else
+            if(si >= (findme.len))
+                return (ti-st)+1
+            end
+            ti = ti - si; si = 0;
+        end
+    end
+    return -1
+end
 
 //from the top!
 method inline pure str.find(str findme)->TGT_IMAX:
+    return this.findfrom(findme, 0);
+end
+
+//from the top!
+method inline pure pstr.find(pstr findme)->TGT_IMAX:
     return this.findfrom(findme, 0);
 end
 
@@ -1293,12 +1485,28 @@ method inline str.add(str o)->TGT_UMAX:
     return 0
 end
 
+//pascal string addition...
+method inline pstr.add(pstr o)->TGT_UMAX:
+    //add to this string without consuming o...
+    TGT_UMAX old_len = this.len;
+    if(o.isempty()) return 0 end
+    this.len = o.len+this.len;
+    this.d = realloc(this.d, this.len+o.len);
+    if(this.d == 0)
+        //an error has occurred!
+        return 1
+    end
+    //MALLOC NEVER FAILS...
+    mcpy(this.d + old_len, o.d, o.len);
+    return 0
+end
+
 //add a C-string....
 method inline str.addc(char* oo)->TGT_UMAX:
     TGT_UMAX qq = 0;
     //if there is nothing to add...
     if(oo == 0) return 0 end
-    for(qq = 0, oo[qq], qq++) end
+    qq = strlen(oo);
     if(qq == 0) return 0 end
     TGT_UMAX old_len = this.len;
     this.len = qq+this.len+1;
@@ -1308,6 +1516,23 @@ method inline str.addc(char* oo)->TGT_UMAX:
         return 1;
     end
     mcpy(this.d + old_len, oo, qq+1);
+    return 0
+end
+//pascal string, add a C-string....
+method inline pstr.addc(char* oo)->TGT_UMAX:
+    TGT_UMAX qq = 0;
+    //if there is nothing to add...
+    if(oo == 0) return 0 end
+    qq = strlen(oo);
+    if(qq == 0) return 0 end
+    TGT_UMAX old_len = this.len;
+    this.len = qq+this.len;
+    this.d = realloc(this.d, this.len+qq);
+    if(this.d == 0)
+        //an error has occurred!
+        return 1;
+    end
+    mcpy(this.d + old_len, oo, qq);
     return 0
 end
 
@@ -1320,13 +1545,13 @@ method inline str.substr(TGT_UMAX beginning, TGT_UMAX howmuch)->str*:
     end
     //They want a zero-length string? You got it!
     if(howmuch == 0)
-        str* p = (str*)malloc(sizeof(str));
-        if(p == 0)
+        str* p2 = (str*)malloc(sizeof(str));
+        if(p2 == 0)
             return (str*)0
         end
         //MALLOC NEVER FAILS...
-        p.ctor()
-        return p
+        p2.ctor()
+        return p2
     end
     //They actually want us to get this string for them...
     char* b = malloc(howmuch+1);
@@ -1338,7 +1563,43 @@ method inline str.substr(TGT_UMAX beginning, TGT_UMAX howmuch)->str*:
     b[howmuch] = 0; //null terminator!
     str* p = (str*)malloc(sizeof(str));
     if(p == 0)
+        free(b);
         return (str*)0
+    end
+    //MALLOC NEVER FAILS...
+    p.d = b;
+    p.len = howmuch;
+    return p;
+end
+
+method inline pstr.substr(TGT_UMAX beginning, TGT_UMAX howmuch)->pstr*:
+    if(
+        beginning >= this.len ||
+        beginning+howmuch >= this.len
+    )
+        return (pstr*)0
+    end
+    //They want a zero-length string? You got it!
+    if(howmuch == 0)
+        pstr* p2 = (pstr*)malloc(sizeof(pstr));
+        if(p2 == 0)
+            return (pstr*)0
+        end
+        //MALLOC NEVER FAILS...
+        p2.ctor()
+        return p2
+    end
+    //They actually want us to get this string for them...
+    char* b = malloc(howmuch);
+    if(b == 0)
+        return (pstr*)0
+    end
+    //MALLOC NEVER FAILS...
+    mcpy(b, this.d+beginning, howmuch);
+    pstr* p = (pstr*)malloc(sizeof(str));
+    if(p == 0)
+        free(b);
+        return (pstr*)0
     end
     //MALLOC NEVER FAILS...
     p.d = b;

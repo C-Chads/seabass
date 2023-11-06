@@ -415,6 +415,23 @@ static inline int ident_is_used_locally(char* s){
 	return 0;
 }
 
+static inline int ident_forbidden_declaration_check(char* s){
+	for(unsigned long i = 0;i < symbol_table[active_function]->nargs;i++){
+		if(streq(s, symbol_table[active_function]->fargs[i]->membername))
+			return 1;
+	}
+    //for(unsigned long i = 0; i < nscopes; i++)
+    if(nscopes == 0) 
+        return 0;
+    unsigned long i = nscopes - 1;
+    //loop!
+    for(unsigned long j = 0; j < scopestack[i]->nsyms; j++){
+        if(streq(s, scopestack[i]->syms[j].name))
+            return 1;
+    }
+	return 0;
+}
+
 
 /*Used during initial-pass parsing for error checking. It is insufficient to prevent duplicate labels in a function, ala:
 	fn myFunc():
