@@ -1102,5 +1102,66 @@ fn inline pure impl_streq(char* a, char* b)->TGT_IMAX:
     end
 end
 
+class str
+    char* d
+    TGT_UMAX len
+end
+
+method inline str.ctor():
+    this.d = 0;
+    this.len = 0;
+end
+
+method inline str.dtor():
+    if(this.d != 0)
+        free(this.d);
+    end
+    this.d = 0;
+    this.len = 0;
+end
+
+//copy from another string
+method inline str.copy(str* o)->str*:
+    this.dtor();
+    this.len = o.len;
+    this.d = malloc(o.len+1);
+    //MALLOC NEVER FAILS...
+    mcpy(this.d, o.d, this.len+1);
+    return this
+end
+
+method inline str.fromcstr(char* o)->str*:
+    this.dtor();
+    TGT_UMAX qq;
+    for(qq = 0, o[qq], qq++) end
+    //qq is now strlen
+    this.len = qq;
+    this.d = malloc(qq+1);
+    //MALLOC NEVER FAILS...
+    mcpy(this.d, o, qq+1);
+    return this
+end
+
+method inline str.copyto(str* o):
+    o.copy(this);
+end
+
+method inline str.clone()->str*:
+    str* p
+    p = (str*)malloc(sizeof(str));
+    //MALLOC NEVER FAILS...
+    p.copy(this);
+    return p;
+end
+
+method inline str.isnull()->TGT_UMAX:
+    return this.d == 0
+end
+
+method inline str.isempty()->TGT_UMAX:
+    if(this.len == 0 || this.d == 0) return 1 end
+    return 0
+end
+
 
 

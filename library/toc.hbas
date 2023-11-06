@@ -1255,7 +1255,7 @@ method codegen cgstmt:gen_code(cgast* ast, char* disptablename, u64 active_fun_s
         cgexpr_node* enode
         if(this.nexpressions)
             cgstr qq2
-            qq:fromstr("\n    return");
+            qq:fromstr("\n    return ");
             enode = cast(cgexpr_node*)(this.expressions[0]);
 
             qq2.s = enode:gen_code(ast); qq:add(qq2);
