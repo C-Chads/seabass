@@ -70,6 +70,22 @@ fn strtest1():
             /   "<ERR> It appears we failed to find it..."
         ]    
     end
+    c.new("Cannot find this!");
+    @prnt[
+        /   "We find the unfindable needle at:"
+        /int (a.find(c))
+    ]
+    u64 i
+    for(i = 0, i < 100, i++)
+        str qq
+        qq.new("Will I leak?");
+        a.new("Or perhaps I will");
+        if(i == 73)
+            str qqq
+            qqq.new("But, perhaps, I will instead...")
+            return
+        end
+    end
 end
 
 fn pub main()->i32:
