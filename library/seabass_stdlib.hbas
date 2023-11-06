@@ -1107,12 +1107,12 @@ class str
     TGT_UMAX len
 end
 
-method inline str.ctor():
+method inline pure str.ctor():
     this.d = 0;
     this.len = 0;
 end
 
-method inline str.dtor():
+method inline pure str.dtor():
     if(this.d != 0)
         free(this.d);
     end
@@ -1195,7 +1195,7 @@ method inline pure str.add(str o):
     TGT_UMAX old_len = this.len;
     this.len = o.len+this.len+1;
     this.d = realloc(this.d, this.len+o.len+1);
-    memcpy(this.d + old_len, o.d, o.len+1);
+    mcpy(this.d + old_len, o.d, o.len+1);
 end
 
 
