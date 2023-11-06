@@ -1116,8 +1116,8 @@ method inline pure str.dtor():
     if(this.d != 0)
         free(this.d);
     end
-    this.d = 0;
-    this.len = 0;
+    //calling the constructor in the destructor? OF COURSE!
+    this.ctor();
 end
 
 //copy from another string
@@ -1133,6 +1133,7 @@ end
 method inline pure str.fromcstr(char* o)->str*:
     this.dtor();
     TGT_UMAX qq;
+    //top 10 strlen implementations???
     for(qq = 0, o[qq], qq++) end
     //qq is now strlen
     this.len = qq;
@@ -1179,6 +1180,8 @@ method inline pure str.prefixed(str o)->TGT_UMAX:
     if(o.isempty()) return 1 end
     //he's not empty, but we are? CANCEL!
     if(this.isempty()) return 0 end
+    //can't be prefixed by a string longer than ourselves!
+    if(o.len > this.len) return 0 end
     //neither of us are empty, meaning we both have valid pointers...
     //perform the check...
     char* a = o.d;
@@ -1190,13 +1193,48 @@ method inline pure str.prefixed(str o)->TGT_UMAX:
     end
 end
 
+method inline pure str.postfixed(str o)->TGT_UMAX:
+    if(o.isempty()) return 1 end
+    //he's not empty, but we are? CANCEL!
+    if(this.isempty()) return 0 end
+    //can't be postfixed by a string longer than ourselves!
+    if(o.len > this.len) return 0 end
+    char* a = o.d;
+    char* b = this.d + (this.len-o.len);
+    while(1)
+        if(a[0] == 0) return 1 end
+        if(a[0] != b[0]) return 0 end
+        a++; b++;
+    end
+end
+
 method inline pure str.add(str o):
     //add to this string without consuming o...
     TGT_UMAX old_len = this.len;
+    if(o.isempty()) return end
     this.len = o.len+this.len+1;
     this.d = realloc(this.d, this.len+o.len+1);
+    //MALLOC NEVER FAILS...
     mcpy(this.d + old_len, o.d, o.len+1);
 end
+
+method inline pure str.addeat(str o):
+    this.add(o);
+    o.dtor();
+end
+
+//add a C-string....
+method inline pure str.addc(char* oo):
+    TGT_UMAX qq = 0;
+    if(oo == 0) return end
+    for(qq = 0, oo[qq], qq++) end
+    if(qq == 0) return end
+    TGT_UMAX old_len = this.len;
+    this.len = qq+this.len+1;
+    this.d = realloc(this.d, this.len+qq+1);
+    mcpy(this.d + old_len, oo, qq+1);
+end
+
 
 
 
