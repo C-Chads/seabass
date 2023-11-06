@@ -895,9 +895,9 @@ fn predecl pure noexport mmove(char* dst, char* src, TGT_UMAX sz);
 fn predecl noexport println(char* s);
 
 //this is needed to get proper compiler optimization...
-fn predecl pure noexport malloc(TGT_UMAX amt)->char*;
-fn predecl pure noexport free(char* p);
-fn predecl pure noexport realloc(char* p, TGT_UMAX amt)->char*;
+fn predecl noexport malloc(TGT_UMAX amt)->char*;
+fn predecl noexport free(char* p);
+fn predecl noexport realloc(char* p, TGT_UMAX amt)->char*;
 fn predecl noexport sys_exit(int a);
 /*
     TODO: Fill out the full feature set of
@@ -1090,6 +1090,8 @@ fn predecl noexport mutex_lock(byte* mtx);
 fn predecl noexport mutex_unlock(byte* mtx);
 
 
+
+
 /*
     String library...
 */
@@ -1112,7 +1114,7 @@ method inline pure str.ctor():
     this.len = 0;
 end
 
-method inline pure str.dtor():
+method inline str.dtor():
     if(this.d != 0)
         free(this.d);
     end
@@ -1121,16 +1123,20 @@ method inline pure str.dtor():
 end
 
 //copy from another string
-method inline pure str.copy(str* o)->str*:
+method inline str.copy(str* o)->str*:
     this.dtor();
     this.len = o.len;
     this.d = realloc((byte*)0,o.len+1);
+    if(this.d == 0)
+        //an error has occurred!
+        return (str*)0;
+    end
     //MALLOC NEVER FAILS...
     mcpy(this.d, o.d, this.len+1);
     return this
 end
 
-method inline pure str.fromcstr(char* o)->str*:
+method inline str.fromcstr(char* o)->str*:
     this.dtor();
     TGT_UMAX qq;
     //top 10 strlen implementations???
@@ -1138,29 +1144,37 @@ method inline pure str.fromcstr(char* o)->str*:
     //qq is now strlen
     this.len = qq;
     this.d = realloc((byte*)0, qq+1);
+    if(this.d == 0)
+        //an error has occurred!
+        return (str*)0;
+    end
     //MALLOC NEVER FAILS...
     mcpy(this.d, o, qq+1);
     return this
 end
 
-method inline pure str.copyto(str* o):
+method inline str.copyto(str* o):
     o.copy(this);
 end
 
-method inline pure str.move(str* o):
+method inline str.move(str* o):
     this.d = o.d;
     this.len = o.len;
     o.d = 0;
     o.len = 0;
 end
 
-method inline pure str.moveto(str* o):
+method inline str.moveto(str* o):
     o.move(this);
 end
 
-method inline pure str.clone()->str*:
+method inline str.clone()->str*:
     str* p
     p = (str*)malloc(sizeof(str));
+    if(p == 0)
+        //an error has occurred!
+        return (str*)0;
+    end
     //MALLOC NEVER FAILS...
     p.copy(this);
     return p;
@@ -1173,6 +1187,9 @@ end
 method inline pure str.isempty()->TGT_UMAX:
     if(this.len == 0 || this.d == 0) return 1 end
     return 0
+end
+method inline pure str.empty()->TGT_UMAX:
+    return this.empty()
 end
 
 //is this string prefixed by another?
@@ -1193,6 +1210,30 @@ method inline pure str.prefixed(str o)->TGT_UMAX:
     end
 end
 
+method inline pure str.find(str findme)->TGT_IMAX:
+    TGT_IMAX retval = -1;
+    //if the other is empty, then
+    if(findme.isempty()) return 0 end
+    if(this.isempty()) return -1 end
+    if(findme.len > this.len) return -1 end
+    
+    char* text = this.d;
+    char* subtext = findme.d;
+    
+    TGT_IMAX ti = 0;
+    TGT_IMAX si = 0;
+    TGT_IMAX st = findme.len;
+    for(0,text[ti] != 0,ti++)
+        if(text[ti] == subtext[si])
+            si++
+            if(subtext[si] == 0) return (ti-si)+1 end
+        else
+            if(subtext[si] == 0) return (ti-si)+1 end
+            ti = ti - si; si = 0;
+        end
+    end
+end
+
 method inline pure str.postfixed(str o)->TGT_UMAX:
     if(o.isempty()) return 1 end
     //he's not empty, but we are? CANCEL!
@@ -1208,32 +1249,80 @@ method inline pure str.postfixed(str o)->TGT_UMAX:
     end
 end
 
-method inline pure str.add(str o):
+method inline str.add(str o)->TGT_UMAX:
     //add to this string without consuming o...
     TGT_UMAX old_len = this.len;
-    if(o.isempty()) return end
+    if(o.isempty()) return 0 end
     this.len = o.len+this.len+1;
     this.d = realloc(this.d, this.len+o.len+1);
+    if(this.d == 0)
+        //an error has occurred!
+        return 1
+    end
     //MALLOC NEVER FAILS...
     mcpy(this.d + old_len, o.d, o.len+1);
+    return 0
 end
 
-method inline pure str.addeat(str o):
-    this.add(o);
+method inline str.addeat(str o)->TGT_UMAX:
+    if(this.add(o)) return 1 end //propagate error...
     o.dtor();
+    return 0
 end
 
 //add a C-string....
-method inline pure str.addc(char* oo):
+method inline str.addc(char* oo)->TGT_UMAX:
     TGT_UMAX qq = 0;
-    if(oo == 0) return end
+    //if there is nothing to add...
+    if(oo == 0) return 0 end
     for(qq = 0, oo[qq], qq++) end
-    if(qq == 0) return end
+    if(qq == 0) return 0 end
     TGT_UMAX old_len = this.len;
     this.len = qq+this.len+1;
     this.d = realloc(this.d, this.len+qq+1);
+    if(this.d == 0)
+        //an error has occurred!
+        return 1;
+    end
     mcpy(this.d + old_len, oo, qq+1);
+    return 0
 end
+
+method inline str.substr(TGT_UMAX beginning, TGT_UMAX ending)->str*:
+    if(
+        beginning > ending ||
+        beginning >= this.len ||
+        ending >= this.len
+    )
+        return (str*)0
+    end
+    //They want a zero-length string? You got it!
+    if(beginning == ending)
+        str* p = (str*)malloc(sizeof(str));
+        if(p == 0)
+            return (str*)0
+        end
+        //MALLOC NEVER FAILS...
+        p.ctor()
+        return p
+    end
+    //They actually want us to get this string for them...
+    char* b = malloc(ending - beginning);
+    if(b == 0)
+        return (str*)0
+    end
+    mcpy(b, this.d+beginning, ending - beginning);
+    str* p = (str*)malloc(sizeof(str));
+    if(p == 0)
+        return (str*)0
+    end
+    //MALLOC NEVER FAILS...
+    p.d = b;
+    p.len = ending - beginning;
+    return p;
+end
+
+
 
 
 
