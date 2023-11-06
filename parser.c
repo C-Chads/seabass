@@ -1465,6 +1465,8 @@ void parse_structdecl(){
 		/*Parse a struct member. This may include a semicolon.*/
 		while(peek()->data == TOK_SEMIC) {consume();continue;}
         if(peek()->data == TOK_INT_CONST){
+            if(me->algn)
+                parse_error("Duplicate alignment specifier.");
             me->algn = matou(peek()->text);
             consume();
             continue;
