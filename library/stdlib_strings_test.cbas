@@ -23,6 +23,7 @@ fn strtest1():
     a.new("Hello there!");
     b.copy(a);
     @prnt[
+        /   "<STR TEST>"
         /   "Here is A:"
         /   (a.d)
         /   "Here is B:"
@@ -89,8 +90,87 @@ fn strtest1():
     end
 end
 
+fn pstrtest1():
+    pstr a
+    pstr b
+    a.new("Hello there!");
+    b.copy(a);
+    if(1)
+        str aa
+        str bb
+        aa.frompstr(a);
+        bb.frompstr(b);
+        @prnt[
+            /   "<PSTR TEST>"
+            /   "Here is A:"
+            /   (aa.d)
+            /   "Here is B:"
+            /   (bb.d)
+        ]
+    end
+    b.dtor();
+    a.new("Can you find the needle in the haystack, and replace it? well, can you? Can you find it in this haystack, or not???") ;
+    b.new("in");
+    pstr c
+    c.new("i");
+    a.replace(b,c);
+    if(1)
+        str aa
+        str bb
+        aa.frompstr(a);
+        bb.frompstr(b);
+        @prnt[
+            /   "Here is A:"
+            /   (aa.d)
+        ]
+    end
+    c.new("needle");
+    b.new("needle in the");
+    a.new("Can you find the needle in the haystack, and replace it? well, can you?") ;
+    @prnt[
+        /   "We find needle at:"
+        /int (a.find(c))
+    ]
+    pstr* q = a.substr(a.find(c),b.len);
+    if(q != 0 && q.d != 0)
+        if(1)
+            str qq
+            qq.frompstr(q);
+            @prnt[
+                /   "Here is q:"
+                /   (qq.d)
+            ]
+        end
+        q.dtor();
+        q.free();
+        q = 0
+    else
+        @prnt[
+            /   "<ERR> It appears we failed to find it..."
+        ]    
+    end
+    c.new("Cannot find this!");
+    @prnt[
+        /   "We find the unfindable needle at:"
+        /int (a.find(c))
+    ]
+    u64 i
+    for(i = 0, i < 100, i++)
+        pstr qq
+        qq.new("Will I leak?");
+        a.new("Or perhaps I will");
+        if(i == 73)
+            pstr qqq
+            qqq.new("But, perhaps, I will instead...")
+            return
+        end
+    end
+end
+
+
 fn pub main()->i32:
     strtest1();
+    pstrtest1();
 end
 
 /*

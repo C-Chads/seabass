@@ -1192,7 +1192,9 @@ method inline str.frompstr(pstr* o)->str*:
         return (str*)0;
     end
     //MALLOC NEVER FAILS...
-    mcpy(this.d, o.d, this.len+1);
+    mcpy(this.d, o.d, this.len);
+    //we need to add the null terminator...
+    this.d[this.len] = 0;
     return this
 end
 
@@ -1667,8 +1669,73 @@ method inline str.replace_first_from(str what, str with, TGT_UMAX maxwhere)->TGT
     end
 end
 
+//pascal string version...
+method inline pstr.replace_first_from(pstr what, pstr with, TGT_UMAX maxwhere)->TGT_IMAX:
+
+    if(what.empty()) return -1 end //error!
+    if(maxwhere >= this.len) return -1 end //error!
+    if(this.empty()) return 0 end //we're done already!
+
+
+    TGT_IMAX where = this.findfrom(what,maxwhere);
+    if(where == -1) return -2 end //there is nothing to replace!
+    
+    TGT_UMAX is_shorter = with.len < what.len;
+    TGT_UMAX is_equal = with.len == what.len;
+    if(is_equal)
+        //an in-place replacement....
+        mcpy(this.d + where, with.d, with.len);
+        return where;
+    elif(is_shorter)
+        mcpy(this.d + where, with.d, with.len);
+/*      DIAGRAM OF WHAT'S HAPPENING....
+                                    where+what.len
+                              where |
+                              V     v
+       _hello! I am replacing needle with knee
+                              knee   [getthis]
+                                  ^
+                                  where+with.len
+*/
+        mmove(
+            this.d + where + with.len, //right after where we put the string
+            this.d + where + what.len, //right after where the old string was
+            this.len - (where+what.len) //[getthis]
+        );
+        this.len = where + with.len +  (this.len-(where+what.len));
+        return where;
+    else
+        //it's larger!
+        char* resbuf;
+        ///why does valgrind want me to add two?!?!
+        resbuf = realloc((char*)0,this.len + (with.len - what.len));
+        if(resbuf == 0)
+            return -1
+        end
+        //the before part...
+        mcpy(resbuf, this.d, where);
+        //the middle part...
+        mcpy(resbuf + where, with.d, with.len);
+        //the last part...
+        mcpy(
+            resbuf + where + with.len,//to right after the new string...
+            this.d + where + what.len,//from after the old string...
+            this.len - (where+what.len) //[getthis]
+        );
+        free(this.d);
+        this.d = resbuf;
+        this.len = where + with.len +  (this.len - (where+what.len));
+        return where;
+    end
+end
+
+
 
 method inline str.replace_first(str what, str with)->TGT_IMAX:
+    return this.replace_first_from(what, with, 0)
+end
+
+method inline pstr.replace_first(pstr what, pstr with)->TGT_IMAX:
     return this.replace_first_from(what, with, 0)
 end
 
@@ -1688,6 +1755,21 @@ method inline str.replace(str what, str with)->TGT_IMAX:
 end
 
 
+method inline pstr.replace(pstr what, pstr with)->TGT_IMAX:
+    if(what.empty()) return -1 end //error!
+    if(this.empty()) return 0 end //we're done already!
+    TGT_IMAX w = 0;
+    while(1)
+        TGT_IMAX w_new = this.replace_first_from(what, with, w);
+        
+        if(w_new == -1) return 0 end
+        if(w_new == -2) return 0 end
+        if(w_new == w) return 0 end //why would this happen?
+        w = w_new + with.len //after what we just replaced...
+    end
+end
+
+//string functions...
 fn inline utoa(char* dest, TGT_UMAX value):
     if(value == 0)
         dest[0] = '0';
