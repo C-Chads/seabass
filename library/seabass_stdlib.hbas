@@ -153,7 +153,9 @@ static inline ssize_t __CBAS__strcmp(unsigned char* a, unsigned char* b){
 static inline ssize_t __CBAS__memcmp(unsigned char* a, unsigned char* b, size_t sz){
     return memcmp((char*)a,(char*)b, sz);
 }
-
+static inline size_t __CBAS__strlen(unsigned char* s){
+    return strlen((char*)s);
+}
 
 static inline size_t __CBAS__fopen(unsigned char* fname, unsigned char* mode){
     return (size_t)fopen((char*)fname, (char*)mode);
@@ -852,6 +854,7 @@ fn predecl noexport rand()->i32;
 fn predecl noexport srand(u32 seed);
 fn predecl noexport pure strcmp(char* a, char* b)->TGT_IMAX;
 fn predecl noexport pure memcmp(char* a, char* b, TGT_UMAX sz)->TGT_IMAX;
+fn predecl noexport pure strlen(char* s)->TGT_UMAX;
 
 
 fn predecl noexport fopen(char* fname, char* mode)->TGT_UMAX; //returns a handle...
@@ -1351,11 +1354,12 @@ method inline str.substr(TGT_UMAX beginning, TGT_UMAX ending)->str*:
 end
 
 //replace the very first instance of what with with.
-method inline str.replace_first(str what, str with)->TGT_IMAX:
+method inline str.replace_first_from(str what, str with, TGT_UMAX maxwhere)->TGT_IMAX:
     if(what.empty()) return -1 end //error!
+    if(maxwhere >= this.len) return -1 end //error!
     if(this.empty()) return 0 end //we're done already!
-    TGT_IMAX where = this.find(what);
-    if(where == -1) return -1 end //there is nothing to replace!
+    TGT_IMAX where = this.findfrom(what,maxwhere);
+    if(where == -1) return -2 end //there is nothing to replace!
     
     TGT_UMAX is_shorter = with.len < what.len;
     TGT_UMAX is_equal = with.len == what.len;
@@ -1404,6 +1408,25 @@ method inline str.replace_first(str what, str with)->TGT_IMAX:
         return where;
     end
 end
+
+
+method inline str.replace_first(str what, str with)->TGT_IMAX:
+    return this.replace_first_from(what, with, 0)
+end
+
+
+method inline str.replace(str what, str with)->TGT_IMAX:
+    if(what.empty()) return -1 end //error!
+    if(this.empty()) return 0 end //we're done already!
+    TGT_IMAX w = 0;
+    while(1)
+        TGT_IMAX w_new = this.replace_first_from(what, with, w);
+        if(w_new == -1) return -1 end
+        if(w_new == -2) return 0 end
+        w = w_new + with.len //after what we just replaced...
+    end
+end
+
 
 
 
