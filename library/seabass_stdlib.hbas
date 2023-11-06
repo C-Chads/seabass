@@ -1160,12 +1160,12 @@ method inline pure str.nequal(str o)->TGT_IMAX:
     return !this.equal(o)
 end
 
-method inline pure pstr.equal(str o)->TGT_IMAX:
+method inline pure pstr.equal(pstr o)->TGT_IMAX:
     if(this.len != o.len) return 0 end //can't be equal if they're not even the same length!
     if(this.len == 0) return 1 end //they are both length zero, meaning they are equal.
     return (memcmp(this.d, o.d, this.len) == 0)
 end
-method inline pure pstr.nequal(str o)->TGT_IMAX:
+method inline pure pstr.nequal(pstr o)->TGT_IMAX:
     return !this.equal(o)
 end
 
