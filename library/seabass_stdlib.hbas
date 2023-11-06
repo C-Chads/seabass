@@ -1217,6 +1217,7 @@ method inline str.frompstr(pstr* o)->str*:
     mcpy(this.d, o.d, this.len);
     //we need to add the null terminator...
     this.d[this.len] = 0;
+    this.len = strlen(this.d);
     return this
 end
 
