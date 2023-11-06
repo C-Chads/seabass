@@ -547,37 +547,37 @@ void compile_unit(strll* _unit){
 		}
 		
 		if(peek()->data == TOK_OPERATOR)
-			if(streq(peek()->text, "@")){
-				char* t;
-				uint64_t i;
-				uint64_t id;
-				int found = 0;
-				consume();
-				require(peek() != NULL, "parsehook requires identifier.");
-				require(peek()->data == TOK_IDENT, "parsehook requires identifier");
-				t = strdup(peek()->text);
-				t = strcataf2("parsehook_",t);
-				for(i = 0; i < nparsehooks; i++){
-				    uint64_t the_parsehook = parsehook_table[i];
-					if(streq(symbol_table[the_parsehook]->name, t)){
-						id = the_parsehook;
-						found = 1;
-						break;
-					}
-				}
-				require(found != 0, "Could not find parsehook_ function");
-				free(t);
-				consume();
-				require(symbol_table[id]->is_incomplete == 0, "parsehook definition must be completed.");
-				require(symbol_table[id]->fbody != NULL, "parsehook function body must not be null.");
-				
-				//ast_execute_function(symbol_table+id);
-				ast_vm_stack_push_temporary();
-		        ast_execute_function((symbol_table+id)[0]);
-		        ast_vm_stack_pop();
-				continue;
-			}
-		
+            if(streq(peek()->text, "@")){
+                char* t;
+                uint64_t i;
+                uint64_t id;
+                int found = 0;
+                consume();
+                require(peek() != NULL, "parsehook requires identifier.");
+                require(peek()->data == TOK_IDENT, "parsehook requires identifier");
+                t = strdup(peek()->text);
+                t = strcataf2("parsehook_",t);
+                for(i = 0; i < nparsehooks; i++){
+                    uint64_t the_parsehook = parsehook_table[i];
+                	if(streq(symbol_table[the_parsehook]->name, t)){
+                		id = the_parsehook;
+                		found = 1;
+                		break;
+                	}
+                }
+                require(found != 0, "Could not find parsehook_ function");
+                free(t);
+                consume();
+                require(symbol_table[id]->is_incomplete == 0, "parsehook definition must be completed.");
+                require(symbol_table[id]->fbody != NULL, "parsehook function body must not be null.");
+
+                //ast_execute_function(symbol_table+id);
+                ast_vm_stack_push_temporary();
+                      ast_execute_function((symbol_table+id)[0]);
+                      ast_vm_stack_pop();
+                continue;
+            }
+
 
 		if(peek()->data == TOK_KEYWORD)
 			if(peek_match_keyw("end"))
