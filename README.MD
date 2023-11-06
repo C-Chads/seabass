@@ -288,7 +288,7 @@ wish.
 
 ### Does seabass support alignment?
 
-Struct can be given an alignment. Simply enter an integer value somewhere
+Structs can be given an alignment. Simply enter an integer value somewhere
 inside the struct definition, and that will be its alignment.
 
 ### Does Seabass support long doubles?
@@ -298,6 +298,10 @@ Theoretically it can. However, not as a primitive data type.
 I am planning to add support to the standard library for long
 doubles soon.
 
+### Does seabass support unions?
+
+Yes. Type the word `union` anywhere in a struct/class definition. It
+will be declared as a union.
 
 ### Are there any "gotchas"? 
 
