@@ -10,7 +10,7 @@
     such as bit64.hbas or bit32.hbas
 */
 
-#guard SEABASS_STDLIB_GNUC
+#guard SEABASS_STDLIB_USERMODE_C
 
 //The glories of a multi-line string literal!
 data codegen string SEABASS_STDLIB_PREFIX "
@@ -1089,6 +1089,18 @@ fn predecl noexport mutex_delete(byte* mtx);
 fn predecl noexport mutex_lock(byte* mtx);
 fn predecl noexport mutex_unlock(byte* mtx);
 
+
+/*
+    String library...
+*/
+
+fn inline pure impl_streq(char* a, char* b)->TGT_IMAX:
+    while(1)
+        if(a[0] != b[0]) return 0 end
+        if(a[0] == 0) return 1 end
+        a++;b++;
+    end
+end
 
 
 

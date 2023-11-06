@@ -136,7 +136,7 @@ method inline this_type_has_a_destructor.ctor():
 end
 
 
-
+/*
 fn  inline pure impl_streq(char* a, char* b)->i32:
     while(1)
         if(a[0] != b[0]) return 0 end
@@ -144,6 +144,7 @@ fn  inline pure impl_streq(char* a, char* b)->i32:
         a++;b++;
     end
 end
+*/
 
 data int myintegers 3, 4, 5, 7, 9, 10, -133+134;
 
