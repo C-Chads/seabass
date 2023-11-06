@@ -573,17 +573,17 @@ void compile_unit(strll* _unit){
 
                 //ast_execute_function(symbol_table+id);
                 ast_vm_stack_push_temporary();
-                      ast_execute_function((symbol_table+id)[0]);
-                      ast_vm_stack_pop();
+                ast_execute_function((symbol_table+id)[0]);
+                ast_vm_stack_pop();
                 continue;
             }
 
 
-		if(peek()->data == TOK_KEYWORD)
-			if(peek_match_keyw("end"))
-			{
-				parse_error("stray 'end' in global scope.\nProbably a scope mismatch.");
-			}
+        if(peek()->data == TOK_KEYWORD)
+        if(peek_match_keyw("end"))
+            {
+                parse_error("stray 'end' in global scope.\nProbably a scope mismatch.");
+            }
 
 		if(peek()->data == TOK_MACRO_OP)
 		if(streq(peek()->text, "#")){
