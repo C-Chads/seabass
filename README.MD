@@ -291,11 +291,13 @@ wish.
 Struct can be given an alignment. Simply enter an integer value somewhere
 inside the struct definition, and that will be its alignment.
 
-This feature requires a compiler that supports __attribute__((aligned(X)))
+### Does Seabass support long doubles?
 
-(your compiler is probably one of them...)
+Theoretically it can. However, not as a primitive data type.
 
-Alignment only applies for TARGET (not compiletime) code.
+I am planning to add support to the standard library for long
+doubles soon.
+
 
 ### Are there any "gotchas"? 
 
@@ -313,6 +315,11 @@ Yes. Using `__builtin_read_file` you can get the contents
 of any file given a path at compiletime.
 
 You can then tokenize this however you see fit.
+
+With seabass, it is therefore possible to write your own
+compiletime compilers, all the way from tokenization
+to code generation. What other language do you know which
+can do that?
 
 ### Can I have global target code blocks?
 
