@@ -1294,12 +1294,6 @@ method inline str.add(str o)->TGT_UMAX:
     return 0
 end
 
-method inline str.addeat(str o)->TGT_UMAX:
-    if(this.add(o)) return 1 end //propagate error...
-    o.dtor();
-    return 0
-end
-
 //add a C-string....
 method inline str.addc(char* oo)->TGT_UMAX:
     TGT_UMAX qq = 0;
