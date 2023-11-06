@@ -64,7 +64,8 @@ fn strtest1():
             sys_exit(1);
         end
         q.dtor();
-        free((byte*)q);
+        q.free();
+        q = 0
     else
         @prnt[
             /   "<ERR> It appears we failed to find it..."
