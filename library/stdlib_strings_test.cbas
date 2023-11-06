@@ -1,7 +1,74 @@
 
 
-#include "bit32.hbas"
+#include "bit64.hbas"
 #include "toc.hbas"
 #include "seabass_stdlib.hbas"
+
+//mutate pprint....
+@wksht prnt[
+    [
+        @pprint [println itoa ARG1]
+    ][
+        ARG1
+    ]
+]
+
+/*
+    String testing...
+*/
+
+fn strtest1():
+    str a
+    str b
+    a.new("Hello there!");
+    b.copy(a);
+    @prnt[
+        /   "Here is A:"
+        /   (a.d)
+        /   "Here is B:"
+        /   (b.d)
+    ]
+    b.dtor();
+    a.new("Can you find the needle in the haystack, and replace it? well, can you?") ;
+    b.new("in");
+    str c
+    c.new("[Replaced!]");
+    a.replace(b,c);
+    @prnt[
+        /   "Here is A:"
+        /   (a.d)
+    ]
+    c.new("needle");
+    b.new("needle in the");
+    a.new("Can you find the needle in the haystack, and replace it? well, can you?") ;
+    @prnt[
+        /   "We find needle at:"
+        /int (a.find(c))
+    ]
+    str* q = a.substr(a.find(c),b.len);
+    if(q != 0 && q.d != 0)
+        @prnt[
+            /   "Here is Q:"
+            /   (q.d)
+        ]
+        q.dtor();
+        free((byte*)q);
+    else
+        @prnt[
+            /   "It appears we failed to find it..."
+        ]    
+    end
+end
+
+fn pub main()->i32:
+    strtest1();
+end
+
+/*
+    Our code generator...
+*/
+fn codegen codegen_main():
+    cg_emitC(SEABASS_STDLIB_PREFIX);
+end
 
 

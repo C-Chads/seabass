@@ -1159,11 +1159,10 @@ method inline str.copy(str* o)->str*:
     return this
 end
 
-method inline str.fromcstr(char* o)->str*:
+method inline str.new(char* o)->str*:
     this.dtor();
     TGT_UMAX qq;
-    //top 10 strlen implementations???
-    for(qq = 0, o[qq], qq++) end
+    qq = strlen(o);
     //qq is now strlen
     this.len = qq;
     this.d = realloc((byte*)0, qq+1);
@@ -1212,7 +1211,7 @@ method inline pure str.isempty()->TGT_UMAX:
     return 0
 end
 method inline pure str.empty()->TGT_UMAX:
-    return this.empty()
+    return this.isempty()
 end
 
 //is this string prefixed by another?
@@ -1264,9 +1263,13 @@ method inline pure str.findfrom(str findme, TGT_UMAX where)->TGT_IMAX:
     for(0,text[ti] != 0,ti++)
         if(text[ti] == subtext[si])
             si++
-            if(subtext[si] == 0) return (ti-si)+1 end
+            if(subtext[si] == 0) 
+                return (ti-st)+1
+            end
         else
-            if(subtext[si] == 0) return (ti-si)+1 end
+            if(subtext[si] == 0) 
+                return (ti-st)+1
+            end
             ti = ti - si; si = 0;
         end
     end
@@ -1313,16 +1316,15 @@ method inline str.addc(char* oo)->TGT_UMAX:
     return 0
 end
 
-method inline str.substr(TGT_UMAX beginning, TGT_UMAX ending)->str*:
+method inline str.substr(TGT_UMAX beginning, TGT_UMAX howmuch)->str*:
     if(
-        beginning > ending ||
         beginning >= this.len ||
-        ending >= this.len
+        beginning+howmuch >= this.len
     )
         return (str*)0
     end
     //They want a zero-length string? You got it!
-    if(beginning == ending)
+    if(howmuch == 0)
         str* p = (str*)malloc(sizeof(str));
         if(p == 0)
             return (str*)0
@@ -1332,27 +1334,31 @@ method inline str.substr(TGT_UMAX beginning, TGT_UMAX ending)->str*:
         return p
     end
     //They actually want us to get this string for them...
-    char* b = malloc(ending - beginning);
+    char* b = malloc(howmuch+1);
     if(b == 0)
         return (str*)0
     end
     //MALLOC NEVER FAILS...
-    mcpy(b, this.d+beginning, ending - beginning);
+    mcpy(b, this.d+beginning, howmuch);
+    b[howmuch] = 0; //null terminator!
     str* p = (str*)malloc(sizeof(str));
     if(p == 0)
         return (str*)0
     end
     //MALLOC NEVER FAILS...
     p.d = b;
-    p.len = ending - beginning;
+    p.len = howmuch;
     return p;
 end
 
 //replace the very first instance of what with with.
 method inline str.replace_first_from(str what, str with, TGT_UMAX maxwhere)->TGT_IMAX:
+
     if(what.empty()) return -1 end //error!
     if(maxwhere >= this.len) return -1 end //error!
     if(this.empty()) return 0 end //we're done already!
+
+
     TGT_IMAX where = this.findfrom(what,maxwhere);
     if(where == -1) return -2 end //there is nothing to replace!
     
@@ -1383,7 +1389,7 @@ method inline str.replace_first_from(str what, str with, TGT_UMAX maxwhere)->TGT
     else
         //it's larger!
         char* resbuf;
-        resbuf = realloc((char*)0,this.len - (with.len - what.len) + 1);
+        resbuf = realloc((char*)0,this.len + (with.len - what.len) + 1);
         if(resbuf == 0)
             return -1
         end
@@ -1416,15 +1422,56 @@ method inline str.replace(str what, str with)->TGT_IMAX:
     TGT_IMAX w = 0;
     while(1)
         TGT_IMAX w_new = this.replace_first_from(what, with, w);
-        if(w_new == -1) return -1 end
+        
+        if(w_new == -1) return 0 end
         if(w_new == -2) return 0 end
+        if(w_new == w) return 0 end //why would this happen?
         w = w_new + with.len //after what we just replaced...
     end
 end
 
 
+fn inline utoa(char* dest, TGT_UMAX value):
+    if(value == 0)
+        dest[0] = '0';
+        dest[1] = 0;
+        return 
+    end
+    /*Determine the highest power of 10.*/
+    if(1)
+        TGT_UMAX pow
+        pow = 1;
+        while(value/pow >= 10)
+            pow = pow * 10; 
+        end
+        /*found the highest power of 10*/
+        while(pow)
+            uint temp
+            temp = value/pow; /*if we had the number 137, we would have gotten
+            100 as our pow. We now divide by pow to get the highest digit.*/
+            
+            dest[0] = (temp + ('0')); dest++;
+            
+            value = value - temp * pow; /*Get rid of the highest digit.*/
+            
+            pow = pow / 10 /*Divide pow by 10.*/
+        end
+    end
 
+    :ending
+    dest[0] = 0
 
+    return;
+end
+
+fn inline itoa(char* dest, TGT_IMAX value):
+    if(value >= 0) 
+        utoa(dest, value);
+    else
+        dest[0] = '-';
+        utoa(dest+1, -value);
+    end
+end
 
 
 
