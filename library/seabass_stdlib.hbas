@@ -287,39 +287,30 @@ static inline i32 __CBAS__tm_isdst(unsigned char* tm_struct){
 static inline void __CBAS__set_errno(i32 new_errno){
     errno = new_errno;
 }
-
 static inline i32 __CBAS__get_errno(){
     return errno;
 }
-
 static inline void __CBAS__mcpy(unsigned char* dst, unsigned char* src, size_t sz){
     memcpy(dst, src, sz);
 }
 static inline void __CBAS__mmove(unsigned char* dst, unsigned char* src, size_t sz){
     memmove(dst, src, sz);
 }
-
-//these are provided for similar reasons...
 static inline unsigned char* __CBAS__malloc(size_t amt){
     return malloc(amt);
 }
-
 static inline void __CBAS__free(unsigned char* p){
     free(p);
 }
-
 static inline unsigned char* __CBAS__realloc(unsigned char* b, size_t amt){
     return realloc(b, amt);
 }
-
 static inline void __CBAS__println(unsigned char* s){
     puts((char*)s);
 }
-
 static inline void __CBAS__sys_exit(i32 a){
     exit(a);
 }
-
 //MATH LIBRARY
 //trig
     static inline double __CBAS__sin(double a){
