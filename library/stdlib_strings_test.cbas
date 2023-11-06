@@ -29,15 +29,21 @@ fn strtest1():
         /   (b.d)
     ]
     b.dtor();
-    a.new("Can you find the needle in the haystack, and replace it? well, can you?") ;
+    a.new("Can you find the needle in the haystack, and replace it? well, can you? Can you find it in this haystack, or not???") ;
     b.new("in");
     str c
-    c.new("[Replaced!]");
+    c.new("i");
     a.replace(b,c);
     @prnt[
         /   "Here is A:"
         /   (a.d)
     ]
+    if(a.len != strlen(a.d))
+        @prnt[
+            /   "Len failure!"
+        ]
+        sys_exit(1);
+    end
     c.new("needle");
     b.new("needle in the");
     a.new("Can you find the needle in the haystack, and replace it? well, can you?") ;
@@ -51,11 +57,17 @@ fn strtest1():
             /   "Here is Q:"
             /   (q.d)
         ]
+        if(q.len != strlen(q.d))
+            @prnt[
+                /   "Len failure!"
+            ]
+            sys_exit(1);
+        end
         q.dtor();
         free((byte*)q);
     else
         @prnt[
-            /   "It appears we failed to find it..."
+            /   "<ERR> It appears we failed to find it..."
         ]    
     end
 end

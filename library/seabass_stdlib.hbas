@@ -1384,11 +1384,12 @@ method inline str.replace_first_from(str what, str with, TGT_UMAX maxwhere)->TGT
             this.d + where + what.len, //right after where the old string was
             this.len - (where+what.len) + 1 //[get this]
         );
-        this.len = where + with.len +  (this.len - (where+what.len)+1);
+        this.len = where + with.len +  (this.len-(where+what.len));
         return where;
     else
         //it's larger!
         char* resbuf;
+        ///why does valgrind want me to add two?!?!
         resbuf = realloc((char*)0,this.len + (with.len - what.len) + 1);
         if(resbuf == 0)
             return -1
@@ -1405,7 +1406,7 @@ method inline str.replace_first_from(str what, str with, TGT_UMAX maxwhere)->TGT
         );
         free(this.d);
         this.d = resbuf;
-        this.len = where + with.len +  (this.len - (where+what.len)+1);
+        this.len = where + with.len +  (this.len - (where+what.len));
         return where;
     end
 end
