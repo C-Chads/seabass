@@ -147,6 +147,12 @@ static inline void __CBAS__srand(u32 seed){
 static inline i32 __CBAS__rand(){
     return rand();
 }
+static inline ssize_t __CBAS__strcmp(unsigned char* a, unsigned char* b){
+    return strcmp((char*)a,(char*)b);
+}
+static inline ssize_t __CBAS__memcmp(unsigned char* a, unsigned char* b, size_t sz){
+    return memcmp((char*)a,(char*)b, sz);
+}
 
 
 static inline size_t __CBAS__fopen(unsigned char* fname, unsigned char* mode){
@@ -844,6 +850,8 @@ fn predecl pure noexport atou(char* text)->TGT_UMAX;
 fn predecl pure noexport atoi(char* text)->TGT_IMAX;
 fn predecl noexport rand()->i32;
 fn predecl noexport srand(u32 seed);
+fn predecl noexport pure strcmp(char* a, char* b)->TGT_IMAX;
+fn predecl noexport pure memcmp(char* a, char* b, TGT_UMAX sz)->TGT_IMAX;
 
 
 fn predecl noexport fopen(char* fname, char* mode)->TGT_UMAX; //returns a handle...
@@ -1095,13 +1103,14 @@ fn predecl noexport mutex_unlock(byte* mtx);
 /*
     String library...
 */
-
+//we assume that both the pointers passed in are non-null...
 fn inline pure impl_streq(char* a, char* b)->TGT_IMAX:
-    while(1)
-        if(a[0] != b[0]) return 0 end
-        if(a[0] == 0) return 1 end
-        a++;b++;
-    end
+    return strcmp(a,b) == 0
+end
+
+//compare two equal-length memory buffers...
+fn inline pure memeq(char* a, char* b, TGT_UMAX l)->TGT_IMAX:
+    return memcmp(a,b,l) == 0
 end
 
 class str
@@ -1120,6 +1129,16 @@ method inline str.dtor():
     end
     //calling the constructor in the destructor? OF COURSE!
     this.ctor();
+end
+
+method inline pure str.equal(str o)->TGT_IMAX:
+    if(this.len != o.len) return 0 end //can't be equal if they're not even the same length!
+    if(this.len == 0) return 1 end //they are both length zero, meaning they are equal.
+    return this.d streq o.d
+end
+
+method inline pure str.nequal(str o)->TGT_IMAX:
+    return !this.equal(o)
 end
 
 //copy from another string
@@ -1210,30 +1229,6 @@ method inline pure str.prefixed(str o)->TGT_UMAX:
     end
 end
 
-method inline pure str.find(str findme)->TGT_IMAX:
-    TGT_IMAX retval = -1;
-    //if the other is empty, then
-    if(findme.isempty()) return 0 end
-    if(this.isempty()) return -1 end
-    if(findme.len > this.len) return -1 end
-    
-    char* text = this.d;
-    char* subtext = findme.d;
-    
-    TGT_IMAX ti = 0;
-    TGT_IMAX si = 0;
-    TGT_IMAX st = findme.len;
-    for(0,text[ti] != 0,ti++)
-        if(text[ti] == subtext[si])
-            si++
-            if(subtext[si] == 0) return (ti-si)+1 end
-        else
-            if(subtext[si] == 0) return (ti-si)+1 end
-            ti = ti - si; si = 0;
-        end
-    end
-end
-
 method inline pure str.postfixed(str o)->TGT_UMAX:
     if(o.isempty()) return 1 end
     //he's not empty, but we are? CANCEL!
@@ -1248,6 +1243,38 @@ method inline pure str.postfixed(str o)->TGT_UMAX:
         a++; b++;
     end
 end
+
+//find an instance from a particular location...
+method inline pure str.findfrom(str findme, TGT_UMAX where)->TGT_IMAX:
+    TGT_IMAX retval = -1;
+    if(findme.isempty()) return 0 end
+    if(this.isempty()) return -1 end
+    if(findme.len > this.len) return -1 end
+    if(where >= this.len) return -1 end
+    char* text = this.d;
+    char* subtext = findme.d;
+    
+    TGT_IMAX ti = where;
+    TGT_IMAX si = 0;
+    TGT_IMAX st = findme.len;
+    for(0,text[ti] != 0,ti++)
+        if(text[ti] == subtext[si])
+            si++
+            if(subtext[si] == 0) return (ti-si)+1 end
+        else
+            if(subtext[si] == 0) return (ti-si)+1 end
+            ti = ti - si; si = 0;
+        end
+    end
+    return -1
+end
+
+//from the top!
+method inline pure str.find(str findme)->TGT_IMAX:
+    return this.findfrom(findme, 0);
+end
+
+
 
 method inline str.add(str o)->TGT_UMAX:
     //add to this string without consuming o...
@@ -1311,6 +1338,7 @@ method inline str.substr(TGT_UMAX beginning, TGT_UMAX ending)->str*:
     if(b == 0)
         return (str*)0
     end
+    //MALLOC NEVER FAILS...
     mcpy(b, this.d+beginning, ending - beginning);
     str* p = (str*)malloc(sizeof(str));
     if(p == 0)
@@ -1320,6 +1348,61 @@ method inline str.substr(TGT_UMAX beginning, TGT_UMAX ending)->str*:
     p.d = b;
     p.len = ending - beginning;
     return p;
+end
+
+//replace the very first instance of what with with.
+method inline str.replace_first(str what, str with)->TGT_IMAX:
+    if(what.empty()) return -1 end //error!
+    if(this.empty()) return 0 end //we're done already!
+    TGT_IMAX where = this.find(what);
+    if(where == -1) return -1 end //there is nothing to replace!
+    
+    TGT_UMAX is_shorter = with.len < what.len;
+    TGT_UMAX is_equal = with.len == what.len;
+    if(is_equal)
+        //an in-place replacement....
+        mcpy(this.d + where, with.d, with.len);
+        return where;
+    elif(is_shorter)
+        mcpy(this.d + where, with.d, with.len);
+/*      DIAGRAM OF WHAT'S HAPPENING....
+                                    where+what.len
+                              where |
+                              V     v
+       _hello! I am replacing needle with knee0
+                              knee   [get this]
+                                  ^
+                                  where+with.len
+*/
+        mmove(
+            this.d + where + with.len, //right after where we put the string
+            this.d + where + what.len, //right after where the old string was
+            this.len - (where+what.len) + 1 //[get this]
+        );
+        this.len = where + with.len +  (this.len - (where+what.len)+1);
+        return where;
+    else
+        //it's larger!
+        char* resbuf;
+        resbuf = realloc((char*)0,this.len - (with.len - what.len) + 1);
+        if(resbuf == 0)
+            return -1
+        end
+        //the before part...
+        mcpy(resbuf, this.d, where);
+        //the middle part...
+        mcpy(resbuf + where, with.d, with.len);
+        //the last part...
+        mcpy(
+            resbuf + where + with.len,//to right after the new string...
+            this.d + where + what.len,//from after the old string...
+            this.len - (where+what.len)+1 //[get this]
+        );
+        free(this.d);
+        this.d = resbuf;
+        this.len = where + with.len +  (this.len - (where+what.len)+1);
+        return where;
+    end
 end
 
 
