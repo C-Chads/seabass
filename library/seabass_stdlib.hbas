@@ -1063,6 +1063,27 @@ fn predecl pure noexport NAN()->f32;
 fn predecl pure noexport HUGE_VAL()->f64;
 fn predecl pure noexport HUGE_VALF()->f32;
 
+/*
+    LONG DOUBLE SUPPORT
+*/
+class ldouble
+    byte[16] _d_
+end
+//TODO: Port C standard library functions for operating on long doubles...
+/*
+    Q: How will it work?
+    A: pass-by-pointer with inline functions. Inline
+    methods on ldouble class.
+    
+    Q: What if long double is not 16 bytes?
+    A: As long as it is smaller than or equal to 16 bytes, it's fine!
+    
+    Q: Will this be slower than just natively supporting Ldoubles?
+    A: For some specific use-cases, probably. In most cases, probably not!
+    
+    Q: ... what about alignment?
+    A: Don't need it!
+*/
 
 
 /*
