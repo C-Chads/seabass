@@ -8,26 +8,95 @@
 /*
     CONVERT THE CBAS AST INTO C CODE.
     
-    This code takes all non-codegen symbols and typedecls
-    in the unit and emits them as C code.
+    This will _almost certainly_ have to be modified
+    for any particular target platform to get
+    full 100% compatibility.
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    FOR IMPLEMENTERS
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    Please use CTRL+F and search for this term:
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    IMPL_README
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    Each place where this identifier occurs is a spot
+    within this file where you may want to modify something
+    to conform a certain target. It will be
+    inside of a comment which should explain what it is you
+    want to modify.
     
-    The conversion is _fairly_ seamless from what I can tell,
-    although indentation is not very pretty... it works.
+    Please note that "explicit signed char" has nothing
+    to do with seabass's typenames, but rather C's types.
+    
+    should an i8 variable in Seabass be translated to a 
+    "char" (cg_Cemitter_explicit_signed_char = 0) or
+    a "signed char" (cg_Cemitter_explicit_signed_char = 1)?
+    
+    Similarly, should an i32 variable be a "long" (cg_Cemitter_long_32bit = 1)
+    or an "int" (cg_Cemitter_long_32bit = 0)?
 */
 
-codegen u64 cg_Cemitter_Switch_DtableGen = 0;
 codegen u64 cg_Cemitter_indentlevel = 0;
-//for clang compatibility...
+
+/*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    IMPL_README
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    If char in C is default signed, you should set this to zero.
+    
+    This is true on GCC for instance. Which means that
+    when using GCC, you probably want this to be 0.
+*/
 codegen u64 cg_Cemitter_explicit_signed_char = 0;
+
+/*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    IMPL_README
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    If char in C is default unsigned, you should set this to zero.
+    
+    I don't know of any platform where this is true, but I hear
+    it's possible in the C standard, and there probably
+    are platforms where it's true.
+    
+    The reason why you shouldn't set both this
+    and the above to "1" is that you will be
+    unable to declare `int main(int argc, char** argv, char** env)` without
+    access to char.
+*/
+codegen u64 cg_Cemitter_explicit_unsigned_char = 1;
+
+/*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    IMPL_README
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    should we use `long` instead of `int` for the 32 bit int type?
+    This will also apply to the unsigned 32 bit integer type, so
+    you can choose between `unsigned long` or `unsigned int`.
+*/
 codegen u64 cg_Cemitter_long_32bit = 0;
+
+/*
+    Global assembly blocks. Metaprograms might
+    modify these and write custom code here.
+*/
 codegen char* cg_Cemitter_gasm = 0;
 codegen char* cg_Cemitter_gasm_post_declarations = 0;
 codegen char* cg_Cemitter_gasm_typedecls = 0;
 
+
+codegen u64 cg_Cemitter_Switch_DtableGen = 0;//variable for the following function...
 fn codegen cg_Cemitter_make_dtable_name()->char*:
     cgstr retval
     cgstr a
     char[50] buf
+    /*
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        IMPL_README
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        This is a location where name mangling
+        occurs. Please verify that this name mangling
+        scheme is compatible with your target platform.
+    */
     retval:fromstr("__cbas_dispatchtable_switch__");
     __builtin_itoa(buf, cg_Cemitter_Switch_DtableGen++);
     a.s = buf;
@@ -37,13 +106,41 @@ fn codegen cg_Cemitter_make_dtable_name()->char*:
     return retval.s;
 end
 
+fn codegen cg_Cemitter_is_nomangle_global(char* s)->int:
+    /*
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        IMPL_README
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        If you have any global symbols you don't want mangled,
+        put their names here. They will not be mangled with
+        __CBAS__
+    */
+    
+    if(
+        s streq "main" ||
+        s streq "_start"
+    )
+        return 1
+    end
+    
+    return 0
+end
+
 fn codegen cg_Cemitter_mangle_global_name(char* s)->char*:
     //the main function is special...
-    if(s streq "main")
+    if(cg_Cemitter_is_nomangle_global(s))
         return __builtin_strdup(s);
     end
     //this is not main!
     cgstr r
+    /*
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        IMPL_README
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        This is a location where name mangling
+        occurs. Please verify that this name mangling
+        scheme is compatible with your target platform.
+    */
     r.fromstr("__CBAS__");
     r.addstr(s);
     return r.s;
@@ -52,6 +149,14 @@ end
 fn codegen cg_Cemitter_mangle_type_name(char* s)->char*:
     //this is not main!
     cgstr r
+    /*
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        IMPL_README
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        This is a location where name mangling
+        occurs. Please verify that this name mangling
+        scheme is compatible with your target platform.
+    */
     r.fromstr("__CBAS__type__");
     r.addstr(s);
     return r.s;
@@ -59,6 +164,14 @@ end
 fn codegen cg_Cemitter_mangle_member_name(char* s)->char*:
     //this is not main!
     cgstr r
+    /*
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        IMPL_README
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        This is a location where name mangling
+        occurs. Please verify that this name mangling
+        scheme is compatible with your target platform.
+    */
     r.fromstr("__CBAS__member__");
     r.addstr(s);
     return r.s;
@@ -67,6 +180,22 @@ end
 fn codegen cg_cemitter_utoa(char* buf, u64 v):
     char* suffix;
     cgast* ast = (cgast*)__builtin_get_ast();
+    /*
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        IMPL_README
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        
+        Seabass uses integer suffixes to make sure
+        that integer arithmetic on the target happens
+        correctly. This is needed because, for instance,
+        if you wrote 1<<63 in seabass, and we didn't
+        do any type conversion, '1' and '63' would
+        both be 'int' (32 bit types) so the result
+        would also be an int and therefore instead
+        of 2^63 you would get 0....
+        
+        The suffix used depends on the long_32bit setting...
+    */
     if(ast.target_word == CG_BASE_U64)
         suffix = "ull";
     elif(ast.target_word == CG_BASE_U32 && cg_Cemitter_long_32bit)
@@ -85,6 +214,29 @@ fn codegen cg_cemitter_itoa(char* buf, i64 v):
     char* suffix;
     
     cgast* ast = (cgast*)__builtin_get_ast();
+    /*
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        IMPL_README
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        
+        Seabass uses integer suffixes to make sure
+        that integer arithmetic on the target happens
+        correctly. This is needed because, for instance,
+        if you wrote 1<<63 in seabass, and we didn't
+        do any type conversion, '1' and '63' would
+        both be 'int' (32 bit types) so the result
+        would also be an int and therefore instead
+        of 2^63 you would get 0....
+        
+        The suffix used depends on the long_32bit setting...
+        
+        Notice here that if the target word is less than
+        32 bit, or it's 32 bit and we aren't using
+        long, we assign no suffix.
+        
+        This is because integer literals in C default
+        to `int`.
+    */
     if(ast.target_word == CG_BASE_U64)
         suffix = "ll";
     elif(ast.target_word == CG_BASE_U32 && cg_Cemitter_long_32bit)
@@ -121,7 +273,28 @@ method codegen cgtype:gen_code(cgast* ast)->char*:
     pointerlevel = this.pointerlevel;
     arraylen = this.arraylen;
     structid = this.structid;
-    
+    /*
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        IMPL_README
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        
+        Review the type conversions within this
+        function as well as those in
+        VVVVVVVVVVVVVVVVVVVV
+        cgtypedecl:emit_type 
+        ^^^^^^^^^^^^^^^^^^^^
+        Please confirm...
+        1. that every single type
+        is converted correctly for your target
+        platform...
+        
+        2. that there is at least one type
+        which maps to `char`...
+        
+        It is also nice, but not essential if
+        one type maps to `size_t` and one
+        maps to `ssize_t`.
+    */
     //these type choices are not entirely universal, for instance
     //int is sometimes 16 bit on some platforms.
     //for those platforms, `long` is usually 32 bit,
@@ -140,7 +313,11 @@ method codegen cgtype:gen_code(cgast* ast)->char*:
     elif(basetype == CG_BASE_VOID)
         printme:fromstr("void");
     elif(basetype == CG_BASE_U8)
-        printme:fromstr("unsigned char");
+        if(cg_Cemitter_explicit_unsigned_char)
+            printme:fromstr("unsigned char");
+        else
+            printme:fromstr("char");
+        end
     elif(basetype == CG_BASE_I8)
         if(cg_Cemitter_explicit_signed_char)
             printme:fromstr("signed char");
@@ -198,6 +375,14 @@ fn codegen cg_Cemitter_gen_fnptr_cast(
     cgstr retval
     cgstr ff
     i64 i
+    /*
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        IMPL_README
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        please verify the correctness of this
+        function pointer cast generator for
+        your target platform.
+    */
     retval:fromstr("(");//BEGIN CAST
         //do the cast...
         ff.s = proto_retval_type:gen_code(ast);
@@ -302,8 +487,21 @@ method codegen cgexpr_node:gen_code(cgast* ast)->char*:
         buf[2] = 0;
         ff.s = buf;
         str_text = this.symname;
+        /*
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            IMPL_README
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            This cast may need conversion to comply with
+            cg_Cemitter_explicit_unsigned_char.
+        */
         retval.s = __builtin_strdup("((unsigned char*)\"");
-        
+        /*
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            IMPL_README
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            This string literal emitter may need adjusting
+            for your target.
+        */
         for(0, str_text[0], str_text++)
             char c 
             c = str_text[0];
@@ -370,6 +568,14 @@ method codegen cgexpr_node:gen_code(cgast* ast)->char*:
     elif(this.kind == CG_EXPR_LSYM)
         //local variable names are mangled...
         cgstr ff
+        /*
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            IMPL_README
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            This is a location where name mangling
+            occurs. Please verify that this name mangling
+            scheme is compatible with your target platform.
+        */
         retval.s = __builtin_strdup("__cbas_local_variable_mangled_name_");
         retval:addstr(this.symname);
         if(this.was_struct_var) //If this was a struct variable, we need to convert it to a pointer!
@@ -753,7 +959,14 @@ method codegen cgexpr_node:gen_code(cgast* ast)->char*:
         return __builtin_strdup(buf);
     elif(this.kind == CG_EXPR_STREQ)
         cgstr ff
-
+        /*
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            IMPL_README
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            This is a location where name mangling
+            occurs. Please verify that this name mangling
+            scheme is compatible with your target platform.
+        */
         retval:fromstr("__CBAS__impl_streq((");
             ff.s = this.subnodes[0]:gen_code(ast);
             retval:add(ff); ff:free();
@@ -766,6 +979,14 @@ method codegen cgexpr_node:gen_code(cgast* ast)->char*:
         return retval.s;
     elif(this.kind == CG_EXPR_STRNEQ)
         cgstr ff
+        /*
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            IMPL_README
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            This is a location where name mangling
+            occurs. Please verify that this name mangling
+            scheme is compatible with your target platform.
+        */
         retval:fromstr("!__CBAS__impl_streq((");
             ff.s = this.subnodes[0]:gen_code(ast);
             retval:add(ff); ff:free();
@@ -813,14 +1034,35 @@ method codegen cgexpr_node:gen_code(cgast* ast)->char*:
         retval:add(ff);
         return retval.s;
     elif(this.kind == CG_EXPR_GETFNPTR)
-        //Return the name 
+        //Return the name
+        /*
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            IMPL_README
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            This cast may need conversion to comply with
+            cg_Cemitter_explicit_unsigned_char.
+        */
         retval:fromstr("(unsigned char*)&");
         cgstr ff
         ff.s = cg_Cemitter_mangle_global_name(this.symname);
         retval:add(ff);
         ff:free();
         return retval.s;
-    elif(this.kind == CG_EXPR_CALLFNPTR) 
+    elif(this.kind == CG_EXPR_CALLFNPTR)
+    
+        /*
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            IMPL_README
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            This part uses function pointer syntax
+            in C to generate instances of `callfnptr`.
+            
+            This avoids the need to have any such
+            syntax in Seabass.
+            
+            You should verify that this works correctly
+            on your target C compiler.
+        */
         //a c function pointer of that prototype, and call it with the arguments...
         /*
         ( //ptr cast part
@@ -950,6 +1192,14 @@ end
 fn codegen cg_cemitter_mangle_label_name(char* n)->char*:
     cgstr ff
     cgstr ff2
+    /*
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        IMPL_README
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        This is a location where name mangling
+        occurs. Please verify that this name mangling
+        scheme is compatible with your target platform.
+    */
     ff:fromstr("__cbas_mangled_label__");
     ff2.s = n;
     ff:add(ff2);
@@ -1153,6 +1403,23 @@ method codegen cgstmt:gen_code(cgast* ast, char* disptablename, u64 active_fun_s
         qq.s = cg_cemitter_mangle_label_name(
             this.referenced_label_name
         );
+        /*
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            IMPL_README
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            
+            Please verify that this comment will not interfere with compilation.
+            
+            it is here to explain why the stataement with no effect `1;` is generated
+            here.
+            
+            It is necessary to generate a statement of some sort here
+            because a label in seabass is allowed to be at the end of a function.
+            
+            We choose a statement with no effect instead of an empty statement 
+            IN CASE a compiler should be designed faulty in such a way that an
+            empty statement is "optimized out" before semantic analysis.
+        */
         qq2.s = ":1;/*Statement with no effect generated for label...*/";
         qq:add(qq2);
         return qq.s;
@@ -1292,7 +1559,14 @@ method codegen cgstmt:gen_code(cgast* ast, char* disptablename, u64 active_fun_s
         
         //pass in our arguments...
             for(i = 0, i < nargs, i++)
-                
+                /*
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                    IMPL_README
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                    This is a location where name mangling
+                    occurs. Please verify that this name mangling
+                    scheme is compatible with your target platform.
+                */
                 name_mangler.s = __builtin_strdup("__cbas_local_variable_mangled_name_");
                 
                 qq2.s = this_fn.fargs[i].membername;
@@ -1369,6 +1643,15 @@ method codegen cgsymdecl:gen_code(cgast* ast, char is_local, u64 my_symid)->char
             ff.s = "static ";
             retval:add(ff);
         end
+        /*
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            IMPL_README
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            
+            If you are compiling for C89, this
+            feature should be removed. C89 does
+            not have `inline`.
+        */
         if(this.is_inline)
             ff.s = "inline ";
             retval:add(ff);
@@ -1389,6 +1672,14 @@ method codegen cgsymdecl:gen_code(cgast* ast, char is_local, u64 my_symid)->char
             ff.s = this.fargs[i]:gen_code(ast);
             retval:add(ff);
             ff:free();
+            /*
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                IMPL_README
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                This is a location where name mangling
+                occurs. Please verify that this name mangling
+                scheme is compatible with your target platform.
+            */
             ff.s = __builtin_strdup(" __cbas_local_variable_mangled_name_");
             retval:add(ff);
             ff:free();
@@ -1576,7 +1867,16 @@ method codegen cgsymdecl:gen_code(cgast* ast, char is_local, u64 my_symid)->char
                 ff.s = "static ";
                 out:add(ff);
             end
-            
+            /*
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                IMPL_README
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                
+                If you are compiling for a strictly C99
+                target, please remove this code. It is
+                not compatible with C99. `_Atomic` is a
+                C11 feature.
+            */
             if(this.is_volatile)
                 ff.s = "volatile ";
                 out:add(ff);
@@ -1611,6 +1911,14 @@ method codegen cgsymdecl:gen_code(cgast* ast, char is_local, u64 my_symid)->char
         if(is_local)
             //local variables are always mangled!
             cgstr gg
+            /*
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                IMPL_README
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                This is a location where name mangling
+                occurs. Please verify that this name mangling
+                scheme is compatible with your target platform.
+            */
             ff.s = __builtin_strdup("__cbas_local_variable_mangled_name_");
             gg.s = this.name;
             ff:add(gg);
@@ -1756,7 +2064,16 @@ method codegen cgtypedecl:emit_type(cgast* ast, u64 my_structid):
     t.s = "{";
     f:add(t);
 
-    
+    /*
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        IMPL_README
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        
+        If you are compiling for a strictly C99
+        target, please remove this code. It is
+        not compatible with C99. `_Alignas` is a
+        C11 feature.
+    */
     if(this.algn != 0)
         char[50] buf
         t.s = " _Alignas(";
@@ -1794,13 +2111,44 @@ method codegen cgtypedecl:emit_type(cgast* ast, u64 my_structid):
             t.s = cg_Cemitter_mangle_type_name(ast.type_table[0][structid].name);
             printme:add(t);
             t:free();
+            /*
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                IMPL_README
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                
+                Review the type conversions within this
+                elif chain (inside of cgtypedecl:emit_type)
+                as well as those within the function:
+                VVVVVVVVVVVVVVV
+                cgtype:gen_code
+                ^^^^^^^^^^^^^^^
+                Please confirm...
+                1. that every single type
+                is converted correctly for your target
+                platform...
+                
+                2. that there is at least one type
+                which maps to `char`...
+                
+                It is also nice, but not essential if
+                one type maps to `size_t` and one
+                maps to `ssize_t`.
+            */
 
         elif(basetype == CG_BASE_VOID)
             printme:fromstr("void");
         elif(basetype == CG_BASE_U8)
-            printme:fromstr("unsigned char");
+            if(cg_Cemitter_explicit_unsigned_char)
+                printme:fromstr("unsigned char");
+            else
+                printme:fromstr("char");
+            end
         elif(basetype == CG_BASE_I8)
-            printme:fromstr("signed char");
+            if(cg_Cemitter_explicit_signed_char)
+                printme:fromstr("signed char");
+            else
+                printme:fromstr("char");
+            end
         elif(basetype == CG_BASE_U16)
             printme:fromstr("unsigned short");
         elif(basetype == CG_BASE_I16)
@@ -1879,16 +2227,39 @@ method codegen cgtypedecl:emit_type(cgast* ast, u64 my_structid):
     cg_quick_emit(f.s, 0);
     f:free();
 end
-
+/*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    IMPL_README
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    This is the main function of the C code generator. It contains
+    several assumptions about the nature of target compilers.
+    
+    You should read this _very carefullly_
+*/
 
 fn codegen cg_emitC(char* prefix):
     //the entire unit has been parsed. Get the AST.
     cgast* ast
     char* ofname
+    /*
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        IMPL_README
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        The assumption here is that `long` is
+        going to always be 32 bit on a 32 bit
+        platform or less...
+    */
     if(SEABASS_TARGET_BITS == 16 || SEABASS_TARGET_BITS == 32)
         //long is almost certainly 32 bit...
         cg_Cemitter_long_32bit = 1;
     end
+    /*
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        IMPL_README
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        Verify that this filename does not
+        conflict with other .c files in your project...
+    */
     ofname = "auto_out.c";
     ast = cast(cgast*)__builtin_get_ast();
     if(__builtin_getargc() > 2)
@@ -1927,16 +2298,30 @@ fn codegen cg_emitC(char* prefix):
         end
     end
     /*
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        IMPL_README
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         AUTHOR'S NOTE
         
         This scriptural quote was chosen by God.
         
-        Please do not remove it
-        ~DMHSW
+        Please do not remove it unless there is some technical requirement.
     */
     cg_quick_emit("\n/*\n* ---- EXPORTED BY TOC.HBAS ----\n* Beloved, if God so loved us, we ought also to love one another.\n* 1 Jn 4:11\n*/",0);
     cg_quick_emit(SEABASS_BIT_PREFIX,0);
-    
+    /*
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        IMPL_README
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        Pay attention to the `gasm` (global assembly, where "assembly" means "c" in this case.)
+        blocks. These are "global target code".
+        
+        The `prefix` is also "global target code" and it was passed
+        into this function.
+        
+        Please also pay very close attention to the COMMENTS that are emitted
+        and verify that they are compatible with your target compiler....
+    */
     if(prefix != cast(u8*)0)
         cg_quick_emit(prefix,0);
     end
@@ -2014,7 +2399,17 @@ fn codegen cg_emitC(char* prefix):
             __builtin_free(p);
         end
     end   
-    
+    /*
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        IMPL_README
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        
+        AUTHOR'S NOTE
+        
+        This is the official dedicatory of the `toc` translator- to our Lord Jesus Christ.
+        
+        Please do not remove it unless there is some technical requirement.
+    */
     cg_quick_emit("/*\nBlessed be the Lord Jesus Christ of Nazareth, forever. Amen.\n*/",0);
 
     //close the ofile...
