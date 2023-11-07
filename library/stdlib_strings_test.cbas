@@ -167,10 +167,54 @@ fn pstrtest1():
     end
 end
 
+codegen int BUFSZ = 2048;
+codegen int PREC = 2000;
+
+fn ftoa_test():
+    while(1)
+        char[BUFSZ] buf
+        char[BUFSZ] buf2
+        char[BUFSZ] buf3
+        u64 qq = 0;
+        @prnt[
+            /   "Enter a string...."
+        ]
+        while(qq < (constexpri(BUFSZ)-1))
+            fread(get_stdin_handle(), buf+qq, 1)
+            if(buf[qq] == 'q' || buf[qq] == 'Q')
+                return
+            elif(buf[qq] == '\n' || buf[qq] == '!')
+                break
+            end
+            qq++
+        end
+        buf[qq] = 0;
+        //buffer is filled...
+        f64 g = atof(buf);
+        ftoa_n(buf2, g, constexpri(PREC));
+        f64 h = atof(buf2);
+        ftoa_n(buf3, h, constexpri(PREC));
+        f64 i = atof(buf3);
+        @prnt[
+            /   "buf is....."
+            /   (buf)
+            /   "buf2 is....."
+            /   (buf2)
+            /   "buf3 is....."
+            /   (buf3)
+        ]
+        if(g == h)
+            @prnt[/"IDENTICAL!"]
+        else
+            @prnt[/"NOT IDENTICAL!"]
+        end
+    end
+end
 
 fn pub main()->i32:
     strtest1();
     pstrtest1();
+    ftoa_test();
 end
 
 /*

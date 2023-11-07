@@ -4,7 +4,7 @@ CFLAGS_DBG= -Og -g -fwrapv -fsanitize=address,undefined,leak -std=gnu99 -DCOMPIL
 CFLAGS_DBGVG= -Og -g -fwrapv -std=gnu99 -DCOMPILER_CLEANS_UP -DUSE_PARSER_ECHO
 CFLAGS_CLEAN= -O3 -s -fwrapv -flto -std=gnu99 -DCOMPILER_CLEANS_UP
 CFLAGS_PURE= -O3 -fwrapv -std=gnu99 -DCOMPILER_CLEANS_UP
-CFLAGS_CBAS= -O3 -fwrapv -s -lpthread -lm
+CFLAGS_CBAS= -O3 -fwrapv -s -lpthread -lm 
 
 
 cbas_dirty:
@@ -64,19 +64,19 @@ toc_test:
 	cd library && \
 	cbas toc_test.cbas && \
 	mv auto_out.c ../
-	$(CC) -m32 $(CFLAGS_CBAS) auto_out.c -o toc_test
+	$(CC) -m32 $(CFLAGS_CBAS) auto_out.c -o toc_test -lpthread -lm 
 
 fib:
 	cd library && \
 	cbas toc_fib_example.cbas && \
 	mv auto_out.c ../
-	$(CC) $(CFLAGS_CBAS) auto_out.c -o fib
+	$(CC) $(CFLAGS_CBAS) auto_out.c -o fib -lpthread -lm 
 
 string_stdlib_test:
 	cd library && \
 	cbas stdlib_strings_test.cbas && \
 	mv auto_out.c ../
-	$(CC) $(CFLAGS_CBAS) auto_out.c -o strtest
+	$(CC) $(CFLAGS_CBAS) auto_out.c -o strtest -lpthread -lm 
 
 uninstall:
 	rm -f /usr/local/bin/cbas_dirty

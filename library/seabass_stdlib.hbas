@@ -1835,5 +1835,108 @@ fn inline itoa(char* dest, TGT_IMAX value):
     end
 end
 
+//emits double as string, (suppose to be safe for serialization)
+fn inline ftoa_n(char* dest, double v, i32 ndigits):
+    TGT_UMAX is_neg = 0;
+    TGT_UMAX dg = 0;
+    TGT_IMAX pow10 = 0;
+    TGT_UMAX dgi = 0;
+    ndigits++; 
+    //cannot be zero...
+    if(ndigits <= 0)
+        dest[0] = 'E';
+        dest[1] = 'R';
+        dest[2] = 'R';
+        dest[3] = 0;
+    end
+    //define the error margin....
+    double ftoa_errmargin
+    if(signbit(v))
+        is_neg = 1;
+        dest[0] = '-';
+        dest++;
+        v = -v;
+    end
+    if(isnan(v))
+        dest[0] = 'n';
+        dest[1] = 'a';
+        dest[2] = 'n';
+        dest[3] = 0;
+        return
+    end
+    if(!isfinite(v))
+        dest[0] = 'i';
+        dest[1] = 'n';
+        dest[2] = 'f';
+        dest[3] = 0;
+    end
+    if(v == 0)
+        dest[0] = '0';
+        dest[1] = 0;
+        return
+    end
+    pow10 = log10(v);
+    //check for the case that pow10 is greater than ndigits....
+    if(pow10 >= (ndigits+1))
+        goto science
+    elif(pow10 <= -(ndigits+1))
+        goto science
+    else
+        while(pow10 >= 0)
+            TGT_IMAX temp = v/pow(10,pow10); /*if we had the number 137.45, we would have gotten
+            100 as our pow. We now divide by it to get the highest digit.*/
+            dest[0] = ( cast(TGT_IMAX)temp + ('0')); dest++;
+            ndigits--; //decrease ndigits...
+            /*we now subtract off the 100 from 137.45 to get 37.45*/
+            v = v - (
+                (double)temp * pow(10,pow10)
+            ); /*Get rid of the highest digit.*/
+            pow10--; /*Divide pow by 10.*/
+        end
+        /*Now print the insignificant portion.*/
+        if(v == 0 || ndigits == 0)
+            dest[0] = '.';dest++;
+            dest[0] = '0';dest++;
+            //emit exactly one o
+            goto last
+        end
+        dest[0] = '.';dest++;
+        while(ndigits > 0)
+            TGT_IMAX temp;
+            v = v * 10;
+            temp = v;
+            dest[0] = ( (TGT_IMAX)temp + ('0')); dest++;
+            v = v - temp;
+            ndigits--;
+        end
+        goto last
+    end
+    
+    :last
+    dest[0] = 0
+    return;
+    :science
+    //Our job here is to emit SCIENTIFIC NOTATION...
+    if(1)
+        TGT_IMAX dgc = 0;
+        v = v / pow(10, pow10); //normalize v
+        while(ndigits > 0)
+            TGT_IMAX temp;
+            temp = v;
+            dest[0] = ( (TGT_IMAX)temp + ('0')); dest++;
+            v = v - temp;
+            ndigits--;
+            if(dgc == 0 && ndigits != 0)
+                dest[0] = '.';
+                dest++
+            end
+            dgc++;
+            v = v * 10;
+        end
+        dest[0] = 'E';dest++;
+        itoa(dest, pow10);
+        return;
+    end
+end
 
 

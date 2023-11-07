@@ -516,9 +516,9 @@ LIBMIN_FUNC_ATTRIBS LIBMIN_FLOAT mupow(LIBMIN_FLOAT x, LIBMIN_UINT y)
 #endif
 
 #ifdef LIBMIN_MODE_HEADER
-LIBMIN_FUNC_ATTRIBS void mftoa(char* dest, float value, LIBMIN_UINT after_decimal);
+LIBMIN_FUNC_ATTRIBS void mftoa(char* dest, LIBMIN_FLOAT value, LIBMIN_UINT after_decimal);
 #else
-LIBMIN_FUNC_ATTRIBS void mftoa(char* dest, float value, LIBMIN_UINT after_decimal){
+LIBMIN_FUNC_ATTRIBS void mftoa(char* dest, LIBMIN_FLOAT value, LIBMIN_UINT after_decimal){
 
 	if(value < 0) {*dest = '-'; dest++;value = value * -1;}
 	if(value == 0) {*dest = '0'; dest++; goto end;}
