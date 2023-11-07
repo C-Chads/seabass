@@ -310,6 +310,7 @@ method codegen cgtype:gen_code(cgast* ast)->char*:
             printme:fromstr("struct ")
         end
         printme:add(t);
+        t:free(); //memory leak fixed?
     elif(basetype == CG_BASE_VOID)
         printme:fromstr("void");
     elif(basetype == CG_BASE_U8)
