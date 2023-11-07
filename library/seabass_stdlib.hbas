@@ -1858,17 +1858,18 @@ fn inline ftoa_n(char* dest, double v, i32 ndigits):
         v = -v;
     end
     if(isnan(v))
-        dest[0] = 'n';
-        dest[1] = 'a';
-        dest[2] = 'n';
+        dest[0] = 'N';
+        dest[1] = 'A';
+        dest[2] = 'N';
         dest[3] = 0;
         return
     end
     if(!isfinite(v))
-        dest[0] = 'i';
-        dest[1] = 'n';
-        dest[2] = 'f';
+        dest[0] = 'I';
+        dest[1] = 'N';
+        dest[2] = 'F';
         dest[3] = 0;
+        return
     end
     if(v == 0)
         dest[0] = '0';
@@ -1897,8 +1898,8 @@ fn inline ftoa_n(char* dest, double v, i32 ndigits):
         if(v == 0 || ndigits == 0)
             dest[0] = '.';dest++;
             dest[0] = '0';dest++;
-            //emit exactly one o
-            goto last
+            dest[0] = 0
+            return
         end
         dest[0] = '.';dest++;
         while(ndigits > 0)
@@ -1909,11 +1910,11 @@ fn inline ftoa_n(char* dest, double v, i32 ndigits):
             v = v - temp;
             ndigits--;
         end
-        goto last
+        dest[0] = 0
+        return
     end
     
-    :last
-    dest[0] = 0
+
     return;
     :science
     //Our job here is to emit SCIENTIFIC NOTATION...
