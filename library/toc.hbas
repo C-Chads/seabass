@@ -2321,6 +2321,11 @@ fn codegen cg_emitC(char* prefix):
         
         Please also pay very close attention to the COMMENTS that are emitted
         and verify that they are compatible with your target compiler....
+        
+        ALSO NOTE
+        
+        If you want to generate a header file alongside the C file,
+        you could do it here.
     */
     if(prefix != cast(u8*)0)
         cg_quick_emit(prefix,0);
