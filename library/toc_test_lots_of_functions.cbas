@@ -137,7 +137,7 @@ codegen u64 funcmaker = 0;
         ARG1
     ]
 ]
-@dupl [@writefn]
+@dupl [@writefn] @dupl [@writefn] @dupl [@writefn] @dupl [@writefn] @dupl [@writefn] @dupl [@writefn] @dupl [@writefn] @dupl [@writefn] @dupl [@writefn] @dupl [@writefn] @dupl [@writefn] @dupl [@writefn] 
 
 
 fn predecl mutoa(char* dest, uint value);
