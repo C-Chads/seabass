@@ -1,0 +1,386 @@
+
+#include "bit32.hbas"
+#include "seabass_stdlib.hbas"
+/*
+    Compile like this
+    cbas toc.cbas
+    cc -O3 -m32 auto_out.c -o a
+    
+    
+    you will need gcc-multilib
+    
+    run like this:
+    ./a
+*/
+
+
+@wksht cpprint [
+    [
+        @pprint [println mutoa ARG1]
+    ][
+        ARG1
+    ]
+]
+
+
+struct bbb
+    union
+    float b
+    int a
+    bbb* beebeebee
+    16
+end
+
+struct bbb2
+    bbb mymember
+    float q
+    32
+end
+
+method bbb2.ctor():
+    this.mymember.a = 3;
+    this.mymember.b = 3;
+end
+
+
+struct membuf
+    char* d
+end
+
+method membuf.ctor():
+    this.d = 0
+end
+method membuf.dtor():
+    if(this.d != 0)
+        free(this.d)
+    end
+end
+method membuf.req(u32 sz):
+    this.d = malloc(sz)
+    if(this.d == 0)
+        println("malloc failed!");
+        sys_exit(1);
+    end
+end
+
+
+
+
+bbb[60] my_bbbs;
+
+method inline bbb:do_stuff(int incr)->i32:
+    this.a = this.a + incr
+    float* b_ptr
+    int* a_ptr
+    a_ptr = this.&a;
+    b_ptr = this.&b;
+    if(a_ptr != cast(int*)b_ptr)
+    else
+        return this.a
+    end
+    return this.a - 1
+end
+
+fn myFunction(int arg1, i32 arg2, slong arg3)->long: return arg1+arg2+arg3 end
+
+method inline bbb:do_stuff2(int incr, int incr2, int incr3)->i32:
+    this.a = this.a + incr + incr2 + incr3;
+    float* b_ptr
+    int* a_ptr
+    a_ptr = this.&a;
+    b_ptr = this.&b;
+    if(a_ptr != cast(int*)b_ptr)
+    else
+        return this.a;
+    end
+    return this.a - 1;
+end
+
+method bbb:init():
+    this.a = 0;
+end
+
+//standard library imports...
+
+
+fn predecl inline mutoa(char* dest, uint value);
+
+struct this_type_has_a_destructor
+    int a
+    int b
+    char* qq
+end
+
+//Thank you, Lord Jesus :)
+
+method inline this_type_has_a_destructor.dtor():
+    @cpprint[
+        /       "Goodbye mom!"
+        /       "My a was:"
+        /int    (this.a)
+    ]
+    if(this.qq != 0)
+        free(this.qq)
+    end
+end
+
+method inline this_type_has_a_destructor.ctor():
+    println("Hello Mom!");
+    this.a = 5;
+    this.b = 7;
+    this.qq = malloc(20);
+    if(this.qq == 0)
+        println("malloc failed!");
+    end
+end
+
+
+/*
+fn  inline pure impl_streq(char* a, char* b)->i32:
+    while(1)
+        if(a[0] != b[0]) return 0 end
+        if(a[0] == 0) return 1 end
+        a++;b++;
+    end
+end
+*/
+
+data int myintegers 3, 4, 5, 7, 9, 10, -133+134;
+
+data float myfloats 3.0, 3.14159, -14.7;
+//data double mydoubles 3.57e20, 3.57e-20;
+
+pub int myint = 1;
+int myint2 = 2;
+
+
+
+data pub string mystring "AAAAThis is a string! I wonder what the list character is?";
+
+fn inline mutoa(char* dest, uint value):
+	if(value == 0) 
+	    dest[0] = '0'; 
+	    dest++; 
+	    goto ending; 
+	end
+	/*Determine the highest power of 10.*/
+	if(1)
+	    uint pow
+	    pow = 1;
+		while(value/pow > 9)
+		    pow = pow * 10; 
+        end
+		/*found the highest power of 10*/
+		while(pow)
+			uint temp
+			temp = value/pow; /*if we had the number 137, we would have gotten
+			100 as our pow. We now divide by it to get the highest digit.*/
+			dest[0] = (temp + ('0')); dest++;
+			value = value - temp * pow; /*Get rid of the highest digit.*/
+			pow = pow / 10; /*Divide pow by 10.*/
+		end
+	end
+	
+	
+	:ending;
+	dest[0] = 0; return;
+	float* ppp = getglobalptr(myfloats);
+end
+
+
+fn whosa_yousa(int a): 
+    @cpprint[
+        /   "Whosa programmer? Yousa programmer!"
+        /   "Here's that integer..."
+        /int (a)
+    ]
+end
+
+fn wadda(int iters):
+    char[50] buf
+    i32 i
+    i32 j
+    for(i = 0; i <= iters; i++)
+        mutoa(buf, i*i);
+        //asm("qqq;\n");
+        for(j = 0, j < 12, j++)
+            println(buf);
+            if(j == 3)
+                buf[0] = 'q';
+                println(buf);
+                break;
+            end
+        end
+        if(i == 13) break end
+        continue
+    end
+    
+    tail whosa_yousa
+end
+
+fn pub inf_loop():
+    tail inf_loop
+end
+
+fn pub inf_loop2()->int:
+    tail inf_loop2
+end
+
+fn inf_loop3(int a)->int:
+    
+    a = a + 1;
+    if(a%5 != 0)
+        tail inf_loop3
+    end
+    return a;
+end
+
+atomic int my_integer = 37;
+
+fn pub main()->int:
+    
+    println("Hello World, from CBAS!");
+    char* p
+    p = getfnptr(wadda);
+    callfnptr[whosa_yousa](p)(30);
+    if(0)
+        println("a");
+    elif("eq" streq "neq")
+        println("b");
+    else
+        println("Quality!");
+    end
+    if(1)
+        switch(2) aa, bb, cc, dd;
+        switch(3) aa, bb, cc, dd;
+        switch(3) aa, bb, cc, dd;
+        switch(3) aa, bb, cc, dd;
+        switch(3) aa, bb, cc, dd;
+        
+        :aa
+            println("Got a 0!");
+            goto ee
+        :bb
+            println("Got a 1!");
+            goto ee
+        :cc
+            println("Got a 2!");
+            jump ee
+        :dd
+            println("Got a 3!");
+            goto ee
+        :ee
+        @cpprint[
+            /   "Goodbye!"
+            /   "This should be 8:"
+            /itoa (1<<3)
+        ]
+    end
+    
+    for(my_integer = 0; my_integer < 500; my_integer++)
+        if(my_integer%10 == 0)
+            @cpprint[
+                /   "Printing atomic variable my_integer"
+                /int (my_integer)
+            ]
+        end
+    end
+    
+    bbb my_bbb
+    bbb my_bbb_2
+    my_bbb:init();
+    i32 i
+    for(i = 0; i < 10; i++)
+        @cpprint[
+            /   "Another iteration?"
+            /itoa (my_bbb.do_stuff2(12,12,12))
+        ]
+        
+    end
+    my_bbb_2.a = 0;
+    my_bbb_2.b = 0;
+    my_bbb_2 := my_bbb;
+    @cpprint[
+        /   "my_bbb_2.a = "
+        /int (my_bbb_2.a)
+        /   "my_bbb.a = "
+        /int (my_bbb.a)
+    ]
+    //inf_loop();
+    //inf_loop2();
+    @cpprint[
+        /   "This is what I get for inf_loop3:"
+        /itoa (inf_loop3(23))
+        /   "As you can see, it wasn't really an infinite loop after all!"
+        /   "This is intentional..."
+    ]
+    (my_bbbs+23).a = 17;
+    (my_bbbs[24]).a = 97.3;
+    (my_bbbs+23).do_stuff(1);
+    @cpprint[
+        /   "Here's what happened to my_bbbs+23:"
+        /itoa ((my_bbbs+23).a)
+        /   "And +24:"
+        /itoa ((my_bbbs+24).a)
+        /   "Furthermore, if we use getglobalptr and get the 24th element..."
+        /itoa ((getglobalptr(my_bbbs)+24).a)
+        /   "Interpreted as a float, this is..."
+        /itoa ((getglobalptr(my_bbbs)+24).b)
+    ]
+    ((getglobalptr(my_bbbs)+24).b) = 25.3;
+    @cpprint[
+        /           "I've assigned the float with the value 25.3. Here it is multiplied by 10 as an int:"
+        /itoa       (((getglobalptr(my_bbbs)+24).b) * 10)
+        /           "And here is the integer interpretation:"
+        /itoa       ((getglobalptr(my_bbbs)+24).a)
+        /           "And the size of my_bbb is..."
+        /bar
+        /itoa       (sizeof(bbb))
+        /bar
+    ]
+    
+    if(1)
+    this_type_has_a_destructor qq
+    this_type_has_a_destructor qq2
+        i32 ffff
+        for(ffff = 0, ffff < 10, ffff++)
+            this_type_has_a_destructor a
+            this_type_has_a_destructor b
+            this_type_has_a_destructor c
+            a.a = 1;
+            b.a = 2;
+            c.a = 3;
+            i32 quiet
+            for(quiet = 0, quiet < 3; quiet++)
+                @cpprint[
+                    /   "Do do do..."
+                    /int (quiet * quiet * quiet * quiet)
+                ]
+            end
+            if(ffff == 3) break end
+            //should be cleaned up at the end of the scope...
+            if(ffff == 9) goto real_end end
+            if(0) return 0; println("This should never print!")    end
+            
+        end
+    end
+    
+    
+    //test readbytes
+    if(1)
+        membuf buffer
+        buffer.req((1<<10));
+        println("Enter 10 characters");
+        fread(get_stdin_handle(), buffer.d, 10);
+        println("Here are your characters back:");
+        fwrite(get_stdout_handle(), buffer.d, 10);
+    end
+    
+    :real_end
+end
+
+
+fn codegen codegen_main():
+    cg_emitC(SEABASS_STDLIB_PREFIX);
+end
+
