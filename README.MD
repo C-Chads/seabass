@@ -256,6 +256,18 @@ Yes. The compiler itself requires a 64 bit environment but programs written
 in the language could target anything from a microcontroller to a modern-day 
 x86_64, ARM, or RISC-V machine.
 
+### Do you have a standard library?
+
+For user-mode applications on POSIX-compliant (and posix-like) systems, yes.
+
+It supports most of the useful parts of the C standard library, or supplements
+them, where appropriate.
+
+It is currently in development but is already sufficient to write simple
+unix applications.
+
+I have plans to extend the library to support most of posix.
+
 ### Does the language scale?
 
 Because Cbas is a metaprogramming language, it scales almost infinitely. If the base
