@@ -355,7 +355,6 @@ typedef struct expr_node_astexec{
 	uint64_t fnptr_nargs;
     uint64_t constint_propagator; //for propagating constant integers
 	char* symname;  /*if method: this is unmangled. */
-	char* method_name; /*if method: this is mangled. */
 } expr_node_astexec;
 
 static expr_node expr_node_init(){

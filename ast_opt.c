@@ -123,10 +123,10 @@ static void write_expr_node(expr_node* s);
 static void plan_expr_node(expr_node* s){
     //plan ourselves..
     push_plan(s, sizeof(expr_node_astexec));
-    if(s->symname)
-        plan_string(s->symname);
-    if(s->method_name)
-        plan_string(s->method_name);
+    if(s->kind == EXPR_BUILTIN_CALL || s->kind == EXPR_STRINGLIT){
+        if(s->symname)
+            plan_string(s->symname);
+    }
     for(unsigned long i = 0; i < MAX_FARGS; i++)
         if(s->subnodes[i])
             plan_expr_node(s->subnodes[i]);
@@ -134,13 +134,11 @@ static void plan_expr_node(expr_node* s){
 static void write_expr_node(expr_node* s_old){
     expr_node* s = pdecode(s_old);
     memcpy(s,s_old, sizeof(expr_node_astexec));
-    if(s->symname){
-        write_string(s->symname);
-        FREP(s->symname);
-    }
-    if(s->method_name){
-        write_string(s->method_name);
-        FREP(s->method_name);
+    if(s->kind == EXPR_BUILTIN_CALL || s->kind == EXPR_STRINGLIT){
+        if(s->symname){
+            write_string(s->symname);
+            FREP(s->symname);
+        }
     }
     for(unsigned long i = 0; i < MAX_FARGS; i++)
         if(s->subnodes[i]){
