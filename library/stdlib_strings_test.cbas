@@ -209,6 +209,19 @@ fn ftoa_test():
         else
             @prnt[/"NOT IDENTICAL!"]
         end
+        if(buf2 strneq buf3)
+            //investigate why!
+            i64 i
+            for(i = 0, buf2[i] == buf3[i], i++) end
+            @prnt[
+                /"<<FAIL>>"
+                /"Here is your problem:"
+                /(buf2 + i)
+                /(buf3 + i)
+                /"At location:"
+                /int(i)
+            ]
+        end
     end
 end
 fn ftoa_test2():
@@ -248,6 +261,19 @@ fn ftoa_test2():
             @prnt[/"IDENTICAL!"]
         else
             @prnt[/"NOT IDENTICAL!"]
+        end
+        if(buf2 strneq buf3)
+            //investigate why!
+            i64 i
+            for(i = 0, buf2[i] == buf3[i], i++) end
+            @prnt[
+                /"<<FAIL>>"
+                /"Here is your problem:"
+                /(buf2 + i)
+                /(buf3 + i)
+                /"At location:"
+                /int(i)
+            ]
         end
     end
 end
