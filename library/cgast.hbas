@@ -491,32 +491,32 @@ class cgstmt
 	char** switch_label_list
 	u64* switch_label_indices
 	u64 switch_nlabels
-	u64 linenum
-	u64 colnum
-	char* filename
 	i64 goto_scopediff
 	i64 goto_vardiff
 	i64 goto_where_in_scope
+	u64 linenum
+	u64 colnum
+	char* filename
 end
 
 class cgexpr_node
     noexport
 	cgtype t
-	cgtype type_to_get_size_of
 	u64 kind
 	double fdata
 	u64 idata
 	cgexpr_node*[CG_MAX_FARGS] subnodes
 	u64 symid
-	u64 is_global_variable
-	u64 is_function
 	u64 fnptr_nargs
-	u64 is_local_variable
-	u64 is_implied
 	u64 constint_propagator
-	u64 was_struct_var
 	char* symname
 	char* method_name
+	u64 is_global_variable
+	u64 is_function
+	u64 is_local_variable
+	u64 is_implied
+	u64 was_struct_var
+	cgtype type_to_get_size_of
 end
 
 class cgtypedecl_oop_metadata
@@ -1066,7 +1066,6 @@ fn codegen cg_token_grab_arglist(char* errtext)->cgstrll*:
 	
 	
 	//if the argument is a single, return it!
-	
 	if(p.d != CG_TOK_OBRACK)
 		retval = p:dupe();
 		__builtin_consume();
@@ -1082,6 +1081,7 @@ fn codegen cg_token_grab_arglist(char* errtext)->cgstrll*:
 	retval = p:dupe();
 	owalker = retval;
 	__builtin_consume();
+	
 	while(1)
 	    p = cg_peek();
 	    if(p == 0) break
@@ -1092,6 +1092,7 @@ fn codegen cg_token_grab_arglist(char* errtext)->cgstrll*:
 		__builtin_consume();
 		if(level == 0) break; end
 	end
+	
 	
 	if(level != 0)
 		__builtin_puts("INTERNAL SYNTAX ERROR: Token Arglist has mismatched square brackets!");

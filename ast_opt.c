@@ -59,6 +59,16 @@ static void plan_array(void* p, size_t elemsz, size_t n){
     }
     plan_memory(elemsz * n);
 }
+//plan an array of things that will have two elemsizes...
+static void plan_array_new(void* p, size_t elemsz,size_t elemsz_new, size_t n){
+    for(unsigned long i = 0; i < n; i++)
+    {   
+        //we must register a pointer for every element,
+        //and also say that it points to something inside the new thing...
+        push_pointer_ahead(p + elemsz * i, elemsz_new * i);
+    }
+    plan_memory(elemsz_new * n);
+}
 
 
 static size_t lookup_pointer(void* p){
@@ -94,25 +104,19 @@ static void plan_string(char* s){
 static void write_string(char* s){
     memcpy(pdecode(s),s,strlen(s)+1);
 }
-static void plan_lvar(symdecl* s){
-    (void)s;
-    //plan_string(s->name);
-}
 static void plan_lvars(symdecl* s, unsigned long n){
-    plan_array(s, sizeof(symdecl), n);
-    for(unsigned long i = 0; i < n; i++){
-        plan_lvar(s+i);
-    }
+    plan_array(s, sizeof(symdecl_astexec), n);
 }
 static void write_lvars(symdecl* s, unsigned long n){
-    memcpy(pdecode(s),s,n * sizeof(symdecl));
-    /*
-    REP(s)
+    void* q = pdecode(s);
+    memcpy(q,s,n * sizeof(symdecl_astexec));
     for(unsigned long i = 0; i < n; i++){
-        write_string(s[i].name);
-        FREP(s[i].name);
+#ifdef COMPILER_CLEANS_UP
+        free(s[i].name); 
+#endif
+        memcpy((q + i * sizeof(symdecl_astexec)),s + i, sizeof(symdecl_astexec));
+        
     }
-    */
 }
 
 //Does not do any allocation of itself, because
@@ -123,7 +127,7 @@ static void write_expr_node(expr_node* s);
 
 static void plan_expr_node(expr_node* s){
     //plan ourselves..
-    push_plan(s, sizeof(expr_node));
+    push_plan(s, sizeof(expr_node_astexec));
     if(s->symname)
         plan_string(s->symname);
     if(s->method_name)
@@ -132,9 +136,9 @@ static void plan_expr_node(expr_node* s){
         if(s->subnodes[i])
             plan_expr_node(s->subnodes[i]);
 }
-static void write_expr_node(expr_node* s){
-    memcpy(pdecode(s),s, sizeof(expr_node));
-    REP(s)
+static void write_expr_node(expr_node* s_old){
+    expr_node* s = pdecode(s_old);
+    memcpy(s,s_old, sizeof(expr_node_astexec));
     if(s->symname){
         write_string(s->symname);
         FREP(s->symname);
@@ -153,7 +157,8 @@ static void plan_scope(scope* s);
 static void write_scope(scope* s);
 
 static void plan_stmts(stmt* s, unsigned long n){
-    plan_array(s, sizeof(stmt), n);
+    //plan_array(s, sizeof(stmt_astexec), n);
+    plan_array_new(s, sizeof(stmt), sizeof(stmt_astexec), n);
     for(unsigned long i = 0; i < n; i++){
         if(s[i].myscope){
             plan_scope(s[i].myscope);
@@ -172,16 +177,21 @@ static void plan_stmts(stmt* s, unsigned long n){
         }
     }
 }
-static void write_stmts(stmt* s, unsigned long n){
-    memcpy(pdecode(s),s,n * sizeof(stmt));
-    REP(s)
+static void write_stmts(stmt* s_old, unsigned long n){
+    stmt_astexec* s = pdecode(s_old);
     for(unsigned long i = 0; i < n; i++){
+        memcpy(s + i ,s_old + i,sizeof(stmt_astexec));
         REP(s[i].whereami)
         if(s[i].referenced_loop){
+            void* pp = pdecode(s[i].referenced_loop);
+            if(pp == 0){
+                puts("<OPTIMIZER ERROR>");
+                puts("referenced_loop was not registered!");
+            }
             REP(s[i].referenced_loop);
         }
         if(s[i].myscope){
-            write_scope(s[i].myscope);
+            write_scope((scope*)s[i].myscope);
             FREP(s[i].myscope);
         }
         for(unsigned long j = 0; j < s[i].nexpressions; j++)
@@ -209,17 +219,17 @@ static void write_stmts(stmt* s, unsigned long n){
 
 
 static void plan_scope(scope* s){
-    push_plan(s, sizeof(scope));
+    push_plan(s, sizeof(scope_astexec));
     if(s->nsyms)
         plan_lvars(s->syms, s->nsyms);
     if(s->nstmts)
         plan_stmts(s->stmts, s->nstmts);
 }
-static void write_scope(scope* s){
-    memcpy(pdecode(s),s, sizeof(scope));
-    REP(s)
+static void write_scope(scope* s_old){
+    scope_astexec* s = pdecode(s_old);
+    memcpy(s,s_old, sizeof(scope_astexec));
     if(s->nsyms){
-        write_lvars(s->syms, s->nsyms);
+        write_lvars((symdecl*)s->syms, s->nsyms);
         FREP(s->syms)
     }
     if(s->nstmts){

@@ -148,6 +148,10 @@ typedef struct{
 	//uint64_t VM_function_stackframe_placement; /*For local variables and function args, used by the AST executor*/
 } symdecl;
 
+typedef struct{
+    type t;
+} symdecl_astexec;
+
 
 static inline int sym_is_method(symdecl* s){
 	if(s->t.is_function == 0) return 0;
@@ -175,6 +179,12 @@ typedef struct scope{
 	uint64_t walker_point; /*Where was the code validator?*/
 	uint64_t stopped_at_scope1; /*Did the validator stop at myscope or myscope2?*/
 } scope;
+typedef struct{
+	symdecl_astexec* syms;
+	uint64_t nsyms;
+	void* stmts; /**/
+	uint64_t nstmts;
+} scope_astexec;
 
 enum{
 	STMT_BAD=0,
@@ -219,14 +229,40 @@ typedef struct stmt{
 	uint64_t* switch_label_indices; /**/
 	uint64_t switch_nlabels; /*how many labels does the switch have in it?*/
 	/*Used for error printing...*/
-	uint64_t linenum;
-	uint64_t colnum;
-	char* filename;
 	int64_t goto_scopediff; /*how many scopes deep does this go?*/
 	int64_t goto_vardiff; /*How many local variables have to be popped to achieve the context switch?*/
 	int64_t goto_where_in_scope; /*What exact statement are we going to?*/
+	uint64_t linenum;
+	uint64_t colnum;
+	char* filename;
 	/*Code generator data.*/
 } stmt;
+typedef struct{
+	scope_astexec* whereami; /*scope this statement is in. Not owning.*/
+	scope_astexec* myscope; /*if this statement has a scope after it (while, for, if, etc) then this is where it goes.*/
+	uint64_t kind; /*What type of statement is it?*/
+	/*expressions belonging to this statement.*/
+	void* expressions[STMT_MAX_EXPRESSIONS];
+	uint64_t nexpressions;
+	struct stmt* referenced_loop; /*
+		break and continue reference 
+		a loop construct that they reside in.
+
+		What loop exactly has to be determined in a second pass,
+		since the stmt lists are continuously re-alloced.
+
+		Goto also uses this, for its jump target.
+	*/
+	uint64_t symid; /*for tail.*/
+	char* referenced_label_name; /*goto gets a label. tail gets a function*/
+	char** switch_label_list;
+	uint64_t* switch_label_indices; /**/
+	uint64_t switch_nlabels; /*how many labels does the switch have in it?*/
+	/*Used for error printing...*/
+	int64_t goto_scopediff; /*how many scopes deep does this go?*/
+	int64_t goto_vardiff; /*How many local variables have to be popped to achieve the context switch?*/
+	int64_t goto_where_in_scope; /*What exact statement are we going to?*/
+} stmt_astexec;
 
 enum{
 	/*
@@ -292,23 +328,36 @@ enum{
 
 typedef struct expr_node{
 	type t;
-	type type_to_get_size_of; //sizeof and cast both use this.
 	uint64_t kind;
 	double fdata;
 	uint64_t idata;
 	struct expr_node* subnodes[MAX_FARGS];
 	uint64_t symid;
-	uint64_t is_global_variable;
-	uint64_t is_function;
 	uint64_t fnptr_nargs;
-	uint64_t is_local_variable;
-	uint64_t is_implied;
 	uint64_t constint_propagator; //for propagating constant integers
-	uint64_t was_struct_var;
 	char* symname;  /*if method: this is unmangled. */
 	char* method_name; /*if method: this is mangled. */
+	uint64_t is_global_variable;
+	uint64_t is_function;
+	uint64_t is_local_variable;
+	uint64_t is_implied;
+	uint64_t was_struct_var;
+	type type_to_get_size_of; //sizeof and cast both use this.
 	/*Code generator data.*/
 }expr_node;
+
+typedef struct expr_node_astexec{
+	type t;
+	uint64_t kind;
+	double fdata;
+	uint64_t idata;
+	struct expr_node_astexec* subnodes[MAX_FARGS];
+	uint64_t symid;
+	uint64_t fnptr_nargs;
+    uint64_t constint_propagator; //for propagating constant integers
+	char* symname;  /*if method: this is unmangled. */
+	char* method_name; /*if method: this is mangled. */
+} expr_node_astexec;
 
 static expr_node expr_node_init(){
 	expr_node ee = {0};

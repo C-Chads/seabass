@@ -135,7 +135,7 @@ fn codegen parsehook_bldr():
 	end
 	//get the arglist.
 	arglist = cg_token_grab_arglist("Invalid argument list passed to builder.");
-
+    //arglist:debug_print();
 	//if this is a lone thing...
 	if(arglist.d != CG_TOK_OBRACK)
 		char[500] buf;

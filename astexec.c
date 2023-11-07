@@ -13,7 +13,7 @@
 
 static uint64_t is_debugging = 1;    //only used in debug_print
 static uint64_t executing_function = 0; //the symbol (index into the symbol table) of the function where code is currently being executed.
-static scope**  scope_executing_stack; //stack of all scopes. every function, every if statement, etcetera add 
+static scope_astexec**  scope_executing_stack; //stack of all scopes. every function, every if statement, etcetera add 
 static uint64_t n_scopes_executings = 0; //depth of the scope_executing_stack.
 
 typedef struct{
@@ -28,11 +28,11 @@ static vm_scope_position_execution_info *scope_positions;
 void vm_allocate_needed_memory(size_t amt){
     //allocate tons of memory
     scope_positions = malloc(amt * sizeof(vm_scope_position_execution_info));
-    scope_executing_stack = malloc(amt * sizeof(scope*));
+    scope_executing_stack = malloc(amt * sizeof(scope_astexec*));
 }
 
 
-static inline void scope_executing_stack_push(scope* s){
+static inline void scope_executing_stack_push(scope_astexec* s){
 	//scope_executing_stack = realloc(scope_executing_stack, (++n_scopes_executings) * sizeof(scope*));
 	++n_scopes_executings;
 	scope_executing_stack[n_scopes_executings-1] = s;
@@ -42,7 +42,7 @@ static inline void scope_executing_stack_pop(){
 	n_scopes_executings--;
 }
 
-static inline scope* scope_executing_stack_gettop(){ //This function causes @global to crash... hmmm
+static inline scope_astexec* scope_executing_stack_gettop(){ //This function causes @global to crash... hmmm
 	return scope_executing_stack[n_scopes_executings-1];
 }
 
@@ -83,7 +83,7 @@ uint64_t cur_expr_stack_usage = 0;
 static uint64_t ast_vm_stack_push(){
 	return vm_stackpointer++;
 }
-static uint64_t ast_vm_stack_push_lvar(symdecl* s){
+static uint64_t ast_vm_stack_push_lvar(symdecl_astexec* s){
 	uint64_t placement;
     uint64_t qq;
 	if(cur_expr_stack_usage){
@@ -480,7 +480,7 @@ static void* retrieve_variable_memory_pointer(
     return &(vm_stack[i].smalldata);
 }
 
-void do_expr(expr_node* ee){
+void do_expr(expr_node_astexec* ee){
 	int64_t i = 0;
 	int64_t n_subexpressions = 0;
 	
@@ -2544,7 +2544,7 @@ void do_expr(expr_node* ee){
 
 void ast_execute_function(symdecl* s){
 	uint64_t which_stmt = 0;
-	stmt* stmt_list = NULL;
+	stmt_astexec* stmt_list = NULL;
 	uint64_t stmt_kind = 0;
 	/*are we just starting? The first function returns void.*/
 	/*if(vm_stackpointer == 0){
@@ -2571,7 +2571,7 @@ void ast_execute_function(symdecl* s){
 	
 	cur_expr_stack_usage = 0;
 	cur_func_frame_size = 0;
-	scope_executing_stack_push(s->fbody);
+	scope_executing_stack_push((scope_astexec*)s->fbody);
 
 
 	begin_executing_scope:
@@ -2652,7 +2652,7 @@ void ast_execute_function(symdecl* s){
 			}
 			if(stmt_kind == STMT_GOTO){
 				int64_t i;
-				stmt* cur_stmt = stmt_list + which_stmt;
+				stmt_astexec* cur_stmt = stmt_list + which_stmt;
 				for(i = 0; i < cur_stmt->goto_vardiff; i++){
 					//debug_print("goto popping variables...",0,0);
 					ast_vm_stack_pop();
@@ -2668,7 +2668,7 @@ void ast_execute_function(symdecl* s){
 			}
 			if(stmt_kind == STMT_TAIL){
 				int64_t i;
-				stmt* cur_stmt = stmt_list + which_stmt;
+				stmt_astexec* cur_stmt = stmt_list + which_stmt;
 				for(i = 0; i < cur_stmt->goto_vardiff; i++){
 					//debug_print("goto popping variables...",0,0);
 					ast_vm_stack_pop();
@@ -2689,7 +2689,7 @@ void ast_execute_function(symdecl* s){
 			}
 			if(stmt_kind == STMT_CONTINUE || stmt_kind == STMT_BREAK){
 				int64_t i;
-				stmt* cur_stmt = stmt_list + which_stmt;
+				stmt_astexec* cur_stmt = stmt_list + which_stmt;
 				for(i = 0; i < cur_stmt->goto_vardiff; i++){
 					//debug_print("goto popping variables...",0,0);
 					ast_vm_stack_pop();
@@ -2706,7 +2706,7 @@ void ast_execute_function(symdecl* s){
 				pp2 = (uint64_t)cur_stmt->referenced_loop;
 				pp2 -= pp1;
 				//now divide!
-				i = pp2 / sizeof(stmt);
+				i = pp2 / sizeof(stmt_astexec);
 				//for(i = 0; i <(int64_t) scope_executing_stack_gettop()->nstmts; i++)
 					//if(cur_stmt->referenced_loop == stmt_list+i)
                 {
@@ -2720,9 +2720,9 @@ void ast_execute_function(symdecl* s){
                 }
 			}
 			if(stmt_kind == STMT_SWITCH){
-				int64_t val;int64_t i;
+				int64_t val;
 				//char* name;
-				stmt* cur_stmt;
+				stmt_astexec* cur_stmt;
 
 
 				cur_stmt = stmt_list + which_stmt;
@@ -2760,7 +2760,7 @@ void ast_execute_function(symdecl* s){
 				int64_t i;
 				uint64_t retval;
 				uint64_t has_retval = 0;
-				stmt* cur_stmt = stmt_list + which_stmt;
+				stmt_astexec* cur_stmt = stmt_list + which_stmt;
 				if((stmt_list[which_stmt].expressions[0])){
 					has_retval = 1;
 					do_expr(stmt_list[which_stmt].expressions[0]);
@@ -2783,7 +2783,7 @@ void ast_execute_function(symdecl* s){
 				stmt_kind == STMT_IF || 
 				stmt_kind == STMT_ELIF
 			){
-				stmt* cur_stmt;
+				stmt_astexec* cur_stmt;
 				//scope_positions[n_scopes_executings-1].is_else_chaining = 0;
 				do_expr(stmt_list[which_stmt].expressions[0]);
 				//debug_print("While or If got This from its expression: ",vm_stack[vm_stackpointer-1].smalldata,0);
@@ -2812,7 +2812,7 @@ void ast_execute_function(symdecl* s){
 			}
 			if(scope_positions[n_scopes_executings-1].is_else_chaining > 0)
 			if(stmt_kind == STMT_ELSE){
-				stmt* cur_stmt;
+				stmt_astexec* cur_stmt;
 				cur_stmt = stmt_list + which_stmt;
 				//It has been decided. we are going to be executing this block.
 				scope_positions[n_scopes_executings-1].pos = which_stmt;
@@ -2822,7 +2822,7 @@ void ast_execute_function(symdecl* s){
 				goto begin_executing_scope;
 			}
 			if(stmt_kind == STMT_FOR){
-				stmt* cur_stmt;
+				stmt_astexec* cur_stmt;
 				int64_t retval;
 				//int64_t i;
 				cur_stmt = stmt_list + which_stmt;
