@@ -40,6 +40,8 @@ static void plan_scope(scope* s);
 static void plan_stmt(stmt* s){
     plan_memory(sizeof(stmt));
     //TODO
+    if(s->referenced_label_name)
+        plan_string(s->referenced_label_name);
     for(unsigned long i = 0; i < s->nexpressions; i++)
         plan_expr_node(s->expressions[i]);
     if(s->myscope)
