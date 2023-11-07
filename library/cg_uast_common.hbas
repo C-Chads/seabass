@@ -1,8 +1,8 @@
 
 #guard compiletime_universal_ast_common_impl_patterns_DMHSW
 
-#include "cgtoken_manip_tools.hbas"
-#include "cg_uast.hbas"
+#include <cgtoken_manip_tools.hbas>
+#include <cg_uast.hbas>
 
 /*
     COMMON IMPLEMENTATION PATTERNS FOR THE UNIVERSAL AST

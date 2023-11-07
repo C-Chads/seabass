@@ -6,9 +6,8 @@
 
 
 
-#include "cgbuilder.hbas"
-#include "cg_uast.hbas"
-//#include "cgwksht.hbas"
+#include <cgbuilder.hbas>
+#include <cg_uast.hbas>
 
 /*
     THE RECURSIVE DESCENT PARSER LIBRARY

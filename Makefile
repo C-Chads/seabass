@@ -28,7 +28,10 @@ cbas_tcc:
 	
 cbas_pure:
 		$(CC) $(CFLAGS_PURE) ctok.c parser.c data.c constexpr.c metaprogramming.c code_validator.c astexec.c astdump.c reflection_library.c ast_opt.c -o cbas_pure -lm -g
-	
+
+install_stdlib:
+	mkdir -p /usr/include/cbas
+	cp library/*.hbas /usr/include/cbas/
 
 install: all_not_tcc
 	cp ./cbas_dirty /usr/local/bin/

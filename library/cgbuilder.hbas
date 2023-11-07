@@ -1,7 +1,7 @@
 
 #guard cg_builder_library_DMHSW
 
-#include "cgast.hbas"
+#include <cgast.hbas>
 
 /*
 	THE BUILDER NAMESPACE

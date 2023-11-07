@@ -1,6 +1,6 @@
 
 
-#include "cgwksht.hbas"
+#include <cgwksht.hbas>
 
 
 @wksht myWorkSheet [

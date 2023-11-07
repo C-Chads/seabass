@@ -11,7 +11,7 @@
 */
 
 #guard SEABASS_STDLIB_USERMODE_C
-#include "toc.hbas"
+#include <toc.hbas>
 
 //The glories of a multi-line string literal!
 data codegen string SEABASS_STDLIB_PREFIX "

@@ -1,5 +1,5 @@
 
-#include "parsehook_dict.hbas"
+#include <parsehook_dict.hbas>
 
 fn codegen pp(cgstrll* in)->cgstrll*:
     @pprint[

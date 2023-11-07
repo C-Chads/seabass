@@ -1,6 +1,6 @@
 
-#include "bit32.hbas"
-#include "seabass_stdlib.hbas"
+#include <bit32.hbas>
+#include <seabass_stdlib.hbas>
 /*
     Compile like this
     cbas toc.cbas

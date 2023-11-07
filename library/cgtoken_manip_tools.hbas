@@ -2,8 +2,8 @@
 
 #guard compiletime_tokenlist_manipulation_tools_DMHSW
 
-#include "cgwksht.hbas"
-#include "cgrdparse.hbas"
+#include <cgwksht.hbas>
+#include <cgrdparse.hbas>
 
 /*
     TOOLS FOR MANIPULATING TOKENS AND STRINGS

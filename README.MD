@@ -74,9 +74,8 @@ language constructs, and abstractions, but entirely new programming languages.
 Here is a minimal complete example program, which you can find under 'library/toc_fib_example.cbas'
 
 ```c
-#include "toc.hbas"
-#include "bit64.hbas"
-#include "seabass_stdlib.hbas"
+#include <bit64.hbas>
+#include <seabass_stdlib.hbas>
 
 
 /*

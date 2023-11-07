@@ -47,7 +47,7 @@
     only once giving a token list of arguments.
 */
 
-#include "cgtoken_manip_tools.hbas"
+#include <cgtoken_manip_tools.hbas>
 
 fn codegen cg_tbas_prototype_template_fn(cgstrll* in)->cgstrll*: return cast(cgstrll*)0 end
 
