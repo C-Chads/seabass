@@ -15,19 +15,19 @@ all: cbas_tcc cbas_clean cbas_dirty cbas_dbg cbas_pure cbas_dbg2
 all_not_tcc: cbas_clean cbas_dirty cbas_dbg cbas_pure cbas_dbg2
 	
 cbas_clean:
-	$(CC) $(CFLAGS_CLEAN) ctok.c parser.c data.c constexpr.c metaprogramming.c code_validator.c astexec.c astdump.c reflection_library.c -o cbas_clean -lm -g
+	$(CC) $(CFLAGS_CLEAN) ctok.c parser.c data.c constexpr.c metaprogramming.c code_validator.c astexec.c astdump.c reflection_library.c ast_opt.c -o cbas_clean -lm -g
 
 cbas_dbg:
-	$(CC) $(CFLAGS_DBG) ctok.c parser.c data.c constexpr.c metaprogramming.c code_validator.c astexec.c astdump.c reflection_library.c -o cbas_dbg -lm -g
+	$(CC) $(CFLAGS_DBG) ctok.c parser.c data.c constexpr.c metaprogramming.c code_validator.c astexec.c astdump.c reflection_library.c ast_opt.c -o cbas_dbg -lm -g
 
 cbas_dbg2:
-	$(CC) $(CFLAGS_DBGVG) ctok.c parser.c data.c constexpr.c metaprogramming.c code_validator.c astexec.c astdump.c reflection_library.c -o cbas_dbg2 -lm -g
+	$(CC) $(CFLAGS_DBGVG) ctok.c parser.c data.c constexpr.c metaprogramming.c code_validator.c astexec.c astdump.c reflection_library.c ast_opt.c -o cbas_dbg2 -lm -g
 
 cbas_tcc:
-	tcc -s ctok.c parser.c data.c constexpr.c metaprogramming.c code_validator.c astexec.c astdump.c reflection_library.c -o cbas_tcc -lm
+	tcc -s ctok.c parser.c data.c constexpr.c metaprogramming.c code_validator.c astexec.c astdump.c reflection_library.c ast_opt.c -o cbas_tcc -lm
 	
 cbas_pure:
-		$(CC) $(CFLAGS_PURE) ctok.c parser.c data.c constexpr.c metaprogramming.c code_validator.c astexec.c astdump.c reflection_library.c -o cbas_pure -lm -g
+		$(CC) $(CFLAGS_PURE) ctok.c parser.c data.c constexpr.c metaprogramming.c code_validator.c astexec.c astdump.c reflection_library.c ast_opt.c -o cbas_pure -lm -g
 	
 
 install: all_not_tcc

@@ -483,7 +483,7 @@
 "\tu8* cgen_udata\n"
 "end\n"
 "\n"
-"#define CG_STMT_MAX_EXPRESSIONS 8\n"
+"#define CG_STMT_MAX_EXPRESSIONS 3\n"
 "\n"
 "class cgstmt\n"
 "    noexport\n"

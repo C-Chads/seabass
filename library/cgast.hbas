@@ -483,14 +483,12 @@ class cgscope
 	u8* cgen_udata
 end
 
-#define CG_STMT_MAX_EXPRESSIONS 8
-
 class cgstmt
     noexport
 	cgscope* whereami
 	cgscope* myscope
 	u64 kind
-	u8*[CG_STMT_MAX_EXPRESSIONS] expressions
+	u8*[3] expressions
 	u64 nexpressions
 	cgstmt* referenced_loop
 	u64 symid
@@ -523,7 +521,6 @@ class cgexpr_node
 	u64 is_implied
 	u64 constint_propagator
 	u64 was_struct_var
-	char* referenced_label_name
 	char* symname
 	char* method_name
 	u8* cgen_udata 

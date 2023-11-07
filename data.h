@@ -200,7 +200,7 @@ enum{
 	NSTMT_TYPES
 };
 
-#define STMT_MAX_EXPRESSIONS 8
+#define STMT_MAX_EXPRESSIONS 3
 typedef struct stmt{
 	scope* whereami; /*scope this statement is in. Not owning.*/
 	scope* myscope; /*if this statement has a scope after it (while, for, if, etc) then this is where it goes.*/
@@ -310,7 +310,6 @@ typedef struct expr_node{
 	uint64_t is_implied;
 	uint64_t constint_propagator; //for propagating constant integers
 	uint64_t was_struct_var;
-	char* referenced_label_name;
 	char* symname;  /*if method: this is unmangled. */
 	char* method_name; /*if method: this is mangled. */
 	/*Code generator data.*/
@@ -329,8 +328,6 @@ static void expr_node_destroy(expr_node* ee){
 			free(ee->subnodes[i]);
 		}
 	}
-	if(ee->referenced_label_name)
-		free(ee->referenced_label_name);
 	if(ee->symname)
 		free(ee->symname);
 	*ee = expr_node_init();
