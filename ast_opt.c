@@ -88,15 +88,10 @@ static void* pdecode(void* p){
 
 #define REP(A) (A) = pdecode(A);
 
-#ifdef COMPILER_CLEANS_UP
+
 
 #define FREP(A) free(A); (A) = pdecode(A);
 
-#else
-
-#define FREP(A) (A) = pdecode(A);
-
-#endif
 
 static void plan_string(char* s){
     push_plan(s, strlen(s)+1);
@@ -113,9 +108,7 @@ static void write_lvars(symdecl* s, unsigned long n){
     symdecl_astexec* q = pdecode(s);
     for(unsigned long i = 0; i < n; i++){
         memcpy(q+i,s+i,sizeof(symdecl_astexec));
-#ifdef COMPILER_CLEANS_UP
         free(s[i].name); 
-#endif
         memcpy(q + i,s + i, sizeof(symdecl_astexec));
         
     }
