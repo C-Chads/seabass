@@ -913,7 +913,10 @@ method codegen cgstrll:dupelen(u64 len)->cgstrll*:
 	return retval;
 end
 
-#define cg_getast __builtin_get_ast
+
+fn codegen cg_getast()->cgast*:
+    return (cgast*)__builtin_get_ast()
+end
 
 //gets the value of the next variable.
 fn codegen cg_peek()->cgstrll*:
