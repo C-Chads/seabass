@@ -430,7 +430,6 @@ class cgtype
 	u64 is_function
 
 	char* membername
-	u8* cgen_udata
 end
 
 class cgtypedecl
@@ -442,7 +441,6 @@ class cgtypedecl
 	u64 is_noexport
 	u64 is_union
 	u64 algn
-	u8* cgen_data
 end
 
 class cgsymdecl
@@ -467,7 +465,6 @@ class cgsymdecl
 	u64 is_data
     u64 is_noexport
 	u64 VM_function_stackframe_placement
-	u8* cgen_udata
 end
 
 class cgscope
@@ -480,7 +477,6 @@ class cgscope
 	u64 is_loopbody
 	u64 walker_point
 	u64 stopped_at_scope1
-	u8* cgen_udata
 end
 
 class cgstmt
@@ -502,7 +498,6 @@ class cgstmt
 	i64 goto_scopediff
 	i64 goto_vardiff
 	i64 goto_where_in_scope
-	u8* cgen_udata
 end
 
 class cgexpr_node
@@ -523,7 +518,6 @@ class cgexpr_node
 	u64 was_struct_var
 	char* symname
 	char* method_name
-	u8* cgen_udata 
 end
 
 class cgtypedecl_oop_metadata

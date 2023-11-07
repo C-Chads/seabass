@@ -92,7 +92,6 @@ typedef struct type{
 	*/
 	char* membername; /*used for struct members and function arguments*/
 	/*Code generator data.*/
-	uint8_t* cgen_udata;
 }type;
 
 
@@ -108,7 +107,6 @@ typedef struct{
 	uint64_t is_union;
 	uint64_t algn; //alignment
 	/*Code generator data.*/
-	uint8_t* cgen_udata;
 } typedecl;
 
 
@@ -148,7 +146,6 @@ typedef struct{
 	uint64_t is_noexport;
 	/*Code generator data.*/
 	uint64_t VM_function_stackframe_placement; /*For local variables and function args, used by the AST executor*/
-	uint8_t* cgen_udata;
 } symdecl;
 
 
@@ -177,7 +174,6 @@ typedef struct scope{
 	/*Code generator data.*/
 	uint64_t walker_point; /*Where was the code validator?*/
 	uint64_t stopped_at_scope1; /*Did the validator stop at myscope or myscope2?*/
-	uint8_t* cgen_udata;
 } scope;
 
 enum{
@@ -230,7 +226,6 @@ typedef struct stmt{
 	int64_t goto_vardiff; /*How many local variables have to be popped to achieve the context switch?*/
 	int64_t goto_where_in_scope; /*What exact statement are we going to?*/
 	/*Code generator data.*/
-	uint8_t* cgen_udata;
 } stmt;
 
 enum{
@@ -313,7 +308,6 @@ typedef struct expr_node{
 	char* symname;  /*if method: this is unmangled. */
 	char* method_name; /*if method: this is mangled. */
 	/*Code generator data.*/
-	uint8_t* cgen_udata;
 }expr_node;
 
 static expr_node expr_node_init(){

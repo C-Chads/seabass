@@ -29,13 +29,6 @@ static void plan_lvar(symdecl* s){
 
 static void plan_expr_node(expr_node* e){
     plan_memory(sizeof(expr_node));
-    //these are not used...
-    /*
-    if(e->referenced_label_name)
-        plan_string(e->referenced_label_name);
-    if(e->method_name)
-        plan_string(e->method_name);
-    */
     if(e->kind == EXPR_STRINGLIT || e->kind == EXPR_BUILTIN_CALL)
         plan_string(e->symname);
     for(unsigned long i = 0; i < MAX_FARGS; i++)
