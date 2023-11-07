@@ -446,10 +446,12 @@ LIBMIN_FUNC_ATTRIBS LIBMIN_FLOAT matof(char*s){
 	if(*s == 'I' || *s == 'i')
 		if(s[1] == 'N' || s[1] == 'n')
 			if(s[2] == 'F' || s[2] == 'f'){
-				retval = 1.0;
+				retval = 1e10000000;
+				/*
 				for(LIBMIN_INT i = 0; i < 300; i++){
 				    retval = retval * 1000;
 				}
+				*/
                 if(isneg) retval = retval * -1;
                 return retval;
 			}	
@@ -530,9 +532,9 @@ LIBMIN_FUNC_ATTRIBS void mftoa(char* dest, LIBMIN_FLOAT value, LIBMIN_UINT after
 	if(value == 0) {*dest = '0'; dest++; goto end;}
 #ifndef LIBMIN_FLOAT_NO_INFINITY
     {
-    LIBMIN_FLOAT dd = 1;
+        LIBMIN_FLOAT dd = 1e100000000;
     //compute infinity...
-        for(int i = 0; i < 400; i++) dd = dd * 1024;
+        //for(int i = 0; i < 400; i++) dd = dd * 1024;
         
     	if(value == dd){
     		*dest = 'I'; dest++;
