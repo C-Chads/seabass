@@ -2009,6 +2009,11 @@ void expr_parse_ident(expr_node** targ){
     f.is_function = 0;
     f.symname = strdup(peek()->text);
     consume();
+    if(
+        peek()->data == TOK_OPAREN
+    ){
+        parse_error("ERROR! This identifer IS NOT a function name!");
+    }
     EXPR_PARSE_BOILERPLATE
     return;
 }
@@ -2382,6 +2387,8 @@ void expr_parse_terminal(expr_node** targ){
             return;
         }
     if(peek()->data == TOK_IDENT){
+        //emit a helpful eror
+        
         expr_parse_ident(targ);
         return;
     }
