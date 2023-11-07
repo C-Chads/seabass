@@ -186,6 +186,10 @@ static inline i32 __CBAS__getdirlist(unsigned char* dirname, unsigned char*** en
     return 0;
 }
 
+static inline size_t __CBAS__system(unsigned char* cmd){
+    return system((char*)cmd);
+}
+
 static inline TGT_UMAX __CBAS__get_stdout_handle(){
     return (TGT_UMAX)stdout;
 }
@@ -871,7 +875,7 @@ fn predecl noexport fopen(char* fname, char* mode)->TGT_UMAX; //returns a handle
 fn predecl noexport fclose(TGT_UMAX p)->int;
 
 fn predecl noexport getdirlist(char* dirname, char*** entry_listing, u32* nentries)->i32;
-
+fn predecl noexport system(char* cmd)->TGT_IMAX;
 
 
 fn predecl noexport get_stdout_handle()->TGT_UMAX;
