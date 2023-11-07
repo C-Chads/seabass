@@ -8,7 +8,7 @@ CFLAGS_CBAS= -O3 -fwrapv -s -lpthread -lm
 
 
 cbas_dirty:
-	$(CC) $(CFLAGS) ctok.c parser.c data.c constexpr.c metaprogramming.c code_validator.c astexec.c astdump.c reflection_library.c -o cbas_dirty -lm -g
+	$(CC) $(CFLAGS) ctok.c parser.c data.c constexpr.c metaprogramming.c code_validator.c astexec.c astdump.c reflection_library.c ast_opt.c -o cbas_dirty -lm -g
 	
 all: cbas_tcc cbas_clean cbas_dirty cbas_dbg cbas_pure cbas_dbg2
 

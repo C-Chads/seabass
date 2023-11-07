@@ -5,6 +5,7 @@
 #include "parser.h"
 #include "data.h"
 #include "metaprogramming.h"
+#include "ast_opt.h"
 
 /*
 	Code validator.
@@ -3349,7 +3350,7 @@ void validate_function(symdecl* funk){
 	//these steps must be repeated...
     check_label_declarations(funk->fbody);
 	walk_assign_lsym_gsym();
-
+    optimize_fn(funk);
 	/*
 		TODO: 
 		Fix big: You can shadow variables by accident...

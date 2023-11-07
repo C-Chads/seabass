@@ -3,7 +3,10 @@
 #define AST_OPT_H
 
 /*
-    Optimization for the AST....
+    ARENA ALLOCATION OPTIMIZATION FOR FUNCTIONS.
+    
+    Meant primarily to speed up compiletimes for SEABASS,
+    especially compiletime execution.
 */
 
 #include "data.h"
