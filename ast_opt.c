@@ -105,16 +105,18 @@ static void write_string(char* s){
     memcpy(pdecode(s),s,strlen(s)+1);
 }
 static void plan_lvars(symdecl* s, unsigned long n){
-    plan_array(s, sizeof(symdecl_astexec), n);
+    //plan_array(s, sizeof(symdecl_astexec), n);
+    //plan_array_new(s, sizeof(symdecl), sizeof(symdecl_astexec), n);
+    push_plan(s, sizeof(symdecl_astexec) * n);
 }
 static void write_lvars(symdecl* s, unsigned long n){
-    void* q = pdecode(s);
-    memcpy(q,s,n * sizeof(symdecl_astexec));
+    symdecl_astexec* q = pdecode(s);
     for(unsigned long i = 0; i < n; i++){
+        memcpy(q+i,s+i,sizeof(symdecl_astexec));
 #ifdef COMPILER_CLEANS_UP
         free(s[i].name); 
 #endif
-        memcpy((q + i * sizeof(symdecl_astexec)),s + i, sizeof(symdecl_astexec));
+        memcpy(q + i,s + i, sizeof(symdecl_astexec));
         
     }
 }
