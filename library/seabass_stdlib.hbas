@@ -1835,6 +1835,8 @@ fn inline itoa(char* dest, TGT_IMAX value):
     end
 end
 
+
+
 //emits double as string, (suppose to be safe for serialization)
 fn inline ftoa_n(char* dest, double v, i32 ndigits):
     TGT_UMAX is_neg = 0;
@@ -1940,4 +1942,11 @@ fn inline ftoa_n(char* dest, double v, i32 ndigits):
     end
 end
 
+
+fn inline ftoa(char* dest, double v):
+    //IMPL_README
+    //this needs to be changed if you alter the name mangling scheme...
+    //asm("\n    sprintf(__cbas_local_variable_mangled_name_dest, \"%f\", __cbas_local_variable_mangled_name_v);");
+    ftoa_n(dest, v, 54); //54 is probably good enough...
+end
 

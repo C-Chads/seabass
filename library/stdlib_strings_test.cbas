@@ -278,11 +278,66 @@ fn ftoa_test2():
     end
 end
 
+fn ftoa_test3():
+    while(1)
+        char[BUFSZ] buf
+        char[BUFSZ] buf2
+        char[BUFSZ] buf3
+        u64 qq = 0;
+        @prnt[
+            /   "Enter a string...."
+        ]
+        while(qq < (constexpri(BUFSZ)-1))
+            fread(get_stdin_handle(), buf+qq, 1)
+            if(buf[qq] == 'q' || buf[qq] == 'Q')
+                return
+            elif(buf[qq] == '\n' || buf[qq] == '!')
+                break
+            end
+            qq++
+        end
+        buf[qq] = 0;
+        //buffer is filled...
+        f64 g = atof(buf);
+        ftoa(buf2, g);
+        f64 h = atof(buf2);
+        ftoa(buf3, h);
+        f64 i = atof(buf3);
+        @prnt[
+            /   "buf is....."
+            /   (buf)
+            /   "buf2 is....."
+            /   (buf2)
+            /   "buf3 is....."
+            /   (buf3)
+        ]
+        if(g == h)
+            @prnt[/"IDENTICAL!"]
+        else
+            @prnt[/"NOT IDENTICAL!"]
+        end
+        if(buf2 strneq buf3)
+            //investigate why!
+            i64 i
+            for(i = 0, buf2[i] == buf3[i], i++) end
+            @prnt[
+                /"<<FAIL>>"
+                /"Here is your problem:"
+                /(buf2 + i)
+                /(buf3 + i)
+                /"At location:"
+                /int(i)
+            ]
+        end
+    end
+end
+
 fn pub main()->i32:
     strtest1();
     pstrtest1();
     ftoa_test();
     ftoa_test2();
+    ftoa_test3();
 end
 
 /*
