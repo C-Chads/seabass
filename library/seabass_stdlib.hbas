@@ -21,7 +21,8 @@ data codegen string SEABASS_STDLIB_PREFIX "
 #include <time.h>
 #include <math.h>
 #include <errno.h>
-
+#include <sys/types.h>
+#include <dirent.h>
 
 #ifndef __APPLE__
 #include <pthread.h>
@@ -164,6 +165,25 @@ static inline TGT_UMAX __CBAS__fopen(unsigned char* fname, unsigned char* mode){
 
 static inline i32 __CBAS__fclose(TGT_UMAX p){
     return fclose((FILE*)p);
+}
+
+/*fn predecl noexport getdirlist(char* dirname, char*** entry_listing, u32* nentries)->i32;*/
+static inline i32 __CBAS__getdirlist(unsigned char* dirname, unsigned char*** entry_listing, u32* nentries){
+    DIR* dir;
+    struct dirent* de;
+    dir = opendir((char*)dirname);
+    if(dir == NULL) return 1; //error
+    nentries[0] = 0;
+    entry_listing[0] = 0;
+    while(1){
+        de = readdir(dir);
+        if(de == NULL) break;
+        //it's valid...
+        entry_listing[0] = realloc(entry_listing[0], sizeof(void*) * ++(nentries[0]));
+        entry_listing[0][nentries[0]-1] = strdup(de->d_name);
+    }
+    closedir(dir);
+    return 0;
 }
 
 static inline TGT_UMAX __CBAS__get_stdout_handle(){
@@ -849,6 +869,9 @@ fn predecl noexport pure strlen(char* s)->TGT_UMAX;
 
 fn predecl noexport fopen(char* fname, char* mode)->TGT_UMAX; //returns a handle...
 fn predecl noexport fclose(TGT_UMAX p)->int;
+
+fn predecl noexport getdirlist(char* dirname, char*** entry_listing, u32* nentries)->i32;
+
 
 
 fn predecl noexport get_stdout_handle()->TGT_UMAX;

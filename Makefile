@@ -72,6 +72,10 @@ string_stdlib_test:
 	cbas stdlib_strings_test.cbas && \
 	mv auto_out.c ../
 	$(CC) $(CFLAGS_CBAS) auto_out.c -o strtest -lpthread -lm 
+	
+dirlist:
+	cbas library/dirlist.cbas
+	$(CC) $(CFLAGS_CBAS) auto_out.c -o dirlist -lpthread -lm 
 
 bigunit_compil_test:
 	cd library && \
@@ -100,4 +104,4 @@ push: clean
 	git push
 
 clean:
-	rm -f *.exe *.out *.bin *.o library/*.exe library/*.out library/*.bin library/*.o library/auto_out.c cbas cbas_dirty cbas_pure cbas_dbg cbas_dbg2 cbas_clean cbas_tcc auto_out.c toc_test fib strtest bigunit
+	rm -f *.exe *.out *.bin *.o library/*.exe library/*.out library/*.bin library/*.o library/auto_out.c cbas cbas_dirty cbas_pure cbas_dbg cbas_dbg2 cbas_clean cbas_tcc auto_out.c toc_test fib strtest bigunit dirlist
