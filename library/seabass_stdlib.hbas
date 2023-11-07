@@ -166,6 +166,13 @@ static inline TGT_UMAX __CBAS__fopen(unsigned char* fname, unsigned char* mode){
 static inline i32 __CBAS__fclose(TGT_UMAX p){
     return fclose((FILE*)p);
 }
+static inline TGT_UMAX __CBAS__popen(unsigned char* fname, unsigned char* mode){
+    return (TGT_UMAX)popen((char*)fname, (char*)mode);
+}
+
+static inline i32 __CBAS__pclose(TGT_UMAX p){
+    return pclose((FILE*)p);
+}
 
 /*fn predecl noexport getdirlist(char* dirname, char*** entry_listing, u32* nentries)->i32;*/
 static inline i32 __CBAS__getdirlist(unsigned char* dirname, unsigned char*** entry_listing, u32* nentries){
@@ -873,6 +880,9 @@ fn predecl noexport pure strlen(char* s)->TGT_UMAX;
 
 fn predecl noexport fopen(char* fname, char* mode)->TGT_UMAX; //returns a handle...
 fn predecl noexport fclose(TGT_UMAX p)->int;
+
+fn predecl noexport popen(char* fname, char* mode)->TGT_UMAX; //returns a handle...
+fn predecl noexport pclose(TGT_UMAX p)->int;
 
 fn predecl noexport getdirlist(char* dirname, char*** entry_listing, u32* nentries)->i32;
 fn predecl noexport system(char* cmd)->TGT_IMAX;
