@@ -84,6 +84,12 @@ bigunit_compil_test:
 	mv auto_out.c ../
 	$(CC) $(CFLAGS_CBAS) auto_out.c -o bigunit -lpthread -lm 
 
+dirty_bigunit_compil_test:
+	cd library && \
+	cbas_dirty toc_test_lots_of_functions.cbas && \
+	mv auto_out.c ../
+	$(CC) $(CFLAGS_CBAS) auto_out.c -o bigunit -lpthread -lm 
+
 uninstall:
 	rm -f /usr/local/bin/cbas_dirty
 	rm -f /usr/local/bin/cbas_clean
