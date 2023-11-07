@@ -119,272 +119,272 @@ codegen int CG_NSTMT_TYPES;
 
 
 /*
-	String library code for compiletime cbas code.
+    String library code for compiletime cbas code.
 */
 
 class cgstr
     noexport
-	char* s
+    char* s
 end
 
 fn codegen cgstrcpy(char* s, char* s1):
-	while(1)
-		s[0] = s1[0];
-		if(s1[0] == 0) return; end
-		s++;s1++;
-	end
+    while(1)
+        s[0] = s1[0];
+        if(s1[0] == 0) return; end
+        s++;s1++;
+    end
 end
 
 fn codegen cgisdigit(char c)->u8:
-	if(c >= '0' && c <= '9') return 1; end
-	return 0;
+    if(c >= '0' && c <= '9') return 1; end
+    return 0;
 end
 
 fn codegen cgisalpha(char c)->u8:
-	if(c >= 'a' && c <= 'z') return 1; end
-	if(c >= 'A' && c <= 'Z') return 1; end
-	return 0;
+    if(c >= 'a' && c <= 'z') return 1; end
+    if(c >= 'A' && c <= 'Z') return 1; end
+    return 0;
 end
 
 method codegen pure cgstr:isempty()->u8:
-	if(this.s == cast(char*)0)
-		return 1; 
-	end
-	if(this.s[0] == 0)
-		return 1;
-	end
-	return 0;
+    if(this.s == cast(char*)0)
+        return 1; 
+    end
+    if(this.s[0] == 0)
+        return 1;
+    end
+    return 0;
 end
 
 method codegen pure cgstr:isnull()->u8:
-	if(this.s == cast(char*)0)
-		return 1; 
-	end
-	return 0;
+    if(this.s == cast(char*)0)
+        return 1; 
+    end
+    return 0;
 end
 
 method codegen pure cgstr:len()->u64:
-	u64 i
-	i = 0;
+    u64 i
+    i = 0;
 
-	//necessary to prevent segfaults
-	if(this:isempty())
-		return 0; 
-	end
+    //necessary to prevent segfaults
+    if(this:isempty())
+        return 0; 
+    end
 
-	//count characters
-	for(i=0, this.s[i], i++) end
-	
-	return i;
+    //count characters
+    for(i=0, this.s[i], i++) end
+    
+    return i;
 end
 
 
 
 method codegen cgstr:print():
-	__builtin_puts(this.s);
+    __builtin_puts(this.s);
 end
 
 method codegen cgstr:start():
-	this.s = cast(char*)0;
+    this.s = cast(char*)0;
 end
 
 
 
 method codegen cgstr:free():
-	__builtin_free(this.s);
-	this.s = cast(char*)0;
+    __builtin_free(this.s);
+    this.s = cast(char*)0;
 end
 
 method codegen pure cgstr:prefixed(cgstr o)->u8: //is THIS prefixed by o?
-	int i
-	if(o:isempty()) return 1; end //yes, we are prefixed by the null string.
-	
-	if(this:isempty()) return 0; end //we are not prefixed by a non-empty string because we are empty.
-	
-	for(i = 0,o.s[i] neq 0,i++)
-		if(this.s[i] neq o.s[i]) //notice that this actually handles this.s[i] == 0....
-			return 0;
-		end
-	end
-	
-	//we are prefixed by this string because we reached the end of it!
-	return 1;
+    int i
+    if(o:isempty()) return 1; end //yes, we are prefixed by the null string.
+    
+    if(this:isempty()) return 0; end //we are not prefixed by a non-empty string because we are empty.
+    
+    for(i = 0,o.s[i] neq 0,i++)
+        if(this.s[i] neq o.s[i]) //notice that this actually handles this.s[i] == 0....
+            return 0;
+        end
+    end
+    
+    //we are prefixed by this string because we reached the end of it!
+    return 1;
 end
 
 method codegen pure cgstr:postfixed(cgstr o)->u8: //is THIS postfixed by o?
-	sqword i
-	cgstr h
-	sqword tlen //I'm doing this over and over again... Note to self: automate the process of creating tlen and olen...
-	sqword olen
-	
-	if(o:isempty()) return 1; end //yes, we are postfixed by the null string.
-	if(this:isempty()) return 0; end //we are not postfixed by a non-empty string because we are empty.
-	tlen = this:len();
-	olen = o:len();
-	if(tlen < olen) return 0; end //we cannot be postfixed if we are shorter...
-	h.s = this.s + (tlen - olen); //skip the first part of the string
+    sqword i
+    cgstr h
+    sqword tlen //I'm doing this over and over again... Note to self: automate the process of creating tlen and olen...
+    sqword olen
+    
+    if(o:isempty()) return 1; end //yes, we are postfixed by the null string.
+    if(this:isempty()) return 0; end //we are not postfixed by a non-empty string because we are empty.
+    tlen = this:len();
+    olen = o:len();
+    if(tlen < olen) return 0; end //we cannot be postfixed if we are shorter...
+    h.s = this.s + (tlen - olen); //skip the first part of the string
 
-	return h:prefixed(o);
+    return h:prefixed(o);
 end
 
 method codegen cgstr:invert():
-	uqword e;
-	uqword i;
-	i = 0;
-	e = this:len()-1;
-	for(0, i < e, i++ | e--)
-		char f
-		f = this.s[i];
-		this.s[i] = this.s[e];
-		this.s[e] = f;
-	end
+    uqword e;
+    uqword i;
+    i = 0;
+    e = this:len()-1;
+    for(0, i < e, i++ | e--)
+        char f
+        f = this.s[i];
+        this.s[i] = this.s[e];
+        this.s[e] = f;
+    end
 end
 
 fn codegen pure cgislower(char a)->u8:
-	if(a <= 'z')
-		if(a >= 'a')
-			return 1;
-		end
-	end
-	return 0;
+    if(a <= 'z')
+        if(a >= 'a')
+            return 1;
+        end
+    end
+    return 0;
 end
 
 fn codegen pure cgisupper(char a)->u8:
-	if(a <= 'Z')
-		if(a >= 'A')
-			return 1;
-		end
-	end
-	return 0;
+    if(a <= 'Z')
+        if(a >= 'A')
+            return 1;
+        end
+    end
+    return 0;
 end
 
 fn codegen pure cgtoupper(char a)->char:
-	u8 diff1
-	u8 diff2
-	u8 isl
-	isl = cgislower(a);
-	diff1 = isl * 'a';
-	diff2 = isl * 'A';
-	a = a - diff1;
-	a = a + diff2;
-	return a;
+    u8 diff1
+    u8 diff2
+    u8 isl
+    isl = cgislower(a);
+    diff1 = isl * 'a';
+    diff2 = isl * 'A';
+    a = a - diff1;
+    a = a + diff2;
+    return a;
 end
 
 fn codegen pure cgtolower(char a)->char:
-	u8 diff1
-	u8 diff2
-	u8 ish
-	ish = cgisupper(a);
-	diff1 = ish * 'A';
-	diff2 = ish * 'a';
-	a = a - diff1;
-	a = a + diff2;
-	return a;
+    u8 diff1
+    u8 diff2
+    u8 ish
+    ish = cgisupper(a);
+    diff1 = ish * 'A';
+    diff2 = ish * 'a';
+    a = a - diff1;
+    a = a + diff2;
+    return a;
 end
 
 
 method codegen cgstr:transform(char* input_fun):
-	uqword i
-	uqword tlen
-	tlen = this:len();
-	for(i = 0, i < tlen, i++)
-		this.s[i] = callfnptr[cgtoupper](input_fun)(this.s[i]);
-	end
-	return;
+    uqword i
+    uqword tlen
+    tlen = this:len();
+    for(i = 0, i < tlen, i++)
+        this.s[i] = callfnptr[cgtoupper](input_fun)(this.s[i]);
+    end
+    return;
 end
 
 method codegen cgstr:toupper():
-	uqword i
-	uqword tlen
-	tlen = this:len();
-	for(i = 0, i < tlen, i++)
-		this.s[i] = cgtoupper(this.s[i]);
-	end
+    uqword i
+    uqword tlen
+    tlen = this:len();
+    for(i = 0, i < tlen, i++)
+        this.s[i] = cgtoupper(this.s[i]);
+    end
 end
 
 method codegen cgstr:tolower():
-	uqword i
-	uqword tlen
-	tlen = this:len();
-	for(i = 0, i < tlen, i++)
-		this.s[i] = cgtolower(this.s[i]);
-	end
+    uqword i
+    uqword tlen
+    tlen = this:len();
+    for(i = 0, i < tlen, i++)
+        this.s[i] = cgtolower(this.s[i]);
+    end
 end
 
 method codegen pure cgstr:compare(cgstr o)->i16: //- for lt, 0 for eq, + for gt
-	uqword i
-	uqword tlen
-	uqword olen
-	tlen = this:len();
-	olen = o:len();
-	if(this.s == o.s) return 0; end//they are the same string. Conveniently, this also tests for the null case.
-	
-	for(i = 0, 1, i++)
-		if(this.s[i] == 0)
-			if(o.s[i] == 0)
-				return 0;;; //equals!
-			end
-		end
-		if(this.s[i] != o.s[i])
-			return cast(i16)(cast(u16)this.s[i] - cast(u16)o.s[i]);
-		end
-	end
+    uqword i
+    uqword tlen
+    uqword olen
+    tlen = this:len();
+    olen = o:len();
+    if(this.s == o.s) return 0; end//they are the same string. Conveniently, this also tests for the null case.
+    
+    for(i = 0, 1, i++)
+        if(this.s[i] == 0)
+            if(o.s[i] == 0)
+                return 0;;; //equals!
+            end
+        end
+        if(this.s[i] != o.s[i])
+            return cast(i16)(cast(u16)this.s[i] - cast(u16)o.s[i]);
+        end
+    end
 
-	return 0;
+    return 0;
 end
 
 method codegen pure cgstr:find(cgstr o)->i64:
-	u64 tlen 
-	u64 olen
-	u64 i
+    u64 tlen 
+    u64 olen
+    u64 i
 
-	if(o:isempty()) return 0; end     //we can find the empty string in ourselves.
-	if(this:isempty()) return -1; end //we cannot find anything in ourselves because we are empty.
+    if(o:isempty()) return 0; end     //we can find the empty string in ourselves.
+    if(this:isempty()) return -1; end //we cannot find anything in ourselves because we are empty.
 
-	tlen = this:len(); olen = o:len();
-	if(olen > tlen) return -1; end    //we cannot find a longer string than ourselves in ourself.
+    tlen = this:len(); olen = o:len();
+    if(olen > tlen) return -1; end    //we cannot find a longer string than ourselves in ourself.
 
 
-	for(i = 0, tlen >= olen, i++ | tlen--)
-		cgstr q
-		q.s = this.s + i;
-		if(q:prefixed(o))
-			return i;
-		end
-	end
+    for(i = 0, tlen >= olen, i++ | tlen--)
+        cgstr q
+        q.s = this.s + i;
+        if(q:prefixed(o))
+            return i;
+        end
+    end
 
-	//cannot find it!
-	return -1;
+    //cannot find it!
+    return -1;
 end
 
 method codegen cgstr:add(cgstr* o):
-	
-	char* s_new
-	u64 tlen
-	u64 olen
-	tlen = this:len();
-	olen = o:len();
+    
+    char* s_new
+    u64 tlen
+    u64 olen
+    tlen = this:len();
+    olen = o:len();
 
-	/*
-		__builtin_puts("I am:");
-		__builtin_puts(this.s);
-		__builtin_puts("o is:");
-		__builtin_puts(o.s);
-		__builtin_puts("______________");
-	*/
-	
-	s_new = __builtin_malloc(tlen + olen + 1);
-	
-	if(tlen)
-		__builtin_memcpy(s_new, this.s, tlen);
-	end
-	if(olen)
-		__builtin_memcpy(s_new + tlen, o.s, olen);
-	end
-	
-	s_new[tlen+olen] = 0;
-	this:free();
-	this.s = s_new;
+    /*
+        __builtin_puts("I am:");
+        __builtin_puts(this.s);
+        __builtin_puts("o is:");
+        __builtin_puts(o.s);
+        __builtin_puts("______________");
+    */
+    
+    s_new = __builtin_malloc(tlen + olen + 1);
+    
+    if(tlen)
+        __builtin_memcpy(s_new, this.s, tlen);
+    end
+    if(olen)
+        __builtin_memcpy(s_new + tlen, o.s, olen);
+    end
+    
+    s_new[tlen+olen] = 0;
+    this:free();
+    this.s = s_new;
 end
 
 method codegen cgstr:addstr(char* s):
@@ -397,7 +397,7 @@ end
 method predecl codegen cgstr:fromstr(char* s);
 
 method codegen cgstr:fromcgstr(cgstr o):
-	this:fromstr(o.s);
+    this:fromstr(o.s);
 end
 
 method codegen cgstr:dupe()->cgstr*:
@@ -407,115 +407,115 @@ method codegen cgstr:dupe()->cgstr*:
 end
 
 method codegen cgstr:fromstr(char* s):
-	cgstr q
-	u64 l
-	
-	q.s = s;
-	l = q:len();
-	this.s = __builtin_malloc(l+1);
-	__builtin_memcpy(this.s, s, l+1);
-	//this.s[l] = 0; //this was done automatically above...
-	return;
+    cgstr q
+    u64 l
+    
+    q.s = s;
+    l = q:len();
+    this.s = __builtin_malloc(l+1);
+    __builtin_memcpy(this.s, s, l+1);
+    //this.s[l] = 0; //this was done automatically above...
+    return;
 end
 
 class cgtype
     noexport
-	u64 basetype
-	u64 pointerlevel
-	u64 arraylen
-	u64 structid
-	u64 is_lvalue
+    u64 basetype
+    u64 pointerlevel
+    u64 arraylen
+    u64 structid
+    u64 is_lvalue
 
-	u64 funcid
-	u64 is_function
+    u64 funcid
+    u64 is_function
 
-	char* membername
+    char* membername
 end
 
 class cgtypedecl
     noexport
-	char* name
-	cgtype* members
-	u64 nmembers
-	u64 is_incomplete
-	u64 is_noexport
-	u64 is_union
-	u64 algn
+    char* name
+    cgtype* members
+    u64 nmembers
+    u64 is_incomplete
+    u64 is_noexport
+    u64 is_union
+    u64 algn
 end
 
 class cgsymdecl
     noexport
-	cgtype t
-	char* name
-	cgtype*[CG_MAX_FARGS] fargs
-	u64 nargs
-	u8* fbody
-	u8* cdata
-	u64 cdata_sz
-	u64 is_pub
-	u64 is_incomplete
-	u64 is_codegen
-	u64 is_impure
-	u64 is_pure
-	u64 is_inline
-	u64 is_atomic
-	u64 is_volatile
-	u64 is_impure_globals_or_asm
-	u64 is_impure_uses_incomplete_symbols
+    cgtype t
+    char* name
+    cgtype*[CG_MAX_FARGS] fargs
+    u64 nargs
+    u8* fbody
+    u8* cdata
+    u64 cdata_sz
+    u64 is_pub
+    u64 is_incomplete
+    u64 is_codegen
+    u64 is_impure
+    u64 is_pure
+    u64 is_inline
+    u64 is_atomic
+    u64 is_volatile
+    u64 is_impure_globals_or_asm
+    u64 is_impure_uses_incomplete_symbols
     u64 is_data
     u64 is_noexport
 end
 
 class cgscope
     noexport
-	cgsymdecl* syms
-	u64 nsyms
-	u8* stmts
-	u64 nstmts
-	u64 is_fbody
-	u64 is_loopbody
-	u64 walker_point
-	u64 stopped_at_scope1
+    cgsymdecl* syms
+    u64 nsyms
+    u8* stmts
+    u64 nstmts
+    u64 is_fbody
+    u64 is_loopbody
+    u64 walker_point
+    u64 stopped_at_scope1
 end
 
 class cgstmt
     noexport
-	cgscope* whereami
-	cgscope* myscope
-	u64 kind
-	u8*[3] expressions
-	u64 nexpressions
-	cgstmt* referenced_loop
-	u64 symid
-	char* referenced_label_name
-	char** switch_label_list
-	u64* switch_label_indices
-	u64 switch_nlabels
-	i64 goto_scopediff
-	i64 goto_vardiff
-	i64 goto_where_in_scope
-	u64 linenum
-	u64 colnum
-	char* filename
+    cgscope* whereami
+    cgscope* myscope
+    u64 kind
+    u8*[3] expressions
+    u64 nexpressions
+    cgstmt* referenced_loop
+    u64 symid
+    char* referenced_label_name
+    char** switch_label_list
+    u64* switch_label_indices
+    u64 switch_nlabels
+    i64 goto_scopediff
+    i64 goto_vardiff
+    i64 goto_where_in_scope
+    u64 linenum
+    u64 colnum
+    char* filename
 end
 
 class cgexpr_node
     noexport
-	cgtype t
-	u64 kind
-	double fdata
-	u64 idata
-	cgexpr_node*[CG_MAX_FARGS] subnodes
-	u64 symid
-	u64 fnptr_nargs
-	u64 constint_propagator
-	char* symname
-	char* method_name
-	u64 is_global_variable
-	u64 is_function
-	u64 is_implied
-	u64 was_struct_var
-	cgtype type_to_get_size_of
+    cgtype t
+    u64 kind
+    double fdata
+    u64 idata
+    cgexpr_node*[CG_MAX_FARGS] subnodes
+    u64 symid
+    u64 fnptr_nargs
+    u64 constint_propagator
+    char* symname
+    char* method_name
+    u64 is_global_variable
+    u64 is_function
+    u64 is_implied
+    u64 was_struct_var
+    cgtype type_to_get_size_of
 end
 
 class cgtypedecl_oop_metadata
@@ -528,20 +528,20 @@ end
 
 class cgast
     noexport
-	cgtypedecl** type_table
-	cgsymdecl*** symbol_table
-	cgtypedecl_oop_metadata** oop_metadata;
-	cgscope*** scopestack
-	cgstmt*** loopstack
-	
-	u64* active_function
-	u64* ntypedecls
-	u64* nsymbols
-	u64* nscopes
-	u64* nloops
+    cgtypedecl** type_table
+    cgsymdecl*** symbol_table
+    cgtypedecl_oop_metadata** oop_metadata;
+    cgscope*** scopestack
+    cgstmt*** loopstack
+    
+    u64* active_function
+    u64* ntypedecls
+    u64* nsymbols
+    u64* nscopes
+    u64* nloops
     u64 target_word
-	u64 signed_target_word
-	u64 target_max_float
+    u64 signed_target_word
+    u64 target_max_float
 end
 
 class cg_parser_cache noexport
@@ -594,14 +594,14 @@ end
 
 class cgstrll
     noexport
-	char* text
-	u64 id
-	u64 linenum
-	u64 colnum
-	char* filename
-	u8* d //data, but data is a keyword in seabass.... I 
-	//probably should have thought of that, huh?
-	cgstrll* right
+    char* text
+    u64 id
+    u64 linenum
+    u64 colnum
+    char* filename
+    u8* d //data, but data is a keyword in seabass.... I 
+    //probably should have thought of that, huh?
+    cgstrll* right
 end
 
 
@@ -627,33 +627,33 @@ end
 
 method codegen cgstrll.dupe()->cgstrll*:
     /*
-    	cgstrll* retval
-    	retval = cast(cgstrll*)__builtin_malloc(sizeof(cgstrll));
-    	retval := this;
-    	if(cast(u64)this.text)
-    		retval.text = __builtin_strdup(this.text);
-    	end
-    	retval.right = cast(cgstrll*)0;
-    	return retval;
-	*/
-	return cast(cgstrll*)__builtin_strll_dupe(cast(char*)this);
+        cgstrll* retval
+        retval = cast(cgstrll*)__builtin_malloc(sizeof(cgstrll));
+        retval := this;
+        if(cast(u64)this.text)
+            retval.text = __builtin_strdup(this.text);
+        end
+        retval.right = cast(cgstrll*)0;
+        return retval;
+    */
+    return cast(cgstrll*)__builtin_strll_dupe(cast(char*)this);
 end
 
 method codegen cgstrll.dupell()->cgstrll*:
-	/*
-    	cgstrll* retval
-    	cgstrll* rwalk
+    /*
+        cgstrll* retval
+        cgstrll* rwalk
 
-    	retval = this:dupe();
-    	this = this.right;
-    	rwalk = retval;
-    	for(0, this != cast(cgstrll*)0, this = this.right)
-    		rwalk.right = this:dupe();
-    		rwalk = rwalk.right;
-    	end
-    	return retval;
-	*/
-	return cast(cgstrll*)__builtin_strll_dupell(cast(char*)this);
+        retval = this:dupe();
+        this = this.right;
+        rwalk = retval;
+        for(0, this != cast(cgstrll*)0, this = this.right)
+            rwalk.right = this:dupe();
+            rwalk = rwalk.right;
+        end
+        return retval;
+    */
+    return cast(cgstrll*)__builtin_strll_dupell(cast(char*)this);
 end
 
 
@@ -801,105 +801,105 @@ end
 
 
 method codegen cgstrll:debug_print():
-	:top
-	if(this == 0)
-		return;
-	end
-	if(this.d == CG_TOK_STRING)
-	    __builtin_puts("~~~string:");
-		__builtin_puts(this.text);
-	    __builtin_puts("~~~");
-	elif(cast(uptr)this.text)
-		__builtin_puts(this.text);
-	elif(this.d == CG_TOK_OBRACK)
-		__builtin_puts("[");
-	elif(this.d == CG_TOK_CBRACK)
-		__builtin_puts("]");
-	elif(this.d == CG_TOK_OPAREN)
-		__builtin_puts("(");
-	elif(this.d == CG_TOK_CPAREN)
-		__builtin_puts(")");
-	elif(this.d == CG_TOK_OCB)
-		__builtin_puts("{");
-	elif(this.d == CG_TOK_CCB)
-		__builtin_puts("}");
-	elif(this.d == CG_TOK_SEMIC)
-		__builtin_puts(";");
-	elif(this.d == CG_TOK_COMMA)
-		__builtin_puts(",");
-	end
-	this = this.right;
-	goto top
+    :top
+    if(this == 0)
+        return;
+    end
+    if(this.d == CG_TOK_STRING)
+        __builtin_puts("~~~string:");
+        __builtin_puts(this.text);
+        __builtin_puts("~~~");
+    elif(cast(uptr)this.text)
+        __builtin_puts(this.text);
+    elif(this.d == CG_TOK_OBRACK)
+        __builtin_puts("[");
+    elif(this.d == CG_TOK_CBRACK)
+        __builtin_puts("]");
+    elif(this.d == CG_TOK_OPAREN)
+        __builtin_puts("(");
+    elif(this.d == CG_TOK_CPAREN)
+        __builtin_puts(")");
+    elif(this.d == CG_TOK_OCB)
+        __builtin_puts("{");
+    elif(this.d == CG_TOK_CCB)
+        __builtin_puts("}");
+    elif(this.d == CG_TOK_SEMIC)
+        __builtin_puts(";");
+    elif(this.d == CG_TOK_COMMA)
+        __builtin_puts(",");
+    end
+    this = this.right;
+    goto top
 end
 
 
 method codegen cgstrll:push_end(cgstrll other):
-	while(this.right != cast(cgstrll*)0)
-		this = this.right;
-	end
-	this.right = other;
-	return;
+    while(this.right != cast(cgstrll*)0)
+        this = this.right;
+    end
+    this.right = other;
+    return;
 end
 
 fn codegen cgtok_push_stream(cgstrll pushme):
-	cgstrll** n
-	cgstrll* pretender
+    cgstrll** n
+    cgstrll* pretender
 
-	n  = cast(cgstrll**)__builtin_getnext();
-	pretender = pushme;
-	while(pretender.right  != cast(cgstrll*)0)
-		pretender = pretender.right;
-	end
-	pretender.right = n[0];
-	n[0] = pushme; //set next pointer.
+    n  = cast(cgstrll**)__builtin_getnext();
+    pretender = pushme;
+    while(pretender.right  != cast(cgstrll*)0)
+        pretender = pretender.right;
+    end
+    pretender.right = n[0];
+    n[0] = pushme; //set next pointer.
 end
 
 //frees the entire list including the root node.
 method codegen cgstrll:freelist():
-	cgstrll* r
-	while(1)
-		if(this == 0)
-			return;
-		end
-		
-		r = this.right;
-		if(this.text != 0)
-			__builtin_free(this.text);
-		end
-		__builtin_free(cast(u8*)this);
-		this = r;
-	end
+    cgstrll* r
+    while(1)
+        if(this == 0)
+            return;
+        end
+        
+        r = this.right;
+        if(this.text != 0)
+            __builtin_free(this.text);
+        end
+        __builtin_free(cast(u8*)this);
+        this = r;
+    end
 end
 
 method codegen cgstrll:dupelen(u64 len)->cgstrll*:
-	cgstrll* retval
-	cgstrll* current
-	cgstrll* tt
-	tt = this;
+    cgstrll* retval
+    cgstrll* current
+    cgstrll* tt
+    tt = this;
 
-	retval = cast(cgstrll*)0;
-	//return null if they asked for nothing...
-	if(len == 0) 
-		return retval; 
-	end
-	
-	
-	retval = tt:dupe();//duplicate ourselves.
-	
-	len--; 			     //subtract from len!
-	current = retval;    //set up current.
-	tt = tt.right;   //traverse right
+    retval = cast(cgstrll*)0;
+    //return null if they asked for nothing...
+    if(len == 0) 
+        return retval; 
+    end
+    
+    
+    retval = tt:dupe();//duplicate ourselves.
+    
+    len--; 			     //subtract from len!
+    current = retval;    //set up current.
+    tt = tt.right;   //traverse right
 
-	while(len)
-		if(tt == cast(cgstrll*)0)
-			return retval;
-		end
-		current.right = tt:dupe();
-		tt = tt.right;
-		current = current.right;
-		len--;
-	end
-	return retval;
+    while(len)
+        if(tt == cast(cgstrll*)0)
+            return retval;
+        end
+        current.right = tt:dupe();
+        tt = tt.right;
+        current = current.right;
+        len--;
+    end
+    return retval;
 end
 
 
@@ -909,35 +909,35 @@ end
 
 //gets the value of the next variable.
 fn codegen cg_peek()->cgstrll*:
-	return cast(cgstrll*)__builtin_peek();
+    return cast(cgstrll*)__builtin_peek();
 end
 
 //allows us to assign next.
 fn codegen cg_getnext()->cgstrll**:
-	return cast(cgstrll**)__builtin_getnext();
+    return cast(cgstrll**)__builtin_getnext();
 end
 
 
 
 fn codegen cg_token_dupe_skip(u64 len)->cgstrll*:
-	cgstrll* retval
-	cgstrll* walker
-	retval = cg_peek():dupelen(len);
-	for(
-		walker = retval, 
-		walker != cast(cgstrll*)0, 
-		walker = walker.right
-	)
-		__builtin_consume();
-	end
+    cgstrll* retval
+    cgstrll* walker
+    retval = cg_peek():dupelen(len);
+    for(
+        walker = retval, 
+        walker != cast(cgstrll*)0, 
+        walker = walker.right
+    )
+        __builtin_consume();
+    end
 
-	return retval;
+    return retval;
 end
 
 //Assumes that you pass it a list 
 fn codegen cg_tok_arglist_remove_brackets(cgstrll* in)->cgstrll*:
-	cgstrll* retval
-	cgstrll* walker
+    cgstrll* retval
+    cgstrll* walker
     //check if this even is bracketed.
     
     if(in.d != CG_TOK_OBRACK)
@@ -950,156 +950,156 @@ fn codegen cg_tok_arglist_remove_brackets(cgstrll* in)->cgstrll*:
             return cast(cgstrll*)0;
         end
     end
-	//remove the first element
-	retval = in.right;
-	if(in.text != 0)
-		__builtin_free(in.text);
-		in.text = cast(char*)0;
-	end
-	__builtin_free(cast(u8*)in);
-	in = cast(cgstrll*)0;
+    //remove the first element
+    retval = in.right;
+    if(in.text != 0)
+        __builtin_free(in.text);
+        in.text = cast(char*)0;
+    end
+    __builtin_free(cast(u8*)in);
+    in = cast(cgstrll*)0;
 
-	//Travel to the next-to-last element (so the last element is to our right.)
-	walker = retval;
-	while(1)
-	    /*
-		if(walker.right == cast(cgstrll*)0) 
-			__builtin_puts("ERROR! cg_tok_arglist_remove_brackets passed invalid arglist.");
-			__builtin_puts("You may not pass an empty arglist!");
-			__builtin_exit(1);
-	 	end
-	 	*/
-		if(walker.right.right == cast(cgstrll*)0)
-			break; 
-		end
-		walker = walker.right;
-	end
-	
-	//pop walker's right.
-	if(walker.right.text != 0)
-		__builtin_free(walker.right.text);
-	end
-	__builtin_free(cast(u8*)walker.right);
-	walker.right = cast(cgstrll*)0;
+    //Travel to the next-to-last element (so the last element is to our right.)
+    walker = retval;
+    while(1)
+        /*
+        if(walker.right == cast(cgstrll*)0) 
+            __builtin_puts("ERROR! cg_tok_arglist_remove_brackets passed invalid arglist.");
+            __builtin_puts("You may not pass an empty arglist!");
+            __builtin_exit(1);
+         end
+         */
+        if(walker.right.right == cast(cgstrll*)0)
+            break; 
+        end
+        walker = walker.right;
+    end
+    
+    //pop walker's right.
+    if(walker.right.text != 0)
+        __builtin_free(walker.right.text);
+    end
+    __builtin_free(cast(u8*)walker.right);
+    walker.right = cast(cgstrll*)0;
 
-	return retval;
+    return retval;
 end
 
 method codegen cgstrll:cg_token_foldout_arglist()->cgstrll*:
-	//we already have a cgstrll linked list (this)
-	//we want to rip out the token list.
-	
-	cgstrll* retval
-	cgstrll* obrack_ptr
-	cgstrll* walker
-	retval = cast(cgstrll*)0;
-	
-	//if our right is null...
-	/*
-	if(this.right == 0)
-		__builtin_puts("CODEGEN TIME ERROR");
-		__builtin_puts("cgstrll:cg_token_foldout_arglist() called on something");
-		__builtin_puts("Which has null on its right!");
-		__builtin_exit(1);
-	end
-	*/
-	
-	//invalid pass-in.	
-	if(this.right.d != CG_TOK_OBRACK)
-		//get a single!
-		retval = this.right;
-		this.right = this.right.right;
-		retval.right = 0;
-		return retval;
-	end
-	obrack_ptr = this.right; 
-	retval = obrack_ptr; //We want the opening bracket, actually.
+    //we already have a cgstrll linked list (this)
+    //we want to rip out the token list.
+    
+    cgstrll* retval
+    cgstrll* obrack_ptr
+    cgstrll* walker
+    retval = cast(cgstrll*)0;
+    
+    //if our right is null...
+    /*
+    if(this.right == 0)
+        __builtin_puts("CODEGEN TIME ERROR");
+        __builtin_puts("cgstrll:cg_token_foldout_arglist() called on something");
+        __builtin_puts("Which has null on its right!");
+        __builtin_exit(1);
+    end
+    */
+    
+    //invalid pass-in.	
+    if(this.right.d != CG_TOK_OBRACK)
+        //get a single!
+        retval = this.right;
+        this.right = this.right.right;
+        retval.right = 0;
+        return retval;
+    end
+    obrack_ptr = this.right; 
+    retval = obrack_ptr; //We want the opening bracket, actually.
 
 
-	i64 level;
-	level = 1; //skip obrack.
-	walker = obrack_ptr.right;
-	for(
-		0,
-		walker != cast(cgstrll*)0, 
-		0
-	)
+    i64 level;
+    level = 1; //skip obrack.
+    walker = obrack_ptr.right;
+    for(
+        0,
+        walker != cast(cgstrll*)0, 
+        0
+    )
 
-		if(walker.d == CG_TOK_OBRACK) level++; 
-		elif(walker.d == CG_TOK_CBRACK) level--; end //walker will point to the closing bracket.
-		
-		if(level == 0) break; end
-		walker = walker.right;
-	end
-	/*
-	if(level != 0)
-	    __builtin_puts("CODEGEN TIME ERROR");
-	    __builtin_puts("There are unmatched square brackets in the program.");
-	    __builtin_puts("This caused me, cgstrll:cg_token_foldout_arglist, to fail.");
-	    __builtin_puts("I'm returning Null. I Hope there's a more specific error message...");
-		//error by returning zero.
-		retval = cast(cgstrll*)0;
-		return retval;
-	end
-	*/
-	this.right = walker.right; //close up the wound!
-	walker.right = cast(cgstrll*)0;
-	return retval;
+        if(walker.d == CG_TOK_OBRACK) level++; 
+        elif(walker.d == CG_TOK_CBRACK) level--; end //walker will point to the closing bracket.
+        
+        if(level == 0) break; end
+        walker = walker.right;
+    end
+    /*
+    if(level != 0)
+        __builtin_puts("CODEGEN TIME ERROR");
+        __builtin_puts("There are unmatched square brackets in the program.");
+        __builtin_puts("This caused me, cgstrll:cg_token_foldout_arglist, to fail.");
+        __builtin_puts("I'm returning Null. I Hope there's a more specific error message...");
+        //error by returning zero.
+        retval = cast(cgstrll*)0;
+        return retval;
+    end
+    */
+    this.right = walker.right; //close up the wound!
+    walker.right = cast(cgstrll*)0;
+    return retval;
 end
 
 
 
 fn codegen cg_token_grab_arglist(char* errtext)->cgstrll*:
-	cgstrll* retval
-	cgstrll* p
-	cgstrll* walker
-	cgstrll* owalker
-	p = cg_peek();
-	//if there are no arguments, return no arguments!
-	
-	if(cast(uptr)p == 0) 		
-		__builtin_puts("INTERNAL SYNTAX ERROR: Token Arglist is EMPTY!");
-		__builtin_puts(errtext);
-		__builtin_exit(1);
-	end
-	
-	
-	//if the argument is a single, return it!
-	if(p.d != CG_TOK_OBRACK)
-		retval = p:dupe();
-		__builtin_consume();
-		return retval;
-	end
+    cgstrll* retval
+    cgstrll* p
+    cgstrll* walker
+    cgstrll* owalker
+    p = cg_peek();
+    //if there are no arguments, return no arguments!
+    
+    if(cast(uptr)p == 0) 		
+        __builtin_puts("INTERNAL SYNTAX ERROR: Token Arglist is EMPTY!");
+        __builtin_puts(errtext);
+        __builtin_exit(1);
+    end
+    
+    
+    //if the argument is a single, return it!
+    if(p.d != CG_TOK_OBRACK)
+        retval = p:dupe();
+        __builtin_consume();
+        return retval;
+    end
 
-	//the argument was an opening bracket...
+    //the argument was an opening bracket...
 
-	//Walk the token list until we reach the end or the matching closing square bracket
+    //Walk the token list until we reach the end or the matching closing square bracket
 
-	i64 level;
-	level = 1;
-	retval = p:dupe();
-	owalker = retval;
-	__builtin_consume();
-	
-	while(1)
-	    p = cg_peek();
-	    if(p == 0) break
-		elif(p.d == CG_TOK_OBRACK) level++; 
-		elif(p.d == CG_TOK_CBRACK) level--; end
-		owalker.right = p:dupe();
-		owalker = owalker.right;
-		__builtin_consume();
-		if(level == 0) break; end
-	end
-	
-	
-	if(level != 0)
-		__builtin_puts("INTERNAL SYNTAX ERROR: Token Arglist has mismatched square brackets!");
-		__builtin_puts(errtext);
-		__builtin_exit(1);
-	end
-	
-	return retval;
+    i64 level;
+    level = 1;
+    retval = p:dupe();
+    owalker = retval;
+    __builtin_consume();
+    
+    while(1)
+        p = cg_peek();
+        if(p == 0) break
+        elif(p.d == CG_TOK_OBRACK) level++; 
+        elif(p.d == CG_TOK_CBRACK) level--; end
+        owalker.right = p:dupe();
+        owalker = owalker.right;
+        __builtin_consume();
+        if(level == 0) break; end
+    end
+    
+    
+    if(level != 0)
+        __builtin_puts("INTERNAL SYNTAX ERROR: Token Arglist has mismatched square brackets!");
+        __builtin_puts(errtext);
+        __builtin_exit(1);
+    end
+    
+    return retval;
 end
 
 //Traverse token list, grab args (single token or [nest of [token sets] to parse])
@@ -1109,637 +1109,637 @@ end
 //TODO is to automatically detect
 //what the token should be.
 fn codegen cg_buildtok(
-	char* text,
-	u64 id,
-	u64 linenum,
-	u64 colnum,
-	char* filename,
-	u8* d,
-	cgstrll* right
+    char* text,
+    u64 id,
+    u64 linenum,
+    u64 colnum,
+    char* filename,
+    u8* d,
+    cgstrll* right
 )->cgstrll*:
-	//allocated on the heap just like everything else, of course.
-	cgstrll* p;
-	p = cast(cgstrll*)__builtin_malloc(sizeof(cgstrll));
-	
-	p.text = text;
-	p.id = id;
-	p.linenum = linenum;
-	p.colnum = colnum;
-	p.filename = filename;
-	p.d = d; //this is really our identification.
-	p.right = right;
-	return p;
+    //allocated on the heap just like everything else, of course.
+    cgstrll* p;
+    p = cast(cgstrll*)__builtin_malloc(sizeof(cgstrll));
+    
+    p.text = text;
+    p.id = id;
+    p.linenum = linenum;
+    p.colnum = colnum;
+    p.filename = filename;
+    p.d = d; //this is really our identification.
+    p.right = right;
+    return p;
 end
 
 //automatic token building.
 fn codegen cg_autobuildtok(
-	char* text,
-	int is_string,
-	int is_ident,
-	int is_int,
-	int is_float,
-	int is_keyw,
-	int is_operator
+    char* text,
+    int is_string,
+    int is_ident,
+    int is_int,
+    int is_float,
+    int is_keyw,
+    int is_operator
 )->cgstrll*:
-	//it will strdup a pointer for you for all these.
-	if(is_string)
-		return cg_buildtok(
-			__builtin_strdup(text), 0,
-			0,0,
-			"AUTO_GENERATED_NOT_REAL",
-			CG_TOK_STRING,
-			cast(cgstrll*)0
-		);
-	end	
-	if(is_ident)
-		return cg_buildtok(
-			__builtin_strdup(text), 0,
-			0,0,
-			"AUTO_GENERATED_NOT_REAL",
-			CG_TOK_IDENT,
-			cast(cgstrll*)0
-		);
-	end	
-	if(is_int)
-		return cg_buildtok(
-			__builtin_strdup(text), 0,
-			0,0,
-			"AUTO_GENERATED_NOT_REAL",
-			CG_TOK_INT_CONST,
-			cast(cgstrll*)0
-		);
-	end	
-	if(is_float)
-		return cg_buildtok(
-			__builtin_strdup(text), 0,
-			0,0,
-			"AUTO_GENERATED_NOT_REAL",
-			CG_TOK_FLOAT_CONST,
-			cast(cgstrll*)0
-		);
-	end
-	if(is_keyw)
-		return cg_buildtok(
-			__builtin_strdup(text), 0,
-			0,0,
-			"AUTO_GENERATED_NOT_REAL",
-			CG_TOK_KEYWORD,
-			cast(cgstrll*)0
-		);
-	end
-	if(is_operator)
-		return cg_buildtok(
-			__builtin_strdup(text), 0,
-			0,0,
-			"AUTO_GENERATED_NOT_REAL",
-			CG_TOK_OPERATOR,
-			cast(cgstrll*)0
-		);
-	end
-	//it was not a string- detect simple cases.
-	if(text streq "(") 
-		return cg_buildtok(
-			cast(u8*)0, 0,
-			0,0,
-			"AUTO_GENERATED_NOT_REAL",
-			CG_TOK_OPAREN,
-			cast(cgstrll*)0
-		);
-	end	
-	if(text streq ")") 
-		return cg_buildtok(
-			cast(u8*)0, 0,
-			0,0,
-			"AUTO_GENERATED_NOT_REAL",
-			CG_TOK_CPAREN,
-			cast(cgstrll*)0
-		);
-	end	
-	if(text streq "{") 
-		return cg_buildtok(
-			cast(u8*)0, 0,
-			0,0,
-			"AUTO_GENERATED_NOT_REAL",
-			CG_TOK_OCB,
-			cast(cgstrll*)0
-		);
-	end	
-	if(text streq "}")
-		return cg_buildtok(
-			cast(u8*)0, 0,
-			0,0,
-			"AUTO_GENERATED_NOT_REAL",
-			CG_TOK_CCB,
-			cast(cgstrll*)0
-		);
-	end	
-	if(text streq "[")
-		return cg_buildtok(
-			cast(u8*)0, 0,
-			0,0,
-			"AUTO_GENERATED_NOT_REAL",
-			CG_TOK_OBRACK,
-			cast(cgstrll*)0
-		);
-	end	
-	if(text streq "]")
-		return cg_buildtok(
-			cast(u8*)0, 0,
-			0,0,
-			"AUTO_GENERATED_NOT_REAL",
-			CG_TOK_CBRACK,
-			cast(cgstrll*)0
-		);
-	end	if(text streq ";")
-		return cg_buildtok(
-			cast(u8*)0, 0,
-			0,0,
-			"AUTO_GENERATED_NOT_REAL",
-			CG_TOK_SEMIC,
-			cast(cgstrll*)0
-		);
-	end	
-	if(text streq ",")
-		return cg_buildtok(
-			cast(u8*)0, 0,
-			0,0,
-			"AUTO_GENERATED_NOT_REAL",
-			CG_TOK_COMMA,
-			cast(cgstrll*)0
-		);
-	end
-	if(text streq "#")
-		return cg_buildtok(
-			cast(u8*)0, 0,
-			0,0,
-			"AUTO_GENERATED_NOT_REAL",
-			CG_TOK_MACRO_OP,
-			cast(cgstrll*)0
-		);
-	end
-	//dump case
-	if(1)
-		return cg_buildtok(
-			text,
-			0,0,0,
-			"AUTO_GENERATED_NOT_REAL",
-			CG_TOK_UNKNOWN,
-			cast(cgstrll*)0
-		);
-	end
+    //it will strdup a pointer for you for all these.
+    if(is_string)
+        return cg_buildtok(
+            __builtin_strdup(text), 0,
+            0,0,
+            "AUTO_GENERATED_NOT_REAL",
+            CG_TOK_STRING,
+            cast(cgstrll*)0
+        );
+    end	
+    if(is_ident)
+        return cg_buildtok(
+            __builtin_strdup(text), 0,
+            0,0,
+            "AUTO_GENERATED_NOT_REAL",
+            CG_TOK_IDENT,
+            cast(cgstrll*)0
+        );
+    end	
+    if(is_int)
+        return cg_buildtok(
+            __builtin_strdup(text), 0,
+            0,0,
+            "AUTO_GENERATED_NOT_REAL",
+            CG_TOK_INT_CONST,
+            cast(cgstrll*)0
+        );
+    end	
+    if(is_float)
+        return cg_buildtok(
+            __builtin_strdup(text), 0,
+            0,0,
+            "AUTO_GENERATED_NOT_REAL",
+            CG_TOK_FLOAT_CONST,
+            cast(cgstrll*)0
+        );
+    end
+    if(is_keyw)
+        return cg_buildtok(
+            __builtin_strdup(text), 0,
+            0,0,
+            "AUTO_GENERATED_NOT_REAL",
+            CG_TOK_KEYWORD,
+            cast(cgstrll*)0
+        );
+    end
+    if(is_operator)
+        return cg_buildtok(
+            __builtin_strdup(text), 0,
+            0,0,
+            "AUTO_GENERATED_NOT_REAL",
+            CG_TOK_OPERATOR,
+            cast(cgstrll*)0
+        );
+    end
+    //it was not a string- detect simple cases.
+    if(text streq "(") 
+        return cg_buildtok(
+            cast(u8*)0, 0,
+            0,0,
+            "AUTO_GENERATED_NOT_REAL",
+            CG_TOK_OPAREN,
+            cast(cgstrll*)0
+        );
+    end	
+    if(text streq ")") 
+        return cg_buildtok(
+            cast(u8*)0, 0,
+            0,0,
+            "AUTO_GENERATED_NOT_REAL",
+            CG_TOK_CPAREN,
+            cast(cgstrll*)0
+        );
+    end	
+    if(text streq "{") 
+        return cg_buildtok(
+            cast(u8*)0, 0,
+            0,0,
+            "AUTO_GENERATED_NOT_REAL",
+            CG_TOK_OCB,
+            cast(cgstrll*)0
+        );
+    end	
+    if(text streq "}")
+        return cg_buildtok(
+            cast(u8*)0, 0,
+            0,0,
+            "AUTO_GENERATED_NOT_REAL",
+            CG_TOK_CCB,
+            cast(cgstrll*)0
+        );
+    end	
+    if(text streq "[")
+        return cg_buildtok(
+            cast(u8*)0, 0,
+            0,0,
+            "AUTO_GENERATED_NOT_REAL",
+            CG_TOK_OBRACK,
+            cast(cgstrll*)0
+        );
+    end	
+    if(text streq "]")
+        return cg_buildtok(
+            cast(u8*)0, 0,
+            0,0,
+            "AUTO_GENERATED_NOT_REAL",
+            CG_TOK_CBRACK,
+            cast(cgstrll*)0
+        );
+    end	if(text streq ";")
+        return cg_buildtok(
+            cast(u8*)0, 0,
+            0,0,
+            "AUTO_GENERATED_NOT_REAL",
+            CG_TOK_SEMIC,
+            cast(cgstrll*)0
+        );
+    end	
+    if(text streq ",")
+        return cg_buildtok(
+            cast(u8*)0, 0,
+            0,0,
+            "AUTO_GENERATED_NOT_REAL",
+            CG_TOK_COMMA,
+            cast(cgstrll*)0
+        );
+    end
+    if(text streq "#")
+        return cg_buildtok(
+            cast(u8*)0, 0,
+            0,0,
+            "AUTO_GENERATED_NOT_REAL",
+            CG_TOK_MACRO_OP,
+            cast(cgstrll*)0
+        );
+    end
+    //dump case
+    if(1)
+        return cg_buildtok(
+            text,
+            0,0,0,
+            "AUTO_GENERATED_NOT_REAL",
+            CG_TOK_UNKNOWN,
+            cast(cgstrll*)0
+        );
+    end
 end
 
 fn codegen cg_is_operator(char* text)->u8:
-	if(text streq "++") return 1; end
-	if(text streq "--") return 1; end
-	if(text streq ":=") return 1; end
-	if(text streq ":") return 1; end
-	if(text streq "<=") return 1; end
-	if(text streq "<") return 1; end
-	if(text streq ">=") return 1; end
-	if(text streq ">") return 1; end
-	if(text streq "!=") return 1; end
-	if(text streq "==") return 1; end
-	if(text streq "===") return 1; end
-	if(text streq "->") return 1; end
-	if(text streq ".&") return 1; end
-	if(text streq "&") return 1; end
-	if(text streq "&&") return 1; end
-	if(text streq "|") return 1; end
-	if(text streq "||") return 1; end
-	if(text streq ">>") return 1; end
-	if(text streq "<<") return 1; end
-	
-	if(text streq "~") return 1; end
-	if(text streq "!") return 1; end
-	if(text streq ".") return 1; end
-	if(text streq "&") return 1; end
-	if(text streq "*") return 1; end
-	if(text streq "+") return 1; end
-	if(text streq "-") return 1; end
-	if(text streq "/") return 1; end
-	if(text streq "%") return 1; end
-	if(text streq "<") return 1; end
-	if(text streq ">") return 1; end
-	if(text streq "^") return 1; end
-	if(text streq "|") return 1; end
-	if(text streq "?") return 1; end
-	if(text streq "=") return 1; end
-	if(text streq "@") return 1; end
+    if(text streq "++") return 1; end
+    if(text streq "--") return 1; end
+    if(text streq ":=") return 1; end
+    if(text streq ":") return 1; end
+    if(text streq "<=") return 1; end
+    if(text streq "<") return 1; end
+    if(text streq ">=") return 1; end
+    if(text streq ">") return 1; end
+    if(text streq "!=") return 1; end
+    if(text streq "==") return 1; end
+    if(text streq "===") return 1; end
+    if(text streq "->") return 1; end
+    if(text streq ".&") return 1; end
+    if(text streq "&") return 1; end
+    if(text streq "&&") return 1; end
+    if(text streq "|") return 1; end
+    if(text streq "||") return 1; end
+    if(text streq ">>") return 1; end
+    if(text streq "<<") return 1; end
+    
+    if(text streq "~") return 1; end
+    if(text streq "!") return 1; end
+    if(text streq ".") return 1; end
+    if(text streq "&") return 1; end
+    if(text streq "*") return 1; end
+    if(text streq "+") return 1; end
+    if(text streq "-") return 1; end
+    if(text streq "/") return 1; end
+    if(text streq "%") return 1; end
+    if(text streq "<") return 1; end
+    if(text streq ">") return 1; end
+    if(text streq "^") return 1; end
+    if(text streq "|") return 1; end
+    if(text streq "?") return 1; end
+    if(text streq "=") return 1; end
+    if(text streq "@") return 1; end
 
-	if(text streq "streq") return 1; end
-	if(text streq "strneq") return 1; end
-	
-	if(text streq "eq") return 1; end
-	if(text streq "neq") return 1; end
-	return 0;
+    if(text streq "streq") return 1; end
+    if(text streq "strneq") return 1; end
+    
+    if(text streq "eq") return 1; end
+    if(text streq "neq") return 1; end
+    return 0;
 end
 
 fn codegen cg_is_keyw(char* text)->u8:
-	if(text streq "fn") return 1; end
-	if(text streq "function") return 1; end
-	if(text streq "func") return 1; end
-	if(text streq "procedure") return 1; end
-	if(text streq "proc") return 1; end
-	if(text streq "cast") return 1; end
+    if(text streq "fn") return 1; end
+    if(text streq "function") return 1; end
+    if(text streq "func") return 1; end
+    if(text streq "procedure") return 1; end
+    if(text streq "proc") return 1; end
+    if(text streq "cast") return 1; end
 
-	if(text streq "u8") return 1; end
-	if(text streq "char") return 1; end
-	if(text streq "byte") return 1; end
-	if(text streq "ubyte") return 1; end
-	if(text streq "uchar") return 1; end
+    if(text streq "u8") return 1; end
+    if(text streq "char") return 1; end
+    if(text streq "byte") return 1; end
+    if(text streq "ubyte") return 1; end
+    if(text streq "uchar") return 1; end
 
-	if(text streq "i8") return 1; end
-	if(text streq "schar") return 1; end
-	if(text streq "sbyte") return 1; end
+    if(text streq "i8") return 1; end
+    if(text streq "schar") return 1; end
+    if(text streq "sbyte") return 1; end
 
-	if(text streq "u16") return 1; end
-	if(text streq "ushort") return 1; end
-	
-	if(text streq "i16") return 1; end
-	if(text streq "short") return 1; end
-	if(text streq "sshort") return 1; end
+    if(text streq "u16") return 1; end
+    if(text streq "ushort") return 1; end
+    
+    if(text streq "i16") return 1; end
+    if(text streq "short") return 1; end
+    if(text streq "sshort") return 1; end
 
-	if(text streq "u32") return 1; end
-	if(text streq "uint") return 1; end
-	if(text streq "ulong") return 1; end
+    if(text streq "u32") return 1; end
+    if(text streq "uint") return 1; end
+    if(text streq "ulong") return 1; end
 
-	if(text streq "i32") return 1; end
-	if(text streq "int") return 1; end
-	if(text streq "sint") return 1; end
-	if(text streq "long") return 1; end
-	if(text streq "slong") return 1; end
+    if(text streq "i32") return 1; end
+    if(text streq "int") return 1; end
+    if(text streq "sint") return 1; end
+    if(text streq "long") return 1; end
+    if(text streq "slong") return 1; end
 
-	if(text streq "u64") return 1; end
-	if(text streq "ullong") return 1; end
-	if(text streq "uqword") return 1; end
-	if(text streq "qword") return 1; end
-	if(text streq "uptr") return 1; end
+    if(text streq "u64") return 1; end
+    if(text streq "ullong") return 1; end
+    if(text streq "uqword") return 1; end
+    if(text streq "qword") return 1; end
+    if(text streq "uptr") return 1; end
 
-	
-	if(text streq "i64") return 1; end
-	if(text streq "sllong") return 1; end
-	if(text streq "llong") return 1; end
-	if(text streq "sqword") return 1; end
-	
-	if(text streq "noexport") return 1; end
+    
+    if(text streq "i64") return 1; end
+    if(text streq "sllong") return 1; end
+    if(text streq "llong") return 1; end
+    if(text streq "sqword") return 1; end
+    
+    if(text streq "noexport") return 1; end
 
-	if(text streq "f32") return 1; end
-	if(text streq "f64") return 1; end
-	if(text streq "float") return 1; end
-	if(text streq "double") return 1; end
+    if(text streq "f32") return 1; end
+    if(text streq "f64") return 1; end
+    if(text streq "float") return 1; end
+    if(text streq "double") return 1; end
 
-	if(text streq "break") return 1; end
-	if(text streq "data") return 1; end
-	if(text streq "string") return 1; end
-	if(text streq "end") return 1; end
-	if(text streq "continue") return 1; end
-	if(text streq "if") return 1; end
-	if(text streq "else") return 1; end
-	if(text streq "while") return 1; end
+    if(text streq "break") return 1; end
+    if(text streq "data") return 1; end
+    if(text streq "string") return 1; end
+    if(text streq "end") return 1; end
+    if(text streq "continue") return 1; end
+    if(text streq "if") return 1; end
+    if(text streq "else") return 1; end
+    if(text streq "while") return 1; end
 
-	if(text streq "goto") return 1; end
-	if(text streq "jump") return 1; end
+    if(text streq "goto") return 1; end
+    if(text streq "jump") return 1; end
 
-	if(text streq "return") return 1; end
-	if(text streq "tail") return 1; end
-	if(text streq "sizeof") return 1; end
-	if(text streq "static") return 1; end
-	if(text streq "pub") return 1; end
-	if(text streq "public") return 1; end
+    if(text streq "return") return 1; end
+    if(text streq "tail") return 1; end
+    if(text streq "sizeof") return 1; end
+    if(text streq "static") return 1; end
+    if(text streq "pub") return 1; end
+    if(text streq "public") return 1; end
 
-	if(text streq "struct") return 1; end
-	if(text streq "class") return 1; end
-	if(text streq "union") return 1; end
-	if(text streq "asm") return 1; end
-	if(text streq "method") return 1; end
-	if(text streq "predecl") return 1; end
-	if(text streq "codegen") return 1; end
+    if(text streq "struct") return 1; end
+    if(text streq "class") return 1; end
+    if(text streq "union") return 1; end
+    if(text streq "asm") return 1; end
+    if(text streq "method") return 1; end
+    if(text streq "predecl") return 1; end
+    if(text streq "codegen") return 1; end
 
-	if(text streq "constexpri") return 1; end
-	if(text streq "constexprf") return 1; end
-	if(text streq "switch") return 1; end
-	if(text streq "for") return 1; end
+    if(text streq "constexpri") return 1; end
+    if(text streq "constexprf") return 1; end
+    if(text streq "switch") return 1; end
+    if(text streq "for") return 1; end
 
-	if(text streq "elif") return 1; end
-	if(text streq "elseif") return 1; end
+    if(text streq "elif") return 1; end
+    if(text streq "elseif") return 1; end
 
-	if(text streq "pure") return 1; end
-	if(text streq "inline") return 1; end
+    if(text streq "pure") return 1; end
+    if(text streq "inline") return 1; end
 
-	if(text streq "atomic") return 1; end
-	if(text streq "volatile") return 1; end
+    if(text streq "atomic") return 1; end
+    if(text streq "volatile") return 1; end
 
-	if(text streq "getfnptr") return 1; end
-	if(text streq "callfnptr") return 1; end
-	if(text streq "getglobalptr") return 1; end
+    if(text streq "getfnptr") return 1; end
+    if(text streq "callfnptr") return 1; end
+    if(text streq "getglobalptr") return 1; end
 
-	return 0;
+    return 0;
 end
 
 fn codegen cg_process_stringlit(char* text):
-	//remove starting and ending quotes.
-	cgstr q
-	
-	
-	cgstrcpy(text, text+1);//remove first character- a quote
-	q.s = (text); //move to cgstring
-	q.s[q:len()-1] = 0; //remove last character- a quote
+    //remove starting and ending quotes.
+    cgstr q
+    
+    
+    cgstrcpy(text, text+1);//remove first character- a quote
+    q.s = (text); //move to cgstring
+    q.s[q:len()-1] = 0; //remove last character- a quote
 
-	//for each character
-	i64 i
-	i64 len
-	len = q:len();
-	for(i = 0, i < len, i++)
-		if(q.s[i] == '\\')
-			//skip
-			if(q.s[i+1] == 0)
-				continue;
-			elif(q.s[i+1] == 'a')
-				q.s[i] = '\a';
+    //for each character
+    i64 i
+    i64 len
+    len = q:len();
+    for(i = 0, i < len, i++)
+        if(q.s[i] == '\\')
+            //skip
+            if(q.s[i+1] == 0)
+                continue;
+            elif(q.s[i+1] == 'a')
+                q.s[i] = '\a';
 
-				cgstrcpy(
-					q.s+i+1, 
-					q.s+i+2
-				);
-				continue;
-			elif(q.s[i+1] == 'b')
-				q.s[i] = '\b';
-				cgstrcpy(q.s+i+1, q.s+i+2);
-				continue;
-			elif(q.s[i+1] == 'e')
-				q.s[i] = '\e';
-				cgstrcpy(q.s+i+1, q.s+i+2);
-				continue;
-			elif(q.s[i+1] == 'f')
-				q.s[i] = '\f';
-				cgstrcpy(q.s+i+1, q.s+i+2);
-				continue;
+                cgstrcpy(
+                    q.s+i+1, 
+                    q.s+i+2
+                );
+                continue;
+            elif(q.s[i+1] == 'b')
+                q.s[i] = '\b';
+                cgstrcpy(q.s+i+1, q.s+i+2);
+                continue;
+            elif(q.s[i+1] == 'e')
+                q.s[i] = '\e';
+                cgstrcpy(q.s+i+1, q.s+i+2);
+                continue;
+            elif(q.s[i+1] == 'f')
+                q.s[i] = '\f';
+                cgstrcpy(q.s+i+1, q.s+i+2);
+                continue;
 
-			elif(q.s[i+1] == 'n')
-				q.s[i] = '\n';
-				cgstrcpy(q.s+i+1, q.s+i+2);
-				continue;
+            elif(q.s[i+1] == 'n')
+                q.s[i] = '\n';
+                cgstrcpy(q.s+i+1, q.s+i+2);
+                continue;
 
-			elif(q.s[i+1] == 'r')
-				q.s[i] = '\r';
-				cgstrcpy(q.s+i+1, q.s+i+2);
-				continue;
-			elif(q.s[i+1] == 't')
-				q.s[i] = '\t';
-				cgstrcpy(q.s+i+1, q.s+i+2);
-				continue;
+            elif(q.s[i+1] == 'r')
+                q.s[i] = '\r';
+                cgstrcpy(q.s+i+1, q.s+i+2);
+                continue;
+            elif(q.s[i+1] == 't')
+                q.s[i] = '\t';
+                cgstrcpy(q.s+i+1, q.s+i+2);
+                continue;
 
-			elif(q.s[i+1] == 'v')
-				q.s[i] = '\v';
-				cgstrcpy(q.s+i+1, q.s+i+2);
-				continue;
-			else
-				//literally that character...
-				q.s[i] = q.s[i+1];
-				cgstrcpy(q.s+i+1, q.s+i+2);
-				continue;
-			end //eof if-elif chain.	
-		end //eof if
-	end //eof for loop
+            elif(q.s[i+1] == 'v')
+                q.s[i] = '\v';
+                cgstrcpy(q.s+i+1, q.s+i+2);
+                continue;
+            else
+                //literally that character...
+                q.s[i] = q.s[i+1];
+                cgstrcpy(q.s+i+1, q.s+i+2);
+                continue;
+            end //eof if-elif chain.	
+        end //eof if
+    end //eof for loop
 end //eof function
 
 /*
-	REMINDER
-	cg_autobuildtok(
-		char* text,
-		int is_string,
-		int is_ident,
-		int is_int,
-		int is_float,
-		int is_keyw,
-		int is_operator
-	)
+    REMINDER
+    cg_autobuildtok(
+        char* text,
+        int is_string,
+        int is_ident,
+        int is_int,
+        int is_float,
+        int is_keyw,
+        int is_operator
+    )
 */
 
 
 fn codegen cg_qtok(
-	char* text
+    char* text
 )->cgstrll*:
-	cgstrll* retval;
-	text = __builtin_strdup(text); //avoid trouncing the original string.
-	//1. recognize strings.
-	if(text[0] == '\"')//this is a string.
-		cg_process_stringlit(text);
-		retval = cg_autobuildtok(
-			text,
-			1,
-			0,
-			0,
-			0,
-			0,
-			0
-		);
-		__builtin_free(text);
-		return retval;
-	end
-	if(text[0] == '\'') //this is a character literal.
-		cgstr q
-		cg_process_stringlit(text);
-		//create a string for storage of a single 3 digit number.
-		q:fromstr("   ");
-		//convert character to text integer
-		__builtin_itoa(q.s, cast(u32)text[0]);
-		__builtin_free(text);
-		retval = cg_autobuildtok(
-			q.s,
-			0,
-			0,
-			1,
-			0,
-			0,
-			0
-		);
-		q:free();
-		//return the token.
-		return retval;
-	end
-	if(cg_is_keyw(text))
-		retval = cg_autobuildtok(
-			text,
-			0, //is_string
-			0, //is_ident
-			0, //is_int
-			0, //is_float
-			1, //is_keyw
-			0  //is_operator
-		);
-		__builtin_free(text);
-		return retval;
-	end
-	if(cg_is_operator(text))
-		retval = cg_autobuildtok(
-			text,
-			0, //is_string
-			0, //is_ident
-			0, //is_int
-			0, //is_float
-			0, //is_keyw
-			1  //is_operator
-		);
-		__builtin_free(text);
-		return retval;
-	end
+    cgstrll* retval;
+    text = __builtin_strdup(text); //avoid trouncing the original string.
+    //1. recognize strings.
+    if(text[0] == '\"')//this is a string.
+        cg_process_stringlit(text);
+        retval = cg_autobuildtok(
+            text,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0
+        );
+        __builtin_free(text);
+        return retval;
+    end
+    if(text[0] == '\'') //this is a character literal.
+        cgstr q
+        cg_process_stringlit(text);
+        //create a string for storage of a single 3 digit number.
+        q:fromstr("   ");
+        //convert character to text integer
+        __builtin_itoa(q.s, cast(u32)text[0]);
+        __builtin_free(text);
+        retval = cg_autobuildtok(
+            q.s,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0
+        );
+        q:free();
+        //return the token.
+        return retval;
+    end
+    if(cg_is_keyw(text))
+        retval = cg_autobuildtok(
+            text,
+            0, //is_string
+            0, //is_ident
+            0, //is_int
+            0, //is_float
+            1, //is_keyw
+            0  //is_operator
+        );
+        __builtin_free(text);
+        return retval;
+    end
+    if(cg_is_operator(text))
+        retval = cg_autobuildtok(
+            text,
+            0, //is_string
+            0, //is_ident
+            0, //is_int
+            0, //is_float
+            0, //is_keyw
+            1  //is_operator
+        );
+        __builtin_free(text);
+        return retval;
+    end
 
-	
-	//does this match the prototype of an identifier?
-	cgstr qq;
-	qq.s = text;
-	
-	if(
-		(qq:len() > 0) &&
-		(
-			cgisalpha(text[0]) ||
-			(text[0] == '_')
-		)
-	)
-		retval = cg_autobuildtok(
-			text,
-			0, //is_string
-			1, //is_ident
-			0, //is_int
-			0, //is_float
-			0, //is_keyw
-			0  //is_operator
-		);
-		__builtin_free(text);
-		return retval;
-	end
-	
-	//int or float.
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	//INT OR FLOAT DETECTOR
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	if(cgisdigit(text[0]))
-		//detect hex
-		if(
-			text[0] == 'x' ||
-			text[0] == 'X'
-		)
-			goto is_integer
-		end
-		//detect float
-		if(1)
-			cgstr tmp
-			cgstr findme
-			tmp.s = text;
-			findme.s = ".";
-			if(tmp:find(findme) != -1)
-				jump is_float
-			end
-			//contains an "e" portion: power of 10.
-			findme.s = "E";
-			if(tmp:find(findme) != -1)
-				jump is_float
-			end
-			findme.s = "e";
-			if(tmp:find(findme) != -1)
-				jump is_float
-			end
-		end
-		//it is an integer!
-		jump is_integer
-	end
+    
+    //does this match the prototype of an identifier?
+    cgstr qq;
+    qq.s = text;
+    
+    if(
+        (qq:len() > 0) &&
+        (
+            cgisalpha(text[0]) ||
+            (text[0] == '_')
+        )
+    )
+        retval = cg_autobuildtok(
+            text,
+            0, //is_string
+            1, //is_ident
+            0, //is_int
+            0, //is_float
+            0, //is_keyw
+            0  //is_operator
+        );
+        __builtin_free(text);
+        return retval;
+    end
+    
+    //int or float.
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    //INT OR FLOAT DETECTOR
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    if(cgisdigit(text[0]))
+        //detect hex
+        if(
+            text[0] == 'x' ||
+            text[0] == 'X'
+        )
+            goto is_integer
+        end
+        //detect float
+        if(1)
+            cgstr tmp
+            cgstr findme
+            tmp.s = text;
+            findme.s = ".";
+            if(tmp:find(findme) != -1)
+                jump is_float
+            end
+            //contains an "e" portion: power of 10.
+            findme.s = "E";
+            if(tmp:find(findme) != -1)
+                jump is_float
+            end
+            findme.s = "e";
+            if(tmp:find(findme) != -1)
+                jump is_float
+            end
+        end
+        //it is an integer!
+        jump is_integer
+    end
 
-	//This is something else. have autobuildtok figure it out.
-	//just send it and then free the text.
-	retval = cg_autobuildtok(
-		text,
-		0, //is_string
-		0, //is_ident
-		0, //is_int
-		0, //is_float
-		0, //is_keyw
-		0  //is_operator
-	);
-	retval.text = cast(char*)0;
-	__builtin_free(text);
-	return retval;
+    //This is something else. have autobuildtok figure it out.
+    //just send it and then free the text.
+    retval = cg_autobuildtok(
+        text,
+        0, //is_string
+        0, //is_ident
+        0, //is_int
+        0, //is_float
+        0, //is_keyw
+        0  //is_operator
+    );
+    retval.text = cast(char*)0;
+    __builtin_free(text);
+    return retval;
 
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	//POST_FUNCTION_PORTION
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	:is_integer
-		retval = cg_autobuildtok(
-			text,
-			0, //is_string
-			0, //is_ident
-			1, //is_int
-			0, //is_float
-			0, //is_keyw
-			0  //is_operator
-		);
-		__builtin_free(text);
-		return retval;
-	:is_float
-		retval = cg_autobuildtok(
-			text,
-			0, //is_string
-			0, //is_ident
-			0, //is_int
-			1, //is_float
-			0, //is_keyw
-			0  //is_operator
-		);
-		__builtin_free(text);
-		return retval;
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    //POST_FUNCTION_PORTION
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    :is_integer
+        retval = cg_autobuildtok(
+            text,
+            0, //is_string
+            0, //is_ident
+            1, //is_int
+            0, //is_float
+            0, //is_keyw
+            0  //is_operator
+        );
+        __builtin_free(text);
+        return retval;
+    :is_float
+        retval = cg_autobuildtok(
+            text,
+            0, //is_string
+            0, //is_ident
+            0, //is_int
+            1, //is_float
+            0, //is_keyw
+            0  //is_operator
+        );
+        __builtin_free(text);
+        return retval;
 end //eof cg_qtok
 
 /*
-	
+    
 */
 
 fn codegen cgast_struct_size_test():
-	if(sizeof(cgtype) != __builtin_struct_metadata(0))
-		__builtin_puts("fail: cgtype");
-	else
-		__builtin_puts("pass: cgtype");
-	end
+    if(sizeof(cgtype) != __builtin_struct_metadata(0))
+        __builtin_puts("fail: cgtype");
+    else
+        __builtin_puts("pass: cgtype");
+    end
 
-	if(sizeof(cgtypedecl) != __builtin_struct_metadata(1))
-		__builtin_puts("fail: cgtypedecl");
-	else
-		__builtin_puts("pass: cgtypedecl");
-	end
+    if(sizeof(cgtypedecl) != __builtin_struct_metadata(1))
+        __builtin_puts("fail: cgtypedecl");
+    else
+        __builtin_puts("pass: cgtypedecl");
+    end
 
-	if(sizeof(cgsymdecl) != __builtin_struct_metadata(2))
-		__builtin_puts("fail: cgsymdecl");
-	else
-		__builtin_puts("pass: cgsymdecl");
-	end
+    if(sizeof(cgsymdecl) != __builtin_struct_metadata(2))
+        __builtin_puts("fail: cgsymdecl");
+    else
+        __builtin_puts("pass: cgsymdecl");
+    end
 
-	if(sizeof(cgscope) != __builtin_struct_metadata(3))
-		__builtin_puts("fail: cgscope");
-	else
-		__builtin_puts("pass: cgscope");
-	end
+    if(sizeof(cgscope) != __builtin_struct_metadata(3))
+        __builtin_puts("fail: cgscope");
+    else
+        __builtin_puts("pass: cgscope");
+    end
 
-	if(sizeof(cgstmt) != __builtin_struct_metadata(4))
-		__builtin_puts("fail: cgstmt");
-	else
-		__builtin_puts("pass: cgstmt");
-	end	
-	if(sizeof(cgexpr_node) != __builtin_struct_metadata(5))
-		__builtin_puts("fail: cgexpr_node");
-	else
-		__builtin_puts("pass: cgexpr_node");
-	end	
+    if(sizeof(cgstmt) != __builtin_struct_metadata(4))
+        __builtin_puts("fail: cgstmt");
+    else
+        __builtin_puts("pass: cgstmt");
+    end	
+    if(sizeof(cgexpr_node) != __builtin_struct_metadata(5))
+        __builtin_puts("fail: cgexpr_node");
+    else
+        __builtin_puts("pass: cgexpr_node");
+    end	
 
-	if(sizeof(cgast) != __builtin_struct_metadata(6))
-		__builtin_puts("fail: cgast");
-	else
-		__builtin_puts("pass: cgast");
-	end	
-	
-	if(sizeof(cgtypedecl_oop_metadata) != __builtin_struct_metadata(7))
-		__builtin_puts("fail: cgtypedecl_oop_metadata")
-	else
-		__builtin_puts("pass: cgtypedecl_oop_metadata")
-	end
-	
+    if(sizeof(cgast) != __builtin_struct_metadata(6))
+        __builtin_puts("fail: cgast");
+    else
+        __builtin_puts("pass: cgast");
+    end	
+    
+    if(sizeof(cgtypedecl_oop_metadata) != __builtin_struct_metadata(7))
+        __builtin_puts("fail: cgtypedecl_oop_metadata")
+    else
+        __builtin_puts("pass: cgtypedecl_oop_metadata")
+    end
+    
 end

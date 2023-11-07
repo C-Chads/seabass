@@ -6,30 +6,30 @@
 
 
 @mkbldr [
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		make_cgints
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	@initqtok "codegen"
-	@pushqtok "int"
-	@pushtok [inlist:dupe()]
-	@pushqtok ";"
-	inlist = inlist.right;
-	//if(inlist == cast(cgstrll*)0) return retval; end
-	if(inlist == 0)
-	    return retval
-	end
-	//goto top
-	:top
-    	@pushqtok "codegen"
-    	@pushqtok "int"
-    	@pushtok [inlist:dupe()]
-    	@pushqtok ";"
-    	inlist = inlist.right;
-    	if( inlist  == 0)
-    	    return retval
-    	end
-	goto top;
-	return retval;
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        make_cgints
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    @initqtok "codegen"
+    @pushqtok "int"
+    @pushtok [inlist:dupe()]
+    @pushqtok ";"
+    inlist = inlist.right;
+    //if(inlist == cast(cgstrll*)0) return retval; end
+    if(inlist == 0)
+        return retval
+    end
+    //goto top
+    :top
+        @pushqtok "codegen"
+        @pushqtok "int"
+        @pushtok [inlist:dupe()]
+        @pushqtok ";"
+        inlist = inlist.right;
+        if( inlist  == 0)
+            return retval
+        end
+    goto top;
+    return retval;
 ]
 
 
@@ -57,13 +57,13 @@
 
 fn codegen codegen_main():
     //__builtin_exit(1);
-	hairy = 3; cat = hairy; dog = cat;
-	meow = cat + 1;
-	if(hairy) __builtin_puts("Hairy is real!"); end
-	if(dog == cat) __builtin_puts("So is dog and cat!"); end
-	if(meow == cat + 1) __builtin_puts("Mrow!"); end
-	__builtin_puts("Thank you for testing 'bldr', come again soon!");
-	
-	banana = 5;
+    hairy = 3; cat = hairy; dog = cat;
+    meow = cat + 1;
+    if(hairy) __builtin_puts("Hairy is real!"); end
+    if(dog == cat) __builtin_puts("So is dog and cat!"); end
+    if(meow == cat + 1) __builtin_puts("Mrow!"); end
+    __builtin_puts("Thank you for testing 'bldr', come again soon!");
+    
+    banana = 5;
 end
 

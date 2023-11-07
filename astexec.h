@@ -1,21 +1,21 @@
 #include <stdint.h>
 
 /*
-	Header for AST executor of Seabass.
+    Header for AST executor of Seabass.
 */
 
 enum{
-	VM_VARIABLE,
-	VM_EXPRESSION_TEMPORARY
+    VM_VARIABLE,
+    VM_EXPRESSION_TEMPORARY
 };
 
 
 typedef struct{
-	//type t;
-	uint64_t smalldata;
-	uint8_t* ldata; /*for arrays and structs.*/
-	uint32_t identification;
-	uint32_t allocationsize;
+    //type t;
+    uint64_t smalldata;
+    uint8_t* ldata; /*for arrays and structs.*/
+    uint32_t identification;
+    uint32_t allocationsize;
 }ast_vm_stack_elem;
 
 

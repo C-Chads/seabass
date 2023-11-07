@@ -144,20 +144,20 @@ fn predecl mutoa(char* dest, uint value);
 fn predecl matou(char* in)->uint;
 
 fn inline fib(uint n)->uint:
-	if(n < 2)
-		return 1;
-	end
-	uint a=1
-	uint b=1
-	uint c=1;
-	n = n-2
-	while(n)
-		c = a + b;
-		a = b;
-		b = c;
-		n--
-	end
-	return c
+    if(n < 2)
+        return 1;
+    end
+    uint a=1
+    uint b=1
+    uint c=1;
+    n = n-2
+    while(n)
+        c = a + b;
+        a = b;
+        b = c;
+        n--
+    end
+    return c
 end
 
 

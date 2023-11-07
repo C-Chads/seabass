@@ -6,34 +6,34 @@
 #include "data.h"
 
 /*
-	Header for metaprogramming features of Seabass.
+    Header for metaprogramming features of Seabass.
 */
 
 
 /*
-	This is the struct visible to the code from __builtin_get_ast().
+    This is the struct visible to the code from __builtin_get_ast().
 
-	Notice that it's all pointers, which means that it's just a multiple of 8 in size (64 bit pointers)
+    Notice that it's all pointers, which means that it's just a multiple of 8 in size (64 bit pointers)
 */
 typedef struct{
-	typedecl** type_table;
-	symdecl*** symbol_table;
-	typedecl_oop_metadata** oop_metadata;
-	scope*** scopestack;
-	stmt*** loopstack;
-	
-	uint64_t* active_function;
-	uint64_t* ntypedecls;
-	uint64_t* nsymbols;
-	uint64_t* nscopes;
-	uint64_t* nloops; /*Needed for identifying the parent loop.*/
-	uint64_t target_word;
-	uint64_t signed_target_word;
-	uint64_t target_max_float;
+    typedecl** type_table;
+    symdecl*** symbol_table;
+    typedecl_oop_metadata** oop_metadata;
+    scope*** scopestack;
+    stmt*** loopstack;
+    
+    uint64_t* active_function;
+    uint64_t* ntypedecls;
+    uint64_t* nsymbols;
+    uint64_t* nscopes;
+    uint64_t* nloops; /*Needed for identifying the parent loop.*/
+    uint64_t target_word;
+    uint64_t signed_target_word;
+    uint64_t target_max_float;
 }seabass_builtin_ast;
 
 /*
-	Functions accessible from the compiletime metaprogramming runtime.
+    Functions accessible from the compiletime metaprogramming runtime.
 */
 
 
@@ -60,7 +60,7 @@ uint64_t impl_builtin_emit(char* data, uint64_t sz); //DONE
 void impl_builtin_validate_function(char* p_in); //DONE
 void impl_builtin_memcpy(char* a, char* b, uint64_t sz); //DONE
 /* Saturday, February 11th: the blessed saturday, praise the Lord!
-	functions to implement...
+    functions to implement...
 */
 void impl_builtin_utoa(char* buf, uint64_t v); //DONE
 void impl_builtin_itoa(char* buf, int64_t v); //DONE
@@ -70,7 +70,7 @@ double impl_builtin_atof(char* buf); //DONE
 int64_t impl_builtin_atoi(char* buf); //DONE
 
 /* AST manipulation functions.
-	
+    
 */
 int32_t impl_builtin_peek_is_fname(); //TODO
 int32_t impl_builtin_str_is_fname(char *s); //TODO
@@ -92,14 +92,14 @@ void impl_builtin_parse_global();
 int is_builtin_name(char* s);
 uint64_t get_builtin_nargs(char* s);
 enum{
-	BUILTIN_PROTO_VOID=0,
-	BUILTIN_PROTO_U8_PTR=1,
-	BUILTIN_PROTO_U8_PTR2=2,
-	BUILTIN_PROTO_U64_PTR=3,
-	BUILTIN_PROTO_U64=4,
-	BUILTIN_PROTO_I32=5,
-	BUILTIN_PROTO_DOUBLE=6,
-	BUILTIN_PROTO_I64=7,
+    BUILTIN_PROTO_VOID=0,
+    BUILTIN_PROTO_U8_PTR=1,
+    BUILTIN_PROTO_U8_PTR2=2,
+    BUILTIN_PROTO_U64_PTR=3,
+    BUILTIN_PROTO_U64=4,
+    BUILTIN_PROTO_I32=5,
+    BUILTIN_PROTO_DOUBLE=6,
+    BUILTIN_PROTO_I64=7,
 };
 
 uint64_t get_builtin_retval(char* s);
@@ -108,8 +108,8 @@ uint64_t get_builtin_arg2_type(char* s);
 uint64_t get_builtin_arg3_type(char* s);
 
 /*
-	TODO: push built-in struct types onto the list of typedecls,
-	for the compiletime execution environment to access.
+    TODO: push built-in struct types onto the list of typedecls,
+    for the compiletime execution environment to access.
 */
 
 #endif

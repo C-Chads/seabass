@@ -4,7 +4,7 @@
 #include "stringutil.h"
 #include <stdint.h>
 /*
-	token type table
+    token type table
 */
 #define TOK_SPACE ((void*)0)
 #define TOK_NEWLINE ((void*)1)
@@ -45,135 +45,135 @@ int get_parser_echo(void);
 
 
 static inline int ID_IS_OP1(strll* i){
-	if(i->data != TOK_OPERATOR) return 0;
-	if(strlen(i->text) == 1) return 1;
-	return 0;
+    if(i->data != TOK_OPERATOR) return 0;
+    if(strlen(i->text) == 1) return 1;
+    return 0;
 }
 static inline int ID_IS_OP2(strll* i){
-	if(i->data != TOK_OPERATOR) return 0;
-	if(strlen(i->text) == 2) return 1;
-	return 0;
+    if(i->data != TOK_OPERATOR) return 0;
+    if(strlen(i->text) == 2) return 1;
+    return 0;
 }
 static inline int ID_IS_OP3(strll* i){
-	if(i->data != TOK_OPERATOR) return 0;
-	if(strlen(i->text) == 3) return 1;
-	return 0;
+    if(i->data != TOK_OPERATOR) return 0;
+    if(strlen(i->text) == 3) return 1;
+    return 0;
 }
 static inline int ID_IS_OP4(strll* i){
-	if(i->data != TOK_OPERATOR) return 0;
-	if(strlen(i->text) == 4) return 1;
-	return 0;
+    if(i->data != TOK_OPERATOR) return 0;
+    if(strlen(i->text) == 4) return 1;
+    return 0;
 }
 
 
 static inline uint64_t ID_KEYW_STRING(const char* s){
-	if(streq("fn",s)) return 40000;
-	if(streq("function",s)) return 40000;
-	if(streq("func",s)) return 40000;
-	if(streq("procedure",s)) return 40000;
-	if(streq("proc",s)) return 40000;
-	
-	if(streq("cast",s)) return 1;
-	
-	if(streq("u8",s)) return 2;
-	if(streq("char",s)) return 2;
-	if(streq("byte",s)) return 2;
-	if(streq("ubyte",s)) return 2;
-	if(streq("uchar",s)) return 2;
-	
-	if(streq("i8",s)) return 3;
-	if(streq("schar",s)) return 3;
-	if(streq("sbyte",s)) return 3;
-	
-	if(streq("u16",s)) return 4;
-	if(streq("ushort",s)) return 4;
-	
-	if(streq("i16",s)) return 5;
-	if(streq("short",s)) return 5;
-	if(streq("sshort",s)) return 5;
-	
-	if(streq("u32",s)) return 6;
-	if(streq("uint",s)) return 6;
-	if(streq("ulong",s)) return 6;
-	
-	if(streq("i32",s)) return 7;
-	if(streq("int",s)) return 7;
-	if(streq("sint",s)) return 7;
-	if(streq("long",s)) return 7;
-	if(streq("slong",s)) return 7;
-	
-	if(streq("u64",s)) return 8;
-	if(streq("ullong",s)) return 8;
-	if(streq("uqword",s)) return 8;
-	if(streq("uptr",s)) return 80;
-	if(streq("qword",s)) return 8;
-	
-	if(streq("i64",s)) return 9;
-	if(streq("sllong",s)) return 9;
-	if(streq("llong",s)) return 9;
-	if(streq("sqword",s)) return 9;
-	
-	if(streq("f32",s)) return 10;
-	if(streq("float",s)) return 10;
-	
-	if(streq("f64",s)) return 11;
-	if(streq("double",s)) return 11;
-	
-	if(streq("break",s)) return 12;
-	if(streq("data",s)) return 13;
-	if(streq("string",s)) return 14;
-	if(streq("end",s)) return 15;
-	if(streq("continue",s)) return 16;
-	if(streq("if",s)) return 17;
-	if(streq("else",s)) return 18;
-	if(streq("while",s)) return 19;
+    if(streq("fn",s)) return 40000;
+    if(streq("function",s)) return 40000;
+    if(streq("func",s)) return 40000;
+    if(streq("procedure",s)) return 40000;
+    if(streq("proc",s)) return 40000;
+    
+    if(streq("cast",s)) return 1;
+    
+    if(streq("u8",s)) return 2;
+    if(streq("char",s)) return 2;
+    if(streq("byte",s)) return 2;
+    if(streq("ubyte",s)) return 2;
+    if(streq("uchar",s)) return 2;
+    
+    if(streq("i8",s)) return 3;
+    if(streq("schar",s)) return 3;
+    if(streq("sbyte",s)) return 3;
+    
+    if(streq("u16",s)) return 4;
+    if(streq("ushort",s)) return 4;
+    
+    if(streq("i16",s)) return 5;
+    if(streq("short",s)) return 5;
+    if(streq("sshort",s)) return 5;
+    
+    if(streq("u32",s)) return 6;
+    if(streq("uint",s)) return 6;
+    if(streq("ulong",s)) return 6;
+    
+    if(streq("i32",s)) return 7;
+    if(streq("int",s)) return 7;
+    if(streq("sint",s)) return 7;
+    if(streq("long",s)) return 7;
+    if(streq("slong",s)) return 7;
+    
+    if(streq("u64",s)) return 8;
+    if(streq("ullong",s)) return 8;
+    if(streq("uqword",s)) return 8;
+    if(streq("uptr",s)) return 80;
+    if(streq("qword",s)) return 8;
+    
+    if(streq("i64",s)) return 9;
+    if(streq("sllong",s)) return 9;
+    if(streq("llong",s)) return 9;
+    if(streq("sqword",s)) return 9;
+    
+    if(streq("f32",s)) return 10;
+    if(streq("float",s)) return 10;
+    
+    if(streq("f64",s)) return 11;
+    if(streq("double",s)) return 11;
+    
+    if(streq("break",s)) return 12;
+    if(streq("data",s)) return 13;
+    if(streq("string",s)) return 14;
+    if(streq("end",s)) return 15;
+    if(streq("continue",s)) return 16;
+    if(streq("if",s)) return 17;
+    if(streq("else",s)) return 18;
+    if(streq("while",s)) return 19;
 
-	if(streq("goto",s)) return 20;
-	if(streq("jump",s)) return 20;
+    if(streq("goto",s)) return 20;
+    if(streq("jump",s)) return 20;
 
-	if(streq("return",s)) return 22;
-	if(streq("tail",s)) return 23;
-	if(streq("sizeof",s)) return 24;
-	if(streq("static",s)) return 25;
-	
-	if(streq("pub",s)) return 26;
-	if(streq("public",s)) return 26;
-	
-	if(streq("struct",s)) return 27;
-	if(streq("class",s)) return 27;
-	if(streq("asm",s)) return 28;
-	if(streq("method",s)) return 29;
-	if(streq("predecl",s)) return 30;
-	if(streq("codegen",s)) return 31;
-	//constexpr
-	if(streq("constexpri",s)) return 32;
-	if(streq("constexprf",s)) return 33;
-	if(streq("switch",s)) return 34;
-	if(streq("for",s)) return 35;
-	
-	if(streq("elif",s)) return 36;
-	if(streq("elseif",s)) return 36;
+    if(streq("return",s)) return 22;
+    if(streq("tail",s)) return 23;
+    if(streq("sizeof",s)) return 24;
+    if(streq("static",s)) return 25;
+    
+    if(streq("pub",s)) return 26;
+    if(streq("public",s)) return 26;
+    
+    if(streq("struct",s)) return 27;
+    if(streq("class",s)) return 27;
+    if(streq("asm",s)) return 28;
+    if(streq("method",s)) return 29;
+    if(streq("predecl",s)) return 30;
+    if(streq("codegen",s)) return 31;
+    //constexpr
+    if(streq("constexpri",s)) return 32;
+    if(streq("constexprf",s)) return 33;
+    if(streq("switch",s)) return 34;
+    if(streq("for",s)) return 35;
+    
+    if(streq("elif",s)) return 36;
+    if(streq("elseif",s)) return 36;
 
-	if(streq("pure",s)) return 37;
-	if(streq("inline",s)) return 38;
-	/*atomic and volatile keywords.*/
-	if(streq("atomic",s)) return 39;
-	if(streq("volatile",s)) return 40;
+    if(streq("pure",s)) return 37;
+    if(streq("inline",s)) return 38;
+    /*atomic and volatile keywords.*/
+    if(streq("atomic",s)) return 39;
+    if(streq("volatile",s)) return 40;
 
-	if(streq("getfnptr",s)) return 41;
-	if(streq("callfnptr",s)) return 42;
-	if(streq("getglobalptr",s)) return 43;
-	if(streq("noexport",s)) return 44;
-	if(streq("union",s)) return 45;
-	puts("Internal Error: Unknown keyw_string, add it:");
-	puts(s);
-	exit(1);
-	return 0;
+    if(streq("getfnptr",s)) return 41;
+    if(streq("callfnptr",s)) return 42;
+    if(streq("getglobalptr",s)) return 43;
+    if(streq("noexport",s)) return 44;
+    if(streq("union",s)) return 45;
+    puts("Internal Error: Unknown keyw_string, add it:");
+    puts(s);
+    exit(1);
+    return 0;
 }
 
 static inline uint64_t ID_KEYW(strll* s){
-	if(s->data != TOK_KEYWORD) return 0;
-	return ID_KEYW_STRING(s->text);
+    if(s->data != TOK_KEYWORD) return 0;
+    return ID_KEYW_STRING(s->text);
 }
 
 
