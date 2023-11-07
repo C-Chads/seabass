@@ -95,7 +95,8 @@ static void write_string(char* s){
     memcpy(pdecode(s),s,strlen(s)+1);
 }
 static void plan_lvar(symdecl* s){
-    plan_string(s->name);
+    (void)s;
+    //plan_string(s->name);
 }
 static void plan_lvars(symdecl* s, unsigned long n){
     plan_array(s, sizeof(symdecl), n);
@@ -105,11 +106,13 @@ static void plan_lvars(symdecl* s, unsigned long n){
 }
 static void write_lvars(symdecl* s, unsigned long n){
     memcpy(pdecode(s),s,n * sizeof(symdecl));
+    /*
     REP(s)
     for(unsigned long i = 0; i < n; i++){
         write_string(s[i].name);
         FREP(s[i].name);
     }
+    */
 }
 
 //Does not do any allocation of itself, because
@@ -160,9 +163,10 @@ static void plan_stmts(stmt* s, unsigned long n){
             if(s[i].nexpressions == 0) continue;
             plan_expr_node(s[i].expressions[j]);
         }
+        /*
         if(s[i].referenced_label_name){
             plan_string(s[i].referenced_label_name);
-        }
+        }*/
         if(s[i].switch_nlabels){
             push_plan(s[i].switch_label_indices, sizeof(uint64_t) * s[i].switch_nlabels);
         }
@@ -186,10 +190,11 @@ static void write_stmts(stmt* s, unsigned long n){
             write_expr_node(s[i].expressions[j]);
             FREP(s[i].expressions[j])
         }
+        /*
         if(s[i].referenced_label_name){
             write_string(s[i].referenced_label_name);
             FREP(s[i].referenced_label_name)
-        }
+        }*/
         if(s[i].switch_nlabels){
             memcpy(
                 pdecode(s[i].switch_label_indices), 
@@ -230,7 +235,7 @@ void optimize_fn(symdecl* ss){
     memneeded = 0;
     bbuf = 0;
     npairs = 0;
-    if(ss->t.is_function == 0 ) return;
+    if(ss->t.is_function == 0 || ss->is_codegen == 0) return;
     //printf("Optimizing function %s\n", ss->name);
     plan_scope(ss->fbody);
     for(unsigned long i = 0; i < ss->nargs; i++){

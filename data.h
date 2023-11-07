@@ -145,7 +145,7 @@ typedef struct{
 	uint64_t is_data; /*only set for data.*/
 	uint64_t is_noexport;
 	/*Code generator data.*/
-	uint64_t VM_function_stackframe_placement; /*For local variables and function args, used by the AST executor*/
+	//uint64_t VM_function_stackframe_placement; /*For local variables and function args, used by the AST executor*/
 } symdecl;
 
 
