@@ -1432,7 +1432,6 @@ void parse_structdecl(){
     require(peek()->data == TOK_KEYWORD, "Struct declaration must begin with keyword");
     require(ID_KEYW(peek()) == ID_KEYW_STRING("struct"),"Struct declaration must begin with 'struct' or 'class'");
     consume();
-    parse_repeatedly_try_metaprogramming(); //allow struct declarations to be metaprogrammed, even their identifiers
     require(peek()->data == TOK_IDENT, "Struct declaration without identifier");
     require(!peek_ident_is_already_used_globally(), "Struct declaration uses already-in-use identifier");
 
@@ -1447,7 +1446,6 @@ void parse_structdecl(){
     consume(); /*eat the identifier*/
 
     while(1){
-        parse_repeatedly_try_metaprogramming(); //allow individual struct members to be metaprogrammed.
         if(peek_match_keyw("end")){
             consume();
             break;
