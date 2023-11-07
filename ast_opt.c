@@ -13,7 +13,7 @@
 static size_t memneeded = 0;
 //our big buffer!
 static void* bbuf = 0;
-static const size_t ALGN = 32; //memory alignment...
+static const size_t ALGN = 8; //memory alignment...
 typedef struct{
     void* p;
     size_t t;
