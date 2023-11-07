@@ -339,7 +339,6 @@ typedef struct expr_node{
 	char* method_name; /*if method: this is mangled. */
 	uint64_t is_global_variable;
 	uint64_t is_function;
-	uint64_t is_local_variable;
 	uint64_t is_implied;
 	uint64_t was_struct_var;
 	type type_to_get_size_of; //sizeof and cast both use this.

@@ -513,7 +513,6 @@
 "\tchar* method_name\n"
 "\tu64 is_global_variable\n"
 "\tu64 is_function\n"
-"\tu64 is_local_variable\n"
 "\tu64 is_implied\n"
 "\tu64 was_struct_var\n"
 "\tcgtype type_to_get_size_of\n"
