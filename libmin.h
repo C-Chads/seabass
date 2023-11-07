@@ -445,8 +445,14 @@ LIBMIN_FUNC_ATTRIBS LIBMIN_FLOAT matof(char*s){
 #ifndef LIBMIN_FLOAT_NO_INFINITY
 	if(*s == 'I' || *s == 'i')
 		if(s[1] == 'N' || s[1] == 'n')
-			if(s[2] == 'F' || s[2] == 'f')
-				retval = 1e100000000000;
+			if(s[2] == 'F' || s[2] == 'f'){
+				retval = 1.0;
+				for(LIBMIN_INT i = 0; i < 300; i++){
+				    retval = retval * 1000;
+				}
+                if(isneg) retval = retval * -1;
+                return retval;
+			}	
 #endif
 	/*int_portion*/
 	while(misdigit(*s)){
@@ -523,11 +529,17 @@ LIBMIN_FUNC_ATTRIBS void mftoa(char* dest, LIBMIN_FLOAT value, LIBMIN_UINT after
 	if(value < 0) {*dest = '-'; dest++;value = value * -1;}
 	if(value == 0) {*dest = '0'; dest++; goto end;}
 #ifndef LIBMIN_FLOAT_NO_INFINITY
-	if(value == 1e100000000000){
-		*dest = 'I'; dest++;
-		*dest = 'N'; dest++;
-		*dest = 'F'; dest++;
-		goto end;
+    {
+    LIBMIN_FLOAT dd = 1;
+    //compute infinity...
+        for(int i = 0; i < 400; i++) dd = dd * 1024;
+        
+    	if(value == dd){
+    		*dest = 'I'; dest++;
+    		*dest = 'N'; dest++;
+    		*dest = 'F'; dest++;
+    		goto end;
+    	}
 	}
 #endif
 	/*Determine the highest power of 10.*/
