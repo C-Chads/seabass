@@ -77,8 +77,16 @@ static void* pdecode(void* p){
 }
 
 #define REP(A) (A) = pdecode(A);
+
+#ifdef COMPILER_CLEANS_UP
+
 #define FREP(A) free(A); (A) = pdecode(A);
 
+#else
+
+#define FREP(A) (A) = pdecode(A);
+
+#endif
 
 static void plan_string(char* s){
     push_plan(s, strlen(s)+1);
