@@ -85,6 +85,7 @@ end
 
 class ctor_dtor_tester
     int a;
+    char* q;
 end
 
 codegen int level_up = 1;
@@ -92,6 +93,7 @@ codegen int level_up = 1;
 method codegen ctor_dtor_tester.ctor():
     this.a = level_up++;
     char[50] buf
+    this.q = __builtin_malloc(2048);
     __builtin_itoa(buf, this.a);
     __builtin_puts("Hello! I am:");
     __builtin_puts(buf);
@@ -102,7 +104,9 @@ method codegen ctor_dtor_tester.dtor():
     __builtin_itoa(buf, this.a);
     __builtin_puts("Bye! My id was...");
     __builtin_puts(buf);
+    __builtin_free(this.q);
     level_up--;
+    
 end
 
 
@@ -1113,10 +1117,12 @@ proc codegen codegen_main():
     	        ctor_dtor_tester quantity //6
     	        if(bruhmoment == 7)
     	            ctor_dtor_tester Velocity //7
+    	            __builtin_puts("IT HAPPENED!!!");
     	            break
     	        end
     	    end
     	    if(bruhmoment == 4)
+    	        ctor_dtor_tester weemawhack //5
     	        goto nomore
     	    end
     	    continue

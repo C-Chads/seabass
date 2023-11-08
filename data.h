@@ -175,9 +175,6 @@ typedef struct scope{
     uint64_t nstmts;
     uint64_t is_fbody;
     uint64_t is_loopbody;
-    /*Code generator data.*/
-    uint64_t walker_point; /*Where was the code validator?*/
-    uint64_t stopped_at_scope1; /*Did the validator stop at myscope or myscope2?*/
 } scope;
 typedef struct{
     symdecl_astexec* syms;

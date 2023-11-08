@@ -474,8 +474,6 @@ class cgscope
     u64 nstmts
     u64 is_fbody
     u64 is_loopbody
-    u64 walker_point
-    u64 stopped_at_scope1
 end
 
 class cgstmt

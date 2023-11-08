@@ -88,7 +88,7 @@ static inline int impl_streq_exists(){
     return 0;
 }
 
-static void validator_exit_err(){
+static inline void validator_exit_err(){
     char buf[80];
     if(curr_stmt){
         mutoa(buf, curr_stmt->linenum);
@@ -1800,7 +1800,8 @@ static void validate_codegen_safety(expr_node* ee){
 }
 
 static void insert_implied_type_conversion_ptr_assign_int_override(
-expr_node** e_ptr, type t
+    expr_node** e_ptr, 
+    type t
 ){
     expr_node cast = {0};
     expr_node* allocated = NULL;
@@ -1818,7 +1819,8 @@ expr_node** e_ptr, type t
 }
 
 static void insert_implied_type_conversion_ptr_compare_int_ptr_override(
-expr_node** e_ptr, type t
+    expr_node** e_ptr, 
+    type t
 ){
     expr_node cast = {0};
     expr_node* allocated = NULL;
@@ -2558,15 +2560,14 @@ static void assign_scopediff_vardiff(stmt* me, scope* jtarget_scope, int is_retu
     validator_exit_err();
 }
 
-//also does goto validation.
-static void walk_assign_lsym_gsym(){
-    scope* current_scope;
+//Now it's recursive, so is "walk" really a good name for this?
+static void walk_assign_lsym_gsym(scope* current_scope){
     int64_t i;
     int64_t j;
 
-    current_scope = symbol_table[active_function]->fbody;
+    //current_scope = symbol_table[active_function]->fbody;
     stmt* stmtlist;
-    current_scope->walker_point = 0;
+    //current_scope->walker_point = 0;
     i = 0;
     uint64_t WORD_BASE;
     uint64_t SIGNED_WORD_BASE;
@@ -2583,58 +2584,12 @@ static void walk_assign_lsym_gsym(){
     }
     (void)WORD_BASE;
     //
-    while(1){
+    for(i = 0; i <(int64_t)current_scope->nstmts; i++) {
         stmtlist = current_scope->stmts;
-        //if this is a goto, 
-
-        if(i >= (int64_t)current_scope->nstmts){
-            current_scope->stopped_at_scope1 = 0; //reset it!
-            if(nscopes <= 0) return;
-            current_scope = scopestack[nscopes-1];
-            scopestack_pop();
-            i = current_scope->walker_point;
-            /*
-                if it is a loop, we have to pop from the loop stack, too
-            */
-            stmtlist = current_scope->stmts;
-            curr_stmt = stmtlist + i;
-            if(
-                stmtlist[i].kind == STMT_FOR ||
-                stmtlist[i].kind == STMT_WHILE
-            ){
-                loopstack_pop();
-            }
-            i++;
-            continue;
-        }
         curr_stmt = stmtlist + i;
         if(stmtlist[i].kind == STMT_CONTINUE ||
-            stmtlist[i].kind == STMT_BREAK){
-            /*
-            if(nloops <= 0){
-                puts("INTERNAL VALIDATOR ERROR");
-                puts("Continue or break in invalid context reached code validator.");
-                validator_exit_err();
-            }
-            if(loopstack[nloops-1] == NULL){
-                puts("INTERNAL VALIDATOR ERROR");
-                puts("Loopstack has a null on it?");
-                validator_exit_err();
-            }
-            if(loopstack[nloops-1]->kind != STMT_WHILE &&
-                loopstack[nloops-1]->kind != STMT_FOR
-            ){
-                puts("INTERNAL VALIDATOR ERROR");
-                puts("Loopstack has a non-loop on it?");
-                validator_exit_err();
-            }
-            */
-            
-            /*
-                TODO: add goto_where_in_scope linkage here.
-                
-                We don't want to literally SEARCH THE SCOPE for 
-            */
+            stmtlist[i].kind == STMT_BREAK)
+        {
             stmtlist[i].referenced_loop = loopstack[nloops-1];
             scopestack_push(current_scope);
                 assign_scopediff_vardiff(
@@ -2706,7 +2661,6 @@ static void walk_assign_lsym_gsym(){
             )
             throw_type_error("For statement has non-integer conditional expression..");
             qq = type_init();
-            //qq.basetype = BASE_I64;
             qq.basetype = SIGNED_WORD_BASE;
             insert_implied_type_conversion((expr_node**)stmtlist[i].expressions+1, qq);
             loopstack_push(stmtlist + i);
@@ -2722,7 +2676,6 @@ static void walk_assign_lsym_gsym(){
             )
             throw_type_error("While statement has non-integer conditional expression..");
             qq = type_init();
-            //qq.basetype = BASE_I64;
             qq.basetype = SIGNED_WORD_BASE;
             insert_implied_type_conversion((expr_node**)stmtlist[i].expressions, qq);
             loopstack_push(stmtlist + i);
@@ -2742,20 +2695,20 @@ static void walk_assign_lsym_gsym(){
             qq.basetype = SIGNED_WORD_BASE;
             insert_implied_type_conversion((expr_node**)stmtlist[i].expressions, qq);
         }
-        if(stmtlist[i].kind == STMT_ELSE ||
-            stmtlist[i].kind == STMT_ELIF){
-                if(i == 0){
-                    puts("Else/Elif at the beginning of a scope? (No preceding if?)");
-                    puts("<This is only possible if this code was automatically generated.");
-                    validator_exit_err();
-                }
-                if(stmtlist[i-1].kind != STMT_ELIF &&
-                    stmtlist[i-1].kind != STMT_IF){
-                    puts("Else/Elif without a preceding if/else?");
-                    puts("<This is only possible if this code was automatically generated.");
-                    validator_exit_err();
-                }
+        if(
+            stmtlist[i].kind == STMT_ELSE ||
+            stmtlist[i].kind == STMT_ELIF
+        ){
+            if(i == 0){
+                puts("Else/Elif at the beginning of a scope? (No preceding if?)");
+                validator_exit_err();
             }
+            if(stmtlist[i-1].kind != STMT_ELIF &&
+                stmtlist[i-1].kind != STMT_IF){
+                puts("Else/Elif without a preceding if/else?");
+                validator_exit_err();
+            }
+        }
         if(stmtlist[i].kind == STMT_ELIF){
             type qq = ((expr_node*)stmtlist[i].expressions[0])->t;
             if(qq.pointerlevel > 0)
@@ -2857,16 +2810,16 @@ static void walk_assign_lsym_gsym(){
             }
         }
         if(stmtlist[i].myscope){
-            /*ctx switch.*/
-            current_scope->walker_point = i;
-            current_scope->stopped_at_scope1 = 1;
             scopestack_push(current_scope);
-            /*load scope*/
-            current_scope = stmtlist[i].myscope;
-            i = 0;
-            continue;
+                walk_assign_lsym_gsym(stmtlist[i].myscope);
+            scopestack_pop(current_scope);
+            if(
+                stmtlist[i].kind == STMT_FOR ||
+                stmtlist[i].kind == STMT_WHILE
+            ){
+                loopstack_pop();
+            }
         }
-        i++;
     }
 }
 
@@ -2988,43 +2941,44 @@ static void recurse_insert_dtors_before_gotos(
             cur_stmt->kind == STMT_CONTINUE ||
             cur_stmt->kind == STMT_BREAK
         ){
-        if(
-            cur_stmt->goto_scopediff >= scopediff //has the minimum scopediff...
-        )
-        {
-            scope_insert_nops(scope_to_work_on, i, dtors_needed);
-            
-            stmtlist = scope_to_work_on->stmts;
-            /*Write our destructors here!*/
-            iter = 0;
-            for(j = nsyms-1; j >= 0; j--){
-                //TODO
-                if(destructible_arr[j] == 0) continue;
-                stmt* me = stmtlist + i + iter;
-                iter++;
-                *me =  stmt_init();
-                me->whereami = scope_to_work_on; /*The scope to look in!*/
-                me->filename = "OBJECT_ORIENTED_PROGRAMMING_INTERNAL_AUTOGENERATED";
-                me->linenum = 0;
-                me->colnum = 0;
-                me->kind = STMT_EXPR;
-                me->nexpressions = 1;
-                expr_node* parent_method_expr = c_allocX(sizeof(expr_node));
-                expr_node* child_node_self_sym = c_allocX(sizeof(expr_node));
-                child_node_self_sym->symname = strdup(syms[j].name);
-                child_node_self_sym->kind = EXPR_SYM;
+            if(
+                cur_stmt->goto_scopediff >= scopediff //has the minimum scopediff...
+            )
+            {
+                scope_insert_nops(scope_to_work_on, i, dtors_needed);
                 
-                me->expressions[0] = parent_method_expr;
-                parent_method_expr->kind = EXPR_METHOD;
-                parent_method_expr->subnodes[0] = child_node_self_sym;
-                //before_f->subnodes[0] = f; /*A method is (secretly) passing "this" as the first argument.*/
-                 parent_method_expr->method_name = strdup("dtor");
-                parent_method_expr->symname = NULL;
-                 //f->is_function = 1; //HUH?!?! Regardless, we replicate it...
-                 child_node_self_sym->is_function = 1;
+                stmtlist = scope_to_work_on->stmts;
+                /*Write our destructors here!*/
+                iter = 0;
+                for(j = nsyms-1; j >= 0; j--){
+                    //TODO
+                    if(destructible_arr[j] == 0) continue;
+                    stmt* me = stmtlist + i + iter;
+                    iter++;
+                    *me =  stmt_init();
+                    me->whereami = scope_to_work_on; /*The scope to look in!*/
+                    me->filename = "OBJECT_ORIENTED_PROGRAMMING_INTERNAL_AUTOGENERATED";
+                    me->linenum = 0;
+                    me->colnum = 0;
+                    me->kind = STMT_EXPR;
+                    me->nexpressions = 1;
+                    expr_node* parent_method_expr = c_allocX(sizeof(expr_node));
+                    expr_node* child_node_self_sym = c_allocX(sizeof(expr_node));
+                    child_node_self_sym->symname = strdup(syms[j].name);
+                    child_node_self_sym->kind = EXPR_SYM;
+                    
+                    me->expressions[0] = parent_method_expr;
+                    parent_method_expr->kind = EXPR_METHOD;
+                    parent_method_expr->subnodes[0] = child_node_self_sym;
+                    //before_f->subnodes[0] = f; /*A method is (secretly) passing "this" as the first argument.*/
+                     parent_method_expr->method_name = strdup("dtor");
+                    parent_method_expr->symname = NULL;
+                     //f->is_function = 1; //HUH?!?! Regardless, we replicate it...
+                     child_node_self_sym->is_function = 1;
+                }
+                i += dtors_needed;
             }
-            i += dtors_needed;
-        }}
+        }
         else if(cur_stmt->myscope){
             recurse_insert_dtors_before_gotos(
                 cur_stmt->myscope,
@@ -3037,255 +2991,204 @@ static void recurse_insert_dtors_before_gotos(
     }
 }
 
-static void walk_insert_ctor_dtor(){
-    scope* current_scope;
+static void walk_insert_ctor_dtor(scope* current_scope){
     int64_t i;
 
-    current_scope = symbol_table[active_function]->fbody;
+    //current_scope = symbol_table[active_function]->fbody;
     stmt* stmtlist;
-    current_scope->walker_point = 0;
+    //current_scope->walker_point = 0;
     i = 0;
     //
-    while(1){
-        stmtlist = current_scope->stmts;
-        symdecl* syms = current_scope->syms;
-        uint64_t nsyms = current_scope->nsyms;
-        /*
-            TODO: discover what variables are declared, see if they are struct variables with
-            a defined ctor and dtor...
-        */
-        if(current_scope->stopped_at_scope1 == 0)
-        {
-            current_scope->stopped_at_scope1 = 1;
+    stmtlist = current_scope->stmts;
+    symdecl* syms = current_scope->syms;
+    uint64_t nsyms = current_scope->nsyms;
+    {
+        char* constructible_arr = malloc(nsyms);
+        char* destructible_arr = malloc(nsyms);
+        ctor_dtor_stack_push();
+        ctor_dtor_stack[ctor_dtor_stackptr-1].constructible_arr = constructible_arr;
+        ctor_dtor_stack[ctor_dtor_stackptr-1].destructible_arr = destructible_arr;
+        memset(constructible_arr, 0, nsyms);
+        memset(destructible_arr, 0, nsyms);
+        int64_t j;
+        int64_t stmts_needed = 0;
+        int64_t ctors_needed = 0;
+        int64_t dtors_needed = 0;
+        int64_t nstmts_before = 0;
+        int64_t beginning_of_dtors = 0;
+        for(j = 0; j < (int64_t)nsyms; j++){
+            if(syms[j].t.basetype != BASE_STRUCT) continue;
+            if(syms[j].t.pointerlevel != 0) continue; //we don't bother for pointers to structs.
+            if(syms[j].t.arraylen != 0) continue; //we don't bother for arrays of them, either.
+            update_metadata(syms[j].t.structid); //we update the metadata. Then we check...
+            constructible_arr[j] = (oop_metadata[syms[j].t.structid].ctor_id != -1);
+            destructible_arr[j] = (oop_metadata[syms[j].t.structid].dtor_id != -1);
             
-            char* constructible_arr = malloc(nsyms);
-            char* destructible_arr = malloc(nsyms);
-            ctor_dtor_stack_push();
-            ctor_dtor_stack[ctor_dtor_stackptr-1].constructible_arr = constructible_arr;
-            ctor_dtor_stack[ctor_dtor_stackptr-1].destructible_arr = destructible_arr;
-            memset(constructible_arr, 0, nsyms);
-            memset(destructible_arr, 0, nsyms);
-            int64_t j;
-            int64_t stmts_needed = 0;
-            int64_t ctors_needed = 0;
-            int64_t dtors_needed = 0;
-            int64_t nstmts_before = 0;
-            int64_t beginning_of_dtors = 0;
-            for(j = 0; j < (int64_t)nsyms; j++){
-                if(syms[j].t.basetype != BASE_STRUCT) continue;
-                if(syms[j].t.pointerlevel != 0) continue; //we don't bother for pointers to structs.
-                if(syms[j].t.arraylen != 0) continue; //we don't bother for arrays of them, either.
-                update_metadata(syms[j].t.structid); //we update the metadata. Then we check...
-                constructible_arr[j] = (oop_metadata[syms[j].t.structid].ctor_id != -1);
-                destructible_arr[j] = (oop_metadata[syms[j].t.structid].dtor_id != -1);
-                
-                if(constructible_arr[j]) {stmts_needed++;ctors_needed++;}
-                if(destructible_arr[j]) {stmts_needed++;dtors_needed++;}
+            if(constructible_arr[j]) {stmts_needed++;ctors_needed++;}
+            if(destructible_arr[j]) {stmts_needed++;dtors_needed++;}
+        }
+        ctor_dtor_stack[ctor_dtor_stackptr-1].ctors_needed = ctors_needed;
+        ctor_dtor_stack[ctor_dtor_stackptr-1].dtors_needed = dtors_needed;
+        ctor_dtor_stack[ctor_dtor_stackptr-1].stmts_needed = stmts_needed;
+        if(stmts_needed == 0) goto just_skip_the_part_where_we_do_the_constructor_destructor_insertion;
+        nstmts_before = current_scope->nstmts;
+        scopestack_push(current_scope);
+            for(j = 0; j < stmts_needed; j++){
+                parser_push_statement_nop();
             }
-            ctor_dtor_stack[ctor_dtor_stackptr-1].ctors_needed = ctors_needed;
-            ctor_dtor_stack[ctor_dtor_stackptr-1].dtors_needed = dtors_needed;
-            ctor_dtor_stack[ctor_dtor_stackptr-1].stmts_needed = stmts_needed;
-            if(stmts_needed == 0) goto just_skip_the_part_where_we_do_the_constructor_destructor_insertion;
-            nstmts_before = current_scope->nstmts;
-            scopestack_push(current_scope);
-                for(j = 0; j < stmts_needed; j++){
-                    parser_push_statement_nop();
-                }
-            scopestack_pop();
-            stmtlist = current_scope->stmts;
-            //according to the C documentation, this is fine...
-            memmove(stmtlist + ctors_needed, stmtlist, sizeof(stmt) * nstmts_before);
-            beginning_of_dtors = ctors_needed + nstmts_before; //skip those other statements!
-            int64_t iter = 0;
-            for(j = 0; j < (int64_t)nsyms; j++){
-                //TODO
-                if(constructible_arr[j] == 0) continue;
-                stmt* me = stmtlist + iter;
-                iter++;
-                *me =  stmt_init();
-                me->whereami = current_scope; /*The scope to look in!*/
-                me->filename = "OBJECT_ORIENTED_PROGRAMMING_INTERNAL_AUTOGENERATED";
-                me->linenum = 0;
-                me->colnum = 0;
-                me->kind = STMT_EXPR;
-                me->nexpressions = 1;
-                expr_node* parent_method_expr = c_allocX(sizeof(expr_node));
-                expr_node* child_node_self_sym = c_allocX(sizeof(expr_node));
-                child_node_self_sym->symname = strdup(syms[j].name);
-                child_node_self_sym->kind = EXPR_SYM;
-                
-                me->expressions[0] = parent_method_expr;
-                parent_method_expr->kind = EXPR_METHOD;
-                parent_method_expr->subnodes[0] = child_node_self_sym;
-                //before_f->subnodes[0] = f; /*A method is (secretly) passing "this" as the first argument.*/
-                 parent_method_expr->method_name = strdup("ctor");
-                parent_method_expr->symname = NULL;
-                //f->is_function = 1; //HUH?!?! Regardless, we replicate it...
-                 child_node_self_sym->is_function = 1;
-            }
+        scopestack_pop();
+        stmtlist = current_scope->stmts;
+        //according to the C documentation, this is fine...
+        memmove(stmtlist + ctors_needed, stmtlist, sizeof(stmt) * nstmts_before);
+        beginning_of_dtors = ctors_needed + nstmts_before; //skip those other statements!
+        int64_t iter = 0;
+        for(j = 0; j < (int64_t)nsyms; j++){
+            //TODO
+            if(constructible_arr[j] == 0) continue;
+            stmt* me = stmtlist + iter;
+            iter++;
+            *me =  stmt_init();
+            me->whereami = current_scope; /*The scope to look in!*/
+            me->filename = "OBJECT_ORIENTED_PROGRAMMING_INTERNAL_AUTOGENERATED";
+            me->linenum = 0;
+            me->colnum = 0;
+            me->kind = STMT_EXPR;
+            me->nexpressions = 1;
+            expr_node* parent_method_expr = c_allocX(sizeof(expr_node));
+            expr_node* child_node_self_sym = c_allocX(sizeof(expr_node));
+            child_node_self_sym->symname = strdup(syms[j].name);
+            child_node_self_sym->kind = EXPR_SYM;
+            
+            me->expressions[0] = parent_method_expr;
+            parent_method_expr->kind = EXPR_METHOD;
+            parent_method_expr->subnodes[0] = child_node_self_sym;
+            //before_f->subnodes[0] = f; /*A method is (secretly) passing "this" as the first argument.*/
+             parent_method_expr->method_name = strdup("ctor");
+            parent_method_expr->symname = NULL;
+            //f->is_function = 1; //HUH?!?! Regardless, we replicate it...
+             child_node_self_sym->is_function = 1;
+        }
 
-            iter = 0;
-            for(j = nsyms-1; j >= 0; j--){
-                //TODO
-                if(destructible_arr[j] == 0) continue;
-                stmt* me = stmtlist + iter + beginning_of_dtors;
-                iter++;
-                *me =  stmt_init();
-                me->whereami = current_scope; /*The scope to look in!*/
-                me->filename = "OBJECT_ORIENTED_PROGRAMMING_INTERNAL_AUTOGENERATED";
-                me->linenum = 0;
-                me->colnum = 0;
-                me->kind = STMT_EXPR;
-                me->nexpressions = 1;
-                expr_node* parent_method_expr = c_allocX(sizeof(expr_node));
-                expr_node* child_node_self_sym = c_allocX(sizeof(expr_node));
-                child_node_self_sym->symname = strdup(syms[j].name);
-                child_node_self_sym->kind = EXPR_SYM;
-                
-                me->expressions[0] = parent_method_expr;
-                parent_method_expr->kind = EXPR_METHOD;
-                parent_method_expr->subnodes[0] = child_node_self_sym;
-                //before_f->subnodes[0] = f; /*A method is (secretly) passing "this" as the first argument.*/
-                 parent_method_expr->method_name = strdup("dtor");
-                parent_method_expr->symname = NULL;
-                 //f->is_function = 1; //HUH?!?! Regardless, we replicate it...
-                 child_node_self_sym->is_function = 1;
-            }
-            just_skip_the_part_where_we_do_the_constructor_destructor_insertion:;
+        iter = 0;
+        for(j = nsyms-1; j >= 0; j--){
+            //TODO
+            if(destructible_arr[j] == 0) continue;
+            stmt* me = stmtlist + iter + beginning_of_dtors;
+            iter++;
+            *me =  stmt_init();
+            me->whereami = current_scope; /*The scope to look in!*/
+            me->filename = "OBJECT_ORIENTED_PROGRAMMING_INTERNAL_AUTOGENERATED";
+            me->linenum = 0;
+            me->colnum = 0;
+            me->kind = STMT_EXPR;
+            me->nexpressions = 1;
+            expr_node* parent_method_expr = c_allocX(sizeof(expr_node));
+            expr_node* child_node_self_sym = c_allocX(sizeof(expr_node));
+            child_node_self_sym->symname = strdup(syms[j].name);
+            child_node_self_sym->kind = EXPR_SYM;
+            
+            me->expressions[0] = parent_method_expr;
+            parent_method_expr->kind = EXPR_METHOD;
+            parent_method_expr->subnodes[0] = child_node_self_sym;
+            //before_f->subnodes[0] = f; /*A method is (secretly) passing "this" as the first argument.*/
+             parent_method_expr->method_name = strdup("dtor");
+            parent_method_expr->symname = NULL;
+             //f->is_function = 1; //HUH?!?! Regardless, we replicate it...
+             child_node_self_sym->is_function = 1;
         }
-        if(i >= (int64_t)current_scope->nstmts){
-            /*
-                First, do the recursive insert_dtors_before_return!
-                We put it at the end here, right after we've processed all statements
-                inside of our scope's tree.
-                
-                This ensures we have already inserted all dtors for child scopes,
-                therefore ensuring the proper invocation order...
-            */
-            if(ctor_dtor_stack[ctor_dtor_stackptr-1].dtors_needed){
-                recurse_insert_dtors_before_return(
-                    current_scope,
-                    current_scope->syms,
-                    current_scope->nsyms,
-                    ctor_dtor_stack[ctor_dtor_stackptr-1].destructible_arr,
-                    ctor_dtor_stack[ctor_dtor_stackptr-1].dtors_needed
-                );
-            }
-            current_scope->stopped_at_scope1 = 0; //reset it!
-            if(nscopes <= 0) return;
-            current_scope = scopestack[nscopes-1];
-            scopestack_pop();
-            ctor_dtor_stack_pop();
-            i = current_scope->walker_point;
-            /*
-                if it is a loop, we have to pop from the loop stack, too
-            */
-            stmtlist = current_scope->stmts;
-            i++;
-            continue;
-        }
+        just_skip_the_part_where_we_do_the_constructor_destructor_insertion:;
+    }
+    for(i = 0; i < (int64_t)current_scope->nstmts; i++){
         if(stmtlist[i].myscope){
             /*ctx switch.*/
-            current_scope->walker_point = i;
             scopestack_push(current_scope);
-            /*load scope*/
-            current_scope = stmtlist[i].myscope;
-            i = 0;
+                walk_insert_ctor_dtor(stmtlist[i].myscope);
+            scopestack_pop();
             continue;
         }
-        i++;
     }
+    if(ctor_dtor_stack[ctor_dtor_stackptr-1].dtors_needed){
+        recurse_insert_dtors_before_return(
+            current_scope,
+            current_scope->syms,
+            current_scope->nsyms,
+            ctor_dtor_stack[ctor_dtor_stackptr-1].destructible_arr,
+            ctor_dtor_stack[ctor_dtor_stackptr-1].dtors_needed
+        );
+    }
+    ctor_dtor_stack_pop();
+
+    return;
 }
 
-static void walk_insert_ctor_dtor_pt2(){
+static void walk_insert_ctor_dtor_pt2(scope* current_scope){
     //TODO
-    scope* current_scope;
     int64_t i;
 
-    current_scope = symbol_table[active_function]->fbody;
+    //current_scope = symbol_table[active_function]->fbody;
     stmt* stmtlist;
-    current_scope->walker_point = 0;
     i = 0;
-    //
-    while(1){
-        stmtlist = current_scope->stmts;
-        symdecl* syms = current_scope->syms;
-        uint64_t nsyms = current_scope->nsyms;
-        /*
-            TODO: discover what variables are declared, see if they are struct variables with
-            a defined ctor and dtor...
-        */
-        if(current_scope->stopped_at_scope1 == 0)
-        {
-            current_scope->stopped_at_scope1 = 1;
+    stmtlist = current_scope->stmts;
+    symdecl* syms = current_scope->syms;
+    uint64_t nsyms = current_scope->nsyms;
+    {
+        
+        char* constructible_arr = malloc(nsyms);
+        char* destructible_arr = malloc(nsyms);
+        ctor_dtor_stack_push();
+        ctor_dtor_stack[ctor_dtor_stackptr-1].constructible_arr = constructible_arr;
+        ctor_dtor_stack[ctor_dtor_stackptr-1].destructible_arr = destructible_arr;
+        memset(constructible_arr, 0, nsyms);
+        memset(destructible_arr, 0, nsyms);
+        int64_t j;
+        int64_t stmts_needed = 0;
+        int64_t ctors_needed = 0;
+        int64_t dtors_needed = 0;
+        //int64_t nstmts_before = 0;
+        //int64_t beginning_of_dtors = 0;
+        for(j = 0; j < (int64_t)nsyms; j++){
+            if(syms[j].t.basetype != BASE_STRUCT) continue;
+            if(syms[j].t.pointerlevel != 0) continue; //we don't bother for pointers to structs.
+            if(syms[j].t.arraylen != 0) continue; //we don't bother for arrays of them, either.
+            update_metadata(syms[j].t.structid); //we update the metadata. Then we check...
+            constructible_arr[j] = (oop_metadata[syms[j].t.structid].ctor_id != -1);
+            destructible_arr[j] = (oop_metadata[syms[j].t.structid].dtor_id != -1);
             
-            char* constructible_arr = malloc(nsyms);
-            char* destructible_arr = malloc(nsyms);
-            ctor_dtor_stack_push();
-            ctor_dtor_stack[ctor_dtor_stackptr-1].constructible_arr = constructible_arr;
-            ctor_dtor_stack[ctor_dtor_stackptr-1].destructible_arr = destructible_arr;
-            memset(constructible_arr, 0, nsyms);
-            memset(destructible_arr, 0, nsyms);
-            int64_t j;
-            int64_t stmts_needed = 0;
-            int64_t ctors_needed = 0;
-            int64_t dtors_needed = 0;
-            int64_t nstmts_before = 0;
-            int64_t beginning_of_dtors = 0;
-            for(j = 0; j < (int64_t)nsyms; j++){
-                if(syms[j].t.basetype != BASE_STRUCT) continue;
-                if(syms[j].t.pointerlevel != 0) continue; //we don't bother for pointers to structs.
-                if(syms[j].t.arraylen != 0) continue; //we don't bother for arrays of them, either.
-                update_metadata(syms[j].t.structid); //we update the metadata. Then we check...
-                constructible_arr[j] = (oop_metadata[syms[j].t.structid].ctor_id != -1);
-                destructible_arr[j] = (oop_metadata[syms[j].t.structid].dtor_id != -1);
-                
-                if(constructible_arr[j]) {stmts_needed++;ctors_needed++;}
-                if(destructible_arr[j]) {stmts_needed++;dtors_needed++;}
-            }
-            ctor_dtor_stack[ctor_dtor_stackptr-1].ctors_needed = ctors_needed;
-            ctor_dtor_stack[ctor_dtor_stackptr-1].dtors_needed = dtors_needed;
-            ctor_dtor_stack[ctor_dtor_stackptr-1].stmts_needed = stmts_needed;
-            if(stmts_needed == 0) goto just_skip_the_part_where_we_do_the_constructor_destructor_insertion;
-            nstmts_before = current_scope->nstmts;
-            just_skip_the_part_where_we_do_the_constructor_destructor_insertion:;
+            if(constructible_arr[j]) {stmts_needed++;ctors_needed++;}
+            if(destructible_arr[j]) {stmts_needed++;dtors_needed++;}
         }
-        if(i >= (int64_t)current_scope->nstmts){
-            if(ctor_dtor_stack[ctor_dtor_stackptr-1].dtors_needed){
-                recurse_insert_dtors_before_gotos(
-                    current_scope,
-                    current_scope->syms,
-                    current_scope->nsyms,
-                    ctor_dtor_stack[ctor_dtor_stackptr-1].destructible_arr,
-                    ctor_dtor_stack[ctor_dtor_stackptr-1].dtors_needed,
-                    1 //if it traverses above us even one level, this requires our attention...
-                    //we use >= for the test, so it's nothing special....
-                );
-            }
-            current_scope->stopped_at_scope1 = 0; //reset it!
-            if(nscopes <= 0) return;
-            current_scope = scopestack[nscopes-1];
-            scopestack_pop();
-
-            ctor_dtor_stack_pop();
-            i = current_scope->walker_point;
-            /*
-                if it is a loop, we have to pop from the loop stack, too
-            */
-            stmtlist = current_scope->stmts;
-            i++;
-            continue;
-        }
+        ctor_dtor_stack[ctor_dtor_stackptr-1].ctors_needed = ctors_needed;
+        ctor_dtor_stack[ctor_dtor_stackptr-1].dtors_needed = dtors_needed;
+        ctor_dtor_stack[ctor_dtor_stackptr-1].stmts_needed = stmts_needed;
+        if(stmts_needed == 0) goto just_skip_the_part_where_we_do_the_constructor_destructor_insertion;
+        //nstmts_before = current_scope->nstmts;
+        just_skip_the_part_where_we_do_the_constructor_destructor_insertion:;
+    }
+    //
+    for(i = 0; i < (int64_t)current_scope->nstmts; i++){
         if(stmtlist[i].myscope){
             /*ctx switch.*/
-            current_scope->walker_point = i;
             scopestack_push(current_scope);
-            /*load scope*/
-            current_scope = stmtlist[i].myscope;
-            i = 0;
-            continue;
+                walk_insert_ctor_dtor_pt2(stmtlist[i].myscope);
+            scopestack_pop();
         }
+    }
+    {
+        if(ctor_dtor_stack[ctor_dtor_stackptr-1].dtors_needed){
+            recurse_insert_dtors_before_gotos(
+                current_scope,
+                current_scope->syms,
+                current_scope->nsyms,
+                ctor_dtor_stack[ctor_dtor_stackptr-1].destructible_arr,
+                ctor_dtor_stack[ctor_dtor_stackptr-1].dtors_needed,
+                1 //if it traverses above us even one level, this requires our attention...
+                //we use >= for the test, so it's nothing special....
+            );
+        }
+        //pop what we pushed...
+        ctor_dtor_stack_pop();
         i++;
+        return;
     }
 }
 
@@ -3330,7 +3233,7 @@ void validate_function(symdecl* funk){
     }
     
     /*0. Insert basic constructor and destructor calls... gulp!...*/
-    walk_insert_ctor_dtor();
+    walk_insert_ctor_dtor(funk->fbody);
     
     /*1. walk through the tree and count every time a label appears.*/
 
@@ -3339,17 +3242,17 @@ void validate_function(symdecl* funk){
         this also checks to see if goto targets exist.
     */
 
-    walk_assign_lsym_gsym();
+    walk_assign_lsym_gsym(funk->fbody);
     /*
         3.Based on scopediffs, we need to insert more complex destructor calls,
         such as those which 
     */
-    walk_insert_ctor_dtor_pt2();
+    walk_insert_ctor_dtor_pt2(funk->fbody);
     n_discovered_labels = 0;
 
     //these steps must be repeated...
     check_label_declarations(funk->fbody);
-    walk_assign_lsym_gsym();
+    walk_assign_lsym_gsym(funk->fbody);
     optimize_fn(funk);
     /*
         TODO: 
