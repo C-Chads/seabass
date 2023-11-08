@@ -514,7 +514,7 @@ void print_manpage(char* subject){
         nl
         ll("cbas -m reflection_library_code")
         nl
-        l("These should be called cgbuilder.hbas and cgast.hbas respectively.")
+        l("These should be called bldr.hbas and reflect.hbas respectively.")
         nl
         l("Here is a minimal complete example program which demonstrates using the 'builder' to")
         l("create and use parsehooks:")
