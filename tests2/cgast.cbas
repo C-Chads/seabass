@@ -1,6 +1,6 @@
 
 
-#include <cgast.hbas>
+#include <stdmeta/reflect.hbas>
 
 
 fn codegen parsehook_stream_pusher_test():

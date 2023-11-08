@@ -1,5 +1,5 @@
 
-#include <tbas.hbas>
+#include <stdmeta/tbas.hbas>
 
 codegen u64 whygen = 0;
 

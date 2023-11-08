@@ -2,8 +2,8 @@
 
 #guard compiletime_parsehook_dictionaries_library_DMHSW
 
-#include <cgwksht.hbas>
-#include <cgtoken_manip_tools.hbas>
+#include <stdmeta/wksht.hbas>
+#include <stdmeta/tok_manip.hbas>
 
 /*
     PARSEHOOK DICTIONARIES

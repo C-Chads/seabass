@@ -6,8 +6,8 @@
 
 
 
-#include <cgbuilder.hbas>
-#include <cg_uast.hbas>
+#include <stdmeta/bldr.hbas>
+#include <stdmeta/uast.hbas>
 
 /*
     THE RECURSIVE DESCENT PARSER LIBRARY

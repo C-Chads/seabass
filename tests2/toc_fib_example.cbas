@@ -1,5 +1,6 @@
-#include <bit64.hbas>
-#include <seabass_stdlib.hbas>
+
+#include <toc/bit64.hbas>
+#include <toc/usermode_stdlib.hbas>
 
 
 /*

@@ -1,8 +1,8 @@
 
 
-#include <bit64.hbas>
-#include <toc.hbas>
-#include <seabass_stdlib.hbas>
+#include <toc/bit64.hbas>
+#include <toc/toc.hbas>
+#include <toc/usermode_stdlib.hbas>
 
 //mutate pprint....
 @wksht prnt[

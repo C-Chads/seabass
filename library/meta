@@ -1,0 +1,8 @@
+
+#guard metaprogramming_library_all
+
+#include <stdmeta/tbas.hbas>
+#include <stdmeta/tokenz.hbas>
+#include <stdmeta/uast_common.hbas>
+#include <stdmeta/errno.hbas>
+#include <stdmeta/knowl.hbas>

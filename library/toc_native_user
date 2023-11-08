@@ -1,0 +1,7 @@
+
+#guard toc_native_usermode_library
+
+#include <toc/bit64.hbas>
+#include <toc/usermode_stdlib.hbas>
+
+

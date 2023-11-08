@@ -1,8 +1,6 @@
 
 
-#include <bit64.hbas>
-#include <toc.hbas>
-#include <seabass_stdlib.hbas>
+#include <toc_native_user>
 //mutate pprint....
 @wksht prnt[
     [

@@ -1,6 +1,6 @@
 
-#include <bit32.hbas>
-#include <seabass_stdlib.hbas>
+#include <toc/bit32.hbas>
+#include <toc/usermode_stdlib.hbas>
 /*
     Compile like this
     cbas toc.cbas

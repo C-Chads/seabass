@@ -31,7 +31,7 @@ cbas_pure:
 
 install_stdlib:
 	mkdir -p /usr/include/cbas
-	cp library/*.hbas /usr/include/cbas/
+	cp -a library/. /usr/include/cbas/
 
 install: all_not_tcc
 	cp ./cbas_dirty /usr/local/bin/
@@ -39,7 +39,7 @@ install: all_not_tcc
 	cp ./cbas_dbg2 /usr/local/bin/
 	cp ./cbas_clean /usr/local/bin/
 	cp ./cbas_pure /usr/local/bin/
-	cp ./cbas_dirty /usr/local/bin/cbas
+	cp ./cbas_clean /usr/local/bin/cbas
 
 install_all: all
 	cp ./cbas_dirty /usr/local/bin/
@@ -48,7 +48,7 @@ install_all: all
 	cp ./cbas_clean /usr/local/bin/
 	cp ./cbas_tcc /usr/local/bin/
 	cp ./cbas_pure /usr/local/bin/
-	cp ./cbas_dirty /usr/local/bin/cbas
+	cp ./cbas_clean /usr/local/bin/cbas
 	
 dev: clean uninstall cbas_dbg
 	cp ./cbas_dbg /usr/local/bin/
@@ -56,37 +56,27 @@ dev: clean uninstall cbas_dbg
 q: clean install
 
 toc_test:
-	cd library && \
-	cbas toc_test.cbas && \
-	mv auto_out.c ../
+	cbas tests2/toc_test.cbas
 	$(CC) -m32 $(CFLAGS_CBAS) auto_out.c -o toc_test -lpthread -lm 
 
 fib:
-	cd library && \
-	cbas toc_fib_example.cbas && \
-	mv auto_out.c ../
+	cbas tests2/toc_fib_example.cbas
 	$(CC) $(CFLAGS_CBAS) auto_out.c -o fib -lpthread -lm 
 
 string_stdlib_test:
-	cd library && \
-	cbas stdlib_strings_test.cbas && \
-	mv auto_out.c ../
+	cbas tests2/stdlib_strings_test.cbas
 	$(CC) $(CFLAGS_CBAS) auto_out.c -o strtest -lpthread -lm 
 	
 dirlist:
-	cbas library/dirlist.cbas
+	cbas tests2/dirlist.cbas
 	$(CC) $(CFLAGS_CBAS) auto_out.c -o dirlist -lpthread -lm 
 
 bigunit_compil_test:
-	cd library && \
-	cbas toc_test_lots_of_functions.cbas && \
-	mv auto_out.c ../
+	cbas tests2/toc_test_lots_of_functions.cbas
 	$(CC) $(CFLAGS_CBAS) auto_out.c -o bigunit -lpthread -lm 
 
 dirty_bigunit_compil_test:
-	cd library && \
-	cbas_dirty toc_test_lots_of_functions.cbas && \
-	mv auto_out.c ../
+	cbas tests2/toc_test_lots_of_functions.cbas
 	$(CC) $(CFLAGS_CBAS) auto_out.c -o bigunit -lpthread -lm 
 
 uninstall:

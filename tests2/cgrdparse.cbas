@@ -1,5 +1,5 @@
 
-#include <cgrdparse.hbas>
+#include <stdmeta/cgrdparse.hbas>
 
 fn codegen cgrdparsehook_myhook(cgstrll in, cg_rd_parser_spec spec)->cgstrll*:
     
