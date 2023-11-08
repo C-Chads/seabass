@@ -396,7 +396,7 @@ static inline void require(int cond, char* msg){
 int peek_is_operator();
 int peek_is_semic();
 strll* consume_semicolon(char* msg);
-void require_peek_notnull(char* msg);
+
 
 
 

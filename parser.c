@@ -168,8 +168,7 @@ static inline void parse_do_metaprogramming(){
         consume();
         require(peek()->data == TOK_IDENT, "Parserhook requires identifier");
         //require(peek()->text != NULL, "Internal error, identifier does not have text?");
-        t = strdup(peek()->text);
-        t = strcataf2("parsehook_",t);
+        t = strcata("parsehook_",peek()->text);
         for(i = 0; i < nsymbols; i++){
             if(streq(symbol_table[i]->name, t)){
                 id = i;
@@ -203,7 +202,7 @@ static void parse_repeatedly_try_metaprogramming(){
 }
 
 
-void require_peek_notnull(char* msg){if(peek() == NULL)parse_error(msg);}
+static inline void require_peek_notnull(char* msg){if(peek() == NULL)parse_error(msg);}
 void astdump();
 void set_target_word(uint64_t val);
 void set_max_float_type(uint64_t val);
@@ -265,8 +264,7 @@ void compile_unit(strll* _unit){
                 consume();
                 require(peek() != NULL, "parsehook requires identifier.");
                 require(peek()->data == TOK_IDENT, "parsehook requires identifier");
-                t = strdup(peek()->text);
-                t = strcataf2("parsehook_",t);
+                t = strcata("parsehook_",peek()->text);
                 for(i = 0; i < nparsehooks; i++){
                     uint64_t the_parsehook = parsehook_table[i];
                     if(streq(symbol_table[the_parsehook]->name, t)){
@@ -1221,7 +1219,6 @@ static inline void parse_struct_member(uint64_t sid){
     t.is_lvalue = 1;
     if(t.arraylen > 0) t.is_lvalue = 0;
     if(t.pointerlevel == 0) if(t.basetype == BASE_STRUCT) t.is_lvalue = 0; //struct member of struct is not lvalue.
-    //consume_semicolon("Struct member declaration requires semicolon.");
 }
 
 void parse_fn(int is_method){
@@ -2130,9 +2127,7 @@ void expr_parse_terminal(expr_node** targ){
             int found = 0;
             consume();
             require(peek()->data == TOK_IDENT, "identifier required: parsehook_expr_XXXXX where XXXXX is written here.");
-            //require(peek()->text != NULL, "Internal error, identifier does not have text?");
-            t = strdup(peek()->text);
-            t = strcataf2("parsehook_expr_",t);
+            t = strcata("parsehook_expr_",peek()->text);
             for(i = 0; i < nsymbols; i++){
                 if(streq(symbol_table[i]->name, t)){
                     id = i;
@@ -3473,8 +3468,7 @@ void parse_stmt(){
         consume();
         require(peek()->data == TOK_IDENT, "Parserhook requires identifier");
         //require(peek()->text != NULL, "Internal error, identifier does not have text?");
-        t = strdup(peek()->text);
-        t = strcataf2("parsehook_",t);
+        t = strcata("parsehook_",peek()->text);
         for(i = 0; i < nsymbols; i++){
             if(streq(symbol_table[i]->name, t)){
                 id = i;
