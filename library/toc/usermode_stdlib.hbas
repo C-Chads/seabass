@@ -1870,6 +1870,7 @@ fn inline pure ftoa_n(char* dest, double v, i32 ndigits):
         dest[1] = 'R';
         dest[2] = 'R';
         dest[3] = 0;
+        return
     end
     //define the error margin....
     double ftoa_errmargin
