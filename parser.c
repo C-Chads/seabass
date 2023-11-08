@@ -1730,6 +1730,7 @@ static inline void expr_parse_fcall(expr_node** targ){
     expr_node f = {0};
     f.kind = EXPR_FCALL; /*unidentified symbol*/
     f.is_function = 1;
+    //The callsite established that peek() is an identifier...
     f.symname = strdup(peek()->text);
 
     for( i = 0; i < nsymbols; i++){
@@ -1775,7 +1776,7 @@ static inline void expr_parse_builtin_call(expr_node** targ){
     uint64_t required_arguments = 0;
     unsigned long i = 0;
     expr_node f = {0};
-    //we already make these checks at the invocation site...
+    //tested at callsite
     //require(peek()->data ==  TOK_IDENT, "expr_parse_builtin_call needs an identifier");
     //require(is_builtin_name(peek()->text), "That's not a builtin call!");
 
@@ -1808,7 +1809,8 @@ static inline void expr_parse_builtin_call(expr_node** targ){
 
 void expr_parse_intlit(expr_node** targ){
     expr_node f = {0};
-    require(peek()->data == TOK_INT_CONST, "expr_parse_intlit needs an integer literal");
+    //tested at callsite...
+    //require(peek()->data == TOK_INT_CONST, "expr_parse_intlit needs an integer literal");
     f.kind = EXPR_INTLIT;
     f.is_function = 0;
     f.idata = matou(peek()->text);
@@ -1818,7 +1820,8 @@ void expr_parse_intlit(expr_node** targ){
 
 void expr_parse_floatlit(expr_node** targ){
     expr_node f = {0};
-    require(peek()->data == TOK_FLOAT_CONST, "expr_parse_floatlit needs a float literal");
+    //tested at callsite...
+    //require(peek()->data == TOK_FLOAT_CONST, "expr_parse_floatlit needs a float literal");
     f.kind = EXPR_FLOATLIT;
     f.is_function = 0;
     f.fdata = matof(peek()->text);
@@ -1838,7 +1841,8 @@ static inline void expr_parse_stringlit(expr_node** targ){
 void expr_parse_sizeof(expr_node** targ){
     expr_node f = {0};
     f.kind = EXPR_SIZEOF;
-    require(peek_match_keyw("sizeof"),"expr_parse_sizeof requires the keyword sizeof");
+    //this was tested at the callsite...
+    //require(peek_match_keyw("sizeof"),"expr_parse_sizeof requires the keyword sizeof");
     consume();
     require(peek()->data == TOK_OPAREN, "expr_parse_sizeof requires opening parentheses");
     consume();
@@ -1869,10 +1873,11 @@ static inline void expr_parse_paren(expr_node** targ){
     consume();
 }
 
-void expr_parse_constexpri(expr_node** targ){
+static inline void expr_parse_constexpri(expr_node** targ){
     expr_node f = {0};
     f.kind = EXPR_CONSTEXPR_INT;
-    require(peek_match_keyw("constexpri"),"expr_parse_constexpri requires the keyword sizeof");
+    //tested at callsite...
+    //require(peek_match_keyw("constexpri"),"expr_parse_constexpri requires the keyword sizeof");
     consume();
     require(peek()->data == TOK_OPAREN, "expr_parse_constexpri requires opening parentheses");
     consume();
@@ -1886,10 +1891,11 @@ void expr_parse_constexpri(expr_node** targ){
     EXPR_PARSE_BOILERPLATE
 }
 
-void expr_parse_constexprf(expr_node** targ){
+static inline void expr_parse_constexprf(expr_node** targ){
     expr_node f = {0};
     f.kind = EXPR_CONSTEXPR_FLOAT;
-    require(peek_match_keyw("constexprf"),"expr_parse_constexprf requires the keyword sizeof");
+    //tested at callsite...
+    //require(peek_match_keyw("constexprf"),"expr_parse_constexprf requires the keyword sizeof");
     consume();
     require(peek()->data == TOK_OPAREN, "expr_parse_constexprf requires opening parentheses");
     consume();
@@ -1902,12 +1908,13 @@ void expr_parse_constexprf(expr_node** targ){
 }
 
 //getfnptr(fname)
-void expr_parse_getfnptr(expr_node** targ){
+static inline void expr_parse_getfnptr(expr_node** targ){
     expr_node f = {0};
     f.kind = EXPR_GETFNPTR;
     int found_function = 0;
     uint64_t i;
-    require(peek_match_keyw("getfnptr"), "expr_parse_getfnptr requires the keyword getfnptr");
+    //tested at callsite
+    //require(peek_match_keyw("getfnptr"), "expr_parse_getfnptr requires the keyword getfnptr");
     consume();
     require(peek()->data == TOK_OPAREN, "expr_parse_getfnptrf requires opening parentheses");
     consume();
@@ -1940,12 +1947,13 @@ void expr_parse_getfnptr(expr_node** targ){
     EXPR_PARSE_BOILERPLATE
 }
 
-void expr_parse_getglobalptr(expr_node** targ){
+static inline void expr_parse_getglobalptr(expr_node** targ){
     expr_node f = {0};
     f.kind = EXPR_GETGLOBALPTR;
     int found_sym = 0;
     uint64_t i;
-    require(peek_match_keyw("getglobalptr"), "expr_parse_getglobal requires the keyword getglobalptr");
+    //tested@callsite
+    //require(peek_match_keyw("getglobalptr"), "expr_parse_getglobal requires the keyword getglobalptr");
     consume();
     require(peek()->data == TOK_OPAREN, "expr_parse_getglobalptr requires opening parentheses");
     consume();
@@ -1975,13 +1983,14 @@ void expr_parse_getglobalptr(expr_node** targ){
     EXPR_PARSE_BOILERPLATE
 }
 //callfnptr[protofn](expr)(optional:expr)
-void expr_parse_callfnptr(expr_node** targ){
+static inline void expr_parse_callfnptr(expr_node** targ){
     expr_node f = {0};
     int64_t i;
     uint64_t nargs = 0;
     int found_function = 0;
     f.kind = EXPR_CALLFNPTR;
-    require(peek_match_keyw("callfnptr"), "expr_parse_callfnptr requires the keyword callfnptr");
+    //tested@callsite
+    //require(peek_match_keyw("callfnptr"), "expr_parse_callfnptr requires the keyword callfnptr");
     consume();
     require(peek()->data == TOK_OBRACK, "expr_parse_callfnptr requires opening bracket.");
     consume();
@@ -2083,7 +2092,7 @@ void expr_parse_terminal(expr_node** targ){
     */
     if(
         peek()->data == TOK_IDENT &&
-        peek_is_fname() &&
+        //peek_is_fname() &&
         peek()->right->data == TOK_OPAREN
     ){
         expr_parse_fcall(targ);
@@ -2095,8 +2104,6 @@ void expr_parse_terminal(expr_node** targ){
             return;
         }
     if(peek()->data == TOK_IDENT){
-        //emit a helpful eror
-        
         expr_parse_ident(targ);
         return;
     }
