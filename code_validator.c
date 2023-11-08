@@ -2555,8 +2555,7 @@ static void assign_scopediff_vardiff(stmt* me, scope* jtarget_scope, int is_retu
         me->goto_vardiff = vardiff_sofar;
         return;
     }
-    puts("Validator internal error");
-    puts("Could not assign scopediff/vardiff for jumping statement.");
+    puts("<INTERNAL ERROR> Could not assign scopediff/vardiff for jumping statement.");
     validator_exit_err();
 }
 
