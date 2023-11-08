@@ -173,13 +173,17 @@ end
 class codegen_ast_dontreuse
 	char*** type_table
 	char*** symbol_table
+	char** oop_metadata
 	char*** scopestack
 	char*** loopstack
-	u64* active_function
-	u64* ntypedecls
-	u64* nsymbols
-	u64* nscopes
-	u64* nloops
+    u64* active_function
+    u64* ntypedecls
+    u64* nsymbols
+    u64* nscopes
+    u64* nloops
+    u64 target_word
+    u64 signed_target_word
+    u64 target_max_float
 end
 
 
