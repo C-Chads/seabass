@@ -1705,9 +1705,10 @@ void parse_continue_break(){
 /*
     parse a non-function symbol.
 */
-void expr_parse_ident(expr_node** targ){
+static inline void expr_parse_ident(expr_node** targ){
     expr_node f = {0};
-    require(peek()->data ==  TOK_IDENT, "expr_parse_ident needs an identifier");
+    //this was checked at the callsite..
+    //require(peek()->data ==  TOK_IDENT, "expr_parse_ident needs an identifier");
     require(!peek_is_typename(), "expr_parse_ident expected non-typename");
     f.kind = EXPR_SYM; /*unidentified symbol*/
     f.is_function = 0;
@@ -1722,12 +1723,11 @@ void expr_parse_ident(expr_node** targ){
     return;
 }
 
-void expr_parse_fcall(expr_node** targ){
+static inline void expr_parse_fcall(expr_node** targ){
     uint64_t required_arguments;
     int found_function = 0;
     unsigned long i;
     expr_node f = {0};
-    require(peek()->data ==  TOK_IDENT, "expr_parse_fcall needs an identifier");
     f.kind = EXPR_FCALL; /*unidentified symbol*/
     f.is_function = 1;
     f.symname = strdup(peek()->text);
@@ -1750,7 +1750,9 @@ void expr_parse_fcall(expr_node** targ){
     require(found_function != 0, "expr_parse_fcall could not find referenced function");
     required_arguments = symbol_table[f.symid]->nargs;
     consume(); /*eat the identifier*/
-    require(peek()->data == TOK_OPAREN, "expr_parse_fcall requires opening parentheses");
+    
+    //we already know that this is an opening parentheses!
+    //require(peek()->data == TOK_OPAREN, "expr_parse_fcall requires opening parentheses");
     consume();
 
     /*
@@ -1769,12 +1771,13 @@ void expr_parse_fcall(expr_node** targ){
     EXPR_PARSE_BOILERPLATE
 }
 
-void expr_parse_builtin_call(expr_node** targ){
+static inline void expr_parse_builtin_call(expr_node** targ){
     uint64_t required_arguments = 0;
     unsigned long i = 0;
     expr_node f = {0};
-    require(peek()->data ==  TOK_IDENT, "expr_parse_builtin_call needs an identifier");
-    require(is_builtin_name(peek()->text), "That's not a builtin call!");
+    //we already make these checks at the invocation site...
+    //require(peek()->data ==  TOK_IDENT, "expr_parse_builtin_call needs an identifier");
+    //require(is_builtin_name(peek()->text), "That's not a builtin call!");
 
     if(symbol_table[active_function]->is_codegen == 0)
         parse_error("Non-codegen functions may not invoke __builtin functions.");
@@ -1823,10 +1826,9 @@ void expr_parse_floatlit(expr_node** targ){
     EXPR_PARSE_BOILERPLATE
 }
 
-void expr_parse_stringlit(expr_node** targ){
+static inline void expr_parse_stringlit(expr_node** targ){
     expr_node f = {0};
     //require(peek()->data == TOK_STRING, "expr_parse_stringlit needs a string literal");
-    //f.symid = parse_stringliteral();
     f.symname = strdup(peek()->text);
     consume();
     f.kind = EXPR_STRINGLIT;
@@ -1849,8 +1851,10 @@ void expr_parse_sizeof(expr_node** targ){
     EXPR_PARSE_BOILERPLATE
 }
 
-void expr_parse_paren(expr_node** targ){
-    require(peek()->data == TOK_OPAREN, "expr_parse_paren requires opening parentheses");
+static inline void expr_parse_paren(expr_node** targ){
+    //was tested at call site..
+    
+    //require(peek()->data == TOK_OPAREN, "expr_parse_paren requires opening parentheses");
     consume();
     //If the user tried a C-style cast, tell them it's invalid
     
@@ -2078,8 +2082,8 @@ void expr_parse_terminal(expr_node** targ){
         It must BOTH be an fname, AND be followed by a parentheses...
     */
     if(
+        peek()->data == TOK_IDENT &&
         peek_is_fname() &&
-        peek()->right &&
         peek()->right->data == TOK_OPAREN
     ){
         expr_parse_fcall(targ);
