@@ -183,7 +183,7 @@ fn ftoa_test():
         while(qq < (constexpri(BUFSZ)-1))
             fread(get_stdin_handle(), buf+qq, 1)
             if(buf[qq] == 'q' || buf[qq] == 'Q')
-                return
+                goto last
             elif(buf[qq] == '\n' || buf[qq] == '!')
                 break
             end
@@ -223,6 +223,7 @@ fn ftoa_test():
             ]
         end
     end
+    :last
 end
 fn ftoa_test2():
     while(1)
