@@ -181,13 +181,7 @@ void impl_builtin_close_ofile(){
 
 strll* impl_builtin_consume(){
     strll* retval;
-    int q;
-    
-    q = get_parser_echo();
-    set_parser_echo(0);
     retval = consume();
-    set_parser_echo(q);
-    
     return retval;
 }
 

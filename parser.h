@@ -182,7 +182,7 @@ static inline uint64_t ID_KEYW(strll* s){
 extern int peek_always_not_null;
 /*Used for automatically generating symbols for anonymous data.*/
 extern uint64_t symbol_generator_count;
-char* gen_reserved_sym_name();
+//char* gen_reserved_sym_name();
 
 extern int saved_argc;
 extern char** saved_argv;
@@ -409,8 +409,8 @@ void parse_struct_member(uint64_t sid); /*type ident*/
 
 int peek_is_typename();
 int string_is_typename(char* text);
-uint64_t peek_basetype();
-uint64_t consume_basetype(char* msg);
+
+
 /*Consumption*/
 
 int64_t parse_cexpr_int();

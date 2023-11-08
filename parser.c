@@ -9,13 +9,6 @@
 
 strll* unit;
 strll* next;
-int parser_echo = 0;
-void set_parser_echo(int v){
-    parser_echo = v;
-}
-int get_parser_echo(void){
-    return parser_echo;
-}
 int peek_always_not_null = 0;
 uint64_t symbol_generator_count = 1;
 
@@ -44,7 +37,7 @@ void parse_expr(expr_node** targ);
 void validate_function(symdecl* funk);
 
 /*returns an owning pointer!*/
-char* gen_reserved_sym_name(){
+static inline char* gen_reserved_sym_name(){
     char buf[100];
     char* retval;
     if(symbol_generator_count == 0){
@@ -94,7 +87,7 @@ strll* peekn(unsigned n){
 }
 
 //print a string out.
-void print_string_out(char* text){
+static void print_string_out(char* text){
     putchar('\"');
     for(;text[0];text++){
         if(text[0] == '\n'){
@@ -135,106 +128,12 @@ void print_string_out(char* text){
 }
 
 //handle 
-int parser_echo_skipper = 0;
 
 strll* consume(){
     strll* i;
     strll* right;
-    if(next == NULL){
-        puts("<INTERNAL ERROR> compiler tried to consume null...");
-    }
     i = next;
     right = next->right;
-#ifdef USE_PARSER_ECHO
-    if(parser_echo && (parser_echo_skipper == 0))
-    {
-        if(
-            next->data == TOK_OPERATOR &&
-            next->text[0] == '@'
-        )
-        {
-            parser_echo_skipper = 2;
-            parser_echo = 0;
-        } else if(
-            next->data == TOK_MACRO_OP &&
-            next->text[0] == '#'
-        ){
-            parser_echo_skipper = 2;
-            parser_echo = 0;        
-        }
-    }
-    if(parser_echo){
-        if(next->data == TOK_STRING){
-            print_string_out(next->text);
-            putchar('\n');
-        } else if(
-            next->data == TOK_KEYWORD ||
-            next->data == TOK_IDENT ||
-            next->data == TOK_OPERATOR ||
-            next->data == TOK_INT_CONST ||
-            next->data == TOK_FLOAT_CONST
-        ){
-            puts(next->text);
-        }else if(
-            next->data == TOK_SEMIC
-        ){
-            putchar(';');
-            putchar('\n');
-
-        }else if(
-            next->data == TOK_COMMA
-        ){
-            putchar(',');
-            putchar('\n');
-        }else if(
-            next->data == TOK_MACRO_OP
-        ){
-            puts(next->text);
-        }else if(
-            next->data == TOK_UNKNOWN
-        ){
-            puts(next->text);
-        }else if(
-            next->data == TOK_OCB
-        ){
-            putchar('{');
-            putchar('\n');
-        }else if(
-            next->data == TOK_CCB
-        ){
-            putchar('}');
-            putchar('\n');
-        }else if(
-            next->data == TOK_OBRACK
-        ){
-            putchar('[');
-            putchar('\n');
-        }else if(
-            next->data == TOK_CBRACK
-        ){
-            putchar(']');
-            putchar('\n');
-        }else if(
-            next->data == TOK_OPAREN
-        ){
-            putchar('(');
-            putchar('\n');
-        }else if(
-            next->data == TOK_CPAREN
-        ){
-            putchar(')');
-            putchar('\n');
-        } else {
-            if(next->text){
-                puts(next->text);
-            }
-        }
-    }
-    if(parser_echo_skipper){ //parser_echo_skipper is not zero
-        parser_echo_skipper--;
-        parser_echo = (parser_echo_skipper == 0);
-    }
-#endif
 
 #ifdef COMPILER_CLEANS_UP
     {
@@ -254,7 +153,7 @@ strll* consume(){
 
 
 
-static void parse_do_metaprogramming(){
+static inline void parse_do_metaprogramming(){
         char* t;
         uint64_t i;
         uint64_t id;
@@ -287,7 +186,7 @@ static void parse_do_metaprogramming(){
         return;
 }
 
-static void parse_repeatedly_try_metaprogramming(){
+static inline void parse_repeatedly_try_metaprogramming(){
     while(1){
         if(peek() == NULL) return;
         if(peek()->data != TOK_OPERATOR) return;
@@ -437,14 +336,7 @@ void compile_unit(strll* _unit){
                     consume();
                     set_max_float_type(0);
                     continue;
-                } else if(streq(peek()->text, "__CBAS_BAKE")){
-                    consume();
-                    parser_echo = 1;
-                } else if(streq(peek()->text, "__CBAS_STOP_BAKE")){
-                    parser_echo = 0;
-                    consume();	
                 } else if(streq(peek()->text, "__CBAS_TERMINATE")){
-                    parser_echo = 0;
                     puts("//Compilation Terminated!");
                     exit(0);
                 } else {
@@ -497,7 +389,6 @@ void compile_unit(strll* _unit){
         peek_always_not_null = 0;
     }
 
-    unit_throw_if_had_incomplete();
     //astdump();
     //search for the codegen function and try to execute it.
     {unsigned long i;
@@ -523,38 +414,39 @@ void compile_unit(strll* _unit){
 }
 
 void parse_global(){
-if(peek()->data == TOK_IDENT)
-        if(streq(peek()->text, "__cbas_run_fn")){
-            char* t;
-            uint64_t i;
-            uint64_t id;
-            int found = 0;
-                consume();
-                require(peek() != NULL, "__cbas_run_fn requires identifier.");
-                require(peek()->data == TOK_IDENT, "__cbas_run_fn requires identifier");
-                t = strdup(peek()->text);
-                for(i = 0; i < nsymbols; i++){
-                    if(streq(t, symbol_table[i]->name)){
-                        id = i;
-                        found = 1;
-                        break;
+        if(peek()->data == TOK_IDENT){
+            if(streq(peek()->text, "__cbas_run_fn")){
+                char* t;
+                uint64_t i;
+                uint64_t id;
+                int found = 0;
+                    consume();
+                    require(peek() != NULL, "__cbas_run_fn requires identifier.");
+                    require(peek()->data == TOK_IDENT, "__cbas_run_fn requires identifier");
+                    t = strdup(peek()->text);
+                    for(i = 0; i < nsymbols; i++){
+                        if(streq(t, symbol_table[i]->name)){
+                            id = i;
+                            found = 1;
+                            break;
+                        }
                     }
-                }
-                require(found != 0, "Could not find __cbas_run_fn function");
-                free(t);
-                consume();
-                require(symbol_table[id]->t.is_function != 0, "__cbas_run_fn- must be a function.");
-                require(symbol_table[id]->is_codegen == 1, "__cbas_run_fn- must be is_codegen.");
-                require(symbol_table[id]->is_incomplete == 0, "__cbas_run_fn- definition must be completed.");
-                require(symbol_table[id]->fbody != NULL, "__cbas_run_fn- function body must not be null.");
-                require(symbol_table[id]->t.basetype == BASE_VOID, "__cbas_run_fn- must return nothing!");
-                require(symbol_table[id]->t.pointerlevel == 0 , "__cbas_run_fn- must return nothing");
-                require(symbol_table[id]->nargs == 0, "__cbas_run_fn- must take zero arguments. That's how I call it.");
-                //ast_execute_function(symbol_table+id);
-                ast_vm_stack_push_temporary();
-                ast_execute_function((symbol_table+id)[0]);
-                ast_vm_stack_pop();
-                return;
+                    require(found != 0, "Could not find __cbas_run_fn function");
+                    free(t);
+                    consume();
+                    require(symbol_table[id]->t.is_function != 0, "__cbas_run_fn- must be a function.");
+                    require(symbol_table[id]->is_codegen == 1, "__cbas_run_fn- must be is_codegen.");
+                    require(symbol_table[id]->is_incomplete == 0, "__cbas_run_fn- definition must be completed.");
+                    require(symbol_table[id]->fbody != NULL, "__cbas_run_fn- function body must not be null.");
+                    require(symbol_table[id]->t.basetype == BASE_VOID, "__cbas_run_fn- must return nothing!");
+                    require(symbol_table[id]->t.pointerlevel == 0 , "__cbas_run_fn- must return nothing");
+                    require(symbol_table[id]->nargs == 0, "__cbas_run_fn- must take zero arguments. That's how I call it.");
+                    //ast_execute_function(symbol_table+id);
+                    ast_vm_stack_push_temporary();
+                    ast_execute_function((symbol_table+id)[0]);
+                    ast_vm_stack_pop();
+                    return;
+            }
         }
         if(peek()->data == TOK_SEMIC){
             //ignore it!
@@ -562,38 +454,6 @@ if(peek()->data == TOK_IDENT)
             return;
         }
         parse_repeatedly_try_metaprogramming(); //allow parsehooks at global scope as invoked by @global
-        /*
-        if(peek()->data == TOK_OPERATOR)
-            if(streq(peek()->text, "@")){
-                char* t;
-                uint64_t i;
-                uint64_t id;
-                int found = 0;
-                consume();
-                require(peek() != NULL, "parsehook requires identifier.");
-                require(peek()->data == TOK_IDENT, "parsehook requires identifier");
-                t = strdup(peek()->text);
-                t = strcataf2("parsehook_",t);
-                for(i = 0; i < nparsehooks; i++){
-                    uint64_t the_parsehook = parsehook_table[i];
-                    if(streq(symbol_table[the_parsehook]->name, t)){
-                        id = the_parsehook;
-                        found = 1;
-                        break;
-                    }
-                }
-                require(found != 0, "Could not find parsehook_ function");
-                free(t);
-                consume();
-                require(symbol_table[id]->is_incomplete == 0, "parsehook definition must be completed.");
-                require(symbol_table[id]->fbody != NULL, "parsehook function body must not be null.");
-                //ast_execute_function(symbol_table+id);
-                ast_vm_stack_push_temporary();
-                ast_execute_function((symbol_table+id)[0]);
-                ast_vm_stack_pop();
-                return;
-            }
-        */
     if(peek_match_keyw("data")){
         parse_datastmt();
         return;
@@ -654,14 +514,7 @@ if(peek()->data == TOK_IDENT)
                         consume();
                         set_max_float_type(0);
                         return;
-                    } else if(streq(peek()->text, "__CBAS_BAKE")){
-                        consume();
-                        parser_echo = 1;
-                    } else if(streq(peek()->text, "__CBAS_STOP_BAKE")){
-                        parser_echo = 0;
-                        consume();	
                     } else if(streq(peek()->text, "__CBAS_TERMINATE")){
-                        parser_echo = 0;
                         puts("//Compilation Terminated!");
                         exit(0);
                     } else {
@@ -672,23 +525,67 @@ if(peek()->data == TOK_IDENT)
                 }
                 return;
             }
-    parse_error("<INTERNAL CODEGEN ERROR> Codegen code called __builtin_parse_global() I didn't find any global to parse!");
+    parse_error("<CODEGEN ERROR> Codegen code called __builtin_parse_global() I didn't find any global to parse!");
+}
+
+static inline uint64_t peek_basetype(uint64_t* sid){
+    uint64_t keyw_id = ID_KEYW(peek());
+    if(keyw_id){
+        if(keyw_id == 2) return BASE_U8;
+        if(keyw_id == 3) return BASE_I8;
+        if(keyw_id == 4) return BASE_U16;
+        if(keyw_id == 5) return BASE_I16;
+        if(keyw_id == 6) return BASE_U32;
+        if(keyw_id == 7) return BASE_I32;
+        if(keyw_id == 8) return BASE_U64;
+        if(keyw_id == 9) return BASE_I64;
+        if(keyw_id == 10) return BASE_F32;
+        if(keyw_id == 11) return BASE_F64;
+        if(keyw_id == 80){
+            //we need to do special logic to determine if we are in codegen code...
+            /*
+            if(get_is_codegen()){
+                return BASE_U64;
+            }else{
+                //check what the system's default is...
+                return get_target_word();
+            }*/
+            return BASE_U64; //Standard update: uptr is _always_ U64...
+        }
+        parse_error("Unknown peek_basetype keyword!");
+        return 0;
+    }
+    if(ntypedecls > 0)
+    {
+        uint64_t i;
+        for(i = 0; i < ntypedecls; i++)
+            if(streq(type_table[i].name, peek()->text)){
+                sid[0] = i;
+                return BASE_STRUCT;
+            }
+    }
+    parse_error("Unknown peek_basetype identifier.");
+    return 0;
+    /*unreachable...*/
+    /*Search the functions. why not?*/
+    if(nsymbols > 0){
+        uint64_t i;
+        for(i = 0; i < nsymbols; i++)
+            if(symbol_table[i]->t.is_function)
+                if(streq(symbol_table[i]->name, peek()->text)){
+                    return BASE_FUNCTION;
+                }
+    }
 }
 
 
 type parse_type(){
+    uint64_t sid;
     type t = type_init();
     require(peek_is_typename(),"type parsing requires a type name!");
-    t.basetype = peek_basetype();
+    t.basetype = peek_basetype(&sid); //TODO: optimize this, don't search the list of structs twice! (161 of data.c)
     if(t.basetype == BASE_STRUCT){
-        unsigned long i;
-        int found =0;
-        for(i = 0; i < ntypedecls; i++)
-            if(streq(type_table[i].name, peek()->text)){
-                t.structid = i;
-                found = 1;
-            }
-        require(found, "Internal error, struct type not found after already being found in parse_type?");
+        t.structid = sid;
     }
     consume();
     while(

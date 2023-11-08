@@ -158,64 +158,11 @@ int get_is_codegen(){
 uint64_t get_target_word();
 uint64_t get_target_max_float_type();
 /*determine base type.*/
-uint64_t peek_basetype(){
-    uint64_t keyw_id = ID_KEYW(peek());
-    if(keyw_id){
-        if(keyw_id == 2) return BASE_U8;
-        if(keyw_id == 3) return BASE_I8;
-        if(keyw_id == 4) return BASE_U16;
-        if(keyw_id == 5) return BASE_I16;
-        if(keyw_id == 6) return BASE_U32;
-        if(keyw_id == 7) return BASE_I32;
-        if(keyw_id == 8) return BASE_U64;
-        if(keyw_id == 9) return BASE_I64;
-        if(keyw_id == 10) return BASE_F32;
-        if(keyw_id == 11) return BASE_F64;
-        if(keyw_id == 80){
-            //we need to do special logic to determine if we are in codegen code...
-            /*
-            if(get_is_codegen()){
-                return BASE_U64;
-            }else{
-                //check what the system's default is...
-                return get_target_word();
-            }*/
-            return BASE_U64; //Standard update: uptr is _always_ U64...
-        }
-        parse_error("Unknown peek_basetype keyword!");
-        return 0;
-    }
-    if(ntypedecls > 0)
-    {
-        uint64_t i;
-        for(i = 0; i < ntypedecls; i++)
-            if(streq(type_table[i].name, peek()->text)){
-                return BASE_STRUCT;
-            }
-    }
-    parse_error("Unknown peek_basetype identifier.");
-    return 0;
-    /*unreachable...*/
-    /*Search the functions. why not?*/
-    if(nsymbols > 0){
-        uint64_t i;
-        for(i = 0; i < nsymbols; i++)
-            if(symbol_table[i]->t.is_function)
-                if(streq(symbol_table[i]->name, peek()->text)){
-                    return BASE_FUNCTION;
-                }
-    }
-}
 
 
 
-uint64_t consume_basetype(char* msg){
-    uint64_t retval;
-    require(peek_is_typename(),msg);
-    retval = peek_basetype();
-    consume();
-    return retval;
-}
+
+
 
 
 
