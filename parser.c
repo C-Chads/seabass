@@ -36,9 +36,9 @@ union myunion* myfunction2(union myunion* b){
 void parse_expr(expr_node** targ);
 void validate_function(symdecl* funk);
 /*global statement parsers*/
-static inline void parse_gvardecl();
-static inline void parse_datastmt();
-static inline void parse_structdecl();
+static void parse_gvardecl();
+static void parse_datastmt();
+static void parse_structdecl();
 /*struct-level parsing*/
 static inline void parse_struct_member(uint64_t sid); /*type ident*/
 
@@ -193,7 +193,7 @@ static inline void parse_do_metaprogramming(){
         return;
 }
 
-static inline void parse_repeatedly_try_metaprogramming(){
+static void parse_repeatedly_try_metaprogramming(){
     while(1){
         if(peek() == NULL) return;
         if(peek()->data != TOK_OPERATOR) return;
@@ -614,7 +614,7 @@ type parse_type(){
     return t;
 }
 
-static inline void parse_gvardecl(){
+static void parse_gvardecl(){
     uint64_t is_pub = 0;
     uint64_t is_new_symbol = 0;
     uint64_t is_predecl = 0;
@@ -856,7 +856,7 @@ static inline void parse_gvardecl(){
     return;
 }
 
-static inline void parse_datastmt(){
+static void parse_datastmt(){
     type t = {0};
     uint64_t is_pub = 0;
     uint64_t was_string = 0;
@@ -1135,7 +1135,7 @@ static inline void parse_datastmt(){
 
 
 //parse_typedecl
-static inline void parse_structdecl(){
+static void parse_structdecl(){
     typedecl* me;
     require(peek()->data == TOK_KEYWORD, "Struct declaration must begin with keyword");
     require(ID_KEYW(peek()) == ID_KEYW_STRING("struct"),"Struct declaration must begin with 'struct' or 'class'");
@@ -1578,7 +1578,7 @@ strll* consume_semicolon(char* msg){
     return consume();
 }
 
-static inline stmt* parser_push_statement(){
+static stmt* parser_push_statement(){
     stmt* me;
     scopestack[nscopes-1]->stmts = re_allocX(
         scopestack[nscopes-1]->stmts, 
@@ -1629,10 +1629,6 @@ void scope_insert_nops(scope* me, unsigned pos, unsigned n){
     }
     //We have to resize the buffer a
     nstmts_before = me->nstmts;
-    /*
-    for(i = 0; i < n;i++){
-        parser_push_statement_nop();
-    }*/
     me->stmts = re_allocX(
             me->stmts, 
             (me->nstmts + n) * sizeof(stmt)
