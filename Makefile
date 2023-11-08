@@ -35,6 +35,8 @@ install_stdlib:
 	
 uninstall_stdlib:
 	rm -rf /usr/include/cbas
+	
+upd_lib: uninstall_stdlib install_stdlib
 
 install: all_not_tcc
 	cp ./cbas_dirty /usr/local/bin/
