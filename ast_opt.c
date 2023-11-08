@@ -132,7 +132,7 @@ static void plan_expr_node(expr_node* s){
             plan_expr_node(s->subnodes[i]);
 }
 static void write_expr_node(expr_node* s_old){
-    expr_node* s = pdecode(s_old);
+    expr_node_astexec* s = pdecode(s_old);
     memcpy(s,s_old, sizeof(expr_node_astexec));
     if(s->kind == EXPR_BUILTIN_CALL || s->kind == EXPR_STRINGLIT){
         if(s->symname){
@@ -140,9 +140,11 @@ static void write_expr_node(expr_node* s_old){
             FREP(s->symname);
         }
     }
+    if(s_old->method_name)
+        free(s_old->method_name);
     for(unsigned long i = 0; i < MAX_FARGS; i++)
         if(s->subnodes[i]){
-            write_expr_node(s->subnodes[i]);
+            write_expr_node((expr_node*)s->subnodes[i]);
             FREP(s->subnodes[i]);
         }
 }

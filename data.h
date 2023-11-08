@@ -499,7 +499,6 @@ static inline int label_name_is_already_in_use(char* s){
 
 static inline void scopestack_push(scope* s){
     scopestack = realloc(scopestack, (++nscopes) * sizeof(scope*));
-    require(scopestack != NULL, "Malloc failed");
     scopestack[nscopes-1] = s;
 }
 
@@ -511,7 +510,6 @@ static inline void scopestack_pop(){
 
 static inline void loopstack_push(stmt* s){
     loopstack = realloc(loopstack, (++nloops) * sizeof(stmt*));
-    require(loopstack != NULL, "Malloc failed");
     loopstack[nloops-1] = s;
 }
 

@@ -5,24 +5,17 @@
     
     include libmin.h into your program today!
 */
+#ifndef LIBMIN_H
+#define LIBMIN_H
 
+#include <stdint.h>
+
+#define LIBMIN_INT int64_t
+#define LIBMIN_UINT uint64_t
+#define LIBMIN_FLOAT double
 
 #ifndef NULL
 #define NULL ((void*)0)
-#endif
-
-
-#ifndef LIBMIN_UINT
-#define LIBMIN_UINT unsigned long
-#endif
-
-
-#ifndef LIBMIN_INT
-#define LIBMIN_INT long
-#endif
-
-#ifndef LIBMIN_FLOAT
-#define LIBMIN_FLOAT float
 #endif
 
 
@@ -600,4 +593,5 @@ LIBMIN_FUNC_ATTRIBS void mftoa(char* dest, LIBMIN_FLOAT value, LIBMIN_UINT after
 
 
 
+#endif
 #endif

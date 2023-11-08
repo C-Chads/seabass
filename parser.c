@@ -2,7 +2,6 @@
 #include "stringutil.h"
 #include "targspecifics.h"
 
-#include "libmin.h"
 #include "parser.h"
 #include "data.h"
 #include "metaprogramming.h"
@@ -19,6 +18,7 @@ int get_parser_echo(void){
 }
 int peek_always_not_null = 0;
 uint64_t symbol_generator_count = 1;
+
 
 /*
     
@@ -249,203 +249,7 @@ strll* consume(){
     return i;
 }
 
-void parse_error(char* msg){
-    char buf[128];
-    if(msg)
-    puts(msg);
-    if(next){
-        if(next->filename){
-            fputs("File:Line:Col\n",stdout);
-            fputs(next->filename,stdout);
-            fputs(":",stdout);
-        } else{
-            exit(1);
-        }
-        mutoa(buf,next->linenum);
-        fputs(buf,stdout);
-        fputs(":",stdout);
 
-        mutoa(buf,next->colnum);
-        fputs(buf,stdout);
-        fputs("\n",stdout);
-
-        puts("~~~~\nNote that the line number and column number");
-        puts("are where the parser invoked parse_error.");
-        puts("\n\n(the actual error may be slightly before,\nor on the previous line)");
-        puts("I recommend looking near the location provided,\nnot just that exact spot!");
-    }
-    //TODO: emit informative errors...
-    if(msg){
-        if(strfind(msg, "__cbas_run_fn") != -1){
-            puts("__cbas_run_fn allows you to execute a codegen function by name at global scope.");
-            puts("the syntax is \n__cbas_run_fn my_function");
-            puts("The function must return nothing and have zero arguments");
-            puts("Consider writing a parsehook and using the metaprogramming operator (@) instead.");
-            goto very_end;
-        }
-        if(strfind(msg, "parsehook") != -1){
-            puts("parsehooks are special codegen function which are designed to hook into the parser.");
-            puts("They are declared like this\nfn codegen parsehook_myParsehook():\n    /*body..*/\nend");
-            puts("You could then call it like this: @myParsehook");
-            puts("What a parsehook does is entirely up to you!");
-            goto very_end;
-        }
-        if(strfind(msg, "stray") != -1){
-            puts("it would appear you've put something where you're not supposed to...");
-            goto very_end;
-        }
-        if(strfind(msg, "stray") != -1){
-            puts("it would appear you've put something where you're not supposed to...");
-        }
-        if(
-            (strfind(msg, "Expected") != -1) ||
-            (strfind(msg, "expected") != -1)
-        ){
-            puts("The parser was expecting something different than it found...");
-        }
-        if(
-            (strfind(msg, "Invalid") != -1) ||
-            (strfind(msg, "invalid") != -1)
-        ){
-            puts("The parser knew what it wanted, but you didn't provide it...");
-        }if(
-            (strfind(msg, "Internal") != -1) ||
-            (strfind(msg, "internal") != -1)
-        ){
-            puts("Metaprogram (or compiler) bugs are haunting you. Oooo! spooky!");
-        }
-        if(
-            (strfind(msg, "Unrecognized configuration option") != -1)
-        ){
-            puts("The # configuration options are as follows:");
-            puts("__CBAS_TARGET_WORDSZ");
-            puts("__CBAS_TARGET_MAX_FLOAT");
-            puts("__CBAS_TARGET_DISABLE_FLOAT");
-            puts("__CBAS_BAKE");
-            puts("__CBAS_STOP_BAKE");
-            puts("__CBAS_TERMINATE");
-        }
-        if(strfind(msg, "String literal at global scope") != -1){
-            puts("You're not allowed to put string literals at global scope.");
-            puts("If you want a global string variable, use a `data` statement.");
-        }
-        if(strfind(msg, "codegen_main") != -1){
-            puts("Here is an empty codegen_main for you to paste into your code:");
-            puts("fn codegen codegen_main():\nend");
-        }
-        if(strfind(msg, "type parsing requires a type name!") != -1){
-            puts("You most likely mistyped the name of your type.");
-            if(next)
-            if(next->text){
-                puts("I can tell you right now, this is not a typename:");
-                fflush(stdout); //prepare for disaster
-                puts(next->text);
-            }
-        }
-        if(strfind(msg, "public and static") != -1){
-            puts("Been drinking too much coffee lately?");
-            puts("public static void main(String[] args) much?");
-            puts("public means 'externally visible' while static means");
-            puts("'privately visible'. They're opposites.");
-        }
-        if(strfind(msg, "Defining the builtins?") != -1){
-            puts("It appears you are trying to declare a symbol with a name reserved");
-            puts("by the compiler. Either you know perfectly well what you're doing, or");
-            puts("this happened by mistake. If you know what you're doing, you brought this");
-            puts("on yourself. If this is a mistake, know simply that __builtin is a reserved");
-            puts("namespace in seabass. If you don't believe you've violated this rule, then");
-            puts("a metaprogram or macro is likely at fault.");
-        }
-        if(strfind(msg, "expected semicolon or comma") != -1 ){
-            puts("Data statements and switch statements expect a comma-separated list of entries terminated with a semicolon.");
-            puts("For data statements, it's a comma-separated list of constant expressions.");
-            puts("For switch statements, it's a list of labels. You can actually omit the commas, by the way.");
-            puts("But the semicolon is necessary...");
-        }
-        else if(strfind(msg, "Struct declaration") != -1 ){
-            puts("Struct declarations are not like C. You don't use curly braces.");
-            puts("Here is an example struct declaration:");
-            puts("struct mystruct\n    int myInt\n    float[3] myFloats\nend");
-            puts("you can insert the following qualifiers inside the body of the struct declaration:");
-            puts("noexport union");
-            puts("noexport says that codegen_main shouldn't compile the type into generated code.");
-            puts("union says that all members of the struct should share the same memory.");
-        }
-        else if(strfind(msg, "expected semicolon") != -1 ){
-            puts("A missing semicolon! Ah, the joys of programming...");
-        }
-        if(strfind(msg, "mismatch") != -1 ){
-            puts("It would appear you've predeclared a symbol before, and then tried to re-define its prototype/type.");
-            puts("This obviously is not allowed.");
-        }
-        if(strfind(msg, "data statement") != -1 ){
-            puts("Ah, the data statement!");
-            puts("Seabass does not support array or struct initializers. If you want a block of global data,");
-            puts("you use the data statement.");
-            puts("the data statement begins with the keyword 'data' followed by some number of");
-            puts("qualifiers (IN ORDER- predecl codegen noexport pub static) followed by a type");
-            puts("or 'string' and finally the data itself.");
-            puts("\ndata statements come in two flavors: string and normal.");
-            puts("Normal data statements look like this:");
-            puts("    data int myInts 1+1, 2+2, 47 ^ 39, 255 * 3;");
-            puts("But string data statements look like this:");
-            puts("    data string mytext \"Hello World!\";");
-            puts("\nThe purpose of the data statement is to allow large amounts of data to be embedded within");
-            puts("the source code of your program. You may also recognize it as a relic of BASIC- from which");
-            puts("the original idea for the 'data' statement comes.");
-        }
-        if(strfind(msg, "codegen and atomic") != -1){
-            puts("This is a single-threaded compiler. You don't need to worry about that.");
-        }
-        if(strfind(msg, "atomic and volatile") != -1){
-            puts("Atomic means another thread can change it at any time, implicitly.");
-            puts("Therefore, it doesn't make sense to have both qualifiers.");
-        }
-        if(strfind(msg, "Cannot assign literal to type.") != -1){
-            puts("You can't provide an initializer to a struct or array.");
-        }
-        if(strfind(msg, "Array") != -1){
-            puts("Ah! Arrays! They are declared like this in Seabass:");
-            puts("    int[50] myintegers");
-            puts("you can replace '50' with a constant expression.");
-            puts("The array size must be greater than zero.");
-        }
-        if(
-            (strfind(msg, "cexpr") != -1) ||
-            (strfind(msg, "constexpr") != -1) ||
-            (strfind(msg, "const expr") != -1) ||
-            (strfind(msg, "Constexpr") != -1) ||
-            (strfind(msg, "Const expr") != -1) ||
-            (strfind(msg, "Const Expr") != -1) ||
-            (strfind(msg, "const Expr") != -1) ||
-            (strfind(msg, "Constant Expr") != -1) ||
-            (strfind(msg, "Constant expr") != -1) ||
-            (strfind(msg, "constant Expr") != -1) ||
-            (strfind(msg, "constant expr") != -1)
-        ){
-            puts("Constant expressions are evaluated immediately at parse-time.");
-            puts("You may not use local variables in a constant expression, or");
-            puts("indeed any variable not defined 'codegen'. Furthermore, only");
-            puts("primitive codegen variables (not pointers or structs or arrays)");
-            puts("may be used.");
-        }
-        if(
-            (strfind(msg, "Global Variable") != -1) ||
-            (strfind(msg, "global Variable") != -1) ||
-            (strfind(msg, "Global variable") != -1) ||
-            (strfind(msg, "global variable") != -1) 
-        ){
-            puts("Ah, global variables! The worst nightmare of every Haskell programmer.");
-            puts("Remember the qualifier order:");
-            puts("    predecl codegen noexport pub static atomic volatile int***[49*3] myvarname;");
-            puts("\nOf course, it's not valid to have all those qualifiers at once... it's just to show you");
-            puts("the syntax...");
-        }
-        
-    }
-    very_end:;
-    exit(1);
-}
 
 
 
@@ -492,7 +296,7 @@ static void parse_repeatedly_try_metaprogramming(){
     }
 }
 
-void require(int cond, char* msg){if(!cond)parse_error(msg);}
+
 void require_peek_notnull(char* msg){if(peek() == NULL)parse_error(msg);}
 void astdump();
 void set_target_word(uint64_t val);
