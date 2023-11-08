@@ -32,6 +32,9 @@ cbas_pure:
 install_stdlib:
 	mkdir -p /usr/include/cbas
 	cp -a library/. /usr/include/cbas/
+	
+uninstall_stdlib:
+	rm -rf /usr/include/cbas
 
 install: all_not_tcc
 	cp ./cbas_dirty /usr/local/bin/
@@ -41,7 +44,7 @@ install: all_not_tcc
 	cp ./cbas_pure /usr/local/bin/
 	cp ./cbas_clean /usr/local/bin/cbas
 
-install_all: all
+install_all: all install_stdlib
 	cp ./cbas_dirty /usr/local/bin/
 	cp ./cbas_dbg /usr/local/bin/
 	cp ./cbas_dbg2 /usr/local/bin/
@@ -79,7 +82,7 @@ dirty_bigunit_compil_test:
 	cbas tests2/toc_test_lots_of_functions.cbas
 	$(CC) $(CFLAGS_CBAS) auto_out.c -o bigunit -lpthread -lm 
 
-uninstall:
+uninstall: uninstall_stdlib
 	rm -f /usr/local/bin/cbas_dirty
 	rm -f /usr/local/bin/cbas_clean
 	rm -f /usr/local/bin/cbas_dbg
