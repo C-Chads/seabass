@@ -2092,7 +2092,7 @@ void expr_parse_terminal(expr_node** targ){
     */
     if(
         peek()->data == TOK_IDENT &&
-        //peek_is_fname() &&
+        peek_is_fname() &&
         peek()->right->data == TOK_OPAREN
     ){
         expr_parse_fcall(targ);
