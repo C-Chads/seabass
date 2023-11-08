@@ -504,7 +504,7 @@ void print_manpage(char* subject){
         nl
         l("It takes a fair chunk of code to set this up, but luckily for you, a library is")
         l("embedded in this binary which is designed to make writing parsehooks easy, called")
-        l("'cgbuilder'")
+        l("'bldr'")
         nl
         l("You can retrieve this library for piping to a file with the following command:")
         nl
