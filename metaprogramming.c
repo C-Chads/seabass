@@ -270,9 +270,9 @@ void impl_builtin_loopstack_push(char* stmtptr){
 void impl_builtin_loopstack_pop(){
     loopstack_pop();
 }
-stmt* parser_push_statement();
+stmt* parser_push_statement_nop();
 char* impl_builtin_parser_push_statement(){
-    return (char*)parser_push_statement();
+    return (char*)parser_push_statement_nop();
 }
 
 //TODO: port cgstrll:dupe() and cgstrll:dupell() into C.

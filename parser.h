@@ -193,7 +193,7 @@ strll** getnext();
 strll* peekn(unsigned n);
 strll* consume();
 extern strll* next;
-static inline void parse_error(char* msg){
+static void parse_error(char* msg){
     char buf[128];
     if(msg)
     puts(msg);
@@ -398,12 +398,7 @@ int peek_is_semic();
 strll* consume_semicolon(char* msg);
 void require_peek_notnull(char* msg);
 
-/*global statement parsers*/
-void parse_gvardecl();
-void parse_datastmt();
-void parse_structdecl();
-/*struct-level parsing*/
-void parse_struct_member(uint64_t sid); /*type ident*/
+
 
 /*Specific functions provided by other files...*/
 

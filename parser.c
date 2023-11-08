@@ -35,6 +35,13 @@ union myunion* myfunction2(union myunion* b){
 
 void parse_expr(expr_node** targ);
 void validate_function(symdecl* funk);
+/*global statement parsers*/
+static inline void parse_gvardecl();
+static inline void parse_datastmt();
+static inline void parse_structdecl();
+/*struct-level parsing*/
+static inline void parse_struct_member(uint64_t sid); /*type ident*/
+
 
 /*returns an owning pointer!*/
 static inline char* gen_reserved_sym_name(){
@@ -607,7 +614,7 @@ type parse_type(){
     return t;
 }
 
-void parse_gvardecl(){
+static inline void parse_gvardecl(){
     uint64_t is_pub = 0;
     uint64_t is_new_symbol = 0;
     uint64_t is_predecl = 0;
@@ -849,7 +856,7 @@ void parse_gvardecl(){
     return;
 }
 
-void parse_datastmt(){
+static inline void parse_datastmt(){
     type t = {0};
     uint64_t is_pub = 0;
     uint64_t was_string = 0;
@@ -1128,7 +1135,7 @@ void parse_datastmt(){
 
 
 //parse_typedecl
-void parse_structdecl(){
+static inline void parse_structdecl(){
     typedecl* me;
     require(peek()->data == TOK_KEYWORD, "Struct declaration must begin with keyword");
     require(ID_KEYW(peek()) == ID_KEYW_STRING("struct"),"Struct declaration must begin with 'struct' or 'class'");
@@ -1180,7 +1187,7 @@ void parse_structdecl(){
     return;
 }
 
-void parse_struct_member(uint64_t sid){
+static inline void parse_struct_member(uint64_t sid){
     type t;
     uint64_t i;
     t = parse_type();
@@ -1571,7 +1578,7 @@ strll* consume_semicolon(char* msg){
     return consume();
 }
 
-stmt* parser_push_statement(){
+static inline stmt* parser_push_statement(){
     stmt* me;
     scopestack[nscopes-1]->stmts = re_allocX(
         scopestack[nscopes-1]->stmts, 

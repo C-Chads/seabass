@@ -2824,7 +2824,6 @@ static void walk_assign_lsym_gsym(scope* current_scope){
 }
 
 
-extern stmt* parser_push_statement();
 extern stmt* parser_push_statement_nop();
 void scope_insert_nops(scope* me, unsigned pos, unsigned n);
 //All this has to do is insert the required destructors 
