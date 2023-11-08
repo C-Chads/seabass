@@ -2090,19 +2090,20 @@ void expr_parse_terminal(expr_node** targ){
     /*
         It must BOTH be an fname, AND be followed by a parentheses...
     */
-    if(
-        peek()->data == TOK_IDENT &&
-        peek_is_fname() &&
-        peek()->right->data == TOK_OPAREN
-    ){
-        expr_parse_fcall(targ);
-        return;
-    }
+
     if(peek()->data == TOK_IDENT)
         if(is_builtin_name(peek()->text)){
             expr_parse_builtin_call(targ);
             return;
         }
+    if(
+        peek()->data == TOK_IDENT &&
+        //peek_is_fname() &&
+        peek()->right->data == TOK_OPAREN
+    ){
+        expr_parse_fcall(targ);
+        return;
+    }
     if(peek()->data == TOK_IDENT){
         expr_parse_ident(targ);
         return;
