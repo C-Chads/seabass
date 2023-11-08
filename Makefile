@@ -4,7 +4,7 @@ CFLAGS_DBG= -Og -g -fwrapv -fsanitize=address,undefined,leak -std=gnu99 -DCOMPIL
 CFLAGS_DBGVG= -Og -g -fwrapv -std=gnu99 -DCOMPILER_CLEANS_UP
 CFLAGS_CLEAN= -O3 -s -fwrapv -flto -std=gnu99 -DCOMPILER_CLEANS_UP
 CFLAGS_PURE= -O3 -fwrapv -std=gnu99 -DCOMPILER_CLEANS_UP
-CFLAGS_CBAS= -O3 -fwrapv -s -lpthread -lm 
+CFLAGS_CBAS= -O3 -fwrapv -s 
 
 
 cbas_dirty:
@@ -66,7 +66,7 @@ toc_test:
 
 fib:
 	cbas tests2/toc_fib_example.cbas
-	$(CC) $(CFLAGS_CBAS) auto_out.c -o fib -lpthread -lm 
+	$(CC) $(CFLAGS_CBAS) auto_out.c -o fib -lm -D__CBAS_SINGLE_THREADED__
 
 string_stdlib_test:
 	cbas tests2/stdlib_strings_test.cbas

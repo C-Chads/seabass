@@ -24,7 +24,13 @@ data codegen string SEABASS_STDLIB_PREFIX "
 #include <sys/types.h>
 #include <dirent.h>
 
-#ifndef __APPLE__
+/*for unsupported platforms...*/
+#ifdef __APPLE__
+#define __CBAS_SINGLE_THREADED__
+#endif
+
+
+#ifndef __CBAS_SINGLE_THREADED__
 #include <pthread.h>
 typedef struct {
     pthread_mutex_t myMutex;
@@ -44,10 +50,7 @@ static inline void lock(lsthread* t);
 static inline void step(lsthread* t);
 static void* lsthread_func(void* me_void);
 
-//function declarations
-
 static inline void init_lsthread(lsthread* t){
-    //t->myMutex = (pthread_mutex_t)PTHREAD_MUTEX_INITIALIZER;
     pthread_mutex_init(&t->myMutex, NULL);
     pthread_barrier_init(&t->myBarrier, NULL, 2);
     t->isThreadLive = 0;
@@ -61,7 +64,7 @@ static inline void destroy_lsthread(lsthread* t){
     pthread_barrier_destroy(&t->myBarrier);
 }
 static inline void lock(lsthread* t){
-    if(t->state == 1)return;//if already locked, nono
+    if(t->state == 1)return;
     if(!t->isThreadLive)return;
     pthread_barrier_wait(&t->myBarrier);
     if(pthread_mutex_lock(&t->myMutex))
@@ -70,7 +73,7 @@ static inline void lock(lsthread* t){
 }
 
 static inline void step(lsthread* t){
-    if(t->state == -1)return; //if already stepping, nono
+    if(t->state == -1)return;
     if(!t->isThreadLive)return;
     if(pthread_mutex_unlock(&(t->myMutex)))
         exit(1);
@@ -114,7 +117,7 @@ static inline void start_lsthread(lsthread* t){
     t->shouldKillThread = 0;
     if(pthread_mutex_lock(&t->myMutex))
         exit(1);
-    t->state = 1; //LOCKED
+    t->state = 1;/*LOCKED*/
     pthread_create(
         &t->myThread,
         NULL,
@@ -183,13 +186,12 @@ static inline i32 __CBAS__getdirlist(unsigned char* dirname, unsigned char*** en
     DIR* dir;
     struct dirent* de;
     dir = opendir((char*)dirname);
-    if(dir == NULL) return 1; //error
+    if(dir == NULL) return 1; 
     nentries[0] = 0;
     entry_listing[0] = 0;
     while(1){
         de = readdir(dir);
         if(de == NULL) break;
-        //it's valid...
         entry_listing[0] = realloc(entry_listing[0], sizeof(void*) * ++(nentries[0]));
         entry_listing[0][nentries[0]-1] = strdup(de->d_name);
     }
@@ -346,8 +348,6 @@ static inline void __CBAS__println(unsigned char* s){
 static inline void __CBAS__sys_exit(i32 a){
     exit(a);
 }
-//MATH LIBRARY
-//trig
     static inline double __CBAS__sin(double a){
         return sin(a);
     }
@@ -372,7 +372,6 @@ static inline void __CBAS__sys_exit(i32 a){
         return tanf(a);
     }
 
-//arcXX functions
     static inline double __CBAS__asin(double a){
         return asin(a);
     }
@@ -396,14 +395,12 @@ static inline void __CBAS__sys_exit(i32 a){
     static inline float __CBAS__atanf(float a){
         return atanf(a);
     }
-//atan2
     static inline double __CBAS__atan2(double a, double b){
         return atan2(a, b);
     }
     static inline float __CBAS__atan2f(float a, float b){
         return atan2f(a, b);
     }
-//hyperbolics
     static inline double __CBAS__sinh(double a){
         return sinh(a);
     }
@@ -413,7 +410,6 @@ static inline void __CBAS__sys_exit(i32 a){
     static inline double __CBAS__tanh(double a){
         return tanh(a);
     }
-//float versions
     static inline float __CBAS__sinhf(float a){
         return sinhf(a);
     }
@@ -423,7 +419,6 @@ static inline void __CBAS__sys_exit(i32 a){
     static inline float __CBAS__tanhf(float a){
         return tanhf(a);
     }
-//archyperbolics
     static inline double __CBAS__asinh(double a){
         return asinh(a);
     }
@@ -433,7 +428,6 @@ static inline void __CBAS__sys_exit(i32 a){
     static inline double __CBAS__atanh(double a){
         return atanh(a);
     }
-//float versions
     static inline float __CBAS__asinhf(float a){
         return asinhf(a);
     }
@@ -443,7 +437,6 @@ static inline void __CBAS__sys_exit(i32 a){
     static inline float __CBAS__atanhf(float a){
         return atanhf(a);
     }
-//exp
     static inline double __CBAS__exp(double a){
         return exp(a);
     }
@@ -463,14 +456,12 @@ static inline void __CBAS__sys_exit(i32 a){
         *b = cc;
         return retval;
     }
-//ldexp 
     static inline double __CBAS__ldexp(double a, i32 b){
         return ldexp(a,b);
     }
     static inline float __CBAS__ldexpf(float a, i32 b){
         return ldexp(a,b);
     }
-//logarithms...
     static inline double __CBAS__log(double a){
         return log(a);
     }
@@ -501,14 +492,12 @@ static inline void __CBAS__sys_exit(i32 a){
     static inline float __CBAS__log1pf(float a){
         return log1pf(a);
     }
-//modf
     static inline double __CBAS__modf(double a, double* b){
         return modf(a, b);
     }
     static inline float __CBAS__modff(float a, float* b){
         return modff(a, b);
     }
-//exp2
     static inline double __CBAS__exp2(double a){
         return exp2(a);
     }
@@ -521,7 +510,6 @@ static inline void __CBAS__sys_exit(i32 a){
     static inline float __CBAS__expm1f(float a){
         return expm1f(a);
     }
-//ilogb (RETURNS INT!!!!)
     static inline i32 __CBAS__ilogb(double a){
         return ilogb(a);
     }
@@ -534,14 +522,12 @@ static inline void __CBAS__sys_exit(i32 a){
     static inline float __CBAS__scalbnf(float a, i32 n){
         return scalbnf(a,n);
     }
-//pow
     static inline double __CBAS__pow(double a, double b){
         return pow(a, b);
     }
     static inline float __CBAS__powf(float a, float b){
         return powf(a, b);
     }
-//sqrt
     static inline double __CBAS__sqrt(double a){
         return sqrt(a);
     }
@@ -554,14 +540,12 @@ static inline void __CBAS__sys_exit(i32 a){
     static inline float __CBAS__cbrtf(float a){
         return cbrtf(a);
     }
-//hypot
     static inline double __CBAS__hypot(double a, double b){
         return hypot(a, b);
     }
     static inline float __CBAS__hypotf(float a, float b){
         return hypotf(a, b);
     }
-//erf and erfc
     static inline double __CBAS__erf(double a){
         return erf(a);
     }
@@ -574,7 +558,6 @@ static inline void __CBAS__sys_exit(i32 a){
     static inline float __CBAS__erfcf(float a){
         return erfcf(a);
     }
-//gamma fns
     static inline double __CBAS__tgamma(double a){
         return tgamma(a);
     }
@@ -587,7 +570,6 @@ static inline void __CBAS__sys_exit(i32 a){
     static inline float __CBAS__lgammaf(float a){
         return lgammaf(a);
     }
-//ceil floor
     static inline double __CBAS__ceil(double a){
         return ceil(a);
     }
@@ -612,21 +594,18 @@ static inline void __CBAS__sys_exit(i32 a){
     static inline float __CBAS__roundf(float a){
         return roundf(a);
     }
-//fmod
     static inline double __CBAS__fmod(double a, double b){
         return fmod(a,b);
     }
     static inline float __CBAS__fmodf(float a, float b){
         return fmodf(a,b);
     }
-//nearbyint
     static inline double __CBAS__nearbyint(double a){
         return nearbyint(a);
     }
     static inline float __CBAS__nearbyintf(float a){
         return nearbyintf(a);
     }
-//remainder
     static inline double __CBAS__remainder(double a, double b){
         return remainder(a,b);
     }
@@ -645,21 +624,18 @@ static inline void __CBAS__sys_exit(i32 a){
         *q = p;
         return retval;
     }
-//copysign
     static inline double __CBAS__copysign(double a, double b){
         return copysign(a,b);
     }
     static inline float __CBAS__copysignf(float a, float b){
         return copysignf(a,b);
     }
-//nan
     static inline double __CBAS__nan(unsigned char* tagp){
         return nan((const char*)tagp);
     }
     static inline float __CBAS__nanf(unsigned char* tagp){
         return nanf((const char*)tagp);
     }
-//nextafter
     static inline double __CBAS__nextafter(double a, double b){
         return nextafter(a,b);
     }
@@ -672,7 +648,6 @@ static inline void __CBAS__sys_exit(i32 a){
     static inline float __CBAS__fdimf(float a, float b){
         return fdimf(a,b);
     }
-//fmaxmin
     static inline double __CBAS__fmax(double a, double b){
         return fmax(a,b);
     }
@@ -685,7 +660,6 @@ static inline void __CBAS__sys_exit(i32 a){
     static inline float __CBAS__fminf(float a, float b){
         return fminf(a,b);
     }
-//fabs
     static inline double __CBAS__fabs(double a){
         return fabs(a);
     }
@@ -698,7 +672,6 @@ static inline void __CBAS__sys_exit(i32 a){
     static inline float __CBAS__fmaf(float a, float b, float z){
         return fmaf(a,b,z);
     }
-//fpclassify
     static inline i32 __CBAS__fpclassify(double q){
         return fpclassify(q);
     }
@@ -717,7 +690,6 @@ static inline void __CBAS__sys_exit(i32 a){
     static inline i32 __CBAS__signbit(double q){
         return signbit(q);
     }
-//fpclassify
     static inline i32 __CBAS__fpclassifyf(float q){
         return fpclassify(q);
     }
@@ -736,14 +708,14 @@ static inline void __CBAS__sys_exit(i32 a){
     static inline i32 __CBAS__signbitf(float q){
         return signbit(q);
     }
-//isunordered
+
     static inline i32 __CBAS__isunordered(double a, double b){
         return isunordered(a,b);
     }
     static inline i32 __CBAS__isunorderedf(float a, float b){
         return isunordered(a,b);
     }
-//infinity, nan, huge_val
+
     static inline float __CBAS__INFINITY(){
         return INFINITY;
     }
@@ -757,8 +729,8 @@ static inline void __CBAS__sys_exit(i32 a){
         return HUGE_VALF;
     }
 
-//MULTITHREADING LIBRARY
-#ifndef __APPLE__
+/*MULTITHREADING LIBRARY*/
+#ifndef __CBAS_SINGLE_THREADED__
 
 
 static inline unsigned char* __CBAS__thread_new(){
@@ -825,7 +797,7 @@ static inline void __CBAS__mutex_unlock(unsigned char* mtx){
 }
 #else
 static inline unsigned char* __CBAS__thread_new(){
-    return NULL;
+    return malloc(sizeof(char*) * 2);
 }
 static inline void __CBAS__thread_delete(unsigned char* tr){
     free(tr);
@@ -833,11 +805,13 @@ static inline void __CBAS__thread_delete(unsigned char* tr){
 }
 
 static inline void __CBAS__thread_assign_fn(unsigned char* tr, unsigned char* funk){
-    return;
+    void** t = (void**)tr;
+    t[0] = funk;
 }
 
 static inline void __CBAS__thread_assign_arg(unsigned char* tr, unsigned char* arg){
-    return;
+    void** t = (void**)tr;
+    t[1] = arg;
 }
 
 static inline void __CBAS__thread_start(unsigned char* tr){
@@ -848,6 +822,11 @@ static inline void __CBAS__thread_kill(unsigned char* tr){
 }
 
 static inline void __CBAS__thread_step(unsigned char* tr){
+    void** t = (void**)tr;
+    /*get thread function...*/
+    void (*execute)(unsigned char*);
+    execute = (void*)(t[0]);
+    execute(t[1]);
     return;
 }
 
