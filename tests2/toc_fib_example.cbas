@@ -1,6 +1,5 @@
 
-#include <toc/bit64.hbas>
-#include <toc/usermode_stdlib.hbas>
+#include <toc_native_user>
 
 
 /*

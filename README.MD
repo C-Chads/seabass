@@ -74,8 +74,7 @@ language constructs, and abstractions, but entirely new programming languages.
 Here is a minimal complete example program, which you can find under 'library/toc_fib_example.cbas'
 
 ```c
-#include <bit64.hbas>
-#include <seabass_stdlib.hbas>
+#include <toc_native_user>
 
 
 /*
@@ -98,20 +97,20 @@ fn predecl mutoa(char* dest, uint value);
 fn predecl matou(char* in)->uint;
 
 fn inline fib(uint n)->uint:
-	if(n < 2)
-		return 1;
-	end
-	uint a=1
-	uint b=1
-	uint c=1;
-	n = n-2
-	while(n)
-		c = a + b;
-		a = b;
-		b = c;
-		n--
-	end
-	return c
+    if(n < 2)
+        return 1;
+    end
+    uint a=1
+    uint b=1
+    uint c=1;
+    n = n-2
+    while(n)
+        c = a + b;
+        a = b;
+        b = c;
+        n--
+    end
+    return c
 end
 
 
