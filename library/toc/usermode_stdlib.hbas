@@ -199,7 +199,7 @@ static inline i32 __CBAS__getdirlist(unsigned char* dirname, unsigned char*** en
     return 0;
 }
 
-static inline size_t __CBAS__system(unsigned char* cmd){
+static inline TGT_UMAX __CBAS__system(unsigned char* cmd){
     return system((char*)cmd);
 }
 
@@ -225,7 +225,7 @@ static inline TGT_UMAX __CBAS__fread(TGT_UMAX fhandle, unsigned char* buf, TGT_U
 static inline i32 __CBAS__feof(TGT_UMAX fhandle){
     return feof((FILE*)fhandle);
 }
-static inline ssize_t __CBAS__ftell(TGT_UMAX fhandle){
+static inline TGT_IMAX __CBAS__ftell(TGT_UMAX fhandle){
     return ftell((FILE*)fhandle);
 }
 static inline i32 __CBAS__fseek(TGT_UMAX fhandle, TGT_IMAX offset, i32 whence){
@@ -239,6 +239,9 @@ static inline i32 __CBAS__fremove(unsigned char* fname){
 }
 static inline i32 __CBAS__frename(unsigned char* fname_old, unsigned char* fname_new){
     return rename((char*)fname_old, (char*)fname_new);
+}
+static inline void __CBAS__frewind(TGT_UMAX fhandle){
+    rewind((FILE*)fhandle);
 }
 
 static inline TGT_UMAX __CBAS__unixtime(){
@@ -905,6 +908,7 @@ fn predecl noexport fseek(TGT_UMAX fhandle, TGT_IMAX offset, i32 whence)->i32;
 fn predecl noexport ftell(TGT_UMAX fhandle)->TGT_IMAX;
 fn predecl noexport fremove(char* fname)->i32;
 fn predecl noexport frename(char* fname_old, char* fname_new)->i32;
+fn predecl noexport frewind(TGT_UMAX fhandle);
 //time library...
 fn predecl pure noexport unixtime()->TGT_UMAX;
 fn predecl pure noexport time(TGT_UMAX* a)->TGT_UMAX;
