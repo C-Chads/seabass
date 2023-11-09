@@ -296,6 +296,9 @@ exist in C are compiled into equivalent C code (Assuming no compiler bugs).
 Lower-level capabilities that seabass has which C does not have (tail calls, dispatch tables) rely
 either on an optimizing compiler (for tail calls) or C compiler extensions (for dispatch tables).
 
+If there is any feature of C not implemented in Seabass, rest assured, it can still
+be accessed by writing inline C (There is a special tool just for it, @inline_C!)
+
 ### Is this language portable?
 
 Yes. The compiler itself requires a 64 bit environment but programs written
