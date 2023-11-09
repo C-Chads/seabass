@@ -216,6 +216,7 @@ fn pub main(i32 argc, char** argv)->i32:
     end 
     u32[1] nentries;
     char**[1] listing;
+    errno = 0;
     if(
         getdirlist(argv[1], listing, nentries)
     )
@@ -225,15 +226,17 @@ fn pub main(i32 argc, char** argv)->i32:
         ]
         sys_exit(1);
     end
+    if(errno)
+        perror("<C library> Error:");
+        sys_exit(1);
+    end
+    
     u64 i
     for(i = 0; i < nentries[0]; i++)
         println(listing[0][i]);
     end
 end
 
-/*
-    Our code generator...
-*/
 fn codegen codegen_main():
     cg_emitC(SEABASS_STDLIB_PREFIX);
 end
