@@ -1,6 +1,7 @@
 
 #include <toc/bit32.hbas>
 #include <toc/usermode_stdlib.hbas>
+#include <toc/inlinec.hbas>
 /*
     Compile like this
     cbas toc.cbas
@@ -377,6 +378,19 @@ fn pub main()->int:
     end
     
     :real_end
+    if(1)
+        u64 mylocal = 3;
+        @inline_C "
+            $mylocal = 15-$mylocal; /*INSERTED BY INLINE_C*/
+            puts(\"Hello World!\");
+        "
+        if(mylocal == 15-3)
+            println("It worked!")
+        else
+            println("It did not work!!")
+        end
+    end
+    
 end
 
 

@@ -147,7 +147,6 @@ fn codegen cg_Cemitter_mangle_global_name(char* s)->char*:
 end
 
 fn codegen cg_Cemitter_mangle_type_name(char* s)->char*:
-    //this is not main!
     cgstr r
     /*
         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -162,7 +161,6 @@ fn codegen cg_Cemitter_mangle_type_name(char* s)->char*:
     return r.s;
 end
 fn codegen cg_Cemitter_mangle_member_name(char* s)->char*:
-    //this is not main!
     cgstr r
     /*
         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -173,6 +171,21 @@ fn codegen cg_Cemitter_mangle_member_name(char* s)->char*:
         scheme is compatible with your target platform.
     */
     r.fromstr("__CBAS__member__");
+    r.addstr(s);
+    return r.s;
+end
+
+fn codegen cg_Cemitter_mangle_local_variable_name(char* s)->char*:
+    cgstr r
+    /*
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        IMPL_README
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        This is a location where name mangling
+        occurs. Please verify that this name mangling
+        scheme is compatible with your target platform.
+    */
+    r.fromstr("__cbas_local_variable_mangled_name_");
     r.addstr(s);
     return r.s;
 end

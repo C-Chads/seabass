@@ -1,0 +1,184 @@
+
+#include <stdmeta/tok_manip.hbas>
+
+/*
+    HARDWARE TOUCHING LIBRARY FOR SEABASS
+*/
+
+/*
+    Usage: 
+    @inline_C"
+        $myvariable = ((volatile unsigned long*)$myothervariable);
+    "
+*/
+
+@mkbldr [
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        inline_C
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    if(inlist == 0 || inlist.d != CG_TOK_STRING)
+        @pprint[
+            /   "ERROR! Inline C requires a _SINGLE_ STRING LITERAL!"
+        ]
+        __builtin_exit(1);
+    end
+    cgstr ff
+    ff.fromstr("");
+    u64 c = 0;
+    u64 i;
+    for(i = 0; inlist.text[i]; i++)
+        char z = inlist.text[i];
+        if(z == '\\')
+            i++;
+            c++; //hehe
+            c++; //hehe 2
+            continue
+        end
+        //Variable reference... $ for local, @ for global, `for member...
+        if(z == '$' || z == '@' || z == '`')
+            u64 calc_begin = i - (c);
+            c = 0;
+            cgstr t
+            if(1)
+                char q = inlist.text[i];
+                inlist.text[i] = 0;
+                t.fromstr(inlist.text + calc_begin);
+                inlist.text[i] = q;
+            end
+            ff:add(t);
+            t.free();
+            //now for the interesting part...
+            if(z == '$')
+                t.s = ("__cbas_local_variable_mangled_name_");
+            elif(z == '`')
+                t.s = ("__CBAS__member__");
+            else
+                t.s = ("__CBAS__");
+            end
+            ff:add(t);
+            //Continue our journey!
+            continue
+        end
+        //increment c
+        c++
+    end
+    if(c)
+        u64 calc_begin = i - (c);
+        cgstr t
+        if(1)
+            char q = inlist.text[i];
+            inlist.text[i] = 0;
+            t.fromstr(inlist.text + calc_begin);
+            inlist.text[i] = q;
+        end
+        ff:add(t);
+        t.free();
+    end
+    @initqtok "asm"
+    @pushqtok "("
+    cgstrll* p = (cgstrll*)__builtin_malloc(sizeof(cgstrll));
+    p.d = CG_TOK_STRING;
+    p.text = ff.s; //moved!
+    p.right = 0;
+    p.filename = inlist.filename;
+    p.linenum = inlist.linenum;
+    p.colnum = inlist.colnum;
+    @pushtok [p]
+    @rwalk_skip ;
+    @pushqtok ")"
+    @pushqtok ";"
+    return retval;
+]
+
+
+/*
+    Syntax:
+    byte[1<<8] myarr;
+    byte* myVolatileMemory = 0xF13;
+    
+    @volatile_byte_buf_read myarr myVolatileMemory [1<<8]
+*/
+/*
+@mkbldrn volatile_byte_buf_read 3 [
+    cgstrll* ident0;
+    cgstrll* ident1;
+    cgstrll* expr_nbytes
+    @dupell_inlist
+    @foldout_arg ident0 inlist_dupe
+    @foldout_arg ident1 inlist_dupe
+    @foldout_arg expr_nbytes inlist_dupe
+    
+    if(ident0 == 0 ||
+        ident0.d != CG_TOK_IDENT ||
+        ident1 == 0 ||
+        ident1.d != CG_TOK_IDENT ||
+        expr_nbytes == 0
+    )
+        @pprint[
+            /   "volatile_read syntax error!"
+            /   "Two identifiers must be supplied,"
+            /   "as well as an expression evaluating to"
+            /   "a u64."
+            /   "the first must be the name of a"
+            /   "LOCAL VARIABLE BYTE* you want to store the"
+            /   "contents of the read."
+            /   "the second must be the name of a LOCAL BYTE* VARIABLE"
+            /   "which points to some volatile memory."
+            /   "The third argument is an expression, the number of bytes"
+            /   "to copy."
+        ]
+        
+        __builtin_exit(1);
+    end
+    @initqtok "if"
+    @pushqtok "("
+    @pushqtok "1"
+    @pushqtok ")"
+    @pushqtok "u64"
+    @pushqtok "__volatile_reader_temporary__"
+    @pushqtok "="
+    @pushtok [expr_nbytes] //MOVE!
+    @rwalk_skip ; //skip over everything...
+    @pushqtok ";"
+    @pushqtok "asm"
+    @pushqtok "("
+    cgstr ident0_mangled;
+    cgstr ident1_mangled;
+    cgstr t
+    ident0_mangled.fromstr("__cbas_local_variable_mangled_name_");
+    ident1_mangled.fromstr(ident0_mangled.s);
+    t.s = ident0.text;
+    ident0_mangled.add(t);
+    t.s = ident1.text;
+    ident1_mangled.add(t);
+    ident0.freelist();
+    ident1.freelist();
+    cgstr asm_writer;
+    asm_writer.fromstr("
+    {
+        size_t volatile_reader_cnt;
+        for( 
+            volatile_reader_cnt = 0; 
+            volatile_reader_cnt < __cbas_local_variable_mangled_name___volatile_reader_temporary__; 
+            volatile_reader_cnt++){");
+    t.s = ident0_mangled.s; asm_writer.add(t);
+    t.s = "[volatile_reader_cnt] = ((volatile unsigned char*)"; asm_writer.add(t);
+    t.s = ident1_mangled.s; asm_writer.add(t);
+    t.s = ")[volatile_reader_cnt];
+    }}";
+    cgstrll* p = (cgstrll*)__builtin_malloc(sizeof(cgstrll));
+    p.d == CG_TOK_STRING;
+    p.text = asm_writer.s;
+    p.right = 0;
+    p.filename = "<AUTO_GENERATED_VOLATILE_READER>"
+    p.linenum = 0;
+    p.colnum = 0;
+    @pushtok [p]
+    @pushqtok ")"
+    @pushqtok ";"
+    @pushqtok "end"
+    return retval;
+    
+]
+*/
+
