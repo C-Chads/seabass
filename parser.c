@@ -212,19 +212,19 @@ void compile_unit(strll* _unit){
     next = unit;
     while(1){
         peek_always_not_null = 0;
-        if(peek() == NULL) {
+        if(next == NULL) {
             break;
         }
-        if(peek()->data == TOK_IDENT)
-        if(streq(peek()->text, "__cbas_run_fn")){
+        if(next->data == TOK_IDENT)
+        if(streq(next->text, "__cbas_run_fn")){
             char* t;
             uint64_t i;
             uint64_t id;
             int found = 0;
             consume();
-            require(peek() != NULL, "__cbas_run_fn requires identifier.");
-            require(peek()->data == TOK_IDENT, "__cbas_run_fn requires identifier");
-            t = strdup(peek()->text);
+            require(next != NULL, "__cbas_run_fn requires identifier.");
+            require(next->data == TOK_IDENT, "__cbas_run_fn requires identifier");
+            t = strdup(next->text);
             for(i = 0; i < nsymbols; i++){
                 if(streq(t, symbol_table[i]->name)){
                     id = i;
@@ -249,21 +249,21 @@ void compile_unit(strll* _unit){
             continue;
         }
 
-        if(peek()->data == TOK_SEMIC){
+        if(next->data == TOK_SEMIC){
             //ignore it!
             consume();
             continue;
         }
         
-        if(peek()->data == TOK_OPERATOR)
+        if(next->data == TOK_OPERATOR)
             if(streq(peek()->text, "@")){
                 char* t;
                 uint64_t i;
                 uint64_t id;
                 int found = 0;
                 consume();
-                require(peek() != NULL, "parsehook requires identifier.");
-                require(peek()->data == TOK_IDENT, "parsehook requires identifier");
+                require(next != NULL, "parsehook requires identifier.");
+                require(next->data == TOK_IDENT, "parsehook requires identifier");
                 t = strcata("parsehook_",peek()->text);
                 for(i = 0; i < nparsehooks; i++){
                     uint64_t the_parsehook = parsehook_table[i];
@@ -287,21 +287,21 @@ void compile_unit(strll* _unit){
             }
 
 
-        if(peek()->data == TOK_KEYWORD)
+        if(next->data == TOK_KEYWORD)
         if(peek_match_keyw("end"))
             {
                 parse_error("stray 'end' in global scope.\nProbably a scope mismatch.");
             }
 
-        if(peek()->data == TOK_MACRO_OP)
-        if(streq(peek()->text, "#")){
+        if(next->data == TOK_MACRO_OP)
+        if(streq(next->text, "#")){
             consume();
             if(peek() == NULL){
                 parse_error("stray # at end of compilation unit.");
             }
             /**/
-            if(peek()->data == TOK_IDENT){
-                if(streq(peek()->text, "__CBAS_TARGET_WORDSZ")){
+            if(next->data == TOK_IDENT){
+                if(streq(next->text, "__CBAS_TARGET_WORDSZ")){
                     uint64_t a;
                     consume();
                     peek_always_not_null = 1;
@@ -321,7 +321,7 @@ void compile_unit(strll* _unit){
                     }
                     peek_always_not_null = 0;
                     continue;
-                } else if(streq(peek()->text, "__CBAS_TARGET_MAX_FLOAT")){
+                } else if(streq(next->text, "__CBAS_TARGET_MAX_FLOAT")){
                     uint64_t a;
                     consume();
                     peek_always_not_null = 1;
@@ -337,11 +337,11 @@ void compile_unit(strll* _unit){
                     }
                     peek_always_not_null = 0;
                     continue;
-                } else if(streq(peek()->text, "__CBAS_TARGET_DISABLE_FLOAT")){
+                } else if(streq(next->text, "__CBAS_TARGET_DISABLE_FLOAT")){
                     consume();
                     set_max_float_type(0);
                     continue;
-                } else if(streq(peek()->text, "__CBAS_TERMINATE")){
+                } else if(streq(next->text, "__CBAS_TERMINATE")){
                     puts("//Compilation Terminated!");
                     exit(0);
                 } else {
@@ -352,12 +352,7 @@ void compile_unit(strll* _unit){
             }
             continue;
         }
-
-        if(peek()->data == TOK_STRING){
-            parse_error("String literal at global scope");
-            continue;
-        }
-        if(peek()->data == TOK_KEYWORD){
+        if(next->data == TOK_KEYWORD){
             if(peek_match_keyw("data")){
                 peek_always_not_null = 1;
                 parse_datastmt();
@@ -384,8 +379,8 @@ void compile_unit(strll* _unit){
             }
         }
 
-        peek_always_not_null = 0;
-        if(peek() == NULL) {
+        //peek_always_not_null = 0;
+        if(next == NULL) {
             break;
         }
         /*lastly, it must be the variable declaration.*/
