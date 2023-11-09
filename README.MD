@@ -71,7 +71,7 @@ language constructs, and abstractions, but entirely new programming languages.
 
 # Example program
 
-Here is a minimal complete example program, which you can find under 'library/toc_fib_example.cbas'
+Here is a minimal complete example program, which you can find under 'tests2/toc_fib_example.cbas'
 
 ```c
 #include <toc_native_user>
@@ -192,6 +192,53 @@ fn mutoa(char* dest, uint value):
     return;
 end
 ```
+Here is another example program which uses the standard library. It prints the contents of a directory:
+
+```c
+#include <toc_native_user>
+//mutate pprint....
+@wksht prnt[
+    [
+        @pprint [println itoa ARG1]
+    ][
+        ARG1
+    ]
+]
+
+
+fn pub main(i32 argc, char** argv)->i32:
+    if(argc < 2)
+        @prnt[
+            /   "Usage:"
+            /   "dirlist /path/to/the/directory"
+        ]
+        sys_exit(1);
+    end 
+    u32[1] nentries;
+    char**[1] listing;
+    if(
+        getdirlist(argv[1], listing, nentries)
+    )
+        @prnt[
+            /   "Could not load directory:"
+            /   (argv[1])
+        ]
+        sys_exit(1);
+    end
+    u64 i
+    for(i = 0; i < nentries[0]; i++)
+        println(listing[0][i]);
+    end
+end
+
+/*
+    Our code generator...
+*/
+fn codegen codegen_main():
+    cg_emitC(SEABASS_STDLIB_PREFIX);
+end
+```
+
 
 # Seabass Superfeatures
 
