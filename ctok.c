@@ -362,7 +362,8 @@ static void tokenizer(
     */
     
     /*We use comma operator here to do multiple assignments in a single statement*/
-    for( (i=0) , (mode=-1) ;work->text[i] != '\0'; i++){
+    mode = -1;
+    for(i=0;work->text[i] != '\0'; i++){
         done_selecting_mode:;
         if(work->text[i] == '\0') break;
         if(((unsigned char)work->text[i]) == 255){
