@@ -1127,18 +1127,41 @@ fn inline pure memeq(char* a, char* b, TGT_UMAX l)->TGT_IMAX:
     return memcmp(a,b,l) == 0
 end
 
+//UTF8 library
+fn inline pure utf8_strlen(char* s)->TGT_UMAX:
+    TGT_UMAX l = 0;
+    while(s[0])
+        //all non-continuation bytes
+        //represent UTF8 characters.
+        if((s[0]>>6)&3 != 2)
+            l++
+        end
+    end
+    return l
+end
+
+//Is this utf8 string purely ascii?
+fn inline pure utf8_isascii(char* s)->TGT_IMAX:
+    while(s[0])
+        if((s[0]>>7)&1)
+            return 0
+        end
+    end
+    return 1
+end
+
 //given a dest buf, copy out a single utf8 character.
 fn inline pure utf8_getchar(char* dest, char* src, char** endptr, TGT_IMAX* lenout)->TGT_IMAX:
     TGT_IMAX len = 0
-    if((src[0] >> 7) == 0)
+    if((src[0] >> 7)&1 == 0)
         len = 1;
         dest[0] = src[0];
-        dest[1] = 0;
-        src++
+        dest++;
+        src++;
         goto setendptr
     end
-    //Cannot parse continuation byte...
-    if((src[0] >> (6)) == 2)
+    //A continuation byte is NOT a valid character...
+    if((src[0] >> 6)&3 == 2)
         goto onerr
     end
     //calculate the number of bytes...
@@ -1154,17 +1177,17 @@ fn inline pure utf8_getchar(char* dest, char* src, char** endptr, TGT_IMAX* leno
     nb = nb + ( src[0]       & 1);
     len = nb;
     while(nb)
-        if((src[0] >> 6) != 2)
+        if((src[0] >> 6)&3 != 2)
             //This is not a continuation byte!
-            dest[0] = 0
-            return 1
+            goto onerr
         end
         dest[0] = src[0];
         dest++;src++;
         nb--;
     end
-    dest[0] = 0;
+    
     :setendptr
+    dest[0] = 0;
     if(endptr != 0)
         endptr[0] = src
     end
@@ -1173,14 +1196,16 @@ fn inline pure utf8_getchar(char* dest, char* src, char** endptr, TGT_IMAX* leno
     end
     //A-OK
     return 0;
+    
     :onerr
+    dest[0] = 0;
     if(endptr != 0)
         endptr[0] = src
     end
     if(lenout != 0)
         lenout[0] = len
     end
-    //A-OK
+    //NOT-OK
     return 1
 end
 
