@@ -92,15 +92,6 @@ strll** getnext(){
     return &next;
 }
 
-strll* peekn(unsigned n){
-    strll* retval = next;;
-    while(n){
-        n--;
-        if(retval == NULL) return NULL;
-        retval = retval->right;
-    }
-    return retval;
-}
 
 //print a string out.
 static void print_string_out(char* text){
@@ -201,7 +192,7 @@ static inline void parse_do_metaprogramming(){
         return;
 }
 
-static void parse_repeatedly_try_metaprogramming(){
+static inline void parse_repeatedly_try_metaprogramming(){
     while(1){
         if(peek() == NULL) return;
         if(peek()->data != TOK_OPERATOR) return;
@@ -633,7 +624,7 @@ static void parse_gvardecl(){
     type t = {0};
     int64_t cval;
     double fval;
-    uint64_t symid = 0xFFffFFffFFff;
+    uint64_t symid = ~(uint64_t)0;
     set_is_codegen(0);
     gvar_qualifier_top:;
     parse_repeatedly_try_metaprogramming();
@@ -872,8 +863,10 @@ static void parse_datastmt(){
     uint64_t is_codegen = 0;
     uint64_t is_noexport = 0;
     uint64_t symid;
+    /*Checked at callsite...
     require(peek()->data == TOK_KEYWORD, "data statement must begin with \"data\" ");
     require(ID_KEYW(peek()) == ID_KEYW_STRING("data"), "data statement must begin with \"data\" ");
+    */
     consume();
     set_is_codegen(0);
     data_qualifiers_top:;
@@ -1247,6 +1240,8 @@ void parse_fn(int is_method){
     uint64_t k;
     t.basetype = BASE_VOID; //made explicit...
     set_is_codegen(0);
+    //these were checked at the callsite...
+    /*
     if(!is_method){
         require(peek()->data == TOK_KEYWORD, "fn statement must begin with \"fn\"");
         require(ID_KEYW(peek()) == ID_KEYW_STRING("fn"), "fn statement must begin with \"fn\"");
@@ -1255,6 +1250,7 @@ void parse_fn(int is_method){
         require(peek()->data == TOK_KEYWORD, "method statement must begin with \"method\"");
         require(ID_KEYW(peek()) == ID_KEYW_STRING("method"), "fn statement must begin with \"fn\"");
     }
+    */
     consume(); //Eat fn or method
     fn_qualifier_top:;
     parse_repeatedly_try_metaprogramming(); //Immediately after fn/method, allow a parsehook invocation...

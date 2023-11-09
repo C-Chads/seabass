@@ -189,8 +189,6 @@ extern char** saved_argv;
 
 strll* peek();
 strll** getnext();
-/*lookahead by n*/
-strll* peekn(unsigned n);
 strll* consume();
 extern strll* next;
 static void parse_error(char* msg){
