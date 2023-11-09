@@ -1127,6 +1127,64 @@ fn inline pure memeq(char* a, char* b, TGT_UMAX l)->TGT_IMAX:
     return memcmp(a,b,l) == 0
 end
 
+//given a dest buf, copy out a single utf8 character.
+fn inline pure utf8_getchar(char* dest, char* src, char** endptr, TGT_IMAX* lenout)->TGT_IMAX:
+    TGT_IMAX len = 0
+    if((src[0] >> 7) == 0)
+        len = 1;
+        dest[0] = src[0];
+        dest[1] = 0;
+        src++
+        goto setendptr
+    end
+    //Cannot parse continuation byte...
+    if((src[0] >> (6)) == 2)
+        goto onerr
+    end
+    //calculate the number of bytes...
+    //we already know the top two bits are 11, since if
+    //the top bit was 0, it was a single-byte (ASCII),
+    //and if it was 2, it was an erroneous continuation byte.
+    TGT_IMAX nb = 2;
+    nb = nb + ((src[0] >> 5) & 1);
+    nb = nb + ((src[0] >> 4) & 1);
+    nb = nb + ((src[0] >> 3) & 1);
+    nb = nb + ((src[0] >> 2) & 1);
+    nb = nb + ((src[0] >> 1) & 1);
+    nb = nb + ( src[0]       & 1);
+    len = nb;
+    while(nb)
+        if((src[0] >> 6) != 2)
+            //This is not a continuation byte!
+            dest[0] = 0
+            return 1
+        end
+        dest[0] = src[0];
+        dest++;src++;
+        nb--;
+    end
+    dest[0] = 0;
+    :setendptr
+    if(endptr != 0)
+        endptr[0] = src
+    end
+    if(lenout != 0)
+        lenout[0] = len
+    end
+    //A-OK
+    return 0;
+    :onerr
+    if(endptr != 0)
+        endptr[0] = src
+    end
+    if(lenout != 0)
+        lenout[0] = len
+    end
+    //A-OK
+    return 1
+end
+
+
 class str
     char* d
     TGT_UMAX len
