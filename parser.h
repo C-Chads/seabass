@@ -420,14 +420,6 @@ void parse_stmts();
 void parse_stmt();
 
 
-/*safe memory allocation*/
-void* m_allocX(uint64_t sz);
-void* c_allocX(uint64_t sz);
-void* re_allocX(void* p, uint64_t sz);
-
-void consume_keyword(char* s);
-
-
 
 
 

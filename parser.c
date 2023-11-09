@@ -43,6 +43,15 @@ static void parse_structdecl();
 static inline void parse_struct_member(uint64_t sid); /*type ident*/
 
 
+static inline void consume_keyword(char* s){
+    char* msg;
+    msg = strcata("Failed Keyword Requirement:",s);
+    require(peek_match_keyw(s), msg);
+    free(msg);
+    consume();
+    return;
+}
+
 /*returns an owning pointer!*/
 static inline char* gen_reserved_sym_name(){
     char buf[100];
@@ -3500,11 +3509,4 @@ void parse_stmt(){
 
 
 
-void consume_keyword(char* s){
-    char* msg;
-    msg = strcata("Failed Keyword Requirement:",s);
-    require(peek_match_keyw(s), msg);
-    free(msg);
-    consume();
-    return;
-}
+
