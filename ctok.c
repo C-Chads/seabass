@@ -1837,6 +1837,7 @@ int main(int argc, char** argv){
         {
             strll* m = malloc(sizeof(strll));
             memcpy(m, &tokenized, sizeof(strll));
+            puts("<CBAS: Finished Tokenization>");
             compile_unit(m);
         }
         //free(t);

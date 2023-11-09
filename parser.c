@@ -427,7 +427,7 @@ void compile_unit(strll* _unit){
         parse_gvardecl();
         peek_always_not_null = 0;
     }
-
+    puts("<CBAS: Parsing finished>");
     //astdump();
     //search for the codegen function and try to execute it.
     {unsigned long i;
@@ -444,6 +444,7 @@ void compile_unit(strll* _unit){
                 //ast_execute_function(symbol_table+i);
                 ast_execute_function((symbol_table+i)[0]);
                 ast_vm_stack_pop();
+                puts("<CBAS: codegen_main executed successfully>");
                 exit(0);
             }
         }
