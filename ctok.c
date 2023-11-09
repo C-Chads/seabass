@@ -386,10 +386,6 @@ static void tokenizer(
 //#include
         modepicker:
         {/*Determine what our next mode should be.*/
-            if(i != 0){
-                puts("Something quite unusual has happened... mode is negative one, but i is not zero!");
-                exit(1);
-            }
             if(
                 strprefix("\r\n",work->text)||
                 strprefix("\n\r",work->text)
@@ -399,10 +395,6 @@ static void tokenizer(
                 work->data = (void*)1;
                 work = consume__bytes_with_bigstore(work, 2);
                 continue;
-            }
-            //Random \r in the file? Make it a space!
-            if(work->text[0] == '\r'){
-               work->text[0] = ' ';
             }
             if(strprefix("\n",work->text)){
                 i = -1;
