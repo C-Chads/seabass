@@ -405,8 +405,9 @@ For the maximum utilization of Man's God-given talents.
 
 # DOCUMENTATION
 
-see `doc.html` for the official "readable" documentation (in development)
-or run `cbas -m help` to view the manual pages.
+Proper documentation has yet to be written, however
+alpha/beta documentation is available by invoking
+`cbas -m help`
 
 # Theories / Design Principle
 
