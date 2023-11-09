@@ -369,9 +369,33 @@ static void tokenizer(
             work->text[i] = '\0';
             break;
         }
+        switch(mode){
+            case -1: goto modepicker;
+            case 0: goto mode_whitespace;
+            case 1: goto mode_identifier;
+            case 2: goto mode_string;
+            case 3: goto mode_comment;
+            case 4: goto mode_charlit;
+            case 5: goto mode_err;
+            case 6: goto mode_linecomment;
+            case 7: goto mode_decliteral;
+            case 8: goto mode_hexliteral;
+            case 9: goto mode_octliteral;
+            case 10: goto afterE;
+            case 11: goto afterRadix;
+            case 12: goto mode_incsys;
+            default: goto mode_err;
+        };
+        mode_err:{
+            puts("<TOKENIZER ERROR>");
+            puts("Unknown mode:");
+            printf("%ld", mode);
+            exit(1);
+        }
         /*Allow line numbers to be printed.*/
 //#include
-        if(mode == -1){/*Determine what our next mode should be.*/
+        modepicker:
+        {/*Determine what our next mode should be.*/
             if(i != 0){
                 puts("Something quite unusual has happened... mode is negative one, but i is not zero!");
                 exit(1);
@@ -704,23 +728,30 @@ static void tokenizer(
                 continue;
             }
             mode = 1; 
+            goto mode_identifier;
         }
-        if(mode == 0){ /*reading whitespace.*/
+        //if(mode == 0)
+        mode_whitespace:
+        { /*reading whitespace.*/
             work->data = 0;
             if(isspace(work->text[i]) && work->text[i]!='\n') continue;
             work = consume__bytes_with_bigstore(work, i); i=-1; mode = -1; continue;
         }
-        if(mode == 1){ /*valid identifier*/
+        //if(mode == 1)
+        mode_identifier:
+        { /*valid identifier*/
             work->data = (void*)8;
             if(
                 isUnusual(work->text[i])
             )
             {
                 work = consume__bytes_with_bigstore(work, i); 
-                i = -1; mode = -1; continue;
+                i = -1; mode = -1;
             }
+            continue;
         }
-        if(mode == 7){ /*Decimal literal, might turn into float*/
+        //if(mode == 7)
+        mode_decliteral:{ /*Decimal literal, might turn into float*/
             work->data = (void*)6;
             if(work->text[i] == '.')
             {
@@ -744,8 +775,11 @@ static void tokenizer(
                 work = consume__bytes_with_bigstore(work, i); 
                 i = -1; mode = -1; continue;
             }
+            continue;
         }
-        if(mode == 8){ /*Hex literal*/
+        //if(mode == 8)
+        mode_hexliteral:
+        { /*Hex literal*/
             work->data = (void*)6;
             if(
                 !my_ishex(work->text[i])
@@ -754,8 +788,10 @@ static void tokenizer(
                 work = consume__bytes_with_bigstore(work, i); 
                 i = -1; mode = -1; continue;
             }
+            continue;
         }
-        if(mode == 9){ /*Octal Literal*/
+        //if(mode == 9)
+        mode_octliteral:{ /*Octal Literal*/
             work->data = (void*)6;
             if(
                 !my_isoct(work->text[i])
@@ -784,16 +820,20 @@ static void tokenizer(
                 work = consume__bytes_with_bigstore(work, i); 
                 i = -1; mode = -1; continue;
             }
+            continue;
         }
-        if(mode == 10){ /*after E*/
+        //if(mode == 10)
+        afterE:{ /*after E*/
             work->data = (void*)7;
             if(!my_isdigit(work->text[i])){
                 work->data = (void*)7;
                 work = consume__bytes_with_bigstore(work, i); 
                 i = -1; mode = -1; continue;
             }
+            continue;
         }
-        if(mode == 11){ /*After the radix of a float*/
+        //if(mode == 11)
+        afterRadix:{ /*After the radix of a float*/
             work->data = (void*)7;
             if(work->text[i] == 'E' || work->text[i] == 'e'){
                 if(work->text[i+1] == '-' || work->text[i+1] == '+')
@@ -806,24 +846,30 @@ static void tokenizer(
                 work = consume__bytes_with_bigstore(work, i); 
                 i = -1; mode = -1; continue;
             }
+            continue;
         }
-        if(mode == 12){
+        //if(mode == 12)
+        mode_incsys:{
             work->data = (void*)22;
             if(work->text[i] == '\\' && work->text[i+1] != '\0') {i++; continue;}
             if(strfind(work->text + i, INCLUDE_CLOSE_SYS) == 0){
                 i+=strlen(INCLUDE_CLOSE_SYS);
                 work = consume__bytes_with_bigstore(work, i); i = -1; mode = -1; continue;
             }
+            continue;
         }
-        if(mode == 2){ /*string.*/
+        //if(mode == 2)
+        mode_string:{ /*string.*/
             work->data = (void*)2;
             if(work->text[i] == '\\' && work->text[i+1] != '\0') {i++; continue;}
             if(strfind(work->text + i, STRING_END) == 0){
                 i+=strlen(STRING_END);
                 work = consume__bytes_with_bigstore(work, i); i = -1; mode = -1; continue;
             }
+            continue;
         }
-        if(mode == 3){ /*comment.*/
+        //if(mode == 3)
+        mode_comment:{ /*comment.*/
             work->data = (void*)4;
             /*if(work->text[i] == '\\' && work->text[i+1] != '\0') {i++; continue;}*/
             if(strfind(work->text + i, COMMENT_END) == 0){
@@ -831,16 +877,20 @@ static void tokenizer(
 
                 work = consume__bytes_with_bigstore(work, i); i = -1; mode = -1; continue;
             }
+            continue;
         }
-        if(mode == 4){ /*char literal.*/
+        //if(mode == 4)
+        mode_charlit:{ /*char literal.*/
             work->data = (void*)3;
             if(work->text[i] == '\\' && work->text[i+1] != '\0') {i++; continue;}
             if(strfind(work->text + i, CHAR_END) == 0){
                 i+=strlen(CHAR_END);
                 work = consume__bytes_with_bigstore(work, i); i = -1; mode = -1; continue;
             }
+            continue;
         }
-        if(mode == 6){ /*line comment*/
+        //if(mode == 6)
+        mode_linecomment:{ /*line comment*/
             work->data = (void*)4;
             if(strfind(work->text + i, LINECOMMENT_END) == 0){
                 /*i+=strlen(LINECOMMENT_END);*/
@@ -849,6 +899,7 @@ static void tokenizer(
                 i = -1; 
                 mode = -1; continue;
             }
+            continue;
         }
     } /*eof main tokenizer*/
     //The very last token is currently pointing at the middle of a buffer...
