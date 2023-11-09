@@ -360,17 +360,11 @@ static void tokenizer(
         25 = #undef
         26 = #guard myGuardName
     */
-    
-    /*We use comma operator here to do multiple assignments in a single statement*/
+
     mode = -1;
     for(i=0;work->text[i] != '\0'; i++){
         done_selecting_mode:;
         if(work->text[i] == '\0') break;
-        /*if(((unsigned char)work->text[i]) == 255){
-            work->text[i] = '\0';
-            break;
-        }
-        */
         switch(mode){
             case -1: goto modepicker;
             case 0: goto mode_whitespace;
@@ -378,7 +372,7 @@ static void tokenizer(
             case 2: goto mode_string;
             case 3: goto mode_comment;
             case 4: goto mode_charlit;
-            case 5: goto mode_err;
+            case 5: exit(1);
             case 6: goto mode_linecomment;
             case 7: goto mode_decliteral;
             case 8: goto mode_hexliteral;
@@ -386,14 +380,8 @@ static void tokenizer(
             case 10: goto afterE;
             case 11: goto afterRadix;
             case 12: goto mode_incsys;
-            default: goto mode_err;
+            default: exit(1);
         };
-        mode_err:{
-            puts("<TOKENIZER ERROR>");
-            puts("Unknown mode:");
-            printf("%ld", mode);
-            exit(1);
-        }
         /*Allow line numbers to be printed.*/
 //#include
         modepicker:
