@@ -243,6 +243,9 @@ static inline i32 __CBAS__frename(unsigned char* fname_old, unsigned char* fname
 static inline void __CBAS__frewind(TGT_UMAX fhandle){
     rewind((FILE*)fhandle);
 }
+static inline void __CBAS__perror(unsigned char* msg){
+    perror((char*)msg);
+}
 
 static inline TGT_UMAX __CBAS__unixtime(){
     return time(0);
@@ -888,6 +891,7 @@ fn predecl noexport fflush(TGT_UMAX p)->int;
 
 fn predecl noexport popen(char* fname, char* mode)->TGT_UMAX; //returns a handle...
 fn predecl noexport pclose(TGT_UMAX p)->int;
+fn predecl noexport perror(char* msg);
 
 fn predecl noexport getdirlist(char* dirname, char*** entry_listing, u32* nentries)->i32;
 fn predecl noexport system(char* cmd)->TGT_IMAX;
