@@ -44,7 +44,7 @@ install: all_not_tcc
 	cp ./cbas_dbg2 /usr/local/bin/
 	cp ./cbas_clean /usr/local/bin/
 	cp ./cbas_pure /usr/local/bin/
-	cp ./cbas_clean /usr/local/bin/cbas
+	cp ./cbas_dirty /usr/local/bin/cbas
 
 install_all: all install_stdlib
 	cp ./cbas_dirty /usr/local/bin/
@@ -53,7 +53,7 @@ install_all: all install_stdlib
 	cp ./cbas_clean /usr/local/bin/
 	cp ./cbas_tcc /usr/local/bin/
 	cp ./cbas_pure /usr/local/bin/
-	cp ./cbas_clean /usr/local/bin/cbas
+	cp ./cbas_dirty /usr/local/bin/cbas
 	
 dev: clean uninstall cbas_dbg
 	cp ./cbas_dbg /usr/local/bin/

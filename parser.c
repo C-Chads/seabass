@@ -9,6 +9,7 @@
 
 strll* unit;
 strll* next;
+static strll* tokbuf = 0;
 int peek_always_not_null = 0;
 uint64_t symbol_generator_count = 1;
 
@@ -150,15 +151,41 @@ strll* consume(){
     }
     free(next);
 #endif
-        
+     
     next = right;
     return i;
 }
 /*
     OPTIMIZATION-
-    Pack all tokens until the next @ sign into a buffer.
+    Pack all tokens until the next @ sign into a giant vector.
+    
+    This should hopefully give the parser a much easier time
 */
-
+static inline void pack_tokens(){
+//Token packing is not a legitimate optimization on
+//clean systems
+#ifdef COMPILER_CLEANS_UP
+    return;
+#endif
+    strll* nn = next;
+    int64_t i = 0;
+    while(nn != NULL && !(nn->data == TOK_OPERATOR && nn->text[0] == '@')){
+        tokbuf = realloc(tokbuf, sizeof(strll) * (i+1));
+        memcpy(tokbuf + i, nn, sizeof(strll));
+        //strll* nn_old = nn;
+        nn = nn->right;
+        //free(nn_old);
+        i++;
+    }
+    if(i == 0) return;
+    next = tokbuf;
+    nn = tokbuf;
+    //we have reached an @ or the end of unit...
+    //fill the token list...
+    for(int64_t j = 0; j < (i-1); j++){
+        tokbuf[j].right = tokbuf+j+1;
+    }
+}
 
 
 
@@ -193,6 +220,7 @@ static inline void parse_do_metaprogramming(){
         ast_vm_stack_push_temporary();
         ast_execute_function((symbol_table+id)[0]);
         ast_vm_stack_pop();
+        pack_tokens();
         return;
 }
 
@@ -214,6 +242,7 @@ void set_max_float_type(uint64_t val);
 void compile_unit(strll* _unit){
     unit = _unit;
     next = unit;
+    pack_tokens();
     while(1){
         peek_always_not_null = 0;
         if(next == NULL) {
@@ -287,6 +316,7 @@ void compile_unit(strll* _unit){
                 ast_vm_stack_push_temporary();
                 ast_execute_function((symbol_table+id)[0]);
                 ast_vm_stack_pop();
+                pack_tokens();
                 continue;
             }
 
@@ -2131,6 +2161,7 @@ void expr_parse_terminal(expr_node** targ){
             require(symbol_table[id]->fargs[0]->pointerlevel == 2,"parsehook_expr_XXXXX requires a char** argument with void return");
             ast_execute_expr_parsehook((symbol_table + id)[0],targ);
             require(targ[0] != NULL, "No expression came out of the parsehook being called?");
+            pack_tokens();
             return;
         }
         if(streq(peek()->text, "->")){
@@ -3471,6 +3502,7 @@ void parse_stmt(){
         ast_vm_stack_push_temporary();
         ast_execute_function((symbol_table+id)[0]);
         ast_vm_stack_pop();
+        pack_tokens();
         return;
     }}
     
