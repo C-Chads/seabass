@@ -29,21 +29,10 @@ unsigned handle_cli_args(int argc, char** argv);
 
 static inline void* m_allocX(uint64_t sz){
     void* p = malloc(sz);
-    /*
-    if(p == NULL){
-        puts("malloc failed");
-        exit(1);
-    }
-    */
     return p;
 }
 static inline void* c_allocX(uint64_t sz){
-    void* p = calloc(sz, 1);
-    /*
-    if(p == NULL){
-        puts("calloc failed");
-        exit(1);
-    }*/
+    void* p = calloc(1, sz);
     return p;
 }
 

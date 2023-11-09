@@ -510,8 +510,3 @@ uint64_t get_builtin_arg3_type(char* s){
     return 0;
 }
 
-
-
-
-
-
