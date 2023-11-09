@@ -229,9 +229,6 @@ static inline TGT_IMAX __CBAS__ftell(TGT_UMAX fhandle){
     return ftell((FILE*)fhandle);
 }
 static inline i32 __CBAS__fseek(TGT_UMAX fhandle, TGT_IMAX offset, i32 whence){
-    if(whence == 1) whence = SEEK_SET;
-    else if(whence == 2) whence = SEEK_CUR;
-    else if(whence == 3) whence = SEEK_END;
     return fseek((FILE*)fhandle, offset, whence);
 }
 static inline i32 __CBAS__fremove(unsigned char* fname){
@@ -245,6 +242,24 @@ static inline void __CBAS__frewind(TGT_UMAX fhandle){
 }
 static inline void __CBAS__perror(unsigned char* msg){
     perror((char*)msg);
+}
+static inline void __CBAS__fclearerr(TGT_UMAX fhandle){
+    clearerr((FILE*)fhandle);
+}
+static inline TGT_UMAX __CBAS__L_tmpnam(){
+    return L_tmpnam;
+}
+static inline unsigned char* __CBAS__tmpnam(unsigned char* s){
+    return tmpnam(s);
+}
+static inline TGT_IMAX __CBAS__SEEK_SET(){
+    return SEEK_SET;
+}
+static inline TGT_IMAX __CBAS__SEEK_CUR(){
+    return SEEK_CUR;
+}
+static inline TGT_IMAX __CBAS__SEEK_END(){
+    return SEEK_END;
 }
 
 static inline TGT_UMAX __CBAS__unixtime(){
@@ -351,6 +366,8 @@ static inline void __CBAS__set_errno(i32 new_errno){
 static inline i32 __CBAS__get_errno(){
     return errno;
 }
+#define __CBAS__errno (errno)
+
 static inline void __CBAS__mcpy(unsigned char* dst, unsigned char* src, TGT_UMAX sz){
     memcpy(dst, src, sz);
 }
@@ -888,10 +905,13 @@ fn predecl noexport pure strlen(char* s)->TGT_UMAX;
 fn predecl noexport fopen(char* fname, char* mode)->TGT_UMAX; //returns a handle...
 fn predecl noexport fclose(TGT_UMAX p)->int;
 fn predecl noexport fflush(TGT_UMAX p)->int;
+fn predecl noexport fclearerr(TGT_UMAX fhandle);
 
 fn predecl noexport popen(char* fname, char* mode)->TGT_UMAX; //returns a handle...
 fn predecl noexport pclose(TGT_UMAX p)->int;
 fn predecl noexport perror(char* msg);
+fn predecl noexport L_tmpnam()->TGT_UMAX;
+fn predecl noexport tmpnam(char* s)->char*;
 
 fn predecl noexport getdirlist(char* dirname, char*** entry_listing, u32* nentries)->i32;
 fn predecl noexport system(char* cmd)->TGT_IMAX;
@@ -906,9 +926,9 @@ fn predecl noexport fwrite(TGT_UMAX fhandle, char* buf, TGT_UMAX nbytes)->TGT_UM
 fn predecl noexport fread(TGT_UMAX fhandle, char* buf, TGT_UMAX nbytes)->TGT_UMAX;
 fn predecl noexport feof(TGT_UMAX fhandle)->int;
 fn predecl noexport fseek(TGT_UMAX fhandle, TGT_IMAX offset, i32 whence)->i32;
-#define SEEK_SET 1
-#define SEEK_CUR 2
-#define SEEK_END 3
+fn predecl noexport SEEK_SET()->TGT_IMAX;
+fn predecl noexport SEEK_CUR()->TGT_IMAX;
+fn predecl noexport SEEK_END()->TGT_IMAX;
 fn predecl noexport ftell(TGT_UMAX fhandle)->TGT_IMAX;
 fn predecl noexport fremove(char* fname)->i32;
 fn predecl noexport frename(char* fname_old, char* fname_new)->i32;
@@ -939,6 +959,8 @@ fn predecl pure noexport tm_isdst(byte* tm_struct)->int;
 
 fn predecl noexport set_errno(int new_errno);
 fn predecl noexport get_errno()->int;
+
+noexport TGT_IMAX errno;
 
 
 //memcpy...
