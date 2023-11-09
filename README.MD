@@ -353,10 +353,10 @@ inside the struct definition, and that will be its alignment.
 
 ### Does Seabass support long doubles?
 
-Theoretically it can. However, not as a primitive data type.
-
-I am planning to add support to the standard library for long
-doubles soon.
+In the TOC converter? Officially, no, but you can write
+inline C. `math.h` is included by default, so you should
+have access to all of the standard math library functions
+too.
 
 ### Does seabass support unions?
 
