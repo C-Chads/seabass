@@ -366,10 +366,11 @@ static void tokenizer(
     for(i=0;work->text[i] != '\0'; i++){
         done_selecting_mode:;
         if(work->text[i] == '\0') break;
-        if(((unsigned char)work->text[i]) == 255){
+        /*if(((unsigned char)work->text[i]) == 255){
             work->text[i] = '\0';
             break;
         }
+        */
         switch(mode){
             case -1: goto modepicker;
             case 0: goto mode_whitespace;
