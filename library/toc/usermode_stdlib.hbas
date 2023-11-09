@@ -234,6 +234,12 @@ static inline i32 __CBAS__fseek(TGT_UMAX fhandle, TGT_IMAX offset, i32 whence){
     else if(whence == 3) whence = SEEK_END;
     return fseek((FILE*)fhandle, offset, whence);
 }
+static inline i32 __CBAS__fremove(unsigned char* fname){
+    return remove((char*)fname);
+}
+static inline i32 __CBAS__frename(unsigned char* fname_old, unsigned char* fname_new){
+    return rename((char*)fname_old, (char*)fname_new);
+}
 
 static inline TGT_UMAX __CBAS__unixtime(){
     return time(0);
@@ -897,6 +903,8 @@ fn predecl noexport fseek(TGT_UMAX fhandle, TGT_IMAX offset, i32 whence)->i32;
 #define SEEK_CUR 2
 #define SEEK_END 3
 fn predecl noexport ftell(TGT_UMAX fhandle)->TGT_IMAX;
+fn predecl noexport fremove(char* fname)->i32;
+fn predecl noexport frename(char* fname_old, char* fname_new)->i32;
 //time library...
 fn predecl pure noexport unixtime()->TGT_UMAX;
 fn predecl pure noexport time(TGT_UMAX* a)->TGT_UMAX;
