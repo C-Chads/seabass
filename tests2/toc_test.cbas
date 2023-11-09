@@ -392,7 +392,14 @@ fn pub main()->int:
     end
     
 end
-
+/*
+fn ee():
+    :mylabel
+    if(1)
+        :mylabel2
+    end
+    :mylabel
+end*/
 
 fn codegen codegen_main():
     cg_emitC(SEABASS_STDLIB_PREFIX);

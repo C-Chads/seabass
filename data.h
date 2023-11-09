@@ -482,7 +482,6 @@ static inline int ident_forbidden_declaration_check(char* s){
         end
     end
 
-*/
 static inline int label_name_is_already_in_use(char* s){
     for(unsigned long i = 0; i < nscopes; i++)
         for(unsigned long j = 0; j < scopestack[i]->nstmts; j++){
@@ -493,6 +492,7 @@ static inline int label_name_is_already_in_use(char* s){
         }
     return 0;
 }
+*/
 
 static inline void scopestack_push(scope* s){
     scopestack = realloc(scopestack, (++nscopes) * sizeof(scope*));

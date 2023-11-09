@@ -2056,70 +2056,60 @@ void expr_parse_terminal(expr_node** targ){
         expr_parse_sizeof(targ);
         return;
     }
-    if(peek_match_keyw("constexpri")){
+    else if(peek_match_keyw("constexpri")){
         expr_parse_constexpri(targ);
         return;
     }
-    if(peek_match_keyw("constexprf")){
+    else if(peek_match_keyw("constexprf")){
         expr_parse_constexprf(targ);
         return;
     }
-    if(peek_match_keyw("getfnptr")){
+    else if(peek_match_keyw("getfnptr")){
         expr_parse_getfnptr(targ);
         return;
     }
-    if(peek_match_keyw("callfnptr")){
+    else if(peek_match_keyw("callfnptr")){
         expr_parse_callfnptr(targ);
         return;
     }
-    if(peek_match_keyw("getglobalptr")){
+    else if(peek_match_keyw("getglobalptr")){
         expr_parse_getglobalptr(targ);
         return;
     }
-    if(peek()->data == TOK_FLOAT_CONST){
+    else if(peek()->data == TOK_FLOAT_CONST){
         expr_parse_floatlit(targ);
         return;
     }	
-    if(peek()->data == TOK_INT_CONST){
+    else if(peek()->data == TOK_INT_CONST){
         expr_parse_intlit(targ);
         return;
     }
-    /*
-        It must BOTH be an fname, AND be followed by a parentheses...
-    */
-
-    if(peek()->data == TOK_IDENT)
-        if(is_builtin_name(peek()->text)){
-            expr_parse_builtin_call(targ);
-            return;
-        }
-    if(
+    else if(
+        peek()->data == TOK_IDENT && 
+        is_builtin_name(peek()->text)
+    ){
+        expr_parse_builtin_call(targ);
+        return;
+    }else if(
         peek()->data == TOK_IDENT &&
-        //peek_is_fname() &&
         peek()->right->data == TOK_OPAREN
     ){
         expr_parse_fcall(targ);
         return;
     }
-    if(peek()->data == TOK_IDENT){
+    else if(peek()->data == TOK_IDENT){
         expr_parse_ident(targ);
         return;
     }
-    if(peek()->data == TOK_OPAREN){
+    else if(peek()->data == TOK_OPAREN){
         expr_parse_paren(targ);
         return;
     }
-
-    
-    if(peek()->data == TOK_STRING){
+    else if(peek()->data == TOK_STRING){
         expr_parse_stringlit(targ);
         return;
     }
-    /*
-        WHAT?!?! I ACTUALLY IMPLEMENTED THIS?!?!?!?!?!?!?
-        NANI?!?!?!?!?!
-    */
-    if(peek()->data == TOK_OPERATOR){
+    else if(peek()->data == TOK_OPERATOR){
         if(streq(peek()->text, "@")){
             char* t;
             uint64_t i;
@@ -2953,8 +2943,6 @@ void parse_lvardecl(){
             require(type_table[s.t.structid].is_incomplete == 0, "You may not declare a local variable using an incomplete struct type.");
         }
     }
-    //TODO: check for invalid declarations... ?
-    //TODO: Fix bug... you can actually shadow variables...
     require(!ident_forbidden_declaration_check(peek()->text), "Identifier is already in use for a local variable in the current scope!");
 
     s.name = strdup(peek()->text);
@@ -3292,7 +3280,7 @@ void parse_label(){
 
     me = parser_push_statement();
     me->kind = STMT_LABEL;
-    require(!label_name_is_already_in_use(peek()->text),"Label name is already in use.");
+    //require(!label_name_is_already_in_use(peek()->text),"Label name is already in use.");
     me->referenced_label_name = strdup(peek()->text);
     consume();
     return;
