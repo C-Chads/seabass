@@ -10,6 +10,7 @@
 strll* unit;
 strll* next;
 static strll* tokbuf = 0;
+static int64_t tokbuf_sz = 0;
 int peek_always_not_null = 0;
 uint64_t symbol_generator_count = 1;
 
@@ -170,7 +171,11 @@ static inline void pack_tokens(){
     strll* nn = next;
     int64_t i = 0;
     while(nn != NULL && !(nn->data == TOK_OPERATOR && nn->text[0] == '@')){
-        tokbuf = realloc(tokbuf, sizeof(strll) * (i+1));
+        if(i+1 > tokbuf_sz){
+            tokbuf_sz++;
+            tokbuf_sz = tokbuf_sz <<1;
+            tokbuf = realloc(tokbuf, sizeof(strll) * (tokbuf_sz));
+        }
         memcpy(tokbuf + i, nn, sizeof(strll));
         //strll* nn_old = nn;
         nn = nn->right;
