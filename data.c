@@ -830,11 +830,9 @@ void print_manpage(char* subject){
         l("PARSING")
         ll("Seabass is implemented with a recursive descent parser. However, it is possible")
         ll("to write `codegen` functions called 'parsehooks' which allow writing custom syntaxes.")
-        ll("if the parser sees \"@myidentifier\" it tries to look for parsehook_myidentifier, or")
-        ll("parsehook_expr_myidentifier if you are using it inside of an expression.")
+        ll("if the parser sees \"@myidentifier\" it tries to look for parsehook_myidentifier")
         ll("parsehooks have the ability to arbitrarily manipulate the Abstract Syntax Tree and")
-        ll("manipulate the token stream fed to the parser. parsehook_expr_ functions are expected")
-        ll("to assign to an expr_node** that they are given as input.")
+        ll("manipulate the token stream fed to the parser.")
         nl
         l("CODE GENERATION")
         ll("Seaass requires every compilation unit define a codegen function `codegen_main` taking no")
