@@ -1444,8 +1444,9 @@ void strll_handle_defines(strll* original_passin){
 
 static void strll_delete_newlines(strll* in){
     strll* current;
+#ifdef COMPILER_CLEANS_UP
     strll* saved_delete;
-
+#endif
     current = NULL;
     for(current = in; current != NULL;
         (current = current->right)
@@ -1454,12 +1455,16 @@ static void strll_delete_newlines(strll* in){
         top:;
         if(current == NULL) return;
         if(current->data == (void*)1){
+#ifdef COMPILER_CLEANS_UP
             saved_delete = current->right;
+#endif
             if(current->right){
                 memcpy(current, current->right, sizeof(strll));
+#ifdef COMPILER_CLEANS_UP
                 saved_delete->right = NULL;
                 saved_delete->text = NULL;
                 free(saved_delete);
+#endif
                 goto top;
             }
             /*The file is just a newline. turn ourselves into a semicolon...*/
@@ -1468,17 +1473,23 @@ static void strll_delete_newlines(strll* in){
         }
         if(current->right)
         if(current->right->data == (void*)1){
+#ifdef COMPILER_CLEANS_UP
             saved_delete = current->right->right;
+#endif
             if(current->right->right){
                 memcpy(current->right, current->right->right, sizeof(strll));
+#ifdef COMPILER_CLEANS_UP
                 saved_delete->right = NULL;
                 saved_delete->text = NULL;
                 free(saved_delete);
+#endif
                 goto top;
             } 
             {
                 /*we must remove current->right, and this is the end, so, return.*/
+#ifdef COMPILER_CLEANS_UP
                 strll_free(current->right,1);
+#endif
                 current->right = NULL;
                 return;
             }
@@ -1627,35 +1638,6 @@ static void strll_process_stringliterals(strll* in){
 
 
 
-static void strll_concat_stringliterals(strll* in){
-    strll* current;
-    strll* father;
-    strll* saved_current_right;
-
-    current = NULL;
-    father = NULL;
-    for(current = in; 
-            current != NULL;
-            (father = current),
-            (current = current->right)
-            
-    ){
-        top:;
-        if(father)
-        if(father->data == (void*)2)
-        if(current->data == (void*)2){
-            /*we have 2 string literals next to each other to concatenate!*/
-            father->text = strcatafb(father->text, current->text);
-            current->text = NULL;
-            saved_current_right = current->right;
-            current->right = NULL;
-            strll_free(current,1);
-            father->right = saved_current_right;
-            current = saved_current_right;
-            goto top;
-        }
-    }
-}
 
 static char hex_expansion[1024];
 //this is never done. see below.
@@ -1848,10 +1830,8 @@ int main(int argc, char** argv){
             tokenized.linenum = 0; /*line does not exist*/
         }
         strll_handle_defines(&tokenized);
-        /*strll_hexify_int_constants(&tokenized);*/
         strll_process_charliterals(&tokenized);
         strll_process_stringliterals(&tokenized);
-        //strll_concat_stringliterals(&tokenized); //TODO: Maybe remove this?
         strll_delete_newlines(&tokenized);
         //strll_remove_owning_operator_pointers(&tokenized);
         {
