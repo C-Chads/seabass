@@ -50,7 +50,7 @@ codegen cg_knowl_fact_category traitsystem;
 #define __CG_TRAITSYSTEM_MAX_TRAITS 2048
 #define __CG_TRAITSYSTEM_MAX_TRAITS_PER_NOUN 1024
 
-fn codegen parsehook_cg_NOEXPORT_init_traitsystem():
+fn codegen cg__INTERNAL__init_traitsystem():
     traitsystem.nouns = cast(cg_knowl_noun*)__builtin_malloc(sizeof(cg_knowl_noun) * __CG_TRAITSYSTEM_MAX_TRAITS);
     traitsystem.props = cast(cg_knowl_prop*)__builtin_malloc(sizeof(cg_knowl_prop) * __CG_TRAITSYSTEM_MAX_TRAITS);
     traitsystem.n_nouns = 0;
@@ -156,7 +156,7 @@ end
 //TODO: implement adding of types and type traits, as well as cloning props from
 //other types...
 
-@cg_NOEXPORT_init_traitsystem ;
+#__cbas_run_fn cg__INTERNAL__init_traitsystem ;
 
 
 //end of unit...

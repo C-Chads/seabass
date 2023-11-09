@@ -154,6 +154,10 @@ strll* consume(){
     next = right;
     return i;
 }
+/*
+    OPTIMIZATION-
+    Pack all tokens until the next @ sign into a buffer.
+*/
 
 
 
