@@ -566,16 +566,6 @@ static inline uint64_t peek_basetype(uint64_t* sid){
     }
     parse_error("Unknown peek_basetype identifier.");
     return 0;
-    /*unreachable...*/
-    /*Search the functions. why not?*/
-    if(nsymbols > 0){
-        uint64_t i;
-        for(i = 0; i < nsymbols; i++)
-            if(symbol_table[i]->t.is_function)
-                if(streq(symbol_table[i]->name, peek()->text)){
-                    return BASE_FUNCTION;
-                }
-    }
 }
 
 
