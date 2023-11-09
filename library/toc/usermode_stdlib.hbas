@@ -222,6 +222,18 @@ static inline TGT_UMAX __CBAS__fwrite(TGT_UMAX fhandle, unsigned char* buf, TGT_
 static inline TGT_UMAX __CBAS__fread(TGT_UMAX fhandle, unsigned char* buf, TGT_UMAX nbytes){
     return fread(buf, 1, nbytes,(FILE*)fhandle);
 }
+static inline i32 __CBAS__feof(TGT_UMAX fhandle){
+    return feof((FILE*)fhandle);
+}
+static inline ssize_t __CBAS__ftell(TGT_UMAX fhandle){
+    return ftell((FILE*)fhandle);
+}
+static inline i32 __CBAS__fseek(TGT_UMAX fhandle, TGT_IMAX offset, i32 whence){
+    if(whence == 1) whence = SEEK_SET;
+    else if(whence == 2) whence = SEEK_CUR;
+    else if(whence == 3) whence = SEEK_END;
+    return fseek((FILE*)fhandle, offset, whence);
+}
 
 static inline TGT_UMAX __CBAS__unixtime(){
     return time(0);
@@ -879,7 +891,12 @@ fn predecl noexport get_stderr_handle()->TGT_UMAX;
 //returns number of bytes read/written
 fn predecl noexport fwrite(TGT_UMAX fhandle, char* buf, TGT_UMAX nbytes)->TGT_UMAX;
 fn predecl noexport fread(TGT_UMAX fhandle, char* buf, TGT_UMAX nbytes)->TGT_UMAX;
-
+fn predecl noexport feof(TGT_UMAX fhandle)->int;
+fn predecl noexport fseek(TGT_UMAX fhandle, TGT_IMAX offset, i32 whence)->i32;
+#define SEEK_SET 1
+#define SEEK_CUR 2
+#define SEEK_END 3
+fn predecl noexport ftell(TGT_UMAX fhandle)->TGT_IMAX;
 //time library...
 fn predecl pure noexport unixtime()->TGT_UMAX;
 fn predecl pure noexport time(TGT_UMAX* a)->TGT_UMAX;
