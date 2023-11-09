@@ -360,12 +360,6 @@ static inline i32 __CBAS__tm_isdst(unsigned char* tm_struct){
    memcpy(&timeinfo, tm_struct, sizeof(struct tm));
    return timeinfo.tm_isdst;
 }
-static inline void __CBAS__set_errno(i32 new_errno){
-    errno = new_errno;
-}
-static inline i32 __CBAS__get_errno(){
-    return errno;
-}
 #define __CBAS__errno (errno)
 
 static inline void __CBAS__mcpy(unsigned char* dst, unsigned char* src, TGT_UMAX sz){
@@ -957,10 +951,7 @@ fn predecl pure noexport tm_wday(byte* tm_struct)->int;
 fn predecl pure noexport tm_yday(byte* tm_struct)->int;
 fn predecl pure noexport tm_isdst(byte* tm_struct)->int;
 
-fn predecl noexport set_errno(int new_errno);
-fn predecl noexport get_errno()->int;
-
-noexport TGT_IMAX errno;
+noexport atomic TGT_IMAX errno;
 
 
 //memcpy...
