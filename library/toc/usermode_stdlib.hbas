@@ -1169,12 +1169,9 @@ fn inline pure utf8_getchar(char* dest, char* src, char** endptr, TGT_IMAX* leno
     //the top bit was 0, it was a single-byte (ASCII),
     //and if it was 2, it was an erroneous continuation byte.
     TGT_IMAX nb = 2;
-    nb = nb + ((src[0] >> 5) & 1);
-    nb = nb + ((src[0] >> 4) & 1);
-    nb = nb + ((src[0] >> 3) & 1);
-    nb = nb + ((src[0] >> 2) & 1);
-    nb = nb + ((src[0] >> 1) & 1);
-    nb = nb + ( src[0]       & 1);
+    if((src[0] >> 5) & 1) nb++ else goto end_of_len_cal end
+    if((src[0] >> 4) & 1) nb++ else goto end_of_len_cal end
+    :end_of_len_cal
     len = nb;
     while(nb)
         if((src[0] >> 6)&3 != 2)
