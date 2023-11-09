@@ -3497,32 +3497,7 @@ void parse_stmt(){
 }
 
 
-void* m_allocX(uint64_t sz){
-    void* p = malloc(sz);
-    /*
-    if(p == NULL){
-        puts("malloc failed");
-        exit(1);
-    }
-    */
-    return p;
-}
-void* c_allocX(uint64_t sz){
-    void* p = calloc(sz, 1);
-    /*
-    if(p == NULL){
-        puts("calloc failed");
-        exit(1);
-    }*/
-    return p;
-}
 
-
-void* re_allocX(void* p, uint64_t sz){
-    p = realloc(p, sz);
-
-    return p;
-}
 
 
 void consume_keyword(char* s){
