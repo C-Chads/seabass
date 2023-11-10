@@ -24,6 +24,7 @@
         <a href="#prereq">Prerequisites</a><br>
         <a href="#terminology">Terminology</a><br>
         <a href="#whatis">What is Seabass?</a><br>
+        <a href="#basicsyntaxc">Basic Syntax versus C</a><br>
     </div>
     <hr>
     <center>
@@ -138,7 +139,6 @@
         </li>
 
     </ul>
-    
     <hr>
     <center>
     <h2 id="whatis">What is Seabass?</h2>
@@ -177,18 +177,193 @@
             <p>codegen code is given virtually unrestricted access to the internals of the compiler. It can modify the tokenized source code which has yet to be parsed, or even manipulate the AST of code which has already been parsed.</p>
         </li>
     </ul>
-    <p>To explain what this all means, let me discuss how Seabass differs from the C language:</p>
+    <hr>
+    <center>
+    <h2 id="basicsyntaxc">Basic Syntax versus C</h2>
+    </center>
+    <hr>
+    <p>Seabass was designed to be a simplification, enhancement, and general improvement of C. In order to convey the basics of the syntax of Seabass, here is a simple fibonacci number program in both languages:</p>
+    <pre><code>
+    /*C program*/
+    #include <stdio.h>
+    #include <stdlib.h>
+    
+    void mutoa(char* dest, unsigned int value);
+    unsigned matou(char* in);
+    
+    unsigned fib(unsigned n){
+        if(n < 2)
+            return 1;
+        unsigned a = 1;
+        unsigned b = 1;
+        unsigned c = 1;
+        n = n - 2;
+        while(n){
+            c = a + b;
+            a = b;
+            b = c;
+            n--;
+        }
+        return c;
+    }
+    
+    int main(int argc, char** argv){
+        if(argc < 2){
+            puts("Usage: fib 13");
+            exit(1);
+        }
+        puts("Welcome to the fibonacci number calculator!");
+        char buf[50];
+        unsigned qq = matou(argv[1]);
+        puts("You asked for the fibonacci number...");
+        mutoa(buf, qq);
+        puts(buf);
+        puts("That fibonacci number is:");
+        mutoa(buf, fib(qq));
+        puts(buf);
+        return 0;
+    }
+    
+    unsigned matou(char* in){
+        unsigned retval = 0;
+        while(
+            (*in >= '0') &&
+            (*in <= '9')
+        ){
+            retval *= 10;
+            retval += *in - '0';
+            in++;
+        }
+        return retval;
+    }
+    
+    void mutoa(char* dest, unsigned value){
+        if(value == 0){
+            dest[0] = '0';
+            dest[1] = 0;
+            return;
+        }
+        {
+            unsigned pow;
+            pow = 1;
+            while(value/pow >= 10){
+                pow = pow * 10;
+            }
+            while(pow){
+                unsigned temp;
+                temp = value / pow;
+                *dest = (temp + ('0')); dest++;
+                value = value - temp * pow;
+                pow = pow / 10;
+            }
+        }
+        ending:;
+        *dest = 0;
+    }
+    </code></pre>
+    <p>Here is an equivalent program in Seabass:</p>
+    <pre><code>
+    /*Seabass program*/
+    #include &lttoc_native_user&gt
+    
+    @wksht prnt [
+        [
+            @pprint [println mutoa ARG1]
+        ][
+            ARG1
+        ]
+    ]
+    
+    fn predecl mutoa(char* dest, uint value);
+    fn predecl matou(char* in)->uint;
+    
+    fn inline fib(uint n)->uint:
+        if(n < 2)
+            return 1;
+        end
+        uint a=1
+        uint b=1
+        uint c=1;
+        n = n-2
+        while(n)
+            c = a + b;
+            a = b;
+            b = c;
+            n--
+        end
+        return c
+    end
+    
+    fn pub main(int argc, schar** argv)->int:
+        if(argc < 2)
+            @prnt[
+                /       "Usage: fib 13"
+            ]
+            sys_exit(1);
+        end
+        println("Welcome to the fibonacci number calculator!");
+        uint qq = matou((char*)argv[1]);
+        @prnt[
+            /       "You asked for the fibonacci number..."
+            /int    (qq)
+            /       "That fibonacci number is:"
+            /int    (fib(qq))
+        ]
+        return 0;
+    end
+    
+    fn codegen codegen_main():
+        cg_emitC(SEABASS_STDLIB_PREFIX);
+    end
+    
+    fn matou(char* in)->uint:
+        uint retval = 0;
+        while(
+            (in[0] >= '0') && 
+            (in[0] <= '9')
+        )
+            retval = retval * 10;
+            retval = retval + (in[0]-'0');
+            in++
+        end
+        return retval;
+    end
+    
+    fn mutoa(char* dest, uint value):
+        if(value == 0)
+            dest[0] = '0';
+            dest[1] = 0;
+            return 
+        end
+        if(1)
+            uint pow
+            pow = 1;
+            while(value/pow >= 10)
+                pow = pow * 10; 
+            end
+            while(pow)
+                uint temp
+                temp = value/pow;
+                dest[0] = (temp + ('0')); dest++;
+                value = value - temp * pow;
+                pow = pow / 10
+            end
+        end
+        :ending
+        dest[0] = 0
+    end
+    </code></pre>
+
+    <p>This alone should give you a rough picture of how Seabass "behaves" relative
+    to C. Please examine the two programs carefully. </p>
     <ol>
-        <li><b>Public Domain</b><br>
-            The C language itself is public domain- standardized internationally for free and open use...
-            But most tools written to work with C programs are not. Cbas, however, is public domain from its onset.
-        </li>
-        <li><b></b><br></li>
-        <li><b></b><br></li>
-        <li><b></b><br></li>
+        <li>C delimits scopes with brackets, while seabass is more freeform- a scope opens immediately after constructs such as <code>if</code> and <code>while</code>.</li>
+        <li>Statements in Seabass do not always require a terminating semicolon.</li>
+        <li>in addition to "main" the Seabass program also defines "codegen_main"</li>
+        <li>Pointer dereferencing in C can be done with <code>*</code> but in Seabass it is only done with square brackets.</li>
+        <li></li>
+        <li></li>
     </ol>
-    <p></p>
-    <p></p>
     <p></p>
     <p></p>
     <p></p>
