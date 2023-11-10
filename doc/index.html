@@ -25,6 +25,8 @@
         <a href="#terminology">Terminology</a><br>
         <a href="#whatis">What is Seabass?</a><br>
         <a href="#basicsyntaxc">Basic Syntax versus C</a><br>
+        <a href="#codegen">codegen</a><br>
+        <a href="#codegenmain">codegen_main</a><br>
     </div>
     <hr>
     <center>
@@ -378,6 +380,30 @@
     <p>The short answer is <b>No</b>, however <b>the metaprogramming operator is used to implement macros.</b></p>
     <p>I define a macro as "Any simple text replacement scheme which contains minimal or non-existant semantic or syntax rules".</p>
     <p>The `@prnt` operation is a macro, created by invoking `@wksht`, wrapping the `@pprint` Domain-Specific Language..</p>
+    <p>The use of the metaprogramming operator will be explained later. We must discuss some pre-requisite concepts first.</p>
+    <hr>
+    <center>
+    <h2 id="codegen">codegen</h2>
+    </center>
+    <hr>
+    <p>Seabass allows you to define functions and variables which exist exclusively at compiletime, i.e., while the `cbas` tool is running. <b>They do not exist in the final compiled program.</b></p>
+    <p>These "symbols" are annotated as such using the `codegen` keyword.</p>
+    <p></p>
+    <p></p>
+    
+    <hr>
+    <center>
+    <h2 id="codegenmain">codegen_main</h2>
+    </center>
+    <hr>
+    <p>As mentioned <a href="#whatis">before</a> , Seabass is self-retargeting. It allows you to define a function which is responsible for generating the "output" of the compiler.</p>
+    <p>In the fibonacci number program from the <a href="#basicsyntaxc">previous section</a>, it was used to generate C code. This C code would then be compiled with a C compiler to generate an executable binary.</p>
+    <p>codegen_main is only special in that the `cbas` tool will attempt to find it inside the translation unit after parsing has finished. If it cannot find it, it will </p>
+    <p></p>
+    <p></p>
+    <p></p>
+    <p></p>
+    <p></p>
     <p></p>
     <p></p>
   </body>
