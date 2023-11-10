@@ -76,7 +76,8 @@
     <h2 id="terminology">Terminology</h2>
     </center>
     <hr>
-    <p>Note that Italicized terms are considered "standard".</p>
+    <p>For the purpose of clear communication, here are some terms you may be unfamiliar with.</p>
+    <p>Note that Italicized terms are considered "standard", meaning that more information should be easily attainable from independent study on the web.</p>
     <ul>
         <li><b>Seabass</b><br>
             <ol>
@@ -84,24 +85,46 @@
             <li>The project surrounding that language</li>
             </ol>
         </li>
+        <li><i><b>POSIX</b></i><br>
+            An old standard for how operating systems should be designed.<br>
+            [Systems programming lingo]
+        </li>
+        <li><i><b>64 bit</b></i><br>
+            <ol>
+                <li>Having a 64 bit address space (i.e. "cbas was written for 64 bit byte-addressable POSIX systems")</li>
+                <li>Capable of handling 64 bit integer arithmetic in a single operation.</li>
+            </ol>
+            [Systems programming lingo]
+        </li>
+        <li><i><b>Byte-addressable</b></i><br>
+            Of a computer platform, the ability to address memory by 8-bit chunks. This is as opposed to non-byte-addressable systems, such as the PDP-12, which has memory addressed by 12-bit chunks.<br>
+            [Systems programming lingo]
+        </li>
         <li><b>CBAS / cbas</b><br>
             The tool which works with Seabass programs, originally written
             in C99 for 64 bit byte-addressable POSIX machines.
         </li>
         <li><i><b>Compiler</b></i><br>
-            A piece of code which turns one computer language into another.
+            A piece of code which turns one computer language into another.<br>
+            [Programming language lingo]
         </li>
         <li><i><b>AST</b></i><br>
-            Abstract Syntax Tree [Programming language lingo]
+            Internal representation of a program's source code, or a portion thereof, which represents its grammatic structure.<br>[Programming language lingo]
         </li>
         <li><i><b>Token</b></i><br>
-            Small piece of source code text. [Programming language lingo]
+            Small piece of source code text.<br>
+            [Programming language lingo]
+        </li>
+        <li><i><b>Parser</b></i><br>
+            A piece of computer code which discerns the structure of a computer program from its source code and constructs an AST.<br>
+            [Programming language lingo]
         </li>
         <li><i><b>Identifier</b></i><br>
-            Name for an object in a computer program. Seabass uses C rules for identifiers. [Programming language lingo]
+            Name for an object in a computer program. Seabass uses C rules for identifiers.<br>
+            [Programming language lingo]
         </li>
         <li><i><b>Keyword</b></i><br>
-            Reserved, special sequence of english characters, underscores, and decimal digits. May not start with a digit. [Programming language lingo]
+            Reserved, special sequence of english characters, underscores, and decimal digits. May not start with a digit.<br>[Programming language lingo]
         </li>
         <li><b>codegen</b><br>
             short for "code generation". Adjective. Keyword in the SEABASS language.<br>
@@ -113,13 +136,7 @@
             In Seabass, any code which is not "codegen" is considered "target", meaning
             its purpose is to be translated into some other language.
         </li>
-        <li><b></b><br></li>
-        <li><b></b><br></li>
-        <li><b></b><br></li>
-        <li><b></b><br></li>
-        <li><i><b></b></i><br></li>
-        <li><i><b></b></i><br></li>
-        <li><i><b></b></i><br></li>
+
     </ul>
     
     <hr>
@@ -127,7 +144,7 @@
     <h2 id="whatis">What is Seabass?</h2>
     </center>
     <hr>
-    <p>Seabass is a public domain, self-retargeting, self-extending, self-modifying Metaprogramming Language, and general purpose programming tool.</p>
+    <p>Seabass is a public domain, self-retargeting, self-extending, self-modifying metaprogramming language, and general purpose metaprogramming tool.</p>
     <p>Allow me to elaborate:</p>
     <ul>
         <li>
@@ -148,7 +165,7 @@
         </li>
         <li>
             <h3>Self-retargeting</h3>
-            <p>Seabass allows the user to define a special function called "codegen_main" which is responsible for generating "target code".</p>
+            <p>Seabass allows the user to define a special function called "codegen_main" which is responsible for generating "target code". This allows programmers to define how their code should be compiled.</p>
         </li>
         <li>
             <h3>Self-extending</h3>
@@ -160,7 +177,16 @@
             <p>codegen code is given virtually unrestricted access to the internals of the compiler. It can modify the tokenized source code which has yet to be parsed, or even manipulate the AST of code which has already been parsed.</p>
         </li>
     </ul>
-    <p></p>
+    <p>To explain what this all means, let me discuss how Seabass differs from the C language:</p>
+    <ol>
+        <li><b>Public Domain</b><br>
+            The C language itself is public domain- standardized internationally for free and open use...
+            But most tools written to work with C programs are not. Cbas, however, is public domain from its onset.
+        </li>
+        <li><b></b><br></li>
+        <li><b></b><br></li>
+        <li><b></b><br></li>
+    </ol>
     <p></p>
     <p></p>
     <p></p>
