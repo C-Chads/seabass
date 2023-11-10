@@ -894,10 +894,6 @@ static void tokenizer(
     }
 
     /*Do line numbers*/
-    /*
-    printf("<DEBUG> len = %ld\r\n",strll_len(original_passin));
-    strll_show(original_passin,0);
-    */
     {
         line_num = 1;
         col_num = 1;
@@ -913,7 +909,7 @@ static void tokenizer(
                 c = current_meta->text;
                 for(;*c;c++){
                     if(*c == '\n') {line_num++;col_num = 1;continue;}
-                    if(*c != '\n') {col_num++;}
+                    col_num++;
                 }
             }
         }
@@ -1036,7 +1032,9 @@ static void tokenizer(
                     if(father){
                         father->right = current_meta->right;
                         current_meta->right = NULL;
+#ifdef COMPILER_CLEANS_UP
                         free(current_meta);
+#endif
                         current_meta = father; /*wink*/
                     } else {
                         /*We are the first element in the list. This is actually an interesting situation.
@@ -1052,9 +1050,14 @@ static void tokenizer(
                             strll* r = current_meta->right;
                             memcpy(current_meta, current_meta->right, sizeof(strll));
                             r->right = NULL;
-                            
+#ifdef COMPILER_CLEANS_UP                     
                             free(r);
-                        } else current_meta->data = (void*)0xff; /*MAGIC empty_file*/
+#endif
+                        } else {
+                            puts("<TOKENIZER ERROR> A file was empty....");
+                            puts(filename);
+                            exit(1);
+                        }
                     }
                 }
                 /*Free un-needed text..*/
@@ -1871,17 +1874,13 @@ int main(int argc, char** argv){
             strll* m = malloc(sizeof(strll));
             memcpy(m, &tokenized, sizeof(strll));
             puts("<CBAS: Finished Tokenization>");
-            compile_unit(m);
+            compile_unit(m); //noreturn....
         }
-        //free(t);
     }
 
-    
-
-    /*Call your Compiler here!*/
-    strll_show(&tokenized, 0);
-    strll_free(&tokenized, 0);
-    free(infilename);
+    // strll_show(&tokenized, 0);
+    // strll_free(&tokenized, 0);
+    // free(infilename);
     return 0;
 }
 /*End of file comment.*/
