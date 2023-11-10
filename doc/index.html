@@ -185,18 +185,18 @@
     <p>Seabass was designed to be a simplification, enhancement, and general improvement of C. In order to convey the basics of the syntax of Seabass, here is a simple fibonacci number program in both languages:</p>
     <pre><code>
     /*C program*/
-    #include <stdio.h>
-    #include <stdlib.h>
+    #include &ltstdio.h&gt
+    #include &ltstdlib.h&gt
     
     void mutoa(char* dest, unsigned int value);
     unsigned matou(char* in);
     
-    unsigned fib(unsigned n){
+    unsigned int fib(unsigned n){
         if(n < 2)
             return 1;
-        unsigned a = 1;
-        unsigned b = 1;
-        unsigned c = 1;
+        unsigned int a = 1;
+        unsigned int b = 1;
+        unsigned int c = 1;
         n = n - 2;
         while(n){
             c = a + b;
@@ -355,16 +355,21 @@
     </code></pre>
 
     <p>This alone should give you a rough picture of how Seabass "behaves" relative
-    to C. Please examine the two programs carefully. </p>
+    to C. Please examine the two programs carefully. I expect you have discerned the following:</p>
     <ol>
         <li>C delimits scopes with brackets, while seabass is more freeform- a scope opens immediately after constructs such as <code>if</code> and <code>while</code>.</li>
         <li>Statements in Seabass do not always require a terminating semicolon.</li>
         <li>in addition to "main" the Seabass program also defines "codegen_main"</li>
         <li>Pointer dereferencing in C can be done with <code>*</code> but in Seabass it is only done with square brackets.</li>
-        <li></li>
-        <li></li>
+        <li>Return values in seabass are written after the parentheses-delimited function argument list.</li>
+        <li>Types in seabass work are written slightly differently.</li>
+        <li>The seabass program includes several unusual sequences starting with the '@' sign.</li>
     </ol>
-    <p></p>
+    <p>However, most important of all, you should notice that the seabass code is mostly identical in structure
+    and semantics to the C code. Seabass is designed to be easy to pick up for C programmers.</p>
+    <h3>The @ sign...</h3>
+    <p>In Seabass, this is known as the <b>metaprogramming operator</b>. it is used to invoke code at compile time. In this case, it is used to implement the custom syntaxes `wksht` and `pprint`, and in the code provided, we define a new derived syntax, `prnt`.</p>
+    <p>The exact nature and semantics of how this all works will be discussed later. All you need to understand right now is that this is the first and most important part of what makes Seabass different from C- the metaprogramming operator.</p>
     <p></p>
     <p></p>
     <p></p>
