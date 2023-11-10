@@ -1,12 +1,9 @@
-
-
 /*
     Small program to demonstrate object oriented programming in Seabass.
 */
 
-
 class myClass
-    noexport //fancy keyword that basically means this type is not meant for the target.
+    noexport
     int a
     char* b
 end
@@ -32,11 +29,6 @@ end
 method codegen myClass.print():
     __builtin_puts(this.b)
 end
-
-
-
-
-fn codegen what(): if(1) end end
 
 fn codegen codegen_main():
 

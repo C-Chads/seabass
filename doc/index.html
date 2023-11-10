@@ -9,7 +9,7 @@
     <!-- Content -->
     <center>
     <h1>
-        SEABASS
+        SEABASS- An Introduction
     </h1>
     <hr>
     <img src="logo.png" alt="logo" style="width:100%">
@@ -28,7 +28,10 @@
         <a href="#codegen">codegen</a><br>
         <a href="#codegenmain">codegen_main</a><br>
         <a href="#parsehooks">parsehooks</a><br>
+        <a href="#oop">Object Oriented Programming</a><br>
     </div>
+    <hr>
+    <p>Welcome, conquerors, to the Seabass Metaprogramming language! This html document should serve as an introduction.<br><i>Saying, Blessed are they whose iniquities are forgiven, and whose sins are covered.</i> - Romans 4:7</p>
     <hr>
     <center>
     <h3>All Glory to the Lord Jesus Christ, who is, and who was, and who is to come, for ever. Amen.</h3>
@@ -41,7 +44,7 @@
     <p>"Hear, O LORD, when I cry with my voice: have mercy also upon me, and answer me."</p>
     <p>-Ps 27:7</p>
     <hr>
-    <p>Seabass, as an idea, a programming language, a working program, and a concept, are all gifts I have been given. God put it into my hand to make them. For creating heaven and earth in six days, to freely giving us eternal life, to the simple joy of breathing, let all thanks and praise be directed to God our Father and our Lord Jesus Christ. Amen.</p>
+    <p>Seabass, as an idea, a programming language, a working program, and a concept, are all undeserved gifts I have been given. God put it into my hand to build them. For creating heaven and earth in six days, to freely giving us eternal life, to the simple joy of breathing, let all thanks and praise be directed to God our Father and our Lord Jesus Christ. Amen.</p>
     <hr>
     <center>
     <h2 id="blessing">Blessing</h2>
@@ -432,11 +435,79 @@
     </code></pre>
     <p><i>(Note that 'proc' is just an alias for 'fn')</i></p>
     <p>When the parser sees an @ sign followed by an identifier, it looks for a codegen function with that name prefixed by 'parsehook_'. This function is then immediately called. This function can then use builtin functions such as __builtin_peek() to access the tokenized source code of the program and manipulate it. This functionality was used to implement `@wksht` and `@pprint` from <a href="#basicsyntaxc">before</a>.</p>
-    <h3>... Isn't it just a system for implementing macros?</h3>
-    <p>Parsehooks are powerful enough to implement entire compilers. A dedicated Domain-Specific Language was even written for writing recursive descent parsers, called `@cgrdparser`, which itself was used to implement `@pprint`.</p>
-    <p>Think about that for a moment. <i>In seabass, there is a dedicated domain-specific language specifically for writing compiletime recursive descent parsers.</i></p>
-    <h3>Is it like templates in C++?</h3>
-    <p>No. In fact, C++-style templates were implemented within the language using parsehooks. <i>Seabass does not have template metaprogramming as a native language feature. It was implemented and added to the language using parsehooks.</i></p>
+    <hr>
+    <center>
+    <h2 id="oop">Object Oriented Programming</h2>
+    </center>
+    <hr>
+    <p>For convenience, Seabass has several features from Object Oriented programming:</p>
+    <ol>
+        <li>the `class` keyword as an alias for `struct`.</li>
+        <li>methods- functions invoked on a struct/class which are specific to that class/struct.</li>
+        <li>Automatic constructors and destructors- Functions which are invoked on a struct when it first appears in a scope, and when it disappears.</li>
+    </ol>
+    <p>Here is a small example program (using entirely codegen code) which demonstrates object oriented programming in Seabass:</p>
+    <pre><code>
+    /*
+        Small program to demonstrate object oriented programming in Seabass.
+    */
+    
+    class myClass
+        noexport
+        int a
+        char* b
+    end
+    
+    codegen int a = 25;
+    
+    method codegen myClass.ctor():
+        this.a = a++;
+        char[500] buf
+        __builtin_itoa(buf, this.a);
+        this.b = __builtin_strdup(buf);
+        __builtin_puts("I have been constructed! My string is...");
+        __builtin_puts(this.b);
+    end
+    
+    method codegen myClass.dtor():
+        __builtin_puts("Goodbye! My string was...");
+        __builtin_puts(this.b);
+        __builtin_free(this.b);
+        a--
+    end
+    
+    method codegen myClass.print():
+        __builtin_puts(this.b)
+    end
+    
+    fn codegen codegen_main():
+    
+        i64 i
+        for(i = 0, i < 10; i++)
+            myClass qq
+            myClass qq2
+            myClass qq3
+            myClass qq4
+            qq3.print()
+            if(i == 3) continue end
+            qq2.print()
+        end
+        
+        if(1)
+            //demo move...
+            myClass qq
+            myClass qq2
+            __builtin_free(qq.b); //ensure we don't leak memory...
+            qq := qq2;
+            qq2.b = __builtin_strdup("I seem to have lost my old string...");
+            qq.print();
+            qq2.print();
+        end
+        return	
+    end
+    </code></pre>
+    <p>This code</p>
+    <p></p>
     <p></p>
     <p></p>
   </body>
