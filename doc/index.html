@@ -369,8 +369,12 @@
     and semantics to the C code. Seabass is designed to be easy to pick up for C programmers.</p>
     <h3>The @ sign...</h3>
     <p>In Seabass, this is known as the <b>metaprogramming operator</b>. it is used to invoke code at compile time. In this case, it is used to implement the custom syntaxes `wksht` and `pprint`, and in the code provided, we define a new derived syntax, `prnt`.</p>
-    <p>The exact nature and semantics of how this all works will be discussed later. All you need to understand right now is that this is the first and most important part of what makes Seabass different from C- the metaprogramming operator.</p>
-    <p></p>
+    <p>The exact nature and semantics of how this all works will be discussed later. All you need to understand right now is that this is the first and most important part of what makes Seabass different from C- the metaprogramming operator. It is the most significant new feature Seabass has over C. Almost all other new features are eclipsed by it.</p>
+    <h3>Are they just macros?</h3>
+    <p>The word "macro" is used with reckless abandon by many different programming languages. Compilers themselves could be envisioned as giant macros using the definitions used by some programming languages.</p>
+    <p>The short answer is <b>No</b>, however <b>the metaprogramming operator is used to implement macros.</b></p>
+    <p>I define a macro as "Any simple text replacement scheme which contains minimal or non-existant semantic or syntax rules".</p>
+    <p>The `@prnt` operation is a macro, created by invoking `@wksht`, wrapping the `@pprint` syntax.</p>
     <p></p>
     <p></p>
   </body>
