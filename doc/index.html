@@ -142,6 +142,10 @@
             A computer language designed for a niche in programming, rather than
             general-purpose use.<br>[Programming language lingo]
         </li>
+        <li><i><b>Translation unit</b></i><br>
+            All the source code connected to a single .cbas file, i.e.
+            the main file and everything you `#include` in.<br>[Programming language lingo]
+        </li>
 
     </ul>
     <hr>
@@ -388,16 +392,15 @@
     <hr>
     <p>Seabass allows you to define functions and variables which exist exclusively at compiletime, i.e., while the `cbas` tool is running. <b>They do not exist in the final compiled program.</b></p>
     <p>These "symbols" are annotated as such using the `codegen` keyword.</p>
-    <p>codegen functions may access special `builtin` functions of the `cbas` tool, giving it access to the internals of the compiler, the filesystem, memory allocation, and etcetera.</p>
+    <p>codegen functions may access special `builtin` functions of the `cbas` tool, giving it access to the internals of the compiler, the filesystem, compiletime memory allocation, and etcetera.</p>
     <p>codegen functions are invoked from any of the following:</p>
     <ol>
         <li>Called from another codegen function</li>
         <li>a "parsehook invocation" (using the metaprogramming operator- @)</li>
         <li>the "#__cbas_run_fn" directive.</li>
-        <li></li>
+        <li>After parsing is finished, `codegen_main` is executed.</li>
     </ol>
-    <p></p>
-    <p></p>
+    <p>All of this happens during execution of `cbas` on a translation unit.</p>
     
     <hr>
     <center>
