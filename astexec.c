@@ -27,8 +27,8 @@ static vm_scope_position_execution_info *scope_positions;
 
 void vm_allocate_needed_memory(size_t amt){
     //allocate tons of memory
-    scope_positions = malloc(amt * sizeof(vm_scope_position_execution_info));
-    scope_executing_stack = malloc(amt * sizeof(scope_astexec*));
+    scope_positions = calloc(1,amt * sizeof(vm_scope_position_execution_info));
+    scope_executing_stack = calloc(1,amt * sizeof(scope_astexec*));
 }
 
 
