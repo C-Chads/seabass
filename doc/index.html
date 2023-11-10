@@ -434,7 +434,7 @@
     <p>When the parser sees an @ sign followed by an identifier, it looks for a codegen function with that name prefixed by 'parsehook_'. This function is then immediately called. This function can then use builtin functions such as __builtin_peek() to access the tokenized source code of the program and manipulate it. This functionality was used to implement `@wksht` and `@pprint` from <a href="#basicsyntaxc">before</a>.</p>
     <h3>... Isn't it just a system for implementing macros?</h3>
     <p>Parsehooks are powerful enough to implement entire compilers. A dedicated Domain-Specific Language was even written for writing recursive descent parsers, called `@cgrdparser`, which itself was used to implement `@pprint`.</p>
-    <p></p>
+    <p>Think about that for a moment. <i>In seabass, there is a dedicated domain-specific language specifically for writing compiletime recursive descent parsers.</i></p>
     <p></p>
     <p></p>
   </body>
