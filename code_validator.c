@@ -35,6 +35,7 @@ static uint64_t TARGET_WORD_BASE = BASE_U64;
 static uint64_t TARGET_WORD_SIGNED_BASE = BASE_I64;
 static uint64_t TARGET_MAX_FLOAT_TYPE = BASE_F64;
 static uint64_t TARGET_DISABLE_FLOAT = 0;
+static uint64_t phase = 0;
 
 
 void set_target_word(uint64_t val){
@@ -124,14 +125,14 @@ static int this_specific_scope_has_label(char* c, scope* s){
     return 0;
 }
 
-static uint64_t this_specific_scope_get_label_index(char* c, scope* s){
+static int64_t this_specific_scope_get_label_index(char* c, scope* s){
     uint64_t i;
     stmt* stmtlist = s->stmts;
     for(i = 0; i < s->nstmts; i++)
         if(stmtlist[i].kind == STMT_LABEL)
             if(streq(c, stmtlist[i].referenced_label_name)) /*this is the label we're looking for!*/
                 return i;
-    return 0;
+    return -1;
 }
 
 static void checkswitch(stmt* sw){
@@ -144,7 +145,8 @@ static void checkswitch(stmt* sw){
     sw->goto_scopediff = 0;
     sw->goto_vardiff = 0;
     for(i = 0; i < sw->switch_nlabels; i++){
-        if(!this_specific_scope_has_label(sw->switch_label_list[i], sw->whereami))
+        int64_t index = this_specific_scope_get_label_index(sw->switch_label_list[i],sw->whereami);
+        if(index == -1)
             {
                 puts("Switch statement in function uses label not in its home scope.");
                 puts("A switch statement is not allowed to jump out of its own scope, either up or down!");
@@ -154,8 +156,8 @@ static void checkswitch(stmt* sw){
                 puts(sw->switch_label_list[i]);
                 validator_exit_err();
             }
-        sw->switch_label_indices[i] = 
-            this_specific_scope_get_label_index(sw->switch_label_list[i],sw->whereami);
+        sw->switch_label_indices[i] = index;
+        /*
         if(  ((stmt*)sw->whereami->stmts)[sw->switch_label_indices[i]].kind != STMT_LABEL){
             puts("Internal Validator Error");
             puts("this_specific_scope_get_label_index returned the index of a non-label.");
@@ -174,6 +176,7 @@ static void checkswitch(stmt* sw){
             puts("this_specific_scope_get_label_index returned the index of wrong label!");
             validator_exit_err();
         }
+        */
     }
     return;
 }
@@ -219,6 +222,23 @@ static void check_label_declarations(scope* lvl){
             }
             discovered_labels[n_discovered_labels-1] = stmtlist[i].referenced_label_name;
         }
+        /*
+        if(stmtlist[i].kind == STMT_SWITCH){
+            checkswitch(stmtlist+i);
+        }
+        */
+    }
+    return;
+}
+
+static void check_switches(scope* lvl){
+    unsigned long i;
+    stmt* stmtlist = lvl->stmts;
+    for(i = 0; i < lvl->nstmts; i++)
+    {
+        curr_stmt = stmtlist + i;
+        if(stmtlist[i].myscope)
+            check_switches(stmtlist[i].myscope);
         if(stmtlist[i].kind == STMT_SWITCH){
             /**/
             checkswitch(stmtlist+i);
@@ -3194,6 +3214,7 @@ static void walk_insert_ctor_dtor_pt2(scope* current_scope){
 
 void validate_function(symdecl* funk){
     long i;
+
     if(funk->t.is_function == 0)
     {
         puts("INTERNAL VALIDATOR ERROR: Passed non-function.");
@@ -3229,28 +3250,26 @@ void validate_function(symdecl* funk){
         discovered_labels_capacity = 1024 * 1024;
         discovered_labels = malloc(1024 * 1024 * sizeof(char*));
     }
+    phase = 0;
     
-    /*0. Insert basic constructor and destructor calls... gulp!...*/
     walk_insert_ctor_dtor(funk->fbody);
     
-    /*1. walk through the tree and count every time a label appears.*/
-
     check_label_declarations(funk->fbody);
-    /*2. Assign lsym and gsym to all non-function identifiers.
-        this also checks to see if goto targets exist.
-    */
-
     walk_assign_lsym_gsym(funk->fbody);
     /*
-        3.Based on scopediffs, we need to insert more complex destructor calls,
-        such as those which 
+        Based on scopediffs, we need to insert more complex destructor calls...
     */
     walk_insert_ctor_dtor_pt2(funk->fbody);
+    check_switches(funk->fbody);
     n_discovered_labels = 0;
-
-    //these steps must be repeated...
+    phase = 1;
     check_label_declarations(funk->fbody);
+
+    //check_label_declarations(funk->fbody);
+    //This must be repeated.
     walk_assign_lsym_gsym(funk->fbody);
+    //
+    
     optimize_fn(funk);
     /*
         TODO: 
