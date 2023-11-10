@@ -482,6 +482,22 @@ static inline strll* consume__bytes_with_bigstore(strll* current_node, unsigned 
     return current_node->right;
 }
 
+//used for whitespace....
+static inline strll* skip__bytes_with_bigstore(strll* current_node, unsigned long nbytes){
+    char* text_old;
+    text_old = current_node->text;
+    /*
+    current_node->text = str_null_terminated_alloc(text_old, nbytes);
+    right_old = current_node->right;
+    current_node->right = STRUTIL_CALLOC(1, sizeof(strll));
+    current_node->right->right = right_old;
+    */
+    //We need to 
+    current_node->data = 0;
+    current_node->text = text_old + nbytes;
+    return current_node;
+}
+
 
 
 
