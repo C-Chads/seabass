@@ -195,6 +195,7 @@ end
 int q;
 
 data codegen string printText "Hello!";
+data codegen int myintegers 5,3,1<<2;
 
 fn codegen codegen_main():
 	int* x;

@@ -30,6 +30,7 @@
         <a href="#parsehooks">parsehooks</a><br>
         <a href="#oop">Object Oriented Programming</a><br>
         <a href="#pointers">Pointer Semantics- Differences from C</a><br>
+        <a href="#typedecl">Type Declarations</a><br>
     </div>
     <hr>
     <p>Welcome, conquerors, to the Seabass Metaprogramming language! This html document should serve as an introduction.<br><i>Saying, Blessed are they whose iniquities are forgiven, and whose sins are covered.</i> - Romans 4:7</p>
@@ -586,7 +587,9 @@
         </code></pre>
         Then <code>myarray[27]</code> is semantically sequivalent to <code>(myarray + 27)</code>. A struct type <i>never</i> appears by-value in an expression.
 
-        </li>Function pointer syntax has been changed. An example:
+        </li>
+        <li>
+        Function pointer syntax has been changed. An example:
         <pre><code>
         //function whose pointer we take...
         fn myfunction(int a, char* text)->float;
@@ -594,16 +597,89 @@
         //this function's prototype is used....
         fn noexport template_function(int q, char* t)->float;
         
-        //later...
+        //retrieve a pointer to `myfunction`
         byte* mypointer = getfnptr(myfunction);
         
+        //call the function...
         float x = callfnptr[template_function](mypointer)(3, "Hello World!");
         </code></pre>
-        <li>
         </li>
-        <li>
+        <li>Assignment between structs is done using the `move` operator:
+        <pre><code>
+        struct mystruct
+            mystruct* c
+            char[1<<6] name
+            int a
+            i32 b
+        end
+        
+        mystruct a
+        mystruct b
+        
+        //later....
+        
+        //a = b; //ERROR!
+        a := b; //correct
+        </code></pre>
+        The move operator can of course be used on any pointers of compatible type, not just pointers to structs...
+        <pre><code>
+        //'array of pointer to int'
+        int*[530] a;
+        //'pointer to int'
+        int* b;
+        
+        
+        //later...
+        
+        /*
+        *copy the object pointed to by b into the
+        *object pointed to by the 20th element of a
+        */
+        a[20] := b;
+        </code></pre>
+        
         </li>
     </ol>
+    <hr>
+    <center>
+    <h2 id="typedecl">Type Declarations</h2>
+    </center>
+    <hr>
+    <p>In seabass, a type always follows this pattern:</p>
+    <p><code>typename********[constexpr]</code></p>
+    <p>Namely, a single identifier ('typename') followed by zero or more stars and an optional 'bracketed portion' denoting an array length.</p>
+    <p>Type declarations are used in the following locations:</p>
+    <ol>
+        <li>To declare variables:
+        <pre><code>
+        int my_int;
+        int* my_pointer_toint;
+        int[50] my_array_of_50_ints;
+        int*[10*5] my_array_of_50_pointers_to_ints;
+        mystruct my_struct_variable;
+        mystruct[5] my_array_of_5_struct_variables;
+        mystruct******[1<<13] Can_you_guess;
+        </code></pre>
+
+        </li>
+        <li>In sizeof().
+        <pre><code>
+        sizeof(mystruct***[50])
+        </code></pre>
+        <i>Note that this is the only valid use of sizeof. You may not put variable names or expressions inside of sizeof.</i>
+        </li>
+        <li>In the data statement. Note that you may not declare a data statement of pointers, arrays, or structs.
+            <pre><code>
+        data codegen int myintegers 5,3,1<<2;
+            </code></pre>
+            <i>The data statement will be discussed in more detail later.</i>
+        </li>
+        <li></li>
+        <li></li>
+        <li></li>
+    </ol>
+    <p></p>
+    <p></p>
     <p></p>
     <p></p>
     <p></p>
