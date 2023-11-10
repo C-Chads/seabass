@@ -1,12 +1,7 @@
 
-Copyright is wrong. You cannot own information.
-
-However, most of the world thinks this isn't true. So in order
-to obey the commandments of God while maintaining my vindication,
-I must avoid the use of any copyrighted works in my work.
-
-This entire repository, every single byte (insofar as I can tell)
-is given to you under the CC0 public domain license.
+This entire repository, every single byte,
+is given to you under the CC0 public domain license,
+with the exceptions listed under "POSSIBLE COPYRIGHT ERRORS"
 
 This includes logos and artwork.
 
@@ -42,20 +37,9 @@ NOTABLE SOURCES OF COPYRIGHT ERRORS
     
     I am not a lawyer, but let any court of law know that it is my intent to release
     all of my work into the public domain per the CC0 license. If I have the capacity
-    to release binaries into the public domain... I do. I do not know if I can, but
-    I never want anyone to be culpable to me for copyright.
-    
-2. ALLUSIONS TO COPYRIGHTED WORKS.
-
-    I do not know if it is illegal to talk about copyrighted works inside of a
-    public domain work. I have been working under the assumption that mere name
-    mentions (especially for technical reasons) are not. If this is in error, then
-    all allusions to trademarks and such need to be removed from the repository.
-    This may be somewhat difficult, as for instance, Seabass has a library specifically
-    optimizing its output code for "GnuC" compilers (GNU obviously being a trademark
-    or something).
-    
-3. PNG, XCF FILE FORMAT ENCODING
+    to release binaries into the public domain... I do.
+   
+2. PNG, XCF FILE FORMAT ENCODING
 
     If either of these file formats implicitly use copyrighted work, then those
     files cannot be considered public domain. I believe they are fine.
