@@ -189,13 +189,9 @@ static void check_label_declarations(scope* lvl){
     for(i = 0; i < lvl->nstmts; i++)
     {
         curr_stmt = stmtlist + i;
-        if(stmtlist[i].myscope)
+        if(stmtlist[i].myscope){
             check_label_declarations(stmtlist[i].myscope);
-            /*
-        if(stmtlist[i].myscope2)
-            check_label_declarations(stmtlist[i].myscope2);
-            */
-        if(stmtlist[i].kind == STMT_LABEL){
+        }else if(stmtlist[i].kind == STMT_LABEL){
             for(j = 0; j < n_discovered_labels;j++){
                 if(streq(stmtlist[i].referenced_label_name, discovered_labels[j]))
                 {
@@ -207,26 +203,19 @@ static void check_label_declarations(scope* lvl){
                 }
             }
             /*add it to the list of discovered labels*/
-            /*
-                TODO: make this grow better...
-            */
             n_discovered_labels++;
             if(n_discovered_labels >= discovered_labels_capacity){
                 discovered_labels = realloc(discovered_labels, (n_discovered_labels) * sizeof(char*));
             }
-            
+            /*
             if(0)
             if(discovered_labels == NULL){
                 puts("failed realloc");
                 validator_exit_err();
             }
+            */
             discovered_labels[n_discovered_labels-1] = stmtlist[i].referenced_label_name;
         }
-        /*
-        if(stmtlist[i].kind == STMT_SWITCH){
-            checkswitch(stmtlist+i);
-        }
-        */
     }
     return;
 }
@@ -237,9 +226,9 @@ static void check_switches(scope* lvl){
     for(i = 0; i < lvl->nstmts; i++)
     {
         curr_stmt = stmtlist + i;
-        if(stmtlist[i].myscope)
+        if(stmtlist[i].myscope){
             check_switches(stmtlist[i].myscope);
-        if(stmtlist[i].kind == STMT_SWITCH){
+        }else if(stmtlist[i].kind == STMT_SWITCH){
             /**/
             checkswitch(stmtlist+i);
         }
@@ -3261,12 +3250,8 @@ void validate_function(symdecl* funk){
     */
     walk_insert_ctor_dtor_pt2(funk->fbody);
     check_switches(funk->fbody);
-    n_discovered_labels = 0;
     phase = 1;
-    check_label_declarations(funk->fbody);
-
-    //check_label_declarations(funk->fbody);
-    //This must be repeated.
+    //This must be repeated, but in the second phase...
     walk_assign_lsym_gsym(funk->fbody);
     //
     
