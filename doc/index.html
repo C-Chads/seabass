@@ -506,7 +506,17 @@
         return	
     end
     </code></pre>
-    <p>This code</p>
+    <p>As you can see, `.ctor()` and `.dtor()` are methods on the `myClass` type. The `ctor` method is invoked at instantiation, and the `dtor` method is invoked when the object is destroyed. `continue` properly causes objects within a loop body to be destroyed.</p>
+    <p>.ctor() and .dtor() methods are NOT automatically called under these circumstances:</p>
+    <ol>
+        <li>When an array of objects is declared</li>
+        <li>When objects are declared at global scope</li>
+        <li>When a pointer to an object is declared</li>
+        <li>When an object is inside of another object</li>
+    </ol>
+    <p>You must be especially careful of 4- Seabass will <b>not</b> automatically write constructors and destructors for you. You must write the constructors and destructors for your objects yourself, constructing and destroying member objects where appropriate.</p>
+    <p></p>
+    <p></p>
     <p></p>
     <p></p>
     <p></p>
