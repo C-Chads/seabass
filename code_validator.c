@@ -35,7 +35,6 @@ static uint64_t TARGET_WORD_BASE = BASE_U64;
 static uint64_t TARGET_WORD_SIGNED_BASE = BASE_I64;
 static uint64_t TARGET_MAX_FLOAT_TYPE = BASE_F64;
 static uint64_t TARGET_DISABLE_FLOAT = 0;
-static uint64_t phase = 0;
 
 
 void set_target_word(uint64_t val){
@@ -2540,12 +2539,14 @@ static void validate_goto_target(stmt* me, char* name){
         scopediff_sofar++;
         vardiff_sofar += scopestack[i]->nsyms;
     }
-    puts("Goto uses out-of-sequence jump target:");
+    puts("~~~~~~~VALIDATOR ERROR~~~~~~~~~~~~~~~\nGoto uses out-of-sequence or non-existent jump target:");
     puts(name);
+    puts("Note that Seabass does NOT allow you to jump into a scope. Goto may only be within the same scope,");
+    puts("or 'breaking out' of one or more scopes into a higher one.");
     validator_exit_err();
 }
 
-static void assign_scopediff_vardiff(stmt* me, scope* jtarget_scope, int is_return){
+static void assign_scopediff_vardiff(stmt* me, scope* jtarget_scope){
     int64_t i;
     uint64_t scopediff_sofar = 0;
     uint64_t vardiff_sofar = 0;
@@ -2559,20 +2560,33 @@ static void assign_scopediff_vardiff(stmt* me, scope* jtarget_scope, int is_retu
         scopediff_sofar++;
         vardiff_sofar += scopestack[i]->nsyms;
     }
-    if(is_return){
-        me->goto_scopediff = scopediff_sofar;
-        me->goto_vardiff = vardiff_sofar;
-        return;
-    }
+    // if(is_return){
+    //     me->goto_scopediff = scopediff_sofar;
+    //     me->goto_vardiff = vardiff_sofar;
+    //     return;
+    // }
     puts("<INTERNAL ERROR> Could not assign scopediff/vardiff for jumping statement.");
     validator_exit_err();
 }
+static void assign_scopediff_vardiff_return(stmt* me){
+    int64_t i;
+    uint64_t scopediff_sofar = 0;
+    uint64_t vardiff_sofar = 0;
+    for(i=nscopes-1;i>=0;i--){
+        scopediff_sofar++;
+        vardiff_sofar += scopestack[i]->nsyms;
+    }
+    me->goto_scopediff = scopediff_sofar;
+    me->goto_vardiff = vardiff_sofar;
+    return;
+}
 
 //Now it's recursive, so is "walk" really a good name for this?
-static void walk_assign_lsym_gsym(scope* current_scope){
+static void walk_assign_lsym_gsym(scope* current_scope, int phase){
     int64_t i;
     int64_t j;
-
+    //PHASE 0- Do everything
+    //PHASE 1- Only do stuff which touches 
     //current_scope = symbol_table[active_function]->fbody;
     stmt* stmtlist;
     //current_scope->walker_point = 0;
@@ -2595,40 +2609,35 @@ static void walk_assign_lsym_gsym(scope* current_scope){
     for(i = 0; i <(int64_t)current_scope->nstmts; i++) {
         stmtlist = current_scope->stmts;
         curr_stmt = stmtlist + i;
-        if(stmtlist[i].kind == STMT_CONTINUE ||
-            stmtlist[i].kind == STMT_BREAK)
-        {
-            stmtlist[i].referenced_loop = loopstack[nloops-1];
-            scopestack_push(current_scope);
-                assign_scopediff_vardiff(
-                    stmtlist+i,
-                    stmtlist[i].referenced_loop->whereami,
-                    0
-                );
-            scopestack_pop();
-        }
-        if(stmtlist[i].kind == STMT_GOTO){
-            int found = 0;
-            for(j = 0; j < (int64_t)n_discovered_labels; j++)
-                if(streq(stmtlist[i].referenced_label_name, discovered_labels[j]))
-                    found = 1;
-            if(!found)
-            {
-                puts("Goto target:");
-                puts(stmtlist[i].referenced_label_name);
-                puts("Does not exist in function:");
-                puts(symbol_table[active_function]->name);
-                validator_exit_err();
 
-            }
+        //on both phases, we must perform validation of goto...
+        if(stmtlist[i].kind == STMT_GOTO){
+//             int found = 0;
+//             for(j = 0; j < (int64_t)n_discovered_labels; j++){
+//                 if(streq(stmtlist[i].referenced_label_name, discovered_labels[j])){
+//                     found = 1;
+//                     break;
+//                 }
+//             }
+//             if(!found)
+//             {
+//                 puts("Goto target:");
+//                 puts(stmtlist[i].referenced_label_name);
+//                 puts("Does not exist in function:");
+//                 puts(symbol_table[active_function]->name);
+//                 validator_exit_err();
+// 
+//             }
             scopestack_push(current_scope);
                 validate_goto_target(stmtlist + i, stmtlist[i].referenced_label_name);
             scopestack_pop();
         }
-
-        if(stmtlist[i].nexpressions > 0){
-            /*assign lsym and gsym right here.*/
-            for(j = 0; j < (int64_t)stmtlist[i].nexpressions; j++){
+        //PHASE 1 EXCLUSIVES~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        //(That's the SECOND pass....)
+        if(phase == 1){
+            //in phase 1, we perform safety checks on expression statements...
+            if(stmtlist[i].kind == STMT_EXPR){
+                j=0;
                 //this function needs to "see" the current scope...
                 scopestack_push(current_scope);
                     assign_lsym_gsym(stmtlist[i].expressions[j]);
@@ -2642,184 +2651,234 @@ static void walk_assign_lsym_gsym(scope* current_scope){
                     validate_function_argument_passing(stmtlist[i].expressions[j]);
                 scopestack_pop();
             }
-        }
-        if(stmtlist[i].kind == STMT_SWITCH){
-            type qq = ((expr_node*)stmtlist[i].expressions[0])->t;
-            if(
-                (qq.pointerlevel > 0) ||
-                (qq.basetype == BASE_STRUCT) ||
-                (qq.basetype == BASE_VOID) ||
-                (qq.basetype == BASE_F64) ||
-                (qq.basetype == BASE_F32) 
+            else if(
+                stmtlist[i].kind == STMT_IF     ||
+                stmtlist[i].kind == STMT_ELIF
             )
-            throw_type_error("Switch statement has non-integer expression.");
-            qq = type_init();
-            //qq.basetype = BASE_I64;
-            qq.basetype = SIGNED_WORD_BASE;
-            insert_implied_type_conversion((expr_node**)stmtlist[i].expressions, qq);
-        }		
-        if(stmtlist[i].kind == STMT_FOR){
-            type qq = ((expr_node*)stmtlist[i].expressions[1])->t;
-            if(
-                (qq.pointerlevel > 0) ||
-                (qq.basetype == BASE_STRUCT) ||
-                (qq.basetype == BASE_VOID) ||
-                (qq.basetype == BASE_F64) ||
-                (qq.basetype == BASE_F32) 
-            )
-            throw_type_error("For statement has non-integer conditional expression..");
-            qq = type_init();
-            qq.basetype = SIGNED_WORD_BASE;
-            insert_implied_type_conversion((expr_node**)stmtlist[i].expressions+1, qq);
-            loopstack_push(stmtlist + i);
-        }	
-        if(stmtlist[i].kind == STMT_WHILE){
-            type qq = ((expr_node*)stmtlist[i].expressions[0])->t;
-            if(
-                (qq.pointerlevel > 0) ||
-                (qq.basetype == BASE_STRUCT) ||
-                (qq.basetype == BASE_VOID) ||
-                (qq.basetype == BASE_F64) ||
-                (qq.basetype == BASE_F32) 
-            )
-            throw_type_error("While statement has non-integer conditional expression..");
-            qq = type_init();
-            qq.basetype = SIGNED_WORD_BASE;
-            insert_implied_type_conversion((expr_node**)stmtlist[i].expressions, qq);
-            loopstack_push(stmtlist + i);
-        }	
-        if(stmtlist[i].kind == STMT_IF){
-            type qq = ((expr_node*)stmtlist[i].expressions[0])->t;
-            if(
-                (qq.pointerlevel > 0) ||
-                (qq.basetype == BASE_STRUCT) ||
-                (qq.basetype == BASE_VOID) ||
-                (qq.basetype == BASE_F64) ||
-                (qq.basetype == BASE_F32) 
-            )
-            throw_type_error("If statement has non-integer conditional expression..");
-            qq = type_init();
-            //qq.basetype = BASE_I64;
-            qq.basetype = SIGNED_WORD_BASE;
-            insert_implied_type_conversion((expr_node**)stmtlist[i].expressions, qq);
-        }
-        if(
-            stmtlist[i].kind == STMT_ELSE ||
-            stmtlist[i].kind == STMT_ELIF
-        ){
-            if(i == 0){
-                puts("Else/Elif at the beginning of a scope? (No preceding if?)");
-                validator_exit_err();
-            }
-            if(stmtlist[i-1].kind != STMT_ELIF &&
-                stmtlist[i-1].kind != STMT_IF){
-                puts("Else/Elif without a preceding if/else?");
-                validator_exit_err();
+            {
+                int64_t else_chain_follower = i + 1;
+                for(;else_chain_follower < (int64_t)current_scope->nstmts; else_chain_follower++){
+                    /*terminating condition 1: is not part of the else chain.*/
+                    if(
+                        stmtlist[else_chain_follower].kind != STMT_ELIF &&
+                        stmtlist[else_chain_follower].kind != STMT_ELSE
+                    ) break;
+                    /*terminating condition 2: is else. else is always the last one in an else chain.*/
+                    if(stmtlist[else_chain_follower].kind == STMT_ELSE){
+                        else_chain_follower++;  /*the next statement, if it exists, is the one we should be executing.*/
+                        break;
+                    }
+                }
+                /*Note that this may actually be past the end*/
+                stmtlist[i].goto_where_in_scope = else_chain_follower;
             }
         }
-        if(stmtlist[i].kind == STMT_ELIF){
-            type qq = ((expr_node*)stmtlist[i].expressions[0])->t;
-            if(qq.pointerlevel > 0)
-                throw_type_error("Cannot branch on pointer in elif stmt.");
-            if(qq.basetype == BASE_VOID)
-                throw_type_error("Cannot branch on void in elif stmt.");
+        //PHASE 0~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        if(phase == 0){
+            //Don't validate STMT_EXPR on the first pass- we pick it up on the second.
             if(
-                (qq.pointerlevel > 0) ||
-                (qq.basetype == BASE_STRUCT) ||
-                (qq.basetype == BASE_VOID) ||
-                (qq.basetype == BASE_F64) ||
-                (qq.basetype == BASE_F32) 
+                stmtlist[i].nexpressions > 0 &&
+                stmtlist[i].kind != STMT_EXPR
             )
-                throw_type_error("elif statement has non-integer conditional expression..");
-            qq = type_init();
-//			qq.basetype = BASE_I64;
-            qq.basetype = SIGNED_WORD_BASE;
-            insert_implied_type_conversion((expr_node**)stmtlist[i].expressions, qq);
-        }
-        if(stmtlist[i].kind == STMT_IF || 
-            stmtlist[i].kind == STMT_ELIF){
-            int64_t else_chain_follower = i + 1;
-            for(;else_chain_follower < (int64_t)current_scope->nstmts; else_chain_follower++){
-                /*terminating condition 1: is not part of the else chain.*/
-                if(
-                    stmtlist[else_chain_follower].kind != STMT_ELIF &&
-                    stmtlist[else_chain_follower].kind != STMT_ELSE
-                ) break;
-                /*terminating condition 2: is else. else is always the last one in an else chain.*/
-                if(stmtlist[else_chain_follower].kind == STMT_ELSE){
-                    else_chain_follower++;  /*the next statement, if it exists, is the one we should be executing.*/
-                    break;
+            {
+                /*assign lsym and gsym right here.*/
+                for(j = 0; j < (int64_t)stmtlist[i].nexpressions; j++){
+                    //this function needs to "see" the current scope...
+                    scopestack_push(current_scope);
+                        assign_lsym_gsym(stmtlist[i].expressions[j]);
+                        propagate_types(stmtlist[i].expressions[j]);
+                        validate_function_argument_passing(stmtlist[i].expressions[j]);
+                        validate_codegen_safety(stmtlist[i].expressions[j]);
+                        propagate_implied_type_conversions(stmtlist[i].expressions[j]);
+
+                        //Repeat for absolute safety
+                        //propagate_types(stmtlist[i].expressions[j]);
+                        validate_function_argument_passing(stmtlist[i].expressions[j]);
+                    scopestack_pop();
                 }
             }
-            /*Note that this may actually be past the end*/
-            stmtlist[i].goto_where_in_scope = else_chain_follower;
-        }
-        if(stmtlist[i].kind == STMT_RETURN){
-            if((expr_node*)stmtlist[i].expressions[0]){
+            //DO NOT put else here...
+            if(
+                stmtlist[i].kind == STMT_SWITCH
+            )
+            {
                 type qq = ((expr_node*)stmtlist[i].expressions[0])->t;
-                type pp = symbol_table[active_function]->t;
-                pp.is_function = 0;
-                pp.funcid = 0;
-                throw_if_types_incompatible(pp,qq,"Return statement must have compatible type.",0);
-                insert_implied_type_conversion((expr_node**)stmtlist[i].expressions, pp);
+                if(
+                    (qq.pointerlevel > 0) ||
+                    (qq.basetype == BASE_STRUCT) ||
+                    (qq.basetype == BASE_VOID) ||
+                    (qq.basetype == BASE_F64) ||
+                    (qq.basetype == BASE_F32) 
+                )
+                throw_type_error("Switch statement has non-integer expression.");
+                qq = type_init();
+                //Notice- We do nothing here to validate where the switch
+                //is going. We're only dealing with its expression....
+                qq.basetype = SIGNED_WORD_BASE;
+                insert_implied_type_conversion((expr_node**)stmtlist[i].expressions, qq);
+            }else if(
+                stmtlist[i].kind == STMT_CONTINUE ||
+                stmtlist[i].kind == STMT_BREAK
+            )
+            {
+                stmtlist[i].referenced_loop = loopstack[nloops-1];
+                scopestack_push(current_scope);
+                    assign_scopediff_vardiff(
+                        stmtlist+i,
+                        stmtlist[i].referenced_loop->whereami
+                    );
+                scopestack_pop();
             }
-            scopestack_push(current_scope);
-                assign_scopediff_vardiff(
-                    stmtlist+i,
-                    NULL,
-                    1
-                );
-            scopestack_pop();
-        }
-        if(stmtlist[i].kind == STMT_TAIL){
-            if(symbol_table[active_function]->is_pure){
-                if(symbol_table[stmtlist[i].symid]->is_pure == 0){
-                    puts("Validator Error!");
-                    puts("Tail statement in function:");
+            else if(stmtlist[i].kind == STMT_ASM){
+                symbol_table[active_function]->is_impure_globals_or_asm = 1;
+                symbol_table[active_function]->is_impure = 1;
+                if(symbol_table[active_function]->is_codegen != 0){
+                    puts("VALIDATION ERROR!");
+                    puts("asm blocks may not exist in codegen functions.");
+                    puts("This function:");
                     puts(symbol_table[active_function]->name);
-                    puts("Tails-off to a function not explicitly defined as pure.");
+                    puts("Was declared 'codegen' so you cannot use 'asm' blocks in it.");
+                    validator_exit_err();
+                }
+                if(symbol_table[active_function]->is_pure > 0){
+                    puts("VALIDATION ERROR!");
+                    puts("asm blocks may not exist in pure functions.");
+                    puts("This function:");
+                    puts(symbol_table[active_function]->name);
+                    puts("Was declared 'pure' so you cannot use 'asm' blocks in it.");
                     validator_exit_err();
                 }
             }
-            /*compare function arguments...*/
-            for(j = 0; j < (int64_t)symbol_table[active_function]->nargs; j++)
-                throw_if_types_incompatible(
-                    symbol_table[active_function]->fargs[j][0],
-                    symbol_table[stmtlist[i].symid]->fargs[j][0],
-                    "Tail to function with non-matching function prototype.",
-                    1 //basetypes must be identical
-                );
-            scopestack_push(current_scope);
-            assign_scopediff_vardiff(
-                stmtlist+i,
-                NULL,
-                1
-            );
-            scopestack_pop();
-        }
-        if(stmtlist[i].kind == STMT_ASM){
-            symbol_table[active_function]->is_impure_globals_or_asm = 1;
-            symbol_table[active_function]->is_impure = 1;
-            if(symbol_table[active_function]->is_codegen != 0){
-                puts("VALIDATION ERROR!");
-                puts("asm blocks may not exist in codegen functions.");
-                puts("This function:");
-                puts(symbol_table[active_function]->name);
-                puts("Was declared 'codegen' so you cannot use 'asm' blocks in it.");
-                validator_exit_err();
+            else if(stmtlist[i].kind == STMT_IF){
+                type qq = ((expr_node*)stmtlist[i].expressions[0])->t;
+                if(
+                    (qq.pointerlevel > 0) ||
+                    (qq.basetype == BASE_STRUCT) ||
+                    (qq.basetype == BASE_VOID) ||
+                    (qq.basetype == BASE_F64) ||
+                    (qq.basetype == BASE_F32) 
+                )
+                throw_type_error("If statement has non-integer conditional expression..");
+                qq = type_init();
+                //qq.basetype = BASE_I64;
+                qq.basetype = SIGNED_WORD_BASE;
+                insert_implied_type_conversion((expr_node**)stmtlist[i].expressions, qq);
             }
-            if(symbol_table[active_function]->is_pure > 0){
-                puts("VALIDATION ERROR!");
-                puts("asm blocks may not exist in pure functions.");
-                puts("This function:");
-                puts(symbol_table[active_function]->name);
-                puts("Was declared 'pure' so you cannot use 'asm' blocks in it.");
-                validator_exit_err();
+            else if(
+                stmtlist[i].kind == STMT_ELSE ||
+                stmtlist[i].kind == STMT_ELIF
+            ){
+                if(i == 0){
+                    puts("Else/Elif at the beginning of a scope? (No preceding if?)");
+                    validator_exit_err();
+                }
+                if(stmtlist[i-1].kind != STMT_ELIF &&
+                    stmtlist[i-1].kind != STMT_IF){
+                    puts("Else/Elif without a preceding if/else?");
+                    validator_exit_err();
+                }
+                if(stmtlist[i].kind == STMT_ELIF){
+                    type qq = ((expr_node*)stmtlist[i].expressions[0])->t;
+                    if(qq.pointerlevel > 0)
+                        throw_type_error("Cannot branch on pointer in elif stmt.");
+                    if(qq.basetype == BASE_VOID)
+                        throw_type_error("Cannot branch on void in elif stmt.");
+                    if(
+                        (qq.pointerlevel > 0) ||
+                        (qq.basetype == BASE_STRUCT) ||
+                        (qq.basetype == BASE_VOID) ||
+                        (qq.basetype == BASE_F64) ||
+                        (qq.basetype == BASE_F32) 
+                    )
+                        throw_type_error("elif statement has non-integer conditional expression..");
+                    qq = type_init();
+                    qq.basetype = SIGNED_WORD_BASE;
+                    insert_implied_type_conversion((expr_node**)stmtlist[i].expressions, qq);
+                }
             }
+            else if(stmtlist[i].kind == STMT_RETURN)
+            {
+                if((expr_node*)stmtlist[i].expressions[0]){
+                    type qq = ((expr_node*)stmtlist[i].expressions[0])->t;
+                    type pp = symbol_table[active_function]->t;
+                    pp.is_function = 0;
+                    pp.funcid = 0;
+                    throw_if_types_incompatible(pp,qq,"Return statement must have compatible type.",0);
+                    insert_implied_type_conversion((expr_node**)stmtlist[i].expressions, pp);
+                }
+                scopestack_push(current_scope);
+                    assign_scopediff_vardiff_return(stmtlist+i);
+                scopestack_pop();
+            }
+            else if(stmtlist[i].kind == STMT_TAIL)
+            {
+                if(symbol_table[active_function]->is_pure){
+                    if(symbol_table[stmtlist[i].symid]->is_pure == 0){
+                        puts("Validator Error!");
+                        puts("Tail statement in function:");
+                        puts(symbol_table[active_function]->name);
+                        puts("Tails-off to a function not explicitly defined as pure.");
+                        validator_exit_err();
+                    }
+                }
+                /*compare function arguments...*/
+                for(j = 0; j < (int64_t)symbol_table[active_function]->nargs; j++)
+                    throw_if_types_incompatible(
+                        symbol_table[active_function]->fargs[j][0],
+                        symbol_table[stmtlist[i].symid]->fargs[j][0],
+                        "Tail to function with non-matching function prototype.",
+                        1 //basetypes must be identical
+                    );
+                scopestack_push(current_scope);
+                    assign_scopediff_vardiff_return(stmtlist+i);
+                scopestack_pop();
+            }
+
+        } //EOF PHASE 0 EXCLUSIVES
+        //These must be done in both phases...
+        if(stmtlist[i].kind == STMT_FOR){
+            //this portion is Phase 0 only- dealing with the implied type conversion...
+            if(phase == 0){
+                type qq = ((expr_node*)stmtlist[i].expressions[1])->t;
+                if(
+                    (qq.pointerlevel > 0) ||
+                    (qq.basetype == BASE_STRUCT) ||
+                    (qq.basetype == BASE_VOID) ||
+                    (qq.basetype == BASE_F64) ||
+                    (qq.basetype == BASE_F32) 
+                )
+                throw_type_error("For statement has non-integer conditional expression..");
+                qq = type_init();
+                qq.basetype = SIGNED_WORD_BASE;
+                    insert_implied_type_conversion((expr_node**)stmtlist[i].expressions+1, qq);
+            }
+            //...but we always push onto the loopstack...
+            loopstack_push(stmtlist + i);
+        }	
+        else if(stmtlist[i].kind == STMT_WHILE){
+            //this portion is Phase 0 only- dealing with the implied type conversion...
+            if(phase == 0){
+                type qq = ((expr_node*)stmtlist[i].expressions[0])->t;
+                if(
+                    (qq.pointerlevel > 0) ||
+                    (qq.basetype == BASE_STRUCT) ||
+                    (qq.basetype == BASE_VOID) ||
+                    (qq.basetype == BASE_F64) ||
+                    (qq.basetype == BASE_F32) 
+                )
+                throw_type_error("While statement has non-integer conditional expression..");
+                qq = type_init();
+                qq.basetype = SIGNED_WORD_BASE;
+                insert_implied_type_conversion((expr_node**)stmtlist[i].expressions, qq);
+            }
+            //...but we always push onto the loopstack...
+            loopstack_push(stmtlist + i);
         }
+
+
         if(stmtlist[i].myscope){
             scopestack_push(current_scope);
-                walk_assign_lsym_gsym(stmtlist[i].myscope);
+                walk_assign_lsym_gsym(stmtlist[i].myscope, phase);
             scopestack_pop(current_scope);
             if(
                 stmtlist[i].kind == STMT_FOR ||
@@ -3239,20 +3298,19 @@ void validate_function(symdecl* funk){
         discovered_labels_capacity = 1024 * 1024;
         discovered_labels = malloc(1024 * 1024 * sizeof(char*));
     }
-    phase = 0;
+    
     
     walk_insert_ctor_dtor(funk->fbody);
     
     check_label_declarations(funk->fbody);
-    walk_assign_lsym_gsym(funk->fbody);
+    walk_assign_lsym_gsym(funk->fbody,0);
     /*
         Based on scopediffs, we need to insert more complex destructor calls...
     */
     walk_insert_ctor_dtor_pt2(funk->fbody);
     check_switches(funk->fbody);
-    phase = 1;
     //This must be repeated, but in the second phase...
-    walk_assign_lsym_gsym(funk->fbody);
+    walk_assign_lsym_gsym(funk->fbody,1);
     //
     
     optimize_fn(funk);

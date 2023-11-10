@@ -1123,6 +1123,7 @@ proc codegen codegen_main():
     	    end
     	    if(bruhmoment == 4)
     	        ctor_dtor_tester weemawhack //5
+    	        ctor_dtor_tester weemawhack2 //6
     	        goto nomore
     	    end
     	    continue
