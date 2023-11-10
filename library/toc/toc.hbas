@@ -1343,13 +1343,8 @@ method codegen cgscope:gen_code(cgast* ast, u64 active_fun_symid)->char*:
 
     switch_counter = 0;
     for(i = 0; i < this.nsyms; i++)
-        cgstr ff
-        cgstr ff2
-        ff.s = (this.syms + i):gen_code(ast,1, 0); 
-        ff2.s = "\n    ";
-        ff:add(ff2);
-        retval:add(ff);
-        ff:free();
+        retval:addeatstr((this.syms + i):gen_code(ast,1, 0)); 
+        retval:addstr("\n    ");
     end
 
     switch_counter = 0;

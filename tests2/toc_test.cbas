@@ -252,7 +252,7 @@ fn pub main()->int:
         println("Quality!");
     end
     if(1)
-        switch(2) aa, bb, cc, dd;
+        switch(1) aa, bb, cc, dd;
         switch(3) aa, bb, cc, dd;
         switch(3) aa, bb, cc, dd;
         switch(3) aa, bb, cc, dd;
