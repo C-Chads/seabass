@@ -27,6 +27,7 @@
         <a href="#basicsyntaxc">Basic Syntax versus C</a><br>
         <a href="#codegen">codegen</a><br>
         <a href="#codegenmain">codegen_main</a><br>
+        <a href="#parsehooks">parsehooks</a><br>
     </div>
     <hr>
     <center>
@@ -145,6 +146,9 @@
         <li><i><b>Translation unit</b></i><br>
             All the source code connected to a single .cbas file, i.e.
             the main file and everything you `#include` in.<br>[Programming language lingo]
+        </li>
+        <li><i><b>Recursive descent</b></i><br>
+            A scheme for writing parsers.<br>[Programming language lingo]
         </li>
 
     </ul>
@@ -409,11 +413,27 @@
     <hr>
     <p>As mentioned <a href="#whatis">before</a> , Seabass is self-retargeting. It allows you to define a function which is responsible for generating the "output" of the compiler.</p>
     <p>In the fibonacci number program from the <a href="#basicsyntaxc">previous section</a>, it was used to generate C code. This C code would then be compiled with a C compiler to generate an executable binary.</p>
-    <p>codegen_main is only special in that the `cbas` tool will attempt to find it inside the translation unit after parsing has finished. If it cannot find it, it will dump the parsed AST and then exit.</p>
-    <p>In principle, the codegen_main function can generate arbitrary output.</p>
-    <p></p>
-    <p></p>
-    <p></p>
+    <p>codegen_main is only special in that the `cbas` tool will attempt to find it inside the translation unit after parsing has finished. If it cannot find it, it will print out the parsed AST and then exit.</p>
+    <p>In principle, the codegen_main function can generate arbitrary output. It is fully programmable.</p>
+    <p>If you should desire to use Seabass as a scripting language, it is possible to write entire programs purely within the confines of `codegen` code, and use the `cbas` tool like a script interpreter. This functionality was used to develop and debug the original implementation.</p>
+    <hr>
+    <center>
+    <h2 id="parsehooks">parsehooks</h2>
+    </center>
+    <hr>
+    <p><i>We are now ready to discuss what the @ sign does.</i></p>
+    <p>In seabass, you can write special codegen functions which can be invoked with the metaprogramming operator. Here is how you declare and use one:</p>
+    <pre><code>
+    proc codegen parsehook_dostuff():
+        __builtin_puts("Hello, World!");
+    end
+    //invocation...
+    @dostuff
+    </code></pre>
+    <p><i>(Note that 'proc' is just an alias for 'fn')</i></p>
+    <p>When the parser sees an @ sign followed by an identifier, it looks for a codegen function with that name prefixed by 'parsehook_'. This function is then immediately called. This function can then use builtin functions such as __builtin_peek() to access the tokenized source code of the program and manipulate it. This functionality was used to implement `@wksht` and `@pprint` from <a href="#basicsyntaxc">before</a>.</p>
+    <h3>... Isn't it just a system for implementing macros?</h3>
+    <p>Parsehooks are powerful enough to implement entire compilers. A dedicated Domain-Specific Language was even written for writing recursive descent parsers, called `@cgrdparser`, which itself was used to implement `@pprint`.</p>
     <p></p>
     <p></p>
     <p></p>
