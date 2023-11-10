@@ -1798,7 +1798,7 @@ static inline void expr_parse_fcall(expr_node** targ){
     EXPR_PARSE_BOILERPLATE
 }
 
-static inline void expr_parse_builtin_call(expr_node** targ){
+static inline void expr_parse_builtin_call(expr_node** targ, size_t which){
     uint64_t required_arguments = 0;
     unsigned long i = 0;
     expr_node f = {0};
@@ -1810,6 +1810,7 @@ static inline void expr_parse_builtin_call(expr_node** targ){
         parse_error("Non-codegen functions may not invoke __builtin functions.");
     f.kind = EXPR_BUILTIN_CALL;
     f.symname = strdup(peek()->text);
+    f.symid = which; //hehe
     required_arguments =  get_builtin_nargs(f.symname);
     consume();
     require(peek()->data == TOK_OPAREN, "expr_parse_builtin_call needs opening parentheses!");
@@ -2080,6 +2081,10 @@ static inline void expr_parse_callfnptr(expr_node** targ){
 
 /*the terminal thing- a literal, identifier, function call, or sizeof*/
 void expr_parse_terminal(expr_node** targ){
+    size_t builtin_id;
+    if(peek()->data == TOK_IDENT){
+        builtin_id = is_builtin_name(peek()->text);
+    }
     if(peek_match_keyw("sizeof"))
     {
         expr_parse_sizeof(targ);
@@ -2115,9 +2120,9 @@ void expr_parse_terminal(expr_node** targ){
     }
     else if(
         peek()->data == TOK_IDENT && 
-        is_builtin_name(peek()->text)
+        builtin_id
     ){
-        expr_parse_builtin_call(targ);
+        expr_parse_builtin_call(targ,builtin_id);
         return;
     }else if(
         peek()->data == TOK_IDENT &&

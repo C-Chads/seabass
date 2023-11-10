@@ -321,49 +321,49 @@ void impl_builtin_parse_global(){
 }
 
 
-int is_builtin_name(char* s){
-    if(streq(s, "__builtin_emit")) return 1;
-    if(streq(s, "__builtin_open_ofile")) return 1;
-    if(streq(s, "__builtin_close_ofile")) return 1;
-    if(streq(s, "__builtin_read_file")) return 1;
-    if(streq(s, "__builtin_get_ast")) return 1;
-    if(streq(s, "__builtin_consume")) return 1;
-    if(streq(s, "__builtin_gets")) return 1;
-    if(streq(s, "__builtin_puts")) return 1;
-    if(streq(s, "__builtin_peek")) return 1;
-    if(streq(s, "__builtin_getnext")) return 1;
-    if(streq(s, "__builtin_exit")) return 1;
-    if(streq(s, "__builtin_strdup")) return 1;
-    if(streq(s, "__builtin_malloc")) return 1;
-    if(streq(s, "__builtin_getargv")) return 1;
-    if(streq(s, "__builtin_getargc")) return 1;
-    if(streq(s, "__builtin_free")) return 1;
-    if(streq(s, "__builtin_realloc")) return 1;
-    if(streq(s, "__builtin_type_getsz")) return 1;
-    if(streq(s, "__builtin_struct_metadata")) return 1;
-    if(streq(s, "__builtin_validate_function")) return 1;
-    if(streq(s, "__builtin_memcpy")) return 1;
-    if(streq(s, "__builtin_memset")) return 1;
+size_t is_builtin_name(char* s){
+    if(streq(s, "__builtin_emit")) return 1; //CHECK
+    if(streq(s, "__builtin_open_ofile")) return 2; //CHECK
+    if(streq(s, "__builtin_close_ofile")) return 3; //CHECK
+    if(streq(s, "__builtin_read_file")) return 4; //CHECK
+    if(streq(s, "__builtin_get_ast")) return 5; //CHECK
+    if(streq(s, "__builtin_consume")) return 6; //CHECK
+    if(streq(s, "__builtin_gets")) return 7; //CHECK
+    if(streq(s, "__builtin_puts")) return 8; //CHECK
+    if(streq(s, "__builtin_peek")) return 9; //CHECK
+    if(streq(s, "__builtin_getnext")) return 10; //CHECK
+    if(streq(s, "__builtin_exit")) return 11; //CHECK
+    if(streq(s, "__builtin_strdup")) return 12; //CHECK
+    if(streq(s, "__builtin_malloc")) return 13; //CHECK
+    if(streq(s, "__builtin_getargv")) return 14; //CHECK
+    if(streq(s, "__builtin_getargc")) return 15; //CHECK
+    if(streq(s, "__builtin_free")) return 16; //CHECK
+    if(streq(s, "__builtin_realloc")) return 17; //CHECK
+    if(streq(s, "__builtin_type_getsz")) return 18; //CHECK
+    if(streq(s, "__builtin_struct_metadata")) return 19; //CHECK
+    if(streq(s, "__builtin_validate_function")) return 20; //CHECK
+    if(streq(s, "__builtin_memcpy")) return 21; //CHECK
+    if(streq(s, "__builtin_memset")) return 22; //CHECK
     /*
         The blessed saturday
     */
-    if(streq(s, "__builtin_utoa")) return 1;
-    if(streq(s, "__builtin_itoa")) return 1;
-    if(streq(s, "__builtin_ftoa")) return 1;
+    if(streq(s, "__builtin_utoa")) return 23; //CHECK
+    if(streq(s, "__builtin_itoa")) return 24; //CHECK
+    if(streq(s, "__builtin_ftoa")) return 25; //CHECK
     
-    if(streq(s, "__builtin_atof")) return 1;
-    if(streq(s, "__builtin_atou")) return 1;
-    if(streq(s, "__builtin_atoi")) return 1;
+    if(streq(s, "__builtin_atof")) return 26; //CHECK
+    if(streq(s, "__builtin_atou")) return 27; //CHECK
+    if(streq(s, "__builtin_atoi")) return 28; //CHECK
     
-    if(streq(s, "__builtin_peek_is_fname")) return 1;
-    if(streq(s, "__builtin_str_is_fname")) return 1;
-    if(streq(s,"__builtin_parser_push_statement")) return 1;
+    if(streq(s, "__builtin_peek_is_fname")) return 29; //CHECK
+    if(streq(s, "__builtin_str_is_fname")) return 30; //CHECK
+    if(streq(s,"__builtin_parser_push_statement")) return 31; //CHECK
     //yet another blessed day
-    if(streq(s, "__builtin_retrieve_sym_ptr")) return 1;
+    if(streq(s, "__builtin_retrieve_sym_ptr")) return 32; //CHECK
     
-    if(streq(s, "__builtin_strll_dupe")) return 1;
-    if(streq(s, "__builtin_strll_dupell")) return 1;
-    if(streq(s, "__builtin_parse_global")) return 1;
+    if(streq(s, "__builtin_strll_dupe")) return 33; //CHECK
+    if(streq(s, "__builtin_strll_dupell")) return 34; //CHECK
+    if(streq(s, "__builtin_parse_global")) return 35; //CHECK
     return 0;
 }
 

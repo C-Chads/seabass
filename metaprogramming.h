@@ -89,7 +89,7 @@ void impl_builtin_parse_global();
 
 
 
-int is_builtin_name(char* s);
+size_t is_builtin_name(char* s);
 uint64_t get_builtin_nargs(char* s);
 enum{
     BUILTIN_PROTO_VOID=0,

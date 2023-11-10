@@ -1992,7 +1992,9 @@ void do_expr(expr_node_astexec* ee){
     
     if(ee->kind == EXPR_BUILTIN_CALL){
         
-        if(streq(ee->symname, "__builtin_emit")){
+        //if(streq(ee->symname, "__builtin_emit"))
+        if(ee->symid == 1)
+        {
             char* s;
             uint64_t sz;
             //function arguments are backwards on the stack, more arguments = deeper
@@ -2009,7 +2011,9 @@ void do_expr(expr_node_astexec* ee){
             impl_builtin_emit(s,sz);
             goto end_of_builtin_call;
         }
-        if(streq(ee->symname, "__builtin_getargc")){ //0 args
+        //if(streq(ee->symname, "__builtin_getargc"))
+        if(ee->symid == 15)
+        { //0 args
             int32_t v;
             v = impl_builtin_getargc();
             memcpy( //USES CORRECT STACKPOINTER- OUTPUT
@@ -2019,7 +2023,9 @@ void do_expr(expr_node_astexec* ee){
             );
             goto end_of_builtin_call;
         }
-        if(streq(ee->symname, "__builtin_getargv")){ //0 arguments
+        //if(streq(ee->symname, "__builtin_getargv"))
+        if(ee->symid == 14)
+        { //0 arguments
             char** v;
             v = impl_builtin_getargv();
             memcpy( //USES CORRECT STACKPOINTER- OUTPUT
@@ -2029,7 +2035,9 @@ void do_expr(expr_node_astexec* ee){
             );
             goto end_of_builtin_call;
         }
-        if(streq(ee->symname, "__builtin_malloc")){
+        //if(streq(ee->symname, "__builtin_malloc"))
+        if(ee->symid == 13)
+        {
             char** v;
             uint64_t sz;
             memcpy( //USES CORRECT STACKPOINTER- INPUT
@@ -2045,7 +2053,9 @@ void do_expr(expr_node_astexec* ee){
             );
             goto end_of_builtin_call;
         }
-        if(streq(ee->symname, "__builtin_realloc")){
+        //if(streq(ee->symname, "__builtin_realloc"))
+        if(ee->symid == 17)
+        {
             char* v;
             uint64_t sz;
             //remember: arguments are backwards on the stack! so the first argument is on top...
@@ -2068,7 +2078,9 @@ void do_expr(expr_node_astexec* ee){
             );
             goto end_of_builtin_call;
         }		
-        if(streq(ee->symname, "__builtin_type_getsz")){
+        //if(streq(ee->symname, "__builtin_type_getsz"))
+        if(ee->symid == 18)
+        {
             char* v;
             uint64_t sz;
             //remember: arguments are backwards on the stack! so the first argument is on top...
@@ -2086,7 +2098,9 @@ void do_expr(expr_node_astexec* ee){
             );
             goto end_of_builtin_call;
         }
-        if(streq(ee->symname, "__builtin_struct_metadata")){
+        //if(streq(ee->symname, "__builtin_struct_metadata"))
+        if(ee->symid == 19)
+        {
             uint64_t sz;
             //remember: arguments are backwards on the stack! so the first argument is on top...
             
@@ -2103,7 +2117,9 @@ void do_expr(expr_node_astexec* ee){
             );
             goto end_of_builtin_call;
         }
-        if(streq(ee->symname, "__builtin_strdup")){
+        //if(streq(ee->symname, "__builtin_strdup"))
+        if(ee->symid == 12)
+        {
             char* v;
             //remember: arguments are backwards on the stack! so the first argument is on top...
             
@@ -2122,7 +2138,9 @@ void do_expr(expr_node_astexec* ee){
             goto end_of_builtin_call;
         }
 
-        if(streq(ee->symname, "__builtin_free")){
+        //if(streq(ee->symname, "__builtin_free"))
+        if(ee->symid == 16)
+        {
             char* v;
             //remember: arguments are backwards on the stack! so the first argument is on top...
             
@@ -2136,7 +2154,9 @@ void do_expr(expr_node_astexec* ee){
             //memcpy(&vm_stack[saved_vstack_pointer-1].smalldata, &v, POINTER_SIZE);
             goto end_of_builtin_call;
         }
-        if(streq(ee->symname, "__builtin_exit")){
+        //if(streq(ee->symname, "__builtin_exit"))
+        if(ee->symid == 11)
+        {
             int32_t v;
             //remember: arguments are backwards on the stack! so the first argument is on top...
             
@@ -2147,11 +2167,15 @@ void do_expr(expr_node_astexec* ee){
             );
             impl_builtin_exit(v);
         }
-        if(streq(ee->symname, "__builtin_parse_global")){
+        //if(streq(ee->symname, "__builtin_parse_global"))
+        if(ee->symid == 35)
+        {
             impl_builtin_parse_global();
             goto end_of_builtin_call;
         }
-        if(streq(ee->symname, "__builtin_get_ast")){
+        //if(streq(ee->symname, "__builtin_get_ast"))
+        if(ee->symid == 5)
+        {
             char* v;
             v = (char*) impl_builtin_get_ast();
             memcpy( //USES CORRECT STACKPOINTER- OUTPUT
@@ -2161,7 +2185,9 @@ void do_expr(expr_node_astexec* ee){
             );
             goto end_of_builtin_call;
         }
-        if(streq(ee->symname, "__builtin_peek")){
+        //if(streq(ee->symname, "__builtin_peek"))
+        if(ee->symid == 9)
+        {
             char* v;
             v = (char*) impl_builtin_peek();
             
@@ -2172,7 +2198,9 @@ void do_expr(expr_node_astexec* ee){
             );
             goto end_of_builtin_call;
         }
-        if(streq(ee->symname, "__builtin_getnext")){
+        //if(streq(ee->symname, "__builtin_getnext"))
+        if(ee->symid == 10)
+        {
             char* v;
             v = (char*) impl_builtin_getnext();
             
@@ -2183,7 +2211,9 @@ void do_expr(expr_node_astexec* ee){
             );
             goto end_of_builtin_call;
         }
-        if(streq(ee->symname, "__builtin_consume")){
+        //if(streq(ee->symname, "__builtin_consume"))
+        if(ee->symid == 6)
+        {
             char* v;
             //remember: arguments are backwards on the stack! so the first argument is on top...
             
@@ -2197,7 +2227,9 @@ void do_expr(expr_node_astexec* ee){
             );
             goto end_of_builtin_call;
         }
-        if(streq(ee->symname, "__builtin_puts")){
+        //if(streq(ee->symname, "__builtin_puts"))
+        if(ee->symid == 8)
+        {
             char* v;
             //remember: arguments are backwards on the stack! so the first argument is on top...
             
@@ -2211,7 +2243,9 @@ void do_expr(expr_node_astexec* ee){
             //memcpy(&vm_stack[saved_vstack_pointer-1].smalldata, &v, POINTER_SIZE);
             goto end_of_builtin_call;
         }
-        if(streq(ee->symname, "__builtin_memset")){
+        //if(streq(ee->symname, "__builtin_memset"))
+        if(ee->symid == 22)
+        {
             char* v;
             uint64_t q;
             uint64_t sz;
@@ -2233,7 +2267,9 @@ void do_expr(expr_node_astexec* ee){
             impl_builtin_memset(v,q,sz);
             goto end_of_builtin_call;
         }
-        if(streq(ee->symname, "__builtin_gets")){
+        //if(streq(ee->symname, "__builtin_gets"))
+        if(ee->symid == 7)
+        {
             char* v;
             uint64_t sz;
             //remember: arguments are backwards on the stack! so the first argument is on top...
@@ -2253,7 +2289,9 @@ void do_expr(expr_node_astexec* ee){
             //memcpy(&vm_stack[saved_vstack_pointer-1].smalldata, &v, POINTER_SIZE);
             goto end_of_builtin_call;
         }
-        if(streq(ee->symname, "__builtin_open_ofile")){
+        //if(streq(ee->symname, "__builtin_open_ofile"))
+        if(ee->symid == 2)
+        {
             char* v;
             int32_t q;
             //remember: arguments are backwards on the stack! so the first argument is on top...
@@ -2272,7 +2310,9 @@ void do_expr(expr_node_astexec* ee){
             );
             goto end_of_builtin_call;
         }
-        if(streq(ee->symname, "__builtin_read_file")){
+        //if(streq(ee->symname, "__builtin_read_file"))
+        if(ee->symid == 4)
+        {
             char* v;
             char* q;
             char* zz;
@@ -2299,7 +2339,9 @@ void do_expr(expr_node_astexec* ee){
             );
             goto end_of_builtin_call;
         }
-        if(streq(ee->symname, "__builtin_retrieve_sym_ptr")){
+        //if(streq(ee->symname, "__builtin_retrieve_sym_ptr"))
+        if(ee->symid == 32)
+        {
             char* v;
             unsigned char* q;
             //remember: arguments are backwards on the stack! so the first argument is on top...
@@ -2318,7 +2360,9 @@ void do_expr(expr_node_astexec* ee){
             );
             goto end_of_builtin_call;
         }
-        if(streq(ee->symname, "__builtin_strll_dupe")){
+        //if(streq(ee->symname, "__builtin_strll_dupe"))
+        if(ee->symid == 33)
+        {
             unsigned char* v;
             unsigned char* q;
             //remember: arguments are backwards on the stack! so the first argument is on top...
@@ -2337,7 +2381,9 @@ void do_expr(expr_node_astexec* ee){
             );
             goto end_of_builtin_call;
         }
-        if(streq(ee->symname, "__builtin_strll_dupell")){
+        //if(streq(ee->symname, "__builtin_strll_dupell"))
+        if(ee->symid == 34)
+        {
             unsigned char* v;
             unsigned char* q;
             //remember: arguments are backwards on the stack! so the first argument is on top...
@@ -2356,11 +2402,15 @@ void do_expr(expr_node_astexec* ee){
             );
             goto end_of_builtin_call;
         }
-        if(streq(ee->symname, "__builtin_close_ofile")){
+        //if(streq(ee->symname, "__builtin_close_ofile"))
+        if(ee->symid == 3)
+        {
             impl_builtin_close_ofile();
             goto end_of_builtin_call;
         }
-        if(streq(ee->symname, "__builtin_validate_function")){
+        //if(streq(ee->symname, "__builtin_validate_function"))
+        if(ee->symid == 20)
+        {
             char* v;
             memcpy(//USES CORRECT STACKPOINTER- INPUT
                 &v, 
@@ -2370,7 +2420,9 @@ void do_expr(expr_node_astexec* ee){
             impl_builtin_validate_function(v);
             goto end_of_builtin_call;
         }
-        if(streq(ee->symname, "__builtin_memcpy")){
+        //if(streq(ee->symname, "__builtin_memcpy"))
+        if(ee->symid == 21)
+        {
             char* a;
             char* b;
             uint64_t c;
@@ -2382,7 +2434,9 @@ void do_expr(expr_node_astexec* ee){
             impl_builtin_memcpy(a,b,c);
             goto end_of_builtin_call;
         }
-        if(streq(ee->symname, "__builtin_utoa")){
+        //if(streq(ee->symname, "__builtin_utoa"))
+        if(ee->symid == 23)
+        {
             char* buf;
             uint64_t i;
             memcpy( //USES CORRECT STACKPOINTER- INPUT
@@ -2398,7 +2452,9 @@ void do_expr(expr_node_astexec* ee){
             impl_builtin_utoa(buf, i);
             goto end_of_builtin_call;
         }
-        if(streq(ee->symname, "__builtin_itoa")){
+        //if(streq(ee->symname, "__builtin_itoa"))
+        if(ee->symid == 24)
+        {
             char* buf;
             int64_t i;
             memcpy( //USES CORRECT STACKPOINTER- INPUT
@@ -2414,7 +2470,9 @@ void do_expr(expr_node_astexec* ee){
             impl_builtin_itoa(buf, i);
             goto end_of_builtin_call;
         }
-        if(streq(ee->symname, "__builtin_ftoa")){
+        //if(streq(ee->symname, "__builtin_ftoa"))
+        if(ee->symid == 25)
+        {
             char* buf;
             double i;
             memcpy(//USES CORRECT STACKPOINTER- INPUT
@@ -2430,7 +2488,9 @@ void do_expr(expr_node_astexec* ee){
             impl_builtin_ftoa(buf, i);
             goto end_of_builtin_call;
         }
-        if(streq(ee->symname, "__builtin_atof")){
+        //if(streq(ee->symname, "__builtin_atof"))
+        if(ee->symid == 26)
+        {
             char* buf;
             double f;
             memcpy(//USES CORRECT STACKPOINTER- INPUT
@@ -2446,7 +2506,9 @@ void do_expr(expr_node_astexec* ee){
             );
             goto end_of_builtin_call;
         }
-        if(streq(ee->symname, "__builtin_atoi")){
+        //if(streq(ee->symname, "__builtin_atoi"))
+        if(ee->symid == 28)
+        {
             char* buf;
             int64_t f;
             memcpy(//USES CORRECT STACKPOINTER- INPUT
@@ -2462,7 +2524,9 @@ void do_expr(expr_node_astexec* ee){
             );
             goto end_of_builtin_call;
         }
-        if(streq(ee->symname, "__builtin_atou")){
+        //if(streq(ee->symname, "__builtin_atou"))
+        if(ee->symid == 27)
+        {
             char* buf;
             uint64_t f;
             memcpy(//USES CORRECT STACKPOINTER- INPUT
@@ -2478,7 +2542,9 @@ void do_expr(expr_node_astexec* ee){
             );
             goto end_of_builtin_call;
         }
-        if(streq(ee->symname, "__builtin_peek_is_fname")){
+        //if(streq(ee->symname, "__builtin_peek_is_fname"))
+        if(ee->symid == 29)
+        {
             int32_t f;
             f = impl_builtin_peek_is_fname();
             memcpy(//USES CORRECT STACKPOINTER- OUTPUT
@@ -2488,7 +2554,9 @@ void do_expr(expr_node_astexec* ee){
             );
             goto end_of_builtin_call;
         }
-        if(streq(ee->symname, "__builtin_str_is_fname")){
+        //if(streq(ee->symname, "__builtin_str_is_fname"))
+        if(ee->symid == 30)
+        {
             char* buf;
             int32_t f;
             memcpy(//USES CORRECT STACKPOINTER- INPUT
@@ -2504,7 +2572,9 @@ void do_expr(expr_node_astexec* ee){
             );
             goto end_of_builtin_call;
         }
-        if(streq(ee->symname, "__builtin_parser_push_statement")){
+        //if(streq(ee->symname, "__builtin_parser_push_statement"))
+        if(ee->symid == 31)
+        {
             char* f;
             f = impl_builtin_parser_push_statement();
             memcpy(//USES CORRECT STACKPOINTER- OUTPUT
