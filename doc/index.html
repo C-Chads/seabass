@@ -191,7 +191,7 @@
     void mutoa(char* dest, unsigned int value);
     unsigned matou(char* in);
     
-    unsigned int fib(unsigned n){
+    static inline unsigned int fib(unsigned n){
         if(n < 2)
             return 1;
         unsigned int a = 1;
