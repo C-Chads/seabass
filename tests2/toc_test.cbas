@@ -390,6 +390,10 @@ fn pub main()->int:
             println("It did not work!!")
         end
     end
+    @cpprint[
+        /   "Check out this sizeof:"
+        /int (sizeof(int[3]))
+    ]
     
 end
 /*

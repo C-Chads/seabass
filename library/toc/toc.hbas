@@ -475,12 +475,18 @@ method codegen cgexpr_node:gen_code(cgast* ast)->char*:
         ff.s = ")"; retval:add(ff);
         return retval.s;
     elif(this.kind == CG_EXPR_SIZEOF)
-        retval.s = __builtin_strdup("sizeof(");
+        retval.s = __builtin_strdup("(sizeof(");
+        u64 al = this.type_to_get_size_of.arraylen;
         cgstr q
         q.s = this.type_to_get_size_of:gen_code(ast);
         retval:add(q); q:free();
-        q.s = ")";
-        retval:add(q);
+        retval:addstr(")") //enof sizeof
+        if(al)
+            retval:addstr("*");
+            cg_cemitter_utoa(buf, al);
+            retval:addstr(buf);
+        end
+        retval:addstr(")");//eof wrapping parentheses
         return retval.s;
     elif(this.kind == CG_EXPR_INTLIT)
         cg_cemitter_utoa(buf, cast(i64)this.idata);
