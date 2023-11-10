@@ -187,7 +187,7 @@
     <h2 id="basicsyntaxc">Basic Syntax versus C</h2>
     </center>
     <hr>
-    <p>Seabass was designed to be a simplification, enhancement, and general improvement of C. In order to convey the basics of the syntax of Seabass, here is a simple fibonacci number program in both languages:</p>
+    <p>Seabass's base-level language was designed to be a simplification, enhancement, and general improvement of C. In order to convey the basics of the syntax of Seabass, here is a simple fibonacci number program in both languages:</p>
     <pre><code>
     /*C program*/
     #include &ltstdio.h&gt
@@ -388,6 +388,14 @@
     <hr>
     <p>Seabass allows you to define functions and variables which exist exclusively at compiletime, i.e., while the `cbas` tool is running. <b>They do not exist in the final compiled program.</b></p>
     <p>These "symbols" are annotated as such using the `codegen` keyword.</p>
+    <p>codegen functions may access special `builtin` functions of the `cbas` tool, giving it access to the internals of the compiler, the filesystem, memory allocation, and etcetera.</p>
+    <p>codegen functions are invoked from any of the following:</p>
+    <ol>
+        <li>Called from another codegen function</li>
+        <li>a "parsehook invocation" (using the metaprogramming operator- @)</li>
+        <li>the "#__cbas_run_fn" directive.</li>
+        <li></li>
+    </ol>
     <p></p>
     <p></p>
     
@@ -398,8 +406,8 @@
     <hr>
     <p>As mentioned <a href="#whatis">before</a> , Seabass is self-retargeting. It allows you to define a function which is responsible for generating the "output" of the compiler.</p>
     <p>In the fibonacci number program from the <a href="#basicsyntaxc">previous section</a>, it was used to generate C code. This C code would then be compiled with a C compiler to generate an executable binary.</p>
-    <p>codegen_main is only special in that the `cbas` tool will attempt to find it inside the translation unit after parsing has finished. If it cannot find it, it will </p>
-    <p></p>
+    <p>codegen_main is only special in that the `cbas` tool will attempt to find it inside the translation unit after parsing has finished. If it cannot find it, it will dump the parsed AST and then exit.</p>
+    <p>In principle, the codegen_main function can generate arbitrary output.</p>
     <p></p>
     <p></p>
     <p></p>
