@@ -534,15 +534,79 @@
     <hr>
     <p>The syntax of Seabass differs from C most in its usage of pointers. Note the following:</p>
     <ol>
-        <li>It is not possible to get the address of local primitive variables. You may not use the `&` operator to take the address of a variable. Taking the address of global variables is done with `getglobalptr`</li>
+        <li>It is not possible to get the address of local primitive variables. You may not use the `&` operator to take the address of a variable. Taking the address of global variables is done with `getglobalptr`.</li>
         <li>There are no function pointers in the type system- all function pointers are `byte*`. They are obtained with `getfnptr` and used with `callfnptr`.</li>
-        <li>Structs may never appear by-value in an expression. Structs are always passed by pointer into and out of functions.</li>
+        <li>Structs never appear by-value in an expression.</li>
         <li>Indexing an array of pointer-to-struct will yield a pointer-to-struct rather than an lvalue struct.</li>
         <li>Just like C, arrays decay into pointers in an expression.</li>
-        <li>Seabass has a dedicated `memcpy` operator, called the `move` operator `<code>:=</code>`.</li>
+        <li>Seabass has a dedicated `memcpy` operator, called the `move` operator, <code>:=</code>.</li>
         <li>Seabass has two dedicated C-string comparison operators, `streq` and `strneq`.</li>
-        <li></li>
     </ol>
+    <p>For C programmers, this means all of the following:</p>
+    <ol>
+        <li>In order to pass a pointer to a primitive variable (such as passing int* len into a buffer-filling function) you should declare an array of length one. I.e. in C you would do this....
+        <pre><code>
+        void myfunction(char* buf, int* lenout);
+        
+        /*usage...*/
+        int lenout;
+        char buf[256];
+        myfunction(buf, &lenout);
+        </code></pre>
+        But you would do this in Seabass:
+        <pre><code>
+        fn myfunction(char* buf, int* lenout);
+        
+        //usage...
+        int[1] lenout;
+        char[256] buf;
+        myfunction(buf, lenout);
+        </code></pre>
+        (please also note that seabass places array length <i><b>next to the type</b></i> and not next to the variable name).
+        </li>
+        <li>Passing structs by-value is not possible in Seabass. 
+        If you want to pass an object into a function in seabass, 
+        you pass a pointer to that object. 
+        That function can then make a separate copy if it so desires. 
+        <i>Please note that if pass-by-value is performance-critical 
+        to your application, it can still be achieved with inline target code.</i>.
+        </li>
+        <li>Use of <code>strcmp(a,b)==0</code> is outmoded in Seabass. 
+        You do <code>a streq b</code>.
+        </li>
+        <li>If you have an array of structs like so...
+        <pre><code>
+        struct mystruct
+            mystruct* c
+            char[1<<6] name
+            int a
+            i32 b
+        end
+        mystruct[12*50/2] myarray;
+        </code></pre>
+        Then <code>myarray[27]</code> is semantically sequivalent to <code>(myarray + 27)</code>. A struct type <i>never</i> appears by-value in an expression.
+
+        </li>Function pointer syntax has been changed. An example:
+        <pre><code>
+        //function whose pointer we take...
+        fn myfunction(int a, char* text)->float;
+        
+        //this function's prototype is used....
+        fn noexport template_function(int q, char* t)->float;
+        
+        //later...
+        byte* mypointer = getfnptr(myfunction);
+        
+        float x = callfnptr[template_function](mypointer)(3, "Hello World!");
+        </code></pre>
+        <li>
+        </li>
+        <li>
+        </li>
+    </ol>
+    <p></p>
+    <p></p>
+    <p></p>
     <p></p>
     <p></p>
   </body>
