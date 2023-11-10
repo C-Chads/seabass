@@ -22,6 +22,8 @@
         <a href="#blessing">Blessing</a><br>
         <a href="#fallible">Notice of Fallibility</a><br>
         <a href="#prereq">Prerequisites</a><br>
+        <a href="#terminology">Terminology</a><br>
+        <a href="#whatis">What is Seabass?</a><br>
     </div>
     <hr>
     <center>
@@ -66,10 +68,91 @@
         <li>Is familiar with at least one systems-level Programming Language- hopefully C</li>
         <li>Can read snippets of C with short explanations</li>
         <li>Can use a search engine to understand terms they are not familiar with</li>
+        <li>Is willing to thoroughly read documentation, with backtracking.</li>
     </ol>
-    <p>Please be aware of this moving forward.</p>
+    <p>This documentation uses many pieces of terminology which you are likely to be unfamiliar with. Please see the dedicated "Terminology" section</p>
+    <hr>
+    <center>
+    <h2 id="terminology">Terminology</h2>
+    </center>
+    <hr>
+    <p>Note that Italicized terms are considered "standard".</p>
+    <ul>
+        <li><b>Seabass</b><br>
+            <ol>
+            <li>The programming language documented by this html document.</li>
+            <li>The project surrounding that language</li>
+            </ol>
+        </li>
+        <li><b>CBAS / cbas</b><br>
+            The tool which works with Seabass programs, originally written
+            in C99 for 64 bit byte-addressable POSIX machines.
+        </li>
+        <li><i><b>AST</b></i><br>
+            Abstract Syntax Tree [Programming language lingo]
+        </li>
+        <li><i><b>Token</b></i><br>
+            Small piece of source code text. [Programming language lingo]
+        </li>
+        <li><i><b>Identifier</b></i><br>
+            Name for an object in a computer program. Seabass uses C rules for identifiers. [Programming language lingo]
+        </li>
+        <li><i><b>Keyword</b></i><br>
+            Reserved, special sequence of english characters, underscores, and decimal digits. May not start with a digit. [Programming language lingo]
+        </li>
+        <li><b>codegen</b><br>
+            short for "code generation". Adjective. Keyword in the SEABASS language.<br>
+            Applied to a function, method, or variable: that function/method/variable
+            "exists" only during the execution of the cbas tool.
+        </li>
+        <li><b></b><br></li>
+        <li><b></b><br></li>
+        <li><b></b><br></li>
+        <li><b></b><br></li>
+        <li><i><b></b></i><br></li>
+        <li><i><b></b></i><br></li>
+        <li><i><b></b></i><br></li>
+        <li><i><b></b></i><br></li>
+    </ul>
+    
+    <hr>
+    <center>
+    <h2 id="whatis">What is Seabass?</h2>
+    </center>
+    <hr>
+    <p>Seabass is a public domain, self-retargeting, self-extending, self-modifying Metaprogramming Language, and general purpose programming tool.</p>
+    <p>Allow me to elaborate:</p>
+    <ul>
+        <li>
+            <h3>Public Domain</h3>
+            <p>Seabass (language, tool, documentation, libraries, and artwork) are all released to you under the CC0 license. No attribution is required and no license files are needed. These are my gifts to you in perpetuity, so long as you can retain them. May your joy be full.</p>
+        </li>
+        <li>
+            <h3>Language</h3>
+            <p>Seabass is a programming language- a written language for expressing computer programs.</p>
+        </li>        
+        <li>
+            <h3>Tool</h3>
+            <p>Seabass is an executable computer program (cbas) which can be compiled for 64 bit POSIX-compatible systems with byte-addressable memory. It is used for working with programs written in the Seabass language. To distinguish between the Language and the Tool, the language shall be called "Seabass" and the tool shall be called "cbas" or "CBAS" (all pronounced "SEE BASS"). Tools other than this tool shall not be called "cbas" or "CBAS" but instead shall be referred to by some other name (i.e. "the Seabass Standard Metaprogramming Library").</p>
+        </li>
+        <li>
+            <h3>Metaprogramming</h3>
+            <p>Seabass contains special language constructs for writing code which writes code, or manipulates pre-existing code. This is designed to allow the user to implement their own abstractions to the language, even entire new compiled languages.</p>
+        </li>
+        <li>
+            <h3>Self-retargeting</h3>
+            <p>Seabass allows the user to define a special function called "codegen_main" which is responsible for generating "target code".</p>
+        </li>
+        <li>
+            <h3>Self-extending</h3>
+            <p>Seabass allows you to write code which effectively extends the capabilities of the compiler. This can be done within the translation unit and does not require modifying the cbas tool. This code is referred to as "codegen".</p>
+        </li>
 
-    <p></p>
+        <li>
+            <h3>Self-modifying</h3>
+            <p>codegen code is given virtually unrestricted access to the internals of the compiler. It can modify the tokenized source code which has yet to be parsed, or even manipulate the AST of code which has already been parsed.</p>
+        </li>
+    </ul>
     <p></p>
     <p></p>
     <p></p>
