@@ -28,9 +28,10 @@
         <a href="#codegen">codegen</a><br>
         <a href="#codegenmain">codegen_main</a><br>
         <a href="#parsehooks">parsehooks</a><br>
+        <a href="#syntaxsemantics">Syntax Semantics</a><br>
         <a href="#oop">Object Oriented Programming</a><br>
-        <a href="#pointers">Pointer Semantics- Differences from C</a><br>
-        <a href="#typedecl">Type Declarations</a><br>
+        <a href="#pointers">Pointer Semantics</a><br>
+        <a href="#typedecl">Type Declaration Semantics</a><br>
     </div>
     <hr>
     <p>Welcome, conquerors, to the Seabass Metaprogramming language! This html document should serve as an introduction.<br><i>Saying, Blessed are they whose iniquities are forgiven, and whose sins are covered.</i> - Romans 4:7</p>
@@ -442,6 +443,12 @@
     <p>When the parser sees an @ sign followed by an identifier, it looks for a codegen function with that name prefixed by 'parsehook_'. This function is then immediately called. This function can then use builtin functions such as __builtin_peek() to access the tokenized source code of the program and manipulate it. This functionality was used to implement `@wksht` and `@pprint` from <a href="#basicsyntaxc">before</a>.</p>
     <hr>
     <center>
+    <h2 id="syntaxsemantics">Syntax Semantics</h2>
+    </center>
+    <hr>
+    <p>You now understand the basics of what makes Seabass unique. However, in order to actually get started programming, you need to understand some of the other features and details of the language.</p>
+    <hr>
+    <center>
     <h2 id="oop">Object Oriented Programming</h2>
     </center>
     <hr>
@@ -530,7 +537,7 @@
     <p>It <i>does</i> have move semantics. There is a dedicated "move" operator, <code>:=</code> which copies one pointed-to object into another.</p>
     <hr>
     <center>
-    <h2 id="pointers">Pointer Semantics- Differences from C</h2>
+    <h2 id="pointers">Pointer Semantics</h2>
     </center>
     <hr>
     <p>The syntax of Seabass differs from C most in its usage of pointers. Note the following:</p>
@@ -640,6 +647,7 @@
         
         </li>
     </ol>
+
     <hr>
     <center>
     <h2 id="typedecl">Type Declarations</h2>
@@ -674,7 +682,12 @@
             </code></pre>
             <i>The data statement will be discussed in more detail later.</i>
         </li>
-        <li></li>
+        <li>In the prototype of functions and methods.
+            <pre><code>
+                fn myfunction(int a, char* b)->mystruct;
+            </code></pre>        
+        
+        </li>
         <li></li>
         <li></li>
     </ol>
