@@ -1750,6 +1750,54 @@ int main(int argc, char** argv){
     unsigned long entire_input_file_len = 0;
     char* t;
     nfilenames = 0;
+    const char* compaterr = "<COMPATIBILITY ERROR>";
+    if(
+        sizeof(char*) != 8 ||
+        sizeof(void*) != sizeof(double*)
+    ){
+        puts(compaterr);
+        puts("This program was not compiled for a 64 bit byte-addressable platform.");
+        goto fail_incompat;
+    }
+    if(sizeof(double) != 8){
+        puts(compaterr);
+        puts("This program was written under the assumption that doubles were");
+        puts("64 bit. This is not true here....");
+        goto fail_incompat;
+    }if(sizeof(float) != 4){
+        puts(compaterr);
+        puts("This program was written under the assumption that floats were");
+        puts("32 bit. It's not true on your platform.");
+        goto fail_incompat;
+    }
+    if(
+        sizeof(char) != 1 ||
+        sizeof(short) != 2 ||
+        sizeof(int) != 4 ||
+        sizeof(long long) != 8
+    ){
+        puts(compaterr);
+        puts("This program was written assuming that");
+        puts("char is 1 byte, short is 2 bytes, int is 4 bytes,");
+        puts("and long long is 8 bytes. One of these is not true.");
+        goto fail_incompat;
+    }
+    if(sizeof(size_t) != 8){
+        puts(compaterr);
+        puts("size_t is not 8 bytes in size.");
+        goto fail_incompat;
+    }
+    {
+        char a = 255;
+        short b = 255;
+        a++;b++;
+        if(a != 0 || b != 256){
+            puts(compaterr);
+            puts("This platform does not use byte-addressable memory.");
+            goto fail_incompat;
+        }
+    }
+    
     if(argc > 1) {
         infilename = strdup(argv[1]);
     }
@@ -1882,5 +1930,9 @@ int main(int argc, char** argv){
     // strll_free(&tokenized, 0);
     // free(infilename);
     return 0;
+    fail_incompat:;
+    puts("The software, as written, is not compatible with your platform.");
+    puts("Beloved, I'm sorry.");
+    exit(1);    
 }
 /*End of file comment.*/
