@@ -31,7 +31,12 @@
         <a href="#syntaxsemantics">Syntax Semantics</a><br>
         <a href="#oop">Object Oriented Programming</a><br>
         <a href="#pointers">Pointer Semantics</a><br>
+        <a href="#tailcall">Tail Calls</a><br>
         <a href="#typedecl">Type Declaration Semantics</a><br>
+        <a href="#typealiases">Type Alias List</a><br>
+        <a href="#keywords">Keyword List</a><br>
+        <a href="#gotolabels">Labels</a><br>
+        <a href="#switch">Switch Statement</a><br>
     </div>
     <hr>
     <p>Welcome, conquerors, to the Seabass Metaprogramming language! This html document should serve as an introduction.<br><i>Saying, Blessed are they whose iniquities are forgiven, and whose sins are covered.</i> - Romans 4:7</p>
@@ -446,7 +451,10 @@
     <h2 id="syntaxsemantics">Syntax Semantics</h2>
     </center>
     <hr>
-    <p>You now understand the basics of what makes Seabass unique. However, in order to actually get started programming, you need to understand some of the other features and details of the language.</p>
+    <p>You now understand the basics of what makes Seabass unique. 
+    However, in order to actually get started programming, you 
+    need to understand some of the other features and details 
+    of the language.</p>
     <hr>
     <center>
     <h2 id="oop">Object Oriented Programming</h2>
@@ -647,7 +655,32 @@
         
         </li>
     </ol>
-
+    <hr>
+    <center>
+    <h2 id="tailcall">Tail Calls</h2>
+    </center>
+    <hr>
+    <p>Seabass allows any function to "tail call" another- i.e., it will 'jump' to that function.</p>
+    <p>This is particularly useful for implementing some kinds of algorithms.</p>
+    <p>Tail calls are only valid between two functions with the same prototype. I.e.- this is valid-</p>
+    <pre><code>
+        fn tailtome(i32 a, byte b)->f32;
+        fn myfunction(int a, char b)->float:
+            tail tailtome //prototype is identical (i32,u8)->f32
+        end
+    </code></pre>
+    <p>But this is not:</p>
+    <pre><code>
+        fn tailtome(i32 a, byte b)->f32;
+        fn myfunction2(int a, int b)->int:
+            tail tailtome //ERROR: prototype does not match! (i32,i32)->i32 != (i32,u8)->f32
+        end
+    </code></pre>
+    <p>because myfunction2 does not have an identical prototype to `tailtome`.</p>
+    <p></p>
+    <p></p>
+    <p></p>
+    <p></p>
     <hr>
     <center>
     <h2 id="typedecl">Type Declarations</h2>
@@ -684,27 +717,197 @@
         </li>
         <li>In the prototype of functions and methods.
             <pre><code>
-                fn myfunction(int a, char* b)->mystruct;
+        fn myfunction(int a, char* b)->mystruct;
             </code></pre>        
             Note the following "gotchas":
             <ul>
-                <li>All references to non-pointer structs will be converted to pointer-to-struct. I.e., the following declarations are identical:
+                <li>All references to non-pointer structs will be converted to pointer-to-struct. I.e., the following declarations are identical:<br><br>
                     <code>procedure myproc(mystruct a)->mystruct;</code><br>
                     <code>function myproc(mystruct* a)->mystruct;</code><br>
                     <code>func myproc(mystruct a)->mystruct*;</code><br>
                     <code>proc myproc(mystruct* a)->mystruct*;</code><br>
+                    <br>
+                    <br>
+                </li>
+                <li>You may not pass an array into a function or return it. These are syntax errors:
+                    <br>
+                    <br>
+                    <code>proc myproc(int[50] a)->int;</code><br>
+                    <code>fn myproc(int a)->int[50];</code><br>
+                    <br>
+                    <br>
                 </li>
             </ul>
         </li>
-        <li></li>
-        <li></li>
     </ol>
+    <hr>
+    <center>
+    <h2 id="typealiases">Type Alias List</h2>
+    </center>
+    <hr>
+    <p>Here is a list of all primitive types, and their aliases.</p>
+    <pre><code>
+        u8 - char - uchar - byte - ubyte
+        i8 - schar - sbyte
+        u16 - ushort
+        i16 - short - sshort
+        u32 - uint - ulong
+        i32 - int - sint - long - slong
+        u64 - ullong - qword - uqword
+        i64 - llong - sllong - sqword - uptr
+        f32 - float
+        f64 - double
+    </code></pre>
+    <p><i>Note that pointers are also considered primitive.</i></p>
+    <p>structs, classes, and unions are *not* considered primitive.</p>
+    <p>Note that `void`, while it exists in the type system, <i>does not have a keyword in the language</i>. Seabass uses `byte*` instead of `void*`.</p>
     <p></p>
     <p></p>
     <p></p>
     <p></p>
     <p></p>
+    <hr>
+    <center>
+    <h2 id="keywords">Keyword List</h2>
+    </center>
+    <hr>
+    <h3>Keywords</h3>
+    <pre><code>
+    fn - function - func - procedure - proc
+    cast
+    u8 - char - uchar - byte - ubyte
+    i8 - schar - sbyte
+    u16 - ushort
+    i16 - short - sshort
+    u32 - uint - ulong
+    i32 - int - sint - long - slong
+    u64 - ullong - qword - uqword
+    i64 - llong - sllong - sqword - uptr
+    f32 - float
+    f64 - double
+    noexport
+    break
+    data
+    string
+    end
+    continue
+    if
+    elif - elseif
+    else
+    while
+    for
+    goto - jump
+    switch
+    return
+    tail
+    sizeof
+    static
+    pub - public
+    predecl
+    struct - class
+    union
+    method
+    codegen
+    constexpri
+    constexprf
+    pure
+    inline
+    atomic
+    volatile
+    getfnptr
+    callfnptr
+    getglobalptr
+    asm
+    </code></pre>
+    <h3>Operators</h3>
+    <pre><code>
+    ++
+    --
+    :=
+    :
+    <=
+    <
+    >=
+    >
+    != , neq
+    == , === , eq
+    ->
+    .&
+    &
+    &&
+    |
+    ||
+    >>
+    <<
+    ~
+    !
+    .
+    &
+    *
+    +
+    -
+    /
+    %
+    <
+    >
+    ^
+    |
+    ? //unused
+    =
+    @
+    streq
+    strneq
+    </code></pre>
+    <p><i>Note that comma is *NOT* an operator.</i></p>
+    <h3>Special Reserved Characters and sequences</h3>
+    <pre><code>
+    "string literals"
+    '\n'
+    #
+    #include ""
+    #include <>
+    #define
+    #undef
+    #guard
+    ,
+    ;
+    </code></pre>
+    <h3>String literal and character literal escape sequences</h3>
+    <pre><code>
+    \a - ASCII 0x7
+    \b - ASCII 0x8
+    \e - ASCII 0x1B
+    \f - ASCII 0xC
+    \n - ASCII 0xA
+    \r - ASCII 0xD
+    \t - ASCII 0x9
+    \v - ASCII 0xB
+    //the following escape sequences simply emit the second character.
+    \\ - ASCII 0x5C
+    \' - ASCII 0x27
+    \" - ASCII 0x22
+    \? - ASCII 0x3F
+    </code></pre>
+    <hr>
+    <center>
+    <h2 id="gotolabels">Labels</h2>
+    </center>
+    <hr>
+    <p>Seabass declares goto labels with a colon at the beginning rather than the end:</p>
+    <p><code>:mylabel</code></p>
+    <p><code>:mylabel2</code></p>
+    <p><code>:my_really_long_labelname</code></p>
+    <p>They are used by `goto` and `switch`.</p>
+    <p><code>goto my_really_long_labelname</code></p>
+    <p><code>jump my_really_long_labelname</code></p>
+    <p><code>switch(1+1) mylabel mylabel2 my_really_long_labelname;</code></p>
     <p></p>
     <p></p>
+
+    <hr>
+    <center>
+    <h2 id="switch">Switch Statement</h2>
+    </center>
+    <hr>
   </body>
 </html>
