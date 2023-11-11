@@ -302,8 +302,7 @@ void print_manpage(char* subject){
         b(help)
         l("Welcome to the CBAS Metaprogramming Tool's Manual Pages!")
         nl
-        l("This is the official documentation for the SEABASS metacompiler, as written in C99")
-        l("This program was authored for the Public Domain, using the blessings of our Lord Jesus Christ.")
+        l("This program was authored for the Public Domain, using the undeserved blessings of our Lord Jesus Christ.")
         nl
         l("To begin viewing documentation, view the index:")
         nl
