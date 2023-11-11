@@ -93,7 +93,6 @@ codegen u64 whygen = 0;
         __builtin_puts("<Wrote an instance for doing math...>");
         return result;
     ]
-
 ]
 
 
