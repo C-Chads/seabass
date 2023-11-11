@@ -248,9 +248,7 @@
         uint64_t pointerlevel;
         uint64_t arraylen;
         uint64_t structid; /*from the list of typedecls.*/
-        uint64_t is_lvalue; /*useful in expressions.*/
-    
-        /*everything above was for the return type if this is a function...*/
+        uint64_t is_lvalue;
         uint64_t funcid; /*if this is a function, what is the function ID? From the list of symdecls.*/
         uint64_t is_function; /*
             is this a function? if this is set, 
@@ -259,7 +257,6 @@
             return type.
         */
         char* membername; /*used for struct members and function arguments*/
-        /*Code generator data.*/
     }type;
     
     typedef struct{
@@ -270,7 +267,6 @@
         uint64_t is_noexport;
         uint64_t is_union;
         uint64_t algn; //alignment
-        /*Code generator data.*/
     } typedecl;
     
     

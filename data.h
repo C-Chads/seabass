@@ -80,9 +80,7 @@ typedef struct type{
     uint64_t pointerlevel;
     uint64_t arraylen;
     uint64_t structid; /*from the list of typedecls.*/
-    uint64_t is_lvalue; /*useful in expressions.*/
-
-    /*everything above was for the return type if this is a function...*/
+    uint64_t is_lvalue;
     uint64_t funcid; /*if this is a function, what is the function ID? From the list of symdecls.*/
     uint64_t is_function; /*
         is this a function? if this is set, 
@@ -91,7 +89,6 @@ typedef struct type{
         return type.
     */
     char* membername; /*used for struct members and function arguments*/
-    /*Code generator data.*/
 }type;
 
 
@@ -106,7 +103,6 @@ typedef struct{
     uint64_t is_noexport;
     uint64_t is_union;
     uint64_t algn; //alignment
-    /*Code generator data.*/
 } typedecl;
 
 
@@ -115,7 +111,6 @@ typedef struct typedecl_oop_metadata{
     int64_t ctor_id; //what is its ctor_id? -1 if it doesn't exist.
     int64_t dtor_id; //same thing again...
     int64_t have_checked; //have we actually checked to see if this type has type metadata?
-                          //The type metadata allows us to 
 } typedecl_oop_metadata;
 extern typedecl_oop_metadata* oop_metadata;
 
@@ -144,8 +139,6 @@ typedef struct{
     uint64_t is_impure_uses_incomplete_symbols; /*uses incomplete symbols.*/
     uint64_t is_data; /*only set for data.*/
     uint64_t is_noexport;
-    /*Code generator data.*/
-    //uint64_t VM_function_stackframe_placement; /*For local variables and function args, used by the AST executor*/
 } symdecl;
 
 typedef struct{
