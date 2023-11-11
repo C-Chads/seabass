@@ -1,7 +1,7 @@
 "\n"
 "#guard cg_builder_library_DMHSW\n"
 "\n"
-"#include \"reflect.hbas\"\n"
+"#include <stdmeta/reflect.hbas>\n"
 "\n"
 "/*\n"
 "    THE BUILDER NAMESPACE\n"

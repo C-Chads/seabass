@@ -406,7 +406,7 @@
 "    this:fromstr(o.s);\n"
 "end\n"
 "\n"
-"method codegen cgstr:dupe()->cgstr*:\n"
+"method codegen cgstr:dupe()->cgstr:\n"
 "    cgstr q;\n"
 "    q:fromcgstr(this);\n"
 "    return q;\n"
