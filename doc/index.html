@@ -42,6 +42,7 @@
         <a href="#alignment">Alignment</a><br>
         <a href="#memberptr">The Member Pointer Operator</a><br>
         <a href="#getptr">getglobalptr and getfnptr</a><br>
+        <a href="#callfnptr">callfnptr</a><br>
     </div>
     <hr>
     <p>Welcome, conquerors, to the Seabass Metaprogramming language! This html document should serve as an introduction.<br><i>Saying, Blessed are they whose iniquities are forgiven, and whose sins are covered.</i> - Romans 4:7</p>
@@ -1194,7 +1195,34 @@
     <h2 id="getptr">getglobalptr and getfnptr</h2>
     </center>
     <hr>
-    <p>In seabass, you can retrieve a pointer to any global variable</p>
+    <p>In seabass, you can retrieve a pointer to any global variable
+    or function (but not method) using the <code>getglobalptr</code> and <code>getfnptr</code>
+    keywords.</p>
+    <p>getglobalptr will return the pointer you requested of the correct type (note that
+    for arrays and data statements, it will yield the same value as simply writing their
+    names).</p>
+    <p>getfnptr returns a `byte*` which can be used with callfnptr.</p>
+    <hr>
+    <center>
+    <h2 id="callfnptr">callfnptr</h2>
+    </center>
+    <hr>
+    <p>Using the byte* retrieved from `getfnptr` it is possible to invoke a function by pointer:</p>
+    <p>This code is lifted from a previous example:</p>
+    <pre><code>
+    //function whose pointer we take...
+    fn myfunction(int a, char* text)->float;
+    
+    //this function's prototype is used....
+    fn noexport template_function(int q, char* t)->float;
+    
+    //retrieve a pointer to `myfunction`
+    byte* mypointer = getfnptr(myfunction);
+    
+    //call the function...
+    float x = callfnptr[template_function](mypointer)(3, "Hello World!");
+    </code></pre>
+    <p></p>
     <p></p>
     <p></p>
     <p></p>
