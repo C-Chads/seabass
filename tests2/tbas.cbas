@@ -116,6 +116,7 @@ fn codegen codegen_main():
         /int (g*100)
         /int (q*100)
         /int (q2*100)
+        /int (00000413e-2 * 50)
     ]
     //while(1) end
 end
