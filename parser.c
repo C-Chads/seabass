@@ -2092,6 +2092,7 @@ static inline void expr_parse_callfnptr(expr_node** targ){
 /*the terminal thing- a literal, identifier, function call, or sizeof*/
 void expr_parse_terminal(expr_node** targ){
     size_t builtin_id;
+    top:;
     if(peek()->data == TOK_IDENT){
         builtin_id = is_builtin_name(peek()->text);
     }
@@ -2156,7 +2157,7 @@ void expr_parse_terminal(expr_node** targ){
     else if(peek()->data == TOK_OPERATOR){
         if(streq(peek()->text, "@")){
             parse_do_metaprogramming();
-            return;
+            goto top;
         }
         if(streq(peek()->text, "->")){
             puts("Found -> in expression... Huh? The syntax in Seabass is \".\" on pointers.");
