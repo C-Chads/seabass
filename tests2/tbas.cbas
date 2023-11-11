@@ -64,6 +64,38 @@ codegen u64 whygen = 0;
     ]
 ]
 
+@mktemplate[
+    domath
+    typed
+    [
+        [__WHY__()]
+        @global
+        fn codegen __WHY__()->TYPE:
+            return (TYPE)3/(TYPE)2;
+        end
+    ][
+        TYPE
+    ][
+            char[50] buf
+        u64 ours = whygen++;
+        cgstrcpy(buf, "__matimpl__");
+        __builtin_utoa(buf + 11, ours);
+        
+        cgstrll* iter = result;
+        while(iter != 0)
+            if(iter.d != CG_TOK_IDENT) iter = iter.right continue end
+            if(iter.text streq "__WHY__")
+                __builtin_free(iter.text);
+                iter.text = __builtin_strdup(buf);
+            end
+            iter = iter.right
+        end
+        __builtin_puts("<Wrote an instance for doing math...>");
+        return result;
+    ]
+
+]
+
 
 fn codegen codegen_main():
     @doWhy "For fun and pleasure!"
@@ -74,6 +106,10 @@ fn codegen codegen_main():
     @doWhy "For Squealing and laughter!"
     @doWhy "For Squealing and laughter!"
     @doWhy2 "For Squealing and laughter!" 
-    @doWhy2 "Intoxicating Programming Power!!!" 
+    @doWhy2 "Intoxicating Programming Power!!!"
+    float f = @domath[f32];
+    f32 g = @domath[float];
+    int q = @domath[i32];
+    int q2 = @domath[int];
     //while(1) end
 end

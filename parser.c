@@ -2155,7 +2155,6 @@ void expr_parse_terminal(expr_node** targ){
     }
     else if(peek()->data == TOK_OPERATOR){
         if(streq(peek()->text, "@")){
-            consume();
             parse_do_metaprogramming();
             return;
         }

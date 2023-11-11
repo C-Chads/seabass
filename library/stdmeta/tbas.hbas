@@ -68,6 +68,79 @@ end
 codegen cg_tbas_template** cg_tbas_all_templates = 0;
 codegen u64 cg_tbas_ntemplates = 0;
 
+fn codegen cg_tbas_rectify_types(cgstrll* inlist):
+    for(0,inlist != 0, inlist = inlist.right)
+        if(inlist.d != CG_TOK_KEYWORD) continue end
+        //this is a keyword...
+        if(
+            inlist.text streq "byte" ||
+            inlist.text streq "ubyte" ||
+            inlist.text streq "char" ||
+            inlist.text streq "uchar"
+        )
+            __builtin_free(inlist.text);
+            inlist.text = __builtin_strdup("u8");
+        elif(
+            inlist.text streq "sbyte" ||
+            inlist.text streq "schar"
+        )
+            __builtin_free(inlist.text);
+            inlist.text = __builtin_strdup("i8");
+        elif(
+            inlist.text streq "ushort"
+        )
+            __builtin_free(inlist.text);
+            inlist.text = __builtin_strdup("u16");
+        elif(
+            inlist.text streq "short" ||
+            inlist.text streq "sshort"
+        )
+            __builtin_free(inlist.text);
+            inlist.text = __builtin_strdup("i16");
+        elif(
+            inlist.text streq "uint" ||
+            inlist.text streq "ulong"
+        )
+            __builtin_free(inlist.text);
+            inlist.text = __builtin_strdup("u32");
+        elif(
+            inlist.text streq "int" ||
+            inlist.text streq "sint" ||
+            inlist.text streq "slong" ||
+            inlist.text streq "long"
+        )
+            __builtin_free(inlist.text);
+            inlist.text = __builtin_strdup("i32");
+        elif(
+            inlist.text streq "ullong" ||
+            inlist.text streq "qword" ||
+            inlist.text streq "uqword" ||
+            inlist.text streq "uptr"
+        )
+            __builtin_free(inlist.text);
+            inlist.text = __builtin_strdup("u64");
+        elif(
+            inlist.text streq "llong" ||
+            inlist.text streq "sqword" ||
+            inlist.text streq "sllong"
+        )
+            __builtin_free(inlist.text);
+            inlist.text = __builtin_strdup("i64");
+        elif(
+            inlist.text streq "float"
+        )
+            __builtin_free(inlist.text);
+            inlist.text = __builtin_strdup("f32");
+        elif(
+            inlist.text streq "double"
+        )
+            __builtin_free(inlist.text);
+            inlist.text = __builtin_strdup("f64");
+
+        end
+    end
+end
+
 
 fn codegen cg_tbas_push_template():
     cg_tbas_all_templates = (cg_tbas_template**)__builtin_realloc(
@@ -186,29 +259,32 @@ end
 
 //Define a template. Inner...
 
-@mkbldrn cg_tbas_inner_mktemplate 3 [
+@mkbldrn cg_tbas_inner_mktemplate 4 [
     /*
         our arguments are like this:
-        @cg_tbas_inner_mktemplate IDENT IDENT INTEGER
+        @cg_tbas_inner_mktemplate IDENT IDENT INTEGER INTEGER
     */
     @dupell_inlist
     cgstrll* fakename
     cgstrll* realname
     cgstrll* the_number
+    cgstrll* the_number2
     u64 nargs
+    u64 typed = 0;
     cgsymdecl* the_function_pointer
     
     @foldout_arg fakename inlist_dupe
     @foldout_arg realname inlist_dupe
     @foldout_arg the_number inlist_dupe
+    @foldout_arg the_number2 inlist_dupe
     
     if(fakename == 0 || fakename.d != CG_TOK_IDENT)
         @pprint[
             /       "TBAS ERROR"
             /       "Dest name is INVALID!!!!!"
             /       "Usage:"
-            /       "@cg_tbas_inner_mktemplate destname src_fn nargs"
-            /       "@cg_tbas_inner_mktemplate IDENT IDENT INT_CONST"
+            /       "@cg_tbas_inner_mktemplate destname src_fn nargs typed"
+            /       "@cg_tbas_inner_mktemplate IDENT IDENT INT_CONST INT_CONST"
         ]
         __builtin_exit(1);
     end
@@ -218,8 +294,8 @@ end
             /       "TBAS ERROR"
             /       "Src name is INVALID!!!!!"
             /       "Usage:"
-            /       "@cg_tbas_inner_mktemplate destname src_fn nargs"
-            /       "@cg_tbas_inner_mktemplate IDENT IDENT INT_CONST"
+            /       "@cg_tbas_inner_mktemplate destname src_fn nargs typed"
+            /       "@cg_tbas_inner_mktemplate IDENT IDENT INT_CONST INT_CONST"
         ]
         __builtin_exit(1);
     end
@@ -229,12 +305,24 @@ end
             /       "TBAS ERROR"
             /       "Intlit is INVALID!!!!!"
             /       "Usage:"
-            /       "@cg_tbas_inner_mktemplate destname src_fn nargs"
-            /       "@cg_tbas_inner_mktemplate IDENT IDENT INT_CONST"
+            /       "@cg_tbas_inner_mktemplate destname src_fn nargs typed"
+            /       "@cg_tbas_inner_mktemplate IDENT IDENT INT_CONST INT_CONST"
+        ]
+        __builtin_exit(1);
+    end
+    if(the_number2 == 0 || the_number2.d != CG_TOK_INT_CONST)
+        @pprint[
+            /       "TBAS ERROR"
+            /       "Intlit is INVALID!!!!!"
+            /       "Usage:"
+            /       "@cg_tbas_inner_mktemplate destname src_fn nargs typed"
+            /       "@cg_tbas_inner_mktemplate IDENT IDENT INT_CONST INT_CONST"
         ]
         __builtin_exit(1);
     end
     nargs = __builtin_atou(the_number.text);
+    typed = __builtin_atou(the_number2.text);
+    the_number2:freelist();
     the_function_pointer = (cgsymdecl*)__builtin_retrieve_sym_ptr(realname.text);
     realname:freelist();
     if(the_function_pointer == 0)
@@ -243,8 +331,8 @@ end
             /       "Could not find this function:"
             /       (realname.text)
             /       "Usage:"
-            /       "@cg_tbas_inner_mktemplate destname src_fn nargs"
-            /       "@cg_tbas_inner_mktemplate IDENT IDENT INT_CONST"
+            /       "@cg_tbas_inner_mktemplate destname src_fn nargs typed"
+            /       "@cg_tbas_inner_mktemplate IDENT IDENT INT_CONST INT_CONST"
         ]
         __builtin_exit(1)
     end
@@ -307,21 +395,41 @@ end
     /*
         Based on the arguments passed to the builder, we call get_instance
     */
-    @tokmanip_push_strings[
-        cg_tbas_template* us = cg_tbas_all_templates[our_templateid];
-        u64[1] did_create;
-        cg_tbas_template_instance* hh = us.get_instance(inlist, did_create);
-        cgstrll* retval
-        
-        if(did_create[0])
-            retval = hh.prefix:dupell();
-            retval:push_end(hh.body:dupell());
+    if(typed == 0)
+        @tokmanip_push_strings[
+            cg_tbas_template* us = cg_tbas_all_templates[our_templateid];
+            u64[1] did_create;
+            cg_tbas_template_instance* hh = us.get_instance(inlist, did_create);
+            cgstrll* retval
+            
+            if(did_create[0])
+                retval = hh.prefix:dupell();
+                retval:push_end(hh.body:dupell());
+                return retval;
+            end
+            
+            retval = (hh.body:dupell());
             return retval;
-        end
-        
-        retval = (hh.body:dupell());
-        return retval;
-    ]
+        ]
+    else
+        @tokmanip_push_strings[
+            //we must first rectify types....
+            cg_tbas_rectify_types(inlist);
+            cg_tbas_template* us = cg_tbas_all_templates[our_templateid];
+            u64[1] did_create;
+            cg_tbas_template_instance* hh = us.get_instance(inlist, did_create);
+            cgstrll* retval
+            
+            if(did_create[0])
+                retval = hh.prefix:dupell();
+                retval:push_end(hh.body:dupell());
+                return retval;
+            end
+            
+            retval = (hh.body:dupell());
+            return retval;
+        ]
+    end
     
     @pushqtok "]"
     return retval;
@@ -354,6 +462,7 @@ end
     cgstrll* second_portion
     cgstrll* third_portion = 0;
     u64 nargs = 0;
+    u64 is_typed = 0;
     if(
         inlist_dupe == 0 || 
         inlist_dupe.d != CG_TOK_IDENT
@@ -365,6 +474,18 @@ end
         goto explain_syntax
     end
     @foldout_arg name inlist_dupe
+    
+    //check for the "typed" arg...
+    if(inlist_dupe != 0 &&
+        inlist_dupe.d == CG_TOK_IDENT &&
+        inlist_dupe.text streq "typed"
+    )
+        is_typed = 1;
+        cgstrll* r = inlist_dupe.right;
+        __builtin_free(inlist_dupe.text);
+        __builtin_free((u8*)inlist_dupe);
+        inlist_dupe = r;
+    end
     
     if(
         inlist_dupe == 0 || 
@@ -469,6 +590,8 @@ end
     if(1)
         char[50] buf
         __builtin_utoa(buf, nargs);
+        @pushqtok [buf]
+        __builtin_utoa(buf, is_typed);
         @pushqtok [buf]
     end
     
