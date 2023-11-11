@@ -18,7 +18,13 @@
     <!-- Index-->
     <hr>
     <div style="margin-left:10%;">
+        <a href="../index.html">Main page</a><br>
+    </div>
+    <hr>
+    <div style="margin-left:10%;">
         <a href="#dedicatory">Dedicatory</a><br>
+        <a href="#keywords">Keyword List</a><br>
+        <a href="#builtins">Builtin Function List</a><br>
         <a href="#license">License</a><br>
     </div>
     <hr>
@@ -27,16 +33,207 @@
     <center>
     <h3>All Glory to the Lord Jesus Christ, who is, and who was, and who is to come, for ever. Amen.</h3>
     </center>
+    
     <hr>
     <center>
-    <h2 id="dedicatory">Dedicatory</h2>
+    <h2 id="keywords">Keyword List</h2>
     </center>
     <hr>
-    <p>"Hear, O LORD, when I cry with my voice: have mercy also upon me, and answer me."</p>
-    <p>-Ps 27:7</p>
+    <p>Please note that aliases are listed on the same line separated by hyphens.</p>
+    <h3>Keywords</h3>
+    <pre><code>
+    fn - function - func - procedure - proc
+    cast
+    u8 - char - uchar - byte - ubyte
+    i8 - schar - sbyte
+    u16 - ushort
+    i16 - short - sshort
+    u32 - uint - ulong
+    i32 - int - sint - long - slong
+    u64 - ullong - qword - uqword - uptr
+    i64 - llong - sllong - sqword
+    f32 - float
+    f64 - double
+    noexport
+    break
+    data
+    string
+    end
+    continue
+    if
+    elif - elseif
+    else
+    while
+    for
+    goto - jump
+    switch
+    return
+    tail
+    sizeof
+    static
+    pub - public
+    predecl
+    struct - class
+    union
+    method
+    codegen
+    constexpri
+    constexprf
+    pure
+    inline
+    atomic
+    volatile
+    getfnptr
+    callfnptr
+    getglobalptr
+    asm
+    </code></pre>
+    <h3>Operators</h3>
+    <p>Please note that aliases are listed on the same line separated by commas.</p>
+    <pre><code>
+    ++
+    --
+    :=
+    :
+    <=
+    <
+    >=
+    >
+    != , neq
+    == , === , eq
+    ->
+    .&
+    &
+    &&
+    |
+    ||
+    >>
+    <<
+    ~
+    !
+    .
+    &
+    *
+    +
+    -
+    /
+    %
+    <
+    >
+    ^
+    |
+    ? //unused
+    =
+    @
+    streq
+    strneq
+    </code></pre>
+    <p><i>Note that comma is *NOT* an operator.</i></p>
+    <h3>Special Reserved Characters and sequences</h3>
+    <pre><code>
+    "string literals"
+    '\n'
+    #
+    #include ""
+    #include <>
+    #define
+    #undef
+    #guard
+    ,
+    ;
+    </code></pre>
+    <h3>String literal and character literal escape sequences</h3>
+    <pre><code>
+    \a - ASCII 0x7
+    \b - ASCII 0x8
+    \e - ASCII 0x1B
+    \f - ASCII 0xC
+    \n - ASCII 0xA
+    \r - ASCII 0xD
+    \t - ASCII 0x9
+    \v - ASCII 0xB
+    //the following escape sequences simply emit the second character.
+    \\ - ASCII 0x5C
+    \' - ASCII 0x27
+    \" - ASCII 0x22
+    \? - ASCII 0x3F
+    </code></pre>
+    
     <hr>
-    <p>Seabass, as an idea, a programming language, a working program, and a concept, are all undeserved gifts I have been given. God put it into my hand to build them. For creating heaven and earth in six days, to freely giving us eternal life, to the simple joy of breathing, let all thanks and praise be directed to God our Father and our Lord Jesus Christ. Amen.</p>
-    <p>it must be a pure function accepting two byte*'s and returning a signed integer of the target word size.</p>
+    <center>
+    <h2 id="builtins">Builtin Function List</h2>
+    </center>
+    <hr>
+    <h3>__builtin_emit(byte* data, u64 sz)</h3>
+    <p>TODO</p>
+    <h3>__builtin_open_ofile</h3>
+    <p>TODO</p>
+    <h3>__builtin_close_ofile</h3>
+    <p>TODO</p>
+    <h3>__builtin_read_file</h3>
+    <p>TODO</p>
+    <h3>__builtin_get_ast</h3>
+    <p>TODO</p>
+    <h3>__builtin_consume</h3>
+    <p>TODO</p>
+    <h3>__builtin_gets</h3>
+    <p>TODO</p>
+    <h3>__builtin_puts</h3>
+    <p>TODO</p>
+    <h3>__builtin_peek</h3>
+    <p>TODO</p>
+    <h3>__builtin_getnext</h3>
+    <p>TODO</p>
+    <h3>__builtin_exit</h3>
+    <p>TODO</p>
+    <h3>__builtin_strdup</h3>
+    <p>TODO</p>
+    <h3>__builtin_malloc</h3>
+    <p>TODO</p>
+    <h3>__builtin_getargv</h3>
+    <p>TODO</p>
+    <h3>__builtin_getargc</h3>
+    <p>TODO</p>
+    <h3>__builtin_free</h3>
+    <p>TODO</p>
+    <h3>__builtin_realloc</h3>
+    <p>TODO</p>
+    <h3>__builtin_type_getsz</h3>
+    <p>TODO</p>
+    <h3>__builtin_struct_metadata</h3>
+    <p>TODO</p>
+    <h3>__builtin_validate_function</h3>
+    <p>TODO</p>
+    <h3>__builtin_memcpy</h3>
+    <p>TODO</p>
+    <h3>__builtin_memset</h3>
+    <p>TODO</p>
+    <h3>__builtin_utoa</h3>
+    <p>TODO</p>
+    <h3>__builtin_itoa</h3>
+    <p>TODO</p>
+    <h3>__builtin_ftoa</h3>
+    <p>TODO</p>
+    <h3>__builtin_atof</h3>
+    <p>TODO</p>
+    <h3>__builtin_atou</h3>
+    <p>TODO</p>
+    <h3>__builtin_atoi</h3>
+    <p>TODO</p>
+    <h3>__builtin_peek_is_fname</h3>
+    <p>TODO</p>
+    <h3>__builtin_str_is_fname</h3>
+    <p>TODO</p>
+    <h3>__builtin_parser_push_statement</h3>
+    <p>TODO</p>
+    <h3>__builtin_retrieve_sym_ptr</h3>
+    <p>TODO</p>
+    <h3>__builtin_strll_dupe</h3>
+    <p>TODO</p>
+    <h3>__builtin_strll_dupell</h3>
+    <p>TODO</p>
+    <h3>__builtin_parse_global</h3>
+    <p>TODO</p>
     <hr>
     <center>
     <h2 id="license">License</h2>
