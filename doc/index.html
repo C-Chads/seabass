@@ -43,6 +43,7 @@
         <a href="#memberptr">The Member Pointer Operator</a><br>
         <a href="#getptr">getglobalptr and getfnptr</a><br>
         <a href="#callfnptr">callfnptr</a><br>
+        <a href="#streq">streq and strneq</a><br>
     </div>
     <hr>
     <p>Welcome, conquerors, to the Seabass Metaprogramming language! This html document should serve as an introduction.<br><i>Saying, Blessed are they whose iniquities are forgiven, and whose sins are covered.</i> - Romans 4:7</p>
@@ -529,7 +530,7 @@
             __builtin_free(qq.b); //ensure we don't leak memory...
             qq := qq2;
             qq2.b = __builtin_strdup("I seem to have lost my old string...");
-            qq.print();
+            qq:print();
             qq2.print();
         end
         return	
@@ -552,6 +553,13 @@
         <li>Operator overloading</li>
     </ol>
     <p>It <i>does</i> have move semantics. There is a dedicated "move" operator, <code>:=</code> which copies one pointed-to object into another.</p>
+    <p>Other errata:</p>
+    <ul>
+        <li>method invocation syntax may be done lua-style (myClass:myMethod()) or C++ style (myClass.myMethod())</li>
+        <li>Objects live for the entire duration of their scope, not just from where they were
+        declared in their scope. That is to say- an object's constructor is called <i>before its declaration</i>,
+        at the beginning of the scope.</li>
+    </ul>
     <hr>
     <center>
     <h2 id="pointers">Pointer Semantics</h2>
@@ -1222,6 +1230,25 @@
     //call the function...
     float x = callfnptr[template_function](mypointer)(3, "Hello World!");
     </code></pre>
+    <hr>
+    <center>
+    <h2 id="streq">streq and strneq</h2>
+    </center>
+    <hr>
+    <p>Seabass provides two dedicated operators for comparing C-strings- streq and strneq.</p>
+    <p>if they are used in target code, the translation unit must provide a compatible</p>
+    <p>declaration of <code>impl_streq</code> which, for 64 bit targets, has this prototype:</p>
+    <pre><code>
+    fn inline pure impl_streq(u8* a, u8* b)->i64;
+    </code></pre>
+    <p>on 32 bit platforms, it would return i32 (int), and for 16 bit it would return i16 (short).</p>
+    <p>This is the implementation used in the `toc` usermode standard library:</p>
+    <pre><code>
+    fn inline pure impl_streq(char* a, char* b)->TGT_IMAX:
+        return strcmp(a,b) == 0
+    end
+    </code></pre>
+    <p>it must be a pure function accepting two byte*'s and returning a signed integer of the target word size.</p>
     <p></p>
     <p></p>
     <p></p>

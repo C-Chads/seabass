@@ -238,7 +238,8 @@ static double cexpr_double_parse_ident(){
 
 static int64_t cexpr_constexpri(){
     int64_t rval;
-    require(peek_match_keyw("constexpri"),"cexpr_constexpri requires the keyword sizeof");
+    //@callsite
+    //require(peek_match_keyw("constexpri"),"cexpr_constexpri requires the keyword sizeof");
     consume();
     require(peek()->data == TOK_OPAREN, "cexpr_constexpri requires opening parentheses");
     consume();
@@ -252,7 +253,8 @@ static int64_t cexpr_constexpri(){
 }
 static double cexpr_constexprf(){
     double rval;
-    require(peek_match_keyw("constexprf"),"cexpr_constexprf requires the keyword sizeof");
+    //@callsite
+    //require(peek_match_keyw("constexprf"),"cexpr_constexprf requires the keyword sizeof");
     consume();
     require(peek()->data == TOK_OPAREN, "cexpr_constexprf requires opening parentheses");
     consume();
