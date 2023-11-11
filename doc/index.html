@@ -1043,6 +1043,10 @@
     1<<31,1<<32;
     </code></pre>
     <p>This allows you to store arbitrary data into a program.</p>
+    <p>Note that data statements may also store strings:</p>
+    <pre><code>
+    data public string "Hello world!";
+    </code></pre>
     <hr>
     <center>
     <h2 id="qualifiers">Symbol Qualifiers</h2>
@@ -1066,7 +1070,6 @@
             essentially Seabass's version of C's 'extern'. It is never valid to include
             a function or method definition in a predeclaration.
         </li>
-        
         <li><b>noexport</b><br>
             Applies to: functions, methods, global variables, data statements, <i>classes, structs</i><br>
             <i><b>What does it do?</b></i><br>
@@ -1087,13 +1090,36 @@
             Marks the symbol to be invisible in other compilation units. This is
             the default.
         </li>
-        <li><b></b><br>
+        <li><b>atomic</b><br>
+            Applies to: global variables<br>
+            <i><b>What does it do?</b></i><br>
+            All reads and writes to the symbol shall be atomic, i.e., you will
+            never have a partial read or write, even with multiple threads accessing
+            the same variable.
         </li>
-        <li><b></b><br>
+        <li><b>volatile</b><br>
+            Applies to: global variables<br>
+            <i><b>What does it do?</b></i><br>
+            No compiler optimizations may be done on the variable (or for pointers:
+            the variable pointed to).
         </li>
-        <li><b></b><br>
+        <li><b>inline</b><br>
+            Applies to: functions, methods<br>
+            <i><b>What does it do?</b></i><br>
+            Indicates to the compiler that the function/method should be inlined,
+            rather than be separate code.
         </li>
-        <li><b></b><br>
+        <li><b>pure</b><br>
+            Applies to: functions, methods<br>
+            <i><b>What does it do?</b></i><br>
+            Indicates that the function/method does not alter any global state
+            accessible by the program, and always performs the same operation
+            every single time. I.e., a "Pure function".
+        </li>
+        <li><b>union</b><br>
+            Applies to: structs, classes<br>
+            <i><b>What does it do?</b></i><br>
+            indicates that all members of the struct should share the same memory.
         </li>
         <li><b></b><br>
         </li>

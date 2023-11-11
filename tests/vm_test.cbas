@@ -729,6 +729,8 @@ data codegen int myintegers 0,1,2,3+4;
 
 atomic int myatom = 3;
 
+data public string "Hello world!";
+
 function inline pure impl_streq(char* a, char* b)->i32:
 	int i
 	i = 0;
