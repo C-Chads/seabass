@@ -71,7 +71,7 @@ codegen u64 whygen = 0;
         [__WHY__()]
         @global
         fn codegen __WHY__()->TYPE:
-            return (TYPE)3/(TYPE)2;
+            return (TYPE)15/(TYPE)7;
         end
     ][
         TYPE
@@ -111,5 +111,12 @@ fn codegen codegen_main():
     f32 g = @domath[float];
     int q = @domath[i32];
     int q2 = @domath[int];
+    @pprint[
+        /   "Here's our math:"
+        /int (f*100)
+        /int (g*100)
+        /int (q*100)
+        /int (q2*100)
+    ]
     //while(1) end
 end
