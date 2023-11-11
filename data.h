@@ -216,7 +216,6 @@ typedef struct stmt{
     char** switch_label_list;
     uint64_t* switch_label_indices; /**/
     uint64_t switch_nlabels; /*how many labels does the switch have in it?*/
-    /*Used for error printing...*/
     int64_t goto_scopediff; /*how many scopes deep does this go?*/
     int64_t goto_vardiff; /*How many local variables have to be popped to achieve the context switch?*/
     int64_t goto_where_in_scope; /*What exact statement are we going to?*/
