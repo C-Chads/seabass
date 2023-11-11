@@ -686,7 +686,15 @@
             <pre><code>
                 fn myfunction(int a, char* b)->mystruct;
             </code></pre>        
-        
+            Note the following "gotchas":
+            <ul>
+                <li>All references to non-pointer structs will be converted to pointer-to-struct. I.e., the following declarations are identical:
+                    <code>procedure myproc(mystruct a)->mystruct;</code><br>
+                    <code>function myproc(mystruct* a)->mystruct;</code><br>
+                    <code>func myproc(mystruct a)->mystruct*;</code><br>
+                    <code>proc myproc(mystruct* a)->mystruct*;</code><br>
+                </li>
+            </ul>
         </li>
         <li></li>
         <li></li>
