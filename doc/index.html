@@ -765,12 +765,12 @@
     <p></p>
     <p></p>
     <p></p>
-    <p></p>
     <hr>
     <center>
     <h2 id="keywords">Keyword List</h2>
     </center>
     <hr>
+    <p>Please note that aliases are listed on the same line separated by hyphens.</p>
     <h3>Keywords</h3>
     <pre><code>
     fn - function - func - procedure - proc
@@ -820,6 +820,7 @@
     asm
     </code></pre>
     <h3>Operators</h3>
+    <p>Please note that aliases are listed on the same line separated by commas.</p>
     <pre><code>
     ++
     --
@@ -901,6 +902,52 @@
     <p><code>goto my_really_long_labelname</code></p>
     <p><code>jump my_really_long_labelname</code></p>
     <p><code>switch(1+1) mylabel mylabel2 my_really_long_labelname;</code></p>
+    <p>Note that goto may not enter a scope, It can only jump within its own scope or a parent scope.</p>
+    <pre><code>
+    goto mylabel1 //ERROR
+    goto mylabel2 //ERROR
+    goto mylabel2_5 //ERROR
+    goto mylabel3 //ERROR
+    goto mylabel4 //OK
+    if(1)
+        jump mylabel1 //OK
+
+        :mylabel1
+
+        jump mylabel3 //OK
+        goto mylabel4 //OK
+        goto mylabel2 //ERROR
+        jump mylabel2_5 //ERROR
+        if(1)
+            :mylabel2
+            goto mylabel1   //OK
+            goto mylabel2   //OK
+            jump mylabel3   //OK
+            goto mylabel4   //OK
+            goto mylabel2_5 //ERROR
+        elif(1)
+            goto mylabel1   //OK
+            goto mylabel2   //ERROR
+            goto mylabel2_5 //OK
+            jump mylabel3   //OK
+            goto mylabel4   //OK
+            :mylabel2_5
+            jump mylabel1   //OK
+            jump mylabel2   //ERROR
+            jump mylabel2_5 //OK
+            jump mylabel3   //OK
+            goto mylabel4   //OK
+        end
+        :mylabel3
+        jump mylabel1 //OK
+        jump mylabel2 //ERROR
+        jump mylabel2_5 //ERROR
+        goto mylabel3 //OK
+        jump mylabel4 //OK
+    end
+    :mylabel4
+    </code></pre>
+    <p></p>
     <p></p>
     <p></p>
 
@@ -909,5 +956,11 @@
     <h2 id="switch">Switch Statement</h2>
     </center>
     <hr>
+    <p></p>
+    <p></p>
+    <p></p>
+    <p></p>
   </body>
 </html>
+
+
