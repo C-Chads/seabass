@@ -898,7 +898,7 @@
     <p><code>:mylabel</code></p>
     <p><code>:mylabel2</code></p>
     <p><code>:my_really_long_labelname</code></p>
-    <p>They are used by `goto` and `switch`.</p>
+    <p>They are used by `goto`/`jump` and `switch`.</p>
     <p><code>goto my_really_long_labelname</code></p>
     <p><code>jump my_really_long_labelname</code></p>
     <p><code>switch(1+1) mylabel mylabel2 my_really_long_labelname;</code></p>
@@ -956,8 +956,73 @@
     <h2 id="switch">Switch Statement</h2>
     </center>
     <hr>
-    <p></p>
-    <p></p>
+    <p>Seabass has a switch statement that works very differently from C. It is a pure unchecked dispatch table. It accepts an expression (delimited by parentheses) and then a sequence of goto labels. You may optionally insert commas between the labels.</p>
+    <p>Depending on the value of the expression, the switch statement will jump to one of the entries in the list.</p>
+    <pre><code>
+        u64 v = cast(u64)get_user_input("Please enter an integer:") % 10;
+        switch(v) is0, is1, is2, is3, is4, is5, is6, is7, is8, is9, is10;
+        :is0
+            println("Got 0!");
+            goto after
+        :is1
+            println("Got 1!");
+            goto after
+        :is2
+            println("Got 2!");
+            goto after
+        :is3
+            println("Got 3!");
+            goto after
+        :is4
+            println("Got 4!");
+            goto after
+        :is5
+            println("Got 5!");
+            goto after
+        :is6
+            println("Got 6!");
+            goto after
+        :is7
+            println("Got 7!");
+            goto after
+        :is8
+            println("Got 8!");
+            goto after
+        :is9
+            println("Got 9!");
+        :after
+        println("Goodbye!")
+        sys_exit(0);
+    </code></pre>
+    <p>The labels in a switch statement must all be in the same scope as the switch statement- it is not valid for them to be in a parent or child scope. Also note that switch statements in seabass are <i>unchecked</i> meaning that invalid values (negative or >= number of labels in the statement) will result in <b><i>undefined behavior</i></b>.</p>
+    <pre><code>
+    :lab0
+    switch(1) lab0, lab8, lab9; //OK, goto lab8
+    switch(7) lab0, lab8, lab9; //UNDEFINED BEHAVIOR
+    switch(1) lab0, lab1, lab2; //ERROR!
+    for(1,1,1)
+        :lab1
+        :lab2
+        switch(0) lab0, lab8, lab9; //ERROR!
+        switch(3) lab1 lab2 lab5 lab6 lab7; //OK, goto lab6
+        switch(3) lab1 lab2, lab5; //UNDEFINED BEHAVIOR
+        switch(1) lab1, lab2, lab3, lab4; //ERROR!
+        if(1)
+            :lab3
+            :lab4
+            switch(1) lab3, lab4; //OK, goto lab4
+            switch(1) lab1 lab2; //ERROR!
+        end
+        :lab5
+        :lab6
+        switch(1) lab1 lab2 lab5 lab6 lab7; //OK, goto lab2
+        :lab7
+    end
+    :lab8
+    :lab9
+    switch(2) lab0, lab8, lab9; //OK, goto lab9
+    </code></pre>
+    <p><i>Please study the example above carefully</i></p>
     <p></p>
     <p></p>
   </body>
