@@ -151,10 +151,10 @@ data int myintegers
 16,17,18,19,20,21,22,23,24,25,26,27,
 1<<31,1<<32;
 
-data float myfloats 3.0, 3.14159, -14.7;
+pub int myint = 1;
+data pub float myfloats 3.0, 3.14159, -14.7;
 //data double mydoubles 3.57e20, 3.57e-20;
 
-pub int myint = 1;
 int myint2 = 2;
 
 
