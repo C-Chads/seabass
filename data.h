@@ -165,9 +165,7 @@ static inline int sym_is_method(symdecl* s){
     return 0;
 }
 
-/*
-    Scopes, or classes.
-*/
+
 typedef struct scope{
     symdecl* syms;
     uint64_t nsyms;
@@ -232,7 +230,6 @@ typedef struct stmt{
     uint64_t linenum;
     uint64_t colnum;
     char* filename;
-    /*Code generator data.*/
 } stmt;
 typedef struct{
     scope_astexec* whereami; /*scope this statement is in. Not owning.*/
@@ -339,7 +336,6 @@ typedef struct expr_node{
     uint64_t is_implied;
     uint64_t was_struct_var;
     type type_to_get_size_of; //sizeof and cast both use this.
-    /*Code generator data.*/
 }expr_node;
 
 typedef struct expr_node_astexec{

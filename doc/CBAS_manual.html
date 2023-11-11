@@ -25,6 +25,7 @@
         <a href="#dedicatory">Dedicatory</a><br>
         <a href="#keywords">Keyword List</a><br>
         <a href="#builtins">Builtin Function List</a><br>
+        <a href="#reflect">Compiler internal types</a><br>
         <a href="#license">License</a><br>
     </div>
     <hr>
@@ -234,6 +235,136 @@
     <p>duplicate a strll and all its right-hand children into a new linked list of strll's.</p>
     <h3>__builtin_parse_global()</h3>
     <p>parse a single global symbol.</p>
+    <hr>
+    <center>
+    <h2 id="reflect">Compiler internal data types</h2>
+    </center>
+    <hr>
+    <pre>
+    <code>
+    /*the "type" struct.*/
+    typedef struct type{
+        uint64_t basetype; /*value from the above enum. Not allowed to be BASE_FUNCTION.*/
+        uint64_t pointerlevel;
+        uint64_t arraylen;
+        uint64_t structid; /*from the list of typedecls.*/
+        uint64_t is_lvalue; /*useful in expressions.*/
+    
+        /*everything above was for the return type if this is a function...*/
+        uint64_t funcid; /*if this is a function, what is the function ID? From the list of symdecls.*/
+        uint64_t is_function; /*
+            is this a function? if this is set, 
+            all the "normal" type information here is 
+            interpreted as describing the 
+            return type.
+        */
+        char* membername; /*used for struct members and function arguments*/
+        /*Code generator data.*/
+    }type;
+    
+    typedef struct{
+        char* name;
+        struct type* members;
+        uint64_t nmembers;
+        uint64_t is_incomplete; /*incomplete struct declaration*/
+        uint64_t is_noexport;
+        uint64_t is_union;
+        uint64_t algn; //alignment
+        /*Code generator data.*/
+    } typedecl;
+    
+    
+    //Metadata on a typedecl which tells us how it behaves in OOP land.
+    typedef struct typedecl_oop_metadata{
+        int64_t ctor_id; //what is its ctor_id? -1 if it doesn't exist.
+        int64_t dtor_id; //same thing again...
+        int64_t have_checked; //have we actually checked to see if this type has type metadata?
+                              //The type metadata allows us to 
+    } typedecl_oop_metadata;
+    
+    
+    typedef struct{
+        type t;
+        char* name;
+        type* fargs[MAX_FARGS]; /*function arguments*/
+        uint64_t nargs; 		/*Number of arguments to function*/
+        void* fbody; /*type is scope*/
+        uint8_t* cdata;
+        uint64_t cdata_sz;
+        uint64_t is_pub;
+        uint64_t is_incomplete; /*incomplete symbol, such as a predeclaration or extern.*/
+        uint64_t is_codegen; /*Compiletime only?*/
+        uint64_t is_impure; /*exactly what it says*/
+        uint64_t is_pure;
+        uint64_t is_inline;
+        uint64_t is_atomic; /*only for global variables.*/
+        uint64_t is_volatile; /*again, only for global variables.*/
+        uint64_t is_impure_globals_or_asm; /*contains impure behavior.*/
+        uint64_t is_impure_uses_incomplete_symbols; /*uses incomplete symbols.*/
+        uint64_t is_data; /*only set for data.*/
+        uint64_t is_noexport;
+    } symdecl;
+    
+    typedef struct scope{
+        symdecl* syms;
+        uint64_t nsyms;
+        void* stmts; /**/
+        uint64_t nstmts;
+        uint64_t is_fbody;
+        uint64_t is_loopbody;
+    } scope;
+    
+    #define STMT_MAX_EXPRESSIONS 3
+    typedef struct stmt{
+        scope* whereami; /*scope this statement is in. Not owning.*/
+        scope* myscope; /*if this statement has a scope after it (while, for, if, etc) then this is where it goes.*/
+        uint64_t kind; /*What type of statement is it?*/
+        /*expressions belonging to this statement.*/
+        void* expressions[STMT_MAX_EXPRESSIONS];
+        uint64_t nexpressions;
+        struct stmt* referenced_loop; /*
+            break and continue reference 
+            a loop construct that they reside in.
+    
+            What loop exactly has to be determined in a second pass,
+            since the stmt lists are continuously re-alloced.
+    
+            Goto also uses this, for its jump target.
+        */
+        uint64_t symid; /*for tail.*/
+        char* referenced_label_name; /*goto gets a label. tail gets a function*/
+        char** switch_label_list;
+        uint64_t* switch_label_indices; /**/
+        uint64_t switch_nlabels; /*how many labels does the switch have in it?*/
+        /*Used for error printing...*/
+        int64_t goto_scopediff; /*how many scopes deep does this go?*/
+        int64_t goto_vardiff; /*How many local variables have to be popped to achieve the context switch?*/
+        int64_t goto_where_in_scope; /*What exact statement are we going to?*/
+        uint64_t linenum;
+        uint64_t colnum;
+        char* filename;
+    } stmt;
+    
+    #define MAX_FARGS 64
+    typedef struct expr_node{
+        type t;
+        uint64_t kind;
+        double fdata;
+        uint64_t idata;
+        struct expr_node* subnodes[MAX_FARGS];
+        uint64_t symid;
+        uint64_t fnptr_nargs;
+        uint64_t constint_propagator; //for propagating constant integers
+        char* symname;  /*if method: this is unmangled. */
+        char* method_name; /*if method: this is mangled. */
+        uint64_t is_global_variable;
+        uint64_t is_function;
+        uint64_t is_implied;
+        uint64_t was_struct_var;
+        type type_to_get_size_of; //sizeof and cast both use this.
+    }expr_node;
+    </code>
+    </pre>
     <hr>
     <center>
     <h2 id="license">License</h2>
