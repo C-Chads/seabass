@@ -206,33 +206,33 @@
     <p>Invoke the code validator on a symbol. This should never be done twice.</p>
     <h3>__builtin_memcpy(u8* dst,u8* src,u64 sz)</h3>
     <p>copy the contents of memory from one place to another.</p>
-    <h3>__builtin_memset</h3>
+    <h3>__builtin_memset(u8* buf, u64 val, u64 sz)</h3>
     <p>fill memory with a byte value.</p>
-    <h3>__builtin_utoa</h3>
+    <h3>__builtin_utoa(byte* dest, u64 val)</h3>
     <p>convert unsigned 64 bit integer to string.</p>
-    <h3>__builtin_itoa</h3>
+    <h3>__builtin_itoa(byte* dest, i64 val)</h3>
     <p>convert signed 64 bit integer to string.</p>
-    <h3>__builtin_ftoa</h3>
+    <h3>__builtin_ftoa(byte* dest, f64 val)</h3>
     <p>convert double to string. use a large buffer.</p>
-    <h3>__builtin_atof</h3>
+    <h3>__builtin_atof(byte* txt)->f64</h3>
     <p>convert string to double.</p>
-    <h3>__builtin_atou</h3>
+    <h3>__builtin_atou(byte* txt)->u64</h3>
     <p>convert string to unsigned 64 bit integer.</p>
-    <h3>__builtin_atoi</h3>
+    <h3>__builtin_atoi(byte* txt)->i64</h3>
     <p>convert string to signed 64 bit integer.</p>
-    <h3>__builtin_peek_is_fname</h3>
+    <h3>__builtin_peek_is_fname()->i32</h3>
     <p>check whether the next token is a function's name.</p>
-    <h3>__builtin_str_is_fname</h3>
+    <h3>__builtin_str_is_fname(byte* txt)->i32</h3>
     <p>check whether a string is a function name.</p>
-    <h3>__builtin_parser_push_statement</h3>
-    <p>push a statement onto the end of the current scope.</p>
-    <h3>__builtin_retrieve_sym_ptr</h3>
+    <h3>__builtin_parser_push_statement()->u8*</h3>
+    <p>push a statement onto the end of the current scope. Get pointer to that statement.</p>
+    <h3>__builtin_retrieve_sym_ptr(byte* name)->byte*</h3>
     <p>get a pointer to a symbol by name.</p>
-    <h3>__builtin_strll_dupe</h3>
+    <h3>__builtin_strll_dupe(byte* dupeme)->byte*</h3>
     <p>duplicate a single `strll` node.</p>
-    <h3>__builtin_strll_dupell</h3>
+    <h3>__builtin_strll_dupell(byte* dupeme_and_my_righthand_children)->byte*</h3>
     <p>duplicate a strll and all its right-hand children into a new linked list of strll's.</p>
-    <h3>__builtin_parse_global</h3>
+    <h3>__builtin_parse_global()</h3>
     <p>parse a single global symbol.</p>
     <hr>
     <center>
