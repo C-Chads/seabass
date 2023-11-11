@@ -146,7 +146,22 @@ fn  inline pure impl_streq(char* a, char* b)->i32:
 end
 */
 
-data int myintegers 3, 4, 5, 7, 9, 10, -133+134;
+data int myintegers 
+3, 4, 5, 7, 9, 10, -133+134,
+3, 4, 5, 7, 9, 10, -133+134,
+3, 4, 5, 7, 9, 10, -133+134,
+3, 4, 5, 7, 9, 10, -133+134,
+3, 4, 5, 7, 9, 10, -133+134,
+3, 4, 5, 7, 9, 10, -133+134,
+3, 4, 5, 7, 9, 10, -133+134,
+3, 4, 5, 7, 9, 10, -133+134,
+3, 4, 5, 7, 9, 10, -133+134,
+3, 4, 5, 7, 9, 10, -133+134,
+3, 4, 5, 7, 9, 10, -133+134,
+3, 4, 5, 7, 9, 10, -133+134,
+
+
+;
 
 data float myfloats 3.0, 3.14159, -14.7;
 //data double mydoubles 3.57e20, 3.57e-20;
@@ -394,7 +409,14 @@ fn pub main()->int:
         /   "Check out this sizeof:"
         /int (sizeof(int[3]))
     ]
-    
+    if(1)
+        u64 i
+        for(i = 0; i < 20; i++)
+            @cpprint[
+                /int(myintegers[i])
+            ]
+        end
+    end
 end
 /*
 fn ee():
