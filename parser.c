@@ -645,6 +645,7 @@ static void parse_gvardecl(){
     uint64_t is_atomic = 0;
     uint64_t is_noexport = 0;
     uint64_t is_volatile = 0;
+    uint64_t is_explicit_static = 0;
     int had_equals = 0;
     type t = {0};
     int64_t cval;
@@ -674,12 +675,14 @@ static void parse_gvardecl(){
         }
     if(peek()->data == TOK_KEYWORD)
         if(ID_KEYW(peek()) == ID_KEYW_STRING("pub")){
+            require(!is_explicit_static, "Cannot have public and static, they are opposites!");
             is_pub = 1;
             consume();
             goto gvar_qualifier_top;
         }
     if(peek()->data == TOK_KEYWORD)
         if(ID_KEYW(peek()) == ID_KEYW_STRING("static")){
+            is_explicit_static = 1;
             require(!is_pub, "Cannot have public and static, they are opposites!");
             is_pub = 0;
             consume();
@@ -887,6 +890,7 @@ static void parse_datastmt(){
     uint64_t is_new_symbol = 0;
     uint64_t is_codegen = 0;
     uint64_t is_noexport = 0;
+    uint64_t is_explicit_static = 0;
     uint64_t symid;
     /*Checked at callsite...
     require(peek()->data == TOK_KEYWORD, "data statement must begin with \"data\" ");
@@ -917,6 +921,7 @@ static void parse_datastmt(){
         }
     if(peek()->data == TOK_KEYWORD)
         if(ID_KEYW(peek()) == ID_KEYW_STRING("pub")){
+            require(!is_explicit_static, "Cannot have public and static at the same time! They are opposites!");
             is_pub = 1;
             consume();
             goto data_qualifiers_top;
@@ -924,6 +929,7 @@ static void parse_datastmt(){
     if(peek()->data == TOK_KEYWORD)
         if(ID_KEYW(peek()) == ID_KEYW_STRING("static")){
             require(!is_pub, "Cannot have public and static at the same time! They are opposites!");
+            is_explicit_static = 1;
             is_pub = 0;
             consume();
             goto data_qualifiers_top;
@@ -1260,8 +1266,10 @@ void parse_fn(int is_method){
     uint64_t is_codegen = 0;
     uint64_t is_pure = 0;
     uint64_t is_inline = 0;
+    uint64_t is_explicit_static = 0;
     uint64_t symid;
     uint64_t nargs = 0;
+    
     uint64_t k;
     t.basetype = BASE_VOID; //made explicit...
     set_is_codegen(0);
@@ -1302,6 +1310,7 @@ void parse_fn(int is_method){
         }
     if(peek()->data == TOK_KEYWORD)
         if(ID_KEYW(peek()) == ID_KEYW_STRING("pub")){
+            require(!is_explicit_static, "Cannot have public and static, they are opposites!");
             consume();
             is_pub = 1;
             goto fn_qualifier_top;
@@ -1310,6 +1319,7 @@ void parse_fn(int is_method){
         if(ID_KEYW(peek()) == ID_KEYW_STRING("static")){
             require(!is_pub, "Cannot have public and static, they are opposites!");
             is_pub = 0;
+            is_explicit_static = 1;
             consume();
             goto fn_qualifier_top;
         }
