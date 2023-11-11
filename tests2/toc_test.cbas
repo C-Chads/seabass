@@ -157,6 +157,19 @@ data pub float myfloats 3.0, 3.14159, -14.7;
 
 int myint2 = 2;
 
+class vec4
+    float[4] d
+    16
+end
+class mat4
+    union
+    float[16] d
+    vec4[4] columns
+    32
+end
+
+
+
 
 
 data pub string mystring "AAAAThis is a string! I wonder what the list character is?";
@@ -330,6 +343,8 @@ fn pub main()->int:
         /itoa ((getglobalptr(my_bbbs)+24).a)
         /   "Interpreted as a float, this is..."
         /itoa ((getglobalptr(my_bbbs)+24).b)
+        /   "What happens if we index myintegers?"
+        /itoa (getglobalptr(myintegers)[3])
     ]
     ((getglobalptr(my_bbbs)+24).b) = 25.3;
     @cpprint[
@@ -403,6 +418,20 @@ fn pub main()->int:
             @cpprint[
                 /int(myintegers[i])
             ]
+        end
+    end
+    
+    //later...
+    if(1)
+        mat4 mymat4;
+        f32* p;
+        float* q;
+        p = mymat4.&d;
+        q = mymat4.columns[0].&d;
+        if(p == q)
+            println("Identical!");
+        else
+            println("Not Identical!");
         end
     end
 end

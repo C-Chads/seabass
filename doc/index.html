@@ -39,6 +39,9 @@
         <a href="#switch">Switch Statement</a><br>
         <a href="#datastmt">Data Statement</a><br>
         <a href="#qualifiers">Symbol Qualifiers</a><br>
+        <a href="#alignment">Alignment</a><br>
+        <a href="#memberptr">The Member Pointer Operator</a><br>
+        <a href="#getptr">getglobalptr and getfnptr</a><br>
     </div>
     <hr>
     <p>Welcome, conquerors, to the Seabass Metaprogramming language! This html document should serve as an introduction.<br><i>Saying, Blessed are they whose iniquities are forgiven, and whose sins are covered.</i> - Romans 4:7</p>
@@ -468,7 +471,7 @@
     <p>For convenience, Seabass has several features from Object Oriented programming:</p>
     <ol>
         <li>the `class` keyword as an alias for `struct`.</li>
-        <li>methods- functions invoked on a struct/class which are specific to that class/struct.</li>
+        <li>methods- functions invoked on a struct/class which are specific to that class/struct. 'this' is passed as a secret first argument- a pointer to the object the method was invoked on.</li>
         <li>Automatic constructors and destructors- Functions which are invoked on a struct when it first appears in a scope, and when it disappears.</li>
     </ol>
     <p>Here is a small example program (using entirely codegen code) which demonstrates object oriented programming in Seabass:</p>
@@ -1117,15 +1120,81 @@
             every single time. I.e., a "Pure function".
         </li>
         <li><b>union</b><br>
-            Applies to: structs, classes<br>
+            Applies to: <i>structs, classes</i><br>
             <i><b>What does it do?</b></i><br>
-            indicates that all members of the struct should share the same memory.
-        </li>
-        <li><b></b><br>
-        </li>
-        <li><b></b><br>
+            indicates that all members of the struct/class should share the same memory.
         </li>
     </ul>
+    <p>Please note that struct/class qualifiers are inserted inside the body of the struct,
+    rather than before the word struct.</p>
+    <pre><code>
+    class myclass
+        noexport //this struct should not be exported.
+        union //this struct is a union- all members should share the same memory.
+        float[4] fmem
+        int[4] imem
+    end
+    </code></pre>
+    <hr>
+    <center>
+    <h2 id="alignment">Alignment</h2>
+    </center>
+    <hr>
+    <p>Seabass allows you to specify the alignment requirement of
+    a struct/class by entering an integer somewhere in the body
+    of the struct.</p>
+    <pre><code>
+    class vec4
+        16 //16 byte alignment
+        float[4] d
+    end
+    class mat4
+        union
+        float[16] d
+        vec4[4] columns
+        32 //32 byte alignment
+    end
+    </code></pre>
+    <p>Please note that the codegen environment <i><b>ignores</b></i> all alignment
+    specifiers of structs/classes. Classes and structs used in the codegen environment
+    are considered to have alignment 1.</p>
+    <hr>
+    <center>
+    <h2 id="memberptr">The Member Pointer Operator</h2>
+    </center>
+    <hr>
+    <p>It is possible to obtain the address of any struct/class member
+    in Seabass using the <code>.&</code> operator:</p>
+    <pre><code>
+    class vec4
+        float[4] d
+        16
+    end
+    class mat4
+        union
+        float[16] d
+        vec4[4] columns
+        32
+    end
+    
+    //later...
+    mat4 mymat4;
+    f32* p;
+    float* q;
+    p = mymat4.&d;
+    q = mymat4.columns[0].&d;
+    if(p == q)
+        println("Identical!");
+    else
+        println("Not Identical!");
+    end
+    </code></pre>
+    <hr>
+    <center>
+    <h2 id="getptr">getglobalptr and getfnptr</h2>
+    </center>
+    <hr>
+    <p>In seabass, you can retrieve a pointer to any global variable</p>
     <p></p>
     <p></p>
     <p></p>
