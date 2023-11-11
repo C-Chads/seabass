@@ -165,75 +165,75 @@
     </center>
     <hr>
     <h3>__builtin_emit(byte* data, u64 sz)</h3>
-    <p>TODO</p>
-    <h3>__builtin_open_ofile</h3>
-    <p>TODO</p>
-    <h3>__builtin_close_ofile</h3>
-    <p>TODO</p>
-    <h3>__builtin_read_file</h3>
-    <p>TODO</p>
-    <h3>__builtin_get_ast</h3>
-    <p>TODO</p>
-    <h3>__builtin_consume</h3>
-    <p>TODO</p>
-    <h3>__builtin_gets</h3>
-    <p>TODO</p>
-    <h3>__builtin_puts</h3>
-    <p>TODO</p>
-    <h3>__builtin_peek</h3>
-    <p>TODO</p>
-    <h3>__builtin_getnext</h3>
-    <p>TODO</p>
-    <h3>__builtin_exit</h3>
-    <p>TODO</p>
-    <h3>__builtin_strdup</h3>
-    <p>TODO</p>
-    <h3>__builtin_malloc</h3>
-    <p>TODO</p>
-    <h3>__builtin_getargv</h3>
-    <p>TODO</p>
-    <h3>__builtin_getargc</h3>
-    <p>TODO</p>
-    <h3>__builtin_free</h3>
-    <p>TODO</p>
-    <h3>__builtin_realloc</h3>
-    <p>TODO</p>
-    <h3>__builtin_type_getsz</h3>
-    <p>TODO</p>
-    <h3>__builtin_struct_metadata</h3>
-    <p>TODO</p>
-    <h3>__builtin_validate_function</h3>
-    <p>TODO</p>
-    <h3>__builtin_memcpy</h3>
-    <p>TODO</p>
+    <p>emit binary data to the currently opened output file, opened with open_ofile.</p>
+    <h3>__builtin_open_ofile(byte*)->i32</h3>
+    <p>open the output file.</p>
+    <h3>__builtin_close_ofile()</h3>
+    <p>close the output file.</p>
+    <h3>__builtin_read_file(byte* fname, u64* len)->u64*</h3>
+    <p>read the entire contents of a file and return the contents as a string. returns NULL on failure.</p>
+    <h3>__builtin_get_ast()->u64*</h3>
+    <p>get a pointer to an internal object in the compiler, which contains pointers to the parsed AST.</p>
+    <h3>__builtin_consume()->u64*</h3>
+    <p>consume a token.</p>
+    <h3>__builtin_gets(byte* buf)</h3>
+    <p>get string input from stdin.</p>
+    <h3>__builtin_puts(byte* string_to_print)</h3>
+    <p>write string output to stdout.</p>
+    <h3>__builtin_peek()->u64*</h3>
+    <p>get a pointer to the next token. guaranteed not to be null.</p>
+    <h3>__builtin_getnext()->u64*</h3>
+    <p>get a pointer to the variable with the address to the next token, `strll**`.</p>
+    <h3>__builtin_exit(int code)</h3>
+    <p>terminate compilation early.</p>
+    <h3>__builtin_strdup(byte* str)->byte*</h3>
+    <p>duplicate a c-string on the heap.</p>
+    <h3>__builtin_malloc(u64 sz)->byte*</h3>
+    <p>allocate heap memory.</p>
+    <h3>__builtin_getargv()->byte**</h3>
+    <p>retrieve the calling arguments to `cbas`.</p>
+    <h3>__builtin_getargc()->i32</h3>
+    <p>retrieve the number of calling arguments to `cbas`.</p>
+    <h3>__builtin_free(byte*)</h3>
+    <p>free allocated heap memory.</p>
+    <h3>__builtin_realloc(u8* mem, u64 sz)->u8*</h3>
+    <p>resize a heap memory buffer.</p>
+    <h3>__builtin_type_getsz(u8* type)->u64</h3>
+    <p>get the size of a type as calculated in the codegen environment.</p>
+    <h3>__builtin_struct_metadata(u64 ind)->u64</h3>
+    <p>retrieve metadata about the compiler's internal data structures. used to validate the correctness of the reflection library.</p>
+    <h3>__builtin_validate_function(u8*)</h3>
+    <p>Invoke the code validator on a symbol. This should never be done twice.</p>
+    <h3>__builtin_memcpy(u8* dst,u8* src,u64 sz)</h3>
+    <p>copy the contents of memory from one place to another.</p>
     <h3>__builtin_memset</h3>
-    <p>TODO</p>
+    <p>fill memory with a byte value.</p>
     <h3>__builtin_utoa</h3>
-    <p>TODO</p>
+    <p>convert unsigned 64 bit integer to string.</p>
     <h3>__builtin_itoa</h3>
-    <p>TODO</p>
+    <p>convert signed 64 bit integer to string.</p>
     <h3>__builtin_ftoa</h3>
-    <p>TODO</p>
+    <p>convert double to string. use a large buffer.</p>
     <h3>__builtin_atof</h3>
-    <p>TODO</p>
+    <p>convert string to double.</p>
     <h3>__builtin_atou</h3>
-    <p>TODO</p>
+    <p>convert string to unsigned 64 bit integer.</p>
     <h3>__builtin_atoi</h3>
-    <p>TODO</p>
+    <p>convert string to signed 64 bit integer.</p>
     <h3>__builtin_peek_is_fname</h3>
-    <p>TODO</p>
+    <p>check whether the next token is a function's name.</p>
     <h3>__builtin_str_is_fname</h3>
-    <p>TODO</p>
+    <p>check whether a string is a function name.</p>
     <h3>__builtin_parser_push_statement</h3>
-    <p>TODO</p>
+    <p>push a statement onto the end of the current scope.</p>
     <h3>__builtin_retrieve_sym_ptr</h3>
-    <p>TODO</p>
+    <p>get a pointer to a symbol by name.</p>
     <h3>__builtin_strll_dupe</h3>
-    <p>TODO</p>
+    <p>duplicate a single `strll` node.</p>
     <h3>__builtin_strll_dupell</h3>
-    <p>TODO</p>
+    <p>duplicate a strll and all its right-hand children into a new linked list of strll's.</p>
     <h3>__builtin_parse_global</h3>
-    <p>TODO</p>
+    <p>parse a single global symbol.</p>
     <hr>
     <center>
     <h2 id="license">License</h2>

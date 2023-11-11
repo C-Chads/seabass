@@ -484,6 +484,8 @@ uint64_t get_builtin_arg1_type(char* s){
     if(streq(s, "__builtin_retrieve_sym_ptr")) return BUILTIN_PROTO_U8_PTR;
     if(streq(s, "__builtin_strll_dupe")) return BUILTIN_PROTO_U8_PTR;
     if(streq(s, "__builtin_strll_dupell")) return BUILTIN_PROTO_U8_PTR;
+    if(streq(s, "__builtin_validate_function")) return BUILTIN_PROTO_U8_PTR;
+
     return 0;
 }
 uint64_t get_builtin_arg2_type(char* s){
