@@ -387,6 +387,9 @@
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     PARSE_STMTS_ALLOW_ELSE_CHAIN = (PARSE_STMT*) //this looks ahead...
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ASM = "asm" "(" REPEATEDLY_TRY_METAPROGRAMMING STRING_LITERAL ")"
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    SWITCH = "switch" "(" PARSE_EXPR ")" (REPEATEDLY_TRY_METAPROGRAMMING IDENT ","?)+ ";"
     
     
     </code></pre>
