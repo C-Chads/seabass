@@ -698,13 +698,15 @@
             <li></li>
     </ol>
     <h3>Invalid Compiler States</h3>
-    <p>The main parser for seabass, as well as the codegen code executor, may be written with the following assumptions:</p>
+    <p>The main parser for seabass, as well as the codegen code executor, and all code generators may be written with the following assumptions:</p>
     <ol>
             <li>The system's memory allocators will never fail, i.e. malloc/realloc never return null.</li>
             <li>Codegen code does not define any global symbols that interfere with local symbols while a function is being parsed.</li>
             <li>The placement of a symbol within the symbol table never changes. I.e., once a function/global variable has been given an index into the symbol table, it is permanent and irrevocable.</li>
             <li>The purity of a function will not be altered.</li>
-            <li></li>
+            <li>There are no mutually dependent struct definitions.</li>
+            <li>You never attempt to define a function's body within itself using __builtin_parse_global()</li>
+            <li>Putting the AST into an invalid state (This is far too complex for this document to cover...)</li>
             <li></li>
             <li></li>
     </ol>
