@@ -193,7 +193,7 @@ static inline i32 __CBAS__getdirlist(unsigned char* dirname, unsigned char*** en
         de = readdir(dir);
         if(de == NULL) break;
         entry_listing[0] = realloc(entry_listing[0], sizeof(void*) * ++(nentries[0]));
-        entry_listing[0][nentries[0]-1] = strdup(de->d_name);
+        entry_listing[0][nentries[0]-1] = (unsigned char*)strdup(de->d_name);
     }
     closedir(dir);
     return 0;
@@ -250,7 +250,7 @@ static inline TGT_UMAX __CBAS__L_tmpnam(){
     return L_tmpnam;
 }
 static inline unsigned char* __CBAS__tmpnam(unsigned char* s){
-    return tmpnam(s);
+    return (unsigned char*)tmpnam((char*)s);
 }
 static inline TGT_IMAX __CBAS__SEEK_SET(){
     return SEEK_SET;
