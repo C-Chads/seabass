@@ -482,7 +482,9 @@ you forgot to publish source code for a patch.
 
 Seabass is my gift to you in perpetuity.
 
-Don't think of it as my language- think of it as your language. Because it is.
+Don't think of it as my language- think of it as your language.
+
+## Easy to Compile
 	
 # My Blessing to you
 
