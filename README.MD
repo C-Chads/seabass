@@ -498,7 +498,8 @@ cd tests
 
 If it tells you "codegen_main executed successfully" it worked.
 
-Put `cbas` somewhere like `/usr/local/bin/`
+Put `cbas` somewhere like `/usr/local/bin/` (Somewhere on your PATH
+so you can call it by name)
 
 Want to install the standard library and compile a program to C? Here's how you do it.
 
