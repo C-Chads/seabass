@@ -1788,12 +1788,18 @@ int main(int argc, char** argv){
         goto fail_incompat;
     }
     {
-        char a = 255;
-        short b = 255;
+        unsigned char a = 255;
+        unsigned short b = 255;
         a++;b++;
         if(a != 0 || b != 256){
             puts(compaterr);
-            puts("This platform does not use byte-addressable memory.");
+            puts("This platform does not appear to use byte-addressable memory.");
+            goto fail_incompat;
+        }
+        a = ~a;
+        if(a != 255){
+            puts(compaterr);
+            puts("This platform does not appear to use byte-addressable memory.");
             goto fail_incompat;
         }
     }
