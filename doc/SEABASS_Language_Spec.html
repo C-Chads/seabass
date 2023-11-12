@@ -338,6 +338,11 @@
                         ("(" REPEATEDLY_TRY_METAPROGRAMMING  ")")
                     )
                     (
+                        "->"
+                        REPEATEDLY_TRY_METAPROGRAMMING
+                        PARSE_TYPE
+                    )?
+                    (
                         ( //if predeclaration
                             ";"
                         )
