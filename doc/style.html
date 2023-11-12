@@ -21,7 +21,8 @@
     </div>
     <hr>
     <div style="margin-left:10%;">
-        <a href="#indentation">Indentation</a><br>
+        <a href="#indentation">Indentation and General Style</a><br>
+        <a href="#customsyntax">Custom Syntaxes</a><br>
         <a href="#license">License</a><br>
     </div>
     <hr>
@@ -36,7 +37,7 @@
     </center>
     <hr>
     <center>
-    <h2 id="indentation">Indentation</h2>
+    <h2 id="indentation">Indentation and General Style</h2>
     </center>
     <hr>
     <p>In seabass, you should indent everything inside of a scope one level
@@ -188,6 +189,112 @@
     method pure inline myclass:calc2()->sint:
         return this.a * this.b * this.c * this.d
     end
+    </code>
+    </pre>
+    <p>Where possible, prefer purely lowercase characters. <code>prefer_snake_case</code> over 
+    <code>doingThisThingWhichIsReallyHardToRead</code>. 
+    </p>
+    <pre>
+    <code>
+    class catCatcher
+        64
+        llong catsCaught
+        llong catsToBeDelivered
+    end
+    
+    //versus
+    class cat_catcher
+        64
+        llong cats_caught
+        llong cats_to_be_delivered
+    end
+    </code>
+    </pre>
+    
+    <hr>
+    <center>
+    <h2 id="customsyntax">Custom Syntaxes</h2>
+    </center>
+    <hr>
+    <p>If you are implementing a custom syntax meant to be used
+    inside of seabass functions, please delimit them with
+    square brackets:</p>
+    <pre>
+    <code>
+    fn inline dostuff()->i64:
+        i64 rv
+        //Huh? I can't understand you...
+        //You're coding with a lisp....
+        @coolnewsyntax[
+            ((= rv (+ 3 (* 5 7)))
+            (print "hello world!")
+            (= rv (+ rv 1)))
+        ]
+        //back to normalcy!
+        return rv * 3;
+    end
+    </code>
+    </pre>
+    <p>If you are implementing a full-blown custom language, please
+    make it very obvious where the beginning and ending are.</p>
+    <pre>
+    <code>
+    class v4
+        32
+        float[4] d
+    end
+    
+    //Neat, but I don't know "Cool language"
+    @COOL_LANGUAGE
+        X := v4
+        
+        SUB DOSTUFF
+            GOSUB SETV4
+            FOR I = 0,3:
+                PRINT X.d[I];
+            ENDFOR
+        ENDSUB
+        
+        SUB SETV4
+            X.d[0] = 12;
+            X.d[1] = 14;
+            X.d[2] = 0.37e4;
+            X.d[3] = -1e-1;
+        ENDSUB
+        
+        //Ah, this is where it ends!
+    END_COOL_LANGUAGE
+    
+    //Back to normalcy!
+    
+    method v4.ctor():
+        i64 i = 0;
+        this.d[i++] = 0;
+        this.d[i++] = 0;
+        this.d[i++] = 0;
+        this.d[i++] = 0;
+    end
+    </code>
+    </pre>
+    <p>[<i>If you are implementing a complete language, consider 
+    putting that language's code in a separate file. You can
+    use __builtin_read_file for this purpose.</i>]</p>
+    <br>
+    <p>If your custom syntax allows snippets of Seabass code
+    inside of it, please delimit sections of code with brackets,
+    and expressions with parentheses.</p>
+    <pre>
+    <code>
+    @myhelper{
+        help: yes
+        inject_seabass:[
+            //I can write seabass here!
+            i64 rv
+            rv = 23
+            println("Hello World!")
+        ]
+        helpgrandma: ?hascookies:yes_and_eat_cookies:yes_and_ask_for_cookies
+    }
     </code>
     </pre>
     
