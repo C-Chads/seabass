@@ -274,7 +274,7 @@
     </center>
     <hr>
     <p>Seabass allows the translation unit to write `codegen` code which can be executed during parsetime and from `codegen_main`. </p>
-    <p>The general behavior of this execution environment should be trivially discernible from the syntax of the language, however some notable caveats and special notices exist. This section will serve as a brief overview.</p>
+    <p>The general behavior of this execution environment should be trivially discernible from the syntax of the language, however some notable caveats and special notices exist. To save the reader's time, I will gloss over or leave out the "obvious" (for instance, how the if statement works).</p>
     <ol>
         <li>codegen functions may never invoke non-codegen functions, nor directly access non-codegen symbols. They may access non-codegen symbols by retrieving the AST from the compiler.</li>
         <li>__builtin_malloc and __builtin_realloc must return pointers of the maximum useful
@@ -284,7 +284,17 @@
         <li>It is undefined behavior for a codegen function called from a <code>#__cbas_run_fn</code> directive to attempt to access or modify the list of unparsed tokens, for instance, by invoking `__builtin_peek()` or invoking `__builtin_consume()`</li>
         <li>It is undefined how the bodies of codegen functions are stored after the function has finished parsing. An internal representation (such as native machine code, a bytecode, or a compacted version of the AST) may be used.</li>
         <li>array and struct local variables must be stored in aligned memory, aligned to the maximum useful alignment.</li>
-        <li></li>
+        <li>When converting a small signed integer to a larger unsigned value the integer is first sign-extended as if to convert to the larger signed equivalent. For instance, if an 8 bit signed integer is promoted to an unsigned 32 bit integer, it will first be sign-extended to a signed 32 bit integer, and then demoted to an unsigned 32 bit integer.<br>
+        <pre><code>
+    i8 v1 = -1
+    u32 d1 = v1 //should be promoted from 0xff to 0xffFFffFF
+    i32 d2 = v1 //same
+    if(d1 != d2)
+        __builtin_puts("<ERROR> Sign extension is improperly implemented!");
+        __builtin_exit(1);
+    end
+        </code></pre>
+        </li>
         <li></li>
         <li></li>
     </ol>
@@ -292,17 +302,13 @@
     <ol>
         <li>replacement of the body of the function with a compacted, bytecode, or native machine code representation, or some non-null handle.</li>
         <li>Any optimization which does not change the "net effect" of the code within the constraints of defined behavior.</li>
-        <li></li>
-        <li></li>
     </ol>    
     <h3>Invalid optimizations of codegen functions</h3>
     <ol>
         <li>Inlining of other codegen function calls (It must be possible to replace the body of a codegen function which has already been written).</li>
         <li>any change to the code which causes otherwise well-defined behavior to become undefined (such as: assuming signed integer overflow never happens).</li>
-        <li>Removal or re-ordering of invocations of builtin functions except __builtin_malloc, __builtin_realloc, and __builtin_free. All builtin function calls are to be treated as volatile.</li>
+        <li>Removal or re-ordering of invocations of builtin functions except __builtin_malloc, __builtin_realloc, and __builtin_free. All other builtin function calls are to be treated as volatile.</li>
         <li>replacement of struct type usage with another struct type defined in the translation unit.</li>
-        <li></li>
-        <li></li>
     </ol>
     <h3>Well-Defined behavior</h3>
     <ol>
@@ -340,6 +346,9 @@
     <p>The main parser for seabass, as well as the codegen code executor, may be written with the following assumptions:</p>
     <ol>
             <li>The system's memory allocators will never fail, i.e. malloc/realloc never return null.</li>
+            <li>Codegen code does not define any global symbols that interfere with local symbols while a function is being parsed.</li>
+            <li>The placement of a symbol within the symbol table never changes. I.e., once a function/global variable has been given an index into the symbol table, it is permanent and irrevocable.</li>
+            <li>The purity of a function will not be altered.</li>
             <li></li>
             <li></li>
             <li></li>

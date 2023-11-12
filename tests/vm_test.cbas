@@ -1134,7 +1134,18 @@ proc codegen codegen_main():
 	
 	end
 	:nomore
+	if(1)
 	
+    	
+        i8 v1 = -1
+        u32 d1 = v1 //should be promoted from 0xff to 0xffFFffFF
+        i32 d2 = v1 //same
+        if(d1 != d2)
+            __builtin_puts(" Sign extension is improperly implemented!");
+            __builtin_exit(1);
+        end
+	
+	end
 	
 	return;
 end
