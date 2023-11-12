@@ -1748,7 +1748,7 @@ static inline void expr_parse_ident(expr_node** targ){
     expr_node f = {0};
     //this was checked at the callsite..
     //require(peek()->data ==  TOK_IDENT, "expr_parse_ident needs an identifier");
-    //require(!peek_is_typename(), "expr_parse_ident expected non-typename");
+    require(!peek_is_typename(), "expr_parse_ident expected non-typename");
     f.kind = EXPR_SYM; /*unidentified symbol*/
     f.is_function = 0;
     f.symname = strdup(peek()->text);

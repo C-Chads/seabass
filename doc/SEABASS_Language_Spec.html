@@ -493,17 +493,31 @@
         (EXPR_PARSE_IDENT) |
         (EXPR_PARSE_PAREN) |
         (EXPR_PARSE_STRING) |
-        ("@" IDENT EXPR_PARSE_TERMINAL)
+        ("@" IDENT EXPR_PARSE_TERMINAL) //this is actually implemented to "goto top"
     )
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     EXPR_PARSE_SIZEOF = "sizeof" "(" REPEATEDLY_TRY_METAPROGRAMMING PARSE_TYPE ")"
-    EXPR_PARSE_STRING = STRING_LITERAL
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    //AUTHOR'S NOTE: Parsing the number of function arguments here requires knowing what
+    //function we're talking about. That's why we have these awkward (ident,)* ? sequences...
     EXPR_PARSE_BUILTIN_CALL = IDENT_BUILTIN_NAME "(" (PARSE_EXPR ",")* PARSE_EXPR? ")"
     EXPR_PARSE_FCALL = IDENT_FNAME "(" (PARSE_EXPR ",")* PARSE_EXPR? ")"
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     EXPR_PARSE_IDENT = IDENT
     EXPR_PARSE_CONSTEXPRI = "constexpri" "(" CONSTEXPRI ")"
     EXPR_PARSE_CONSTEXPRF = "constexprf" "(" CONSTEXPRF ")"
-    EXPR_PARSE_GETFNPTR = "getfnptr" "(" IDENT ")"
+    EXPR_PARSE_GETFNPTR = "getfnptr" "(" REPEATEDLY_TRY_METAPROGRAMMING IDENT ")"
+    EXPR_PARSE_GETGLOBALPTR = "getglobalptr" "(" REPEATEDLY_TRY_METAPROGRAMMING IDENT ")"
+    EXPR_PARSE_INTLIT = INT_LITERAL
+    EXPR_PARSE_FLOATLIT = FLOAT_LITERAL
+    EXPR_PARSE_STRING = STRING_LITERAL
+    EXPR_PARSE_PAREN = "(" PARSE_EXPR ")"
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    EXPR_PARSE_CALLFNPTR = "callfnptr" 
+    "[" REPEATEDLY_TRY_METAPROGRAMMING IDENT_FNAME "]" //the template function
+    "(" PARSE_EXPR ")"
+    "(" (PARSE_EXPR ",")* PARSE_EXPR? ")" //once again, see note above...
+    
     </code></pre>
     <p></p>
     <p></p>
