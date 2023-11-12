@@ -411,6 +411,8 @@ fn pub main()->int:
     @cpprint[
         /   "Check out this sizeof:"
         /int (sizeof(int[3]))
+        /   "Check out this sign extension:"
+        /int ((u32)(i8)-1)
     ]
     if(1)
         u64 i

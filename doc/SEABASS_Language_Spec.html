@@ -650,8 +650,6 @@
     end
         </code></pre>
         </li>
-        <li></li>
-        <li></li>
     </ol>
     <h3>Valid optimizations of codegen functions</h3>
     <ol>
@@ -679,7 +677,7 @@
             <li>The source of input for `__builtin_gets`.</li>
             <li>The exact semantics of how the host filesystem is accessed with __builtin_open_ofile, __builtin_read_file, etc.</li>
             <li>The functionality of the `asm` statement in codegen functions.</li>
-            <li></li>
+            <li>(etc)</li>
     </ol>
     <h3>Undefined behavior</h3>
     <ol>
@@ -693,9 +691,7 @@
             <li>Validating the same function twice.</li>
             <li>Validating a function which is not in the compiler's internal symbol table.</li>
             <li>referencing a method by its "real" unmangled function name in code.</li>
-            <li></li>
-            <li></li>
-            <li></li>
+            <li>(etc)</li>
     </ol>
     <h3>Invalid Compiler States</h3>
     <p>The main parser for seabass, as well as the codegen code executor, and all code generators may be written with the following assumptions:</p>
@@ -706,9 +702,7 @@
             <li>The purity of a function will not be altered.</li>
             <li>There are no mutually dependent struct definitions.</li>
             <li>You never attempt to define a function's body within itself using __builtin_parse_global()</li>
-            <li>Putting the AST into an invalid state (This is far too complex for this document to cover...)</li>
-            <li></li>
-            <li></li>
+            <li>Putting the AST into an invalid state.</li>
     </ol>
     <p></p>
     <p></p>
