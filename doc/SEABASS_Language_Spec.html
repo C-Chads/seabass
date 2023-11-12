@@ -500,6 +500,10 @@
     EXPR_PARSE_STRING = STRING_LITERAL
     EXPR_PARSE_BUILTIN_CALL = IDENT_BUILTIN_NAME "(" (PARSE_EXPR ",")* PARSE_EXPR? ")"
     EXPR_PARSE_FCALL = IDENT_FNAME "(" (PARSE_EXPR ",")* PARSE_EXPR? ")"
+    EXPR_PARSE_IDENT = IDENT
+    EXPR_PARSE_CONSTEXPRI = "constexpri" "(" CONSTEXPRI ")"
+    EXPR_PARSE_CONSTEXPRF = "constexprf" "(" CONSTEXPRF ")"
+    EXPR_PARSE_GETFNPTR = "getfnptr" "(" IDENT ")"
     </code></pre>
     <p></p>
     <p></p>
