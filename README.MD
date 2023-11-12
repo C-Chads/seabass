@@ -522,6 +522,16 @@ cc -O3 auto_out.c -lm -lpthread -fwrapv -o fib
 ./fib 20
 ```
 
+Or the directory listing program like this:
+
+```
+cbas tests2/dirlist.cbas
+cc -O3 auto_out.c -lm -lpthread -fwrapv -o dirlist
+./dirlist .
+```
+
+
+
 Never use Cmake again!
 
 
