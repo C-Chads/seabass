@@ -408,9 +408,9 @@ For the maximum utilization of Man's God-given talents.
 
 # DOCUMENTATION
 
-Proper documentation has yet to be written, however
-alpha/beta documentation is available by invoking
-`cbas -m help`
+Github pages is used to host the documentation. Click this link:
+
+https://gek169.github.io/seabass/index.html
 
 # Theories / Design Principle
 
