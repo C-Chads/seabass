@@ -69,15 +69,17 @@
     </code>
     </pre>
     <p>This is because it makes it <b>much harder</b> to tell that there isn't a missing `end`</p>
-    <p>If you have a very large expression, you indent levels of parentheses:</p>
+    <p>If you have a very large expression, you indent levels of parentheses. <br>
+    Multi-level conditions should have the "||" or "&&" at the very end of 
+    lines, not the beginning:</p>
     <pre>
     <code>
     fn myfunk3(int a, int b, int c)->int:
         if(
-            a * 73 == b ||
+            a * 73 == b  ||
             b * 49 == 28 ||
             (
-                c + 7 == a * b ||
+                c + 7 == a * b      ||
                 57 + 3 == a + b + c
             )
         )
