@@ -1185,6 +1185,7 @@ static void parse_structdecl(){
     consume(); /*eat the identifier*/
 
     while(1){
+        parse_repeatedly_try_metaprogramming(); //Allow metaprogramming in the body of a struct.
         if(peek_match_keyw("end")){
             consume();
             break;
