@@ -301,6 +301,10 @@
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     PARSE_STRUCTMEMBER = PARSE_TYPE REPEATEDLY_TRY_METAPROGRAMMING IDENT
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    PARSE_FN = "fn" REPEATEDLY_TRY_METAPROGRAMMING 
+                    ("predecl" | "codegen" | "noexport" | "pub" | "static" | "inline" | "pure" )*
+                    REPEATEDLY_TRY_METAPROGRAMMING IDENT
+                    
     
     </code></pre>
     <p></p>

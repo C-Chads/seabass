@@ -1368,9 +1368,11 @@ void parse_fn(int is_method){
     require(!is_builtin_name(peek()->text),"Hey, What are you tryna pull? Defining the builtins?");
 
     n = strdup(peek()->text);
-    if(streq(n, "ctor") || streq(n, "dtor")){
-        //Force an update.
-        oop_metadata[t_method_struct.structid].have_checked = 0;
+    if(is_method){
+        if(streq(n, "ctor") || streq(n, "dtor")){
+            //Force an update.
+            oop_metadata[t_method_struct.structid].have_checked = 0;
+        }
     }
     if(is_method){ /*mangle method names.*/
         char* t_;
