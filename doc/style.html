@@ -293,10 +293,83 @@
             rv = 23
             println("Hello World!")
         ]
-        helpgrandma: ?hascookies:yes_and_eat_cookies:yes_and_ask_for_cookies
+        help_grandma: yes
+        ask_for_cookies: ofcourse
+        //I can write an expression here!
+        how_many_cookies:(calc_num_cookies(work_done))
     }
     </code>
     </pre>
+    <p>If your custom syntax requires some "escape token" please consider using
+    the dollar sign ($)...</p>
+    <pre>
+    <code>
+    @mydsl[
+        var a = 22 * 3;
+        print text[
+            22 times 3 is $a
+        ]
+    ]
+    </code>
+    </pre>
+    <p>Prefer square brackets > curly braces > parentheses. square brackets
+    are the easiest to type. Curly braces are a close second. Parentheses
+    are the most difficult to type and are generally uglier...</p>
+    <pre>
+    <code>
+    //zoom out with your browser. Notice how hard these are to read...
+    @myweirdlang{
+        something{
+            findtreasure{
+                becomerich();
+            } else {
+                writebook();
+            }
+        }
+        somethingelse{
+            findnovascotia{
+                becomecanadian();
+            } else {
+                use_map();
+            }
+        }
+    }    
+    @myweirdlang2[
+        something[
+            findtreasure[
+                becomerich();
+            ] else [
+                writebook();
+            ]
+        ]
+        somethingelse[
+            findnovascotia[
+                becomecanadian();
+            ] else [
+                use_map();
+            ]
+        ]
+    ]
+    
+    @myweirdlang3(
+        something(
+            findtreasure(
+                becomerich();
+            ) else (
+                writebook();
+            )
+        )
+        somethingelse(
+            findnovascotia(
+                becomecanadian();
+            ) else (
+                use_map();
+            )
+        )
+    )
+    </code>
+    </pre>
+    
     
     <hr>
     <center>
