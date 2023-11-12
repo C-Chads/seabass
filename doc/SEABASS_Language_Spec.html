@@ -297,7 +297,9 @@
                     ";"
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
     
-    PARSE_SRUCTDECL = "struct" (REPEATEDLY_TRY_METAPROGRAMMING | PARSE_STRUCTMEMBER | ";" | "noexport" | "union" | INT_LITERAL)* "end" //NOTE: At least one member must be defined...
+    PARSE_SRUCTDECL = "struct" 
+        (REPEATEDLY_TRY_METAPROGRAMMING | PARSE_STRUCTMEMBER | ";" | "noexport" | "union" | INT_LITERAL)* 
+        "end" //NOTE: At least one member must be defined...
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     PARSE_STRUCTMEMBER = PARSE_TYPE REPEATEDLY_TRY_METAPROGRAMMING IDENT
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -325,6 +327,7 @@
                             PARSE_FBODY
                         )
                     )    
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     PARSE_METHOD = "method" 
                     (REPEATEDLY_TRY_METAPROGRAMMING | "predecl" | "codegen" | "noexport" | "pub" | "static" | "inline" | "pure" )*
                     PARSE_TYPE ("." | ":")?
@@ -341,6 +344,11 @@
                         ("(" REPEATEDLY_TRY_METAPROGRAMMING  ")")
                     )
                     (
+                        "->"
+                        REPEATEDLY_TRY_METAPROGRAMMING
+                        PARSE_TYPE
+                    )?
+                    (
                         ( //if predeclaration
                             ";"
                         )
@@ -350,8 +358,37 @@
                             PARSE_FBODY
                         )
                     )
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    PARSE_FBODY = PARSE_STMTS validate_function() //function is validated after body is parsed.
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    PARSE_STMTS = (PARSE_STMT)* "end"
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    PARSE_STMT = (IF | GOTO | LABEL_STMT | FOR | WHILE 
+                     | CONTINUE | BREAK | SWITCH | RETURN 
+                     | TAIL | ASM | LVARDECL 
+                     | ("@" IDENT)
+                     | EXPR_STMT
+                ) | ";"
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    LABEL_STMT = ":" IDENT
+    LVARDECL = PARSE_TYPE REPEATEDLY_TRY_METAPROGRAMMING IDENT ("=" PARSE_EXPR ";"?)?
+    GOTO = "goto" REPEATEDLY_TRY_METAPROGRAMMING IDENT
+    TAIL = "tail" REPEATEDLY_TRY_METAPROGRAMMING IDENT
+    CONTINUE = "continue"
+    BREAK = "break"
+    RETURN = "return" PARSE_EXPR? ";"?
+    EXPR_STMT = PARSE_EXPR ";"?
+    WHILE = "while" "(" PARSE_EXPR ")" PARSE_STMTS "end"
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    IF = "if" "(" PARSE_EXPR ")" 
+        PARSE_STMTS_ALLOW_ELSE_CHAIN 
+    (PARSE_ELSE | PARSE_ELIF)? //based on what PARSE_STMTS_ALLOW_ELSE_CHAIN finds,
+                               //we may parse an else or elseif statement...
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    PARSE_STMTS_ALLOW_ELSE_CHAIN = (PARSE_STMT*) //this looks ahead...
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                     
-                    
+    
     
     </code></pre>
     <p></p>
