@@ -26,6 +26,7 @@
         <a href="#tokenization">Tokenization</a><br>
         <a href="#preprocessing">Pre-processing</a><br>
         <a href="#parsing">Parsing</a><br>
+        <a href="#validation">Validation</a><br>
         <a href="#grammar">Grammar</a><br>
         <a href="#codegen">Codegen Execution Environment</a><br>
         <a href="#license">License</a><br>
@@ -35,7 +36,7 @@
         Welcome, beloved.
         <br><i>Saying, Blessed are they whose iniquities are forgiven, and whose sins are covered.</i> - Romans 4:7
     </p>
-    <p>This is a (somewhat) formal specification of the SEABASS programming language.</p>
+    <p>This is a (somewhat) formal specification of the SEABASS programming language. This document should serve to educate future implementers and maintainers as well as curious souls seeking understanding.</p>
     <hr>
     <center>
     <h3>All Glory to the Lord Jesus Christ, who is, and who was, and who is to come, for ever. Amen.</h3>
@@ -251,6 +252,15 @@
     <p></p>
     <hr>
     <center>
+    <h2 id="validation">Validation</h2>
+    </center>
+    <hr>
+    <p></p>
+    <p></p>
+    <p></p>
+    <p></p>
+    <hr>
+    <center>
     <h2 id="grammar">Grammar</h2>
     </center>
     <hr>
@@ -260,10 +270,80 @@
     <p></p>
     <hr>
     <center>
-    <h2 id="codegen">Codegen execution environment</h2>
+    <h2 id="codegen">Codegen Execution Environment</h2>
     </center>
     <hr>
-    <p></p>
+    <p>Seabass allows the translation unit to write `codegen` code which can be executed during parsetime and from `codegen_main`. </p>
+    <p>The general behavior of this execution environment should be trivially discernible from the syntax of the language, however some notable caveats and special notices exist. This section will serve as a brief overview.</p>
+    <ol>
+        <li>codegen functions may never invoke non-codegen functions, nor directly access non-codegen symbols. They may access non-codegen symbols by retrieving the AST from the compiler.</li>
+        <li>__builtin_malloc and __builtin_realloc must return pointers of the maximum useful
+        alignment on the host architecture.</li>
+        <li>the internal data types of the CBAS tool on the host system must be able to be perfectly reflected in the codegen environment.</li>
+        <li>The codegen environment must behave as if it is running on a byte-addressable system. If this is not actually the case, a virtualization layer must be provided.</li>
+        <li>It is undefined behavior for a codegen function called from a <code>#__cbas_run_fn</code> directive to attempt to access or modify the list of unparsed tokens, for instance, by invoking `__builtin_peek()` or invoking `__builtin_consume()`</li>
+        <li>It is undefined how the bodies of codegen functions are stored after the function has finished parsing. An internal representation (such as native machine code, a bytecode, or a compacted version of the AST) may be used.</li>
+        <li>array and struct local variables must be stored in aligned memory, aligned to the maximum useful alignment.</li>
+        <li></li>
+        <li></li>
+        <li></li>
+    </ol>
+    <h3>Valid optimizations of codegen functions</h3>
+    <ol>
+        <li>replacement of the body of the function with a compacted, bytecode, or native machine code representation, or some non-null handle.</li>
+        <li>Any optimization which does not change the "net effect" of the code within the constraints of defined behavior.</li>
+        <li></li>
+        <li></li>
+    </ol>    
+    <h3>Invalid optimizations of codegen functions</h3>
+    <ol>
+        <li>Inlining of other codegen function calls (It must be possible to replace the body of a codegen function which has already been written).</li>
+        <li>any change to the code which causes otherwise well-defined behavior to become undefined (such as: assuming signed integer overflow never happens).</li>
+        <li>Removal or re-ordering of invocations of builtin functions except __builtin_malloc, __builtin_realloc, and __builtin_free. All builtin function calls are to be treated as volatile.</li>
+        <li>replacement of struct type usage with another struct type defined in the translation unit.</li>
+        <li></li>
+        <li></li>
+    </ol>
+    <h3>Well-Defined behavior</h3>
+    <ol>
+        <li>The relative order of execution of statements within the body of a codegen function.</li>
+        <li>the functionality of each of the __builtin functions (given appropriate input, if the state of the compiler has not been corrupted)</li>
+        <li>The functionality of every genera of statement and operator, including the internal dummy statement "STMT_NOP", with the exception of the `asm` statement, which is implementation defined in codegen code.</li>
+        <li>The requirement of `tail` that it is a true tail call and is not just a call immediately followed by a return.</li>
+        <li>that __builtin_peek(), called from a parsehook (directly or indirectly), will never return a null or invalid pointer.</li>
+    </ol>
+    <h3>Implementation Defined behavior</h3>
+    <ol>
+            <li>The relative order of execution of subexpressions in an expression.</li>
+            <li>The source of input for `__builtin_gets`.</li>
+            <li>The exact semantics of how the host filesystem is accessed with __builtin_open_ofile, __builtin_read_file, etc.</li>
+            <li>The functionality of the `asm` statement in codegen functions.</li>
+            <li></li>
+    </ol>
+    <h3>Undefined behavior</h3>
+    <ol>
+            <li>Dereferencing null, doing naughty things with pointer puns, accessing arrays out of bounds, dividing by zero, using improperly aligned pointers... you can guess.</li>
+            <li>passing a negative value, or a value larger than the number of labels into a switch statement.</li>
+            <li>Placing the compiler into an invalid state. This will be discussed more later.</li>
+            <li>If the compiler has been placed into an invalid state, any operation whatsoever.</li>
+            <li>Defining a new global symbol (type, variable, data statement, or function) with the same name as a local variable before that function finishes parsing.</li>
+            <li>Altering the contents of parsed and validated codegen functions.</li>
+            <li>Deleting a previously defined symbol, or changing its prototype or name.</li>
+            <li>Validating the same function twice.</li>
+            <li>Validating a function which is not in the compiler's internal symbol table.</li>
+            <li>referencing a method by its "real" unmangled function name in code.</li>
+            <li></li>
+            <li></li>
+            <li></li>
+    </ol>
+    <h3>Invalid Compiler States</h3>
+    <p>The main parser for seabass, as well as the codegen code executor, may be written with the following assumptions:</p>
+    <ol>
+            <li>The system's memory allocators will never fail, i.e. malloc/realloc never return null.</li>
+            <li></li>
+            <li></li>
+            <li></li>
+    </ol>
     <p></p>
     <p></p>
     <p></p>
