@@ -41,9 +41,155 @@
     <hr>
     <p>In seabass, you should indent everything inside of a scope one level
     deeper than the owner of the scope:</p>
+    <pre>
+    <code>
+    fn myfunk(int a, int b, int c)->int:
+        if(a == 0)
+            return b+c
+        elif(a == 1)
+            return b*c
+        elif(a == 2)
+            return b^c
+        elif(a == 3)
+            return b|c
+        else
+            return b&c
+        end
+    end
+    </code>
+    </pre>
+    <p>You should generally avoid putting things on the same line, even if very short:</p>
+    <pre>
+    <code>
+    fn myfunk(int a, int b, int c)->int:
+        if(a == 0) return b+c end
+        return a + b + c
+    end
+    </code>
+    </pre>
+    <p>This is because it makes it <b>much harder</b> to tell that there isn't a missing `end`</p>
+    <p>If you have a very large expression, you indent levels of parentheses:</p>
+    <pre>
+    <code>
+    fn myfunk3(int a, int b, int c)->int:
+        if(
+            a * 73 == b ||
+            b * 49 == 28 ||
+            (
+                c + 7 == a * b ||
+                57 + 3 == a + b + c
+            )
+        )
+            return a + b + c
+        end
+        return a * b * c
+    end
+    </code>
+    </pre>
+    <p>Indentation should be 4 characters. This makes it so that
+    there is a space between 'end' and the next higher indent level:</p>
+    <pre>
+    <code>
+    fn myfunk4(int a, int b, int c)->int:
+        while(1)
+            if(a+b+c == 29)
+                return 2
+            elif(a-b-c == 0)
+                return 3
+            end |
+        end | | |
+    end | | | | |
+      | | | | | |
+      | | | | | |
+      | | | | | |
+      *-* *-* *-*
+    </code>
+    </pre>
+    <p>While seabass allows you to use all variables defined anywhere in a scope, it is best
+    if you always define them before you use them:</p>
+    <pre>
+    <code>
+    fn myfunk5(int a, int b, int c)->int:
+        int d
+        if(a == 20)
+            //confusing!
+            d = 1.5
+            return d * 10
+            float d
+        else
+            d = 21
+            return d
+        end
+    end
+    </code>
+    </pre>
+    <p>if your function declaration is very lon, split it across multiple lines.
+    I recommend putting every argument on a separate line. You should annotate
+    your function's arguments and explain what they mean for future programmers.</p>
+    <pre>
+    <code>
+    fn myfunk6(
+        int a, //this is how many licks it takes to get to the center of a lollipop
+        int b, //this is how many bytes are needed to store a file on disk.
+        int c, //this is the RGBA value of your favorite color
+        int d, //this is just a random offset value...
+        int e, //this is an integer divisible by 4, the width of the screen....
+        f64 f, //this should be an estimate of PI
+        i8 g   //this is how many blocks of cobblestone you have
+    )->int:
+        return a + b + c + d + e + f + g
+    end
+    </code>
+    </pre>
+    <p>Please <b><i>always</i></b> put the final closing parentheses, arrow, return type,
+    and colon/semicolon on the same line. I.e., don't do this:</p>
+    <pre>
+    <code>
+    fn myfunk7(
+        int a,
+        int b, 
+        int c, 
+        int d, 
+        int e, 
+        f64 f, 
+        i8 g  
+    )->       //?!?!
+    int: 
+    //^What does this mean?
+        return a + b + c + d + e + f + g
+    end
+    </code>
+    </pre>
+    <p>Try to be consistent...</p>
+    <pre>
+    <code>
+    class myclass
+        //Are these all the same type?
+        i32 a
+        long b
+        slong c
+        int d
+    end
     
+    method myclass.ctor():
+        this.a = 0;
+        this.b = 0;
+        this.c = 0;
+        this.d = 0;
+    end
     
+    //Why is this one : but the other is . ?
+    method inline pure myclass:calc()->long:
+        return this.a + this.b + this.c + this.d
+    end
     
+    //what is an sint?
+    //why is this "pure inline" but the other is "inline pure"?
+    method pure inline myclass:calc2()->sint:
+        return this.a * this.b * this.c * this.d
+    end
+    </code>
+    </pre>
     
     <hr>
     <center>
