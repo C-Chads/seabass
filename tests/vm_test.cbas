@@ -1143,9 +1143,17 @@ proc codegen codegen_main():
         if(d1 != d2)
             __builtin_puts(" Sign extension is improperly implemented!");
             __builtin_exit(1);
-        end
-	
+        end	
 	end
+	for(0,0,0)
+        __builtin_puts("For is improperly implemented!");	
+	end
+	for(0,1,0)
+	    
+        __builtin_puts("For(0,1,0) is properly implemented!");	
+        break
+	end
+    __builtin_puts("Buhbye!");	
 	
 	return;
 end
