@@ -499,7 +499,7 @@
     EXPR_PARSE_SIZEOF = "sizeof" "(" REPEATEDLY_TRY_METAPROGRAMMING PARSE_TYPE ")"
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     //AUTHOR'S NOTE: Parsing the number of function arguments here requires knowing what
-    //function we're talking about. That's why we have these awkward (ident,)* ? sequences...
+    //function we're talking about. That's why we have these awkward (expr,)* expr? sequences...
     EXPR_PARSE_BUILTIN_CALL = IDENT_BUILTIN_NAME "(" (PARSE_EXPR ",")* PARSE_EXPR? ")"
     EXPR_PARSE_FCALL = IDENT_FNAME "(" (PARSE_EXPR ",")* PARSE_EXPR? ")"
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
