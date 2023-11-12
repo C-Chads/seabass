@@ -79,13 +79,15 @@
     <hr>
     <p>The seabass metaprogramming tool, for any particular platform, should be implemented with
     the following functionalities:</p>
-    <p><code>cbas</code>/<code>cbas -v</code>/<code>cbas -h</code> - Print help screen, copyright information</p>
-    <p><code>cbas filename</code> - attempt to compile file filename.</p>
+    <p><code>cbas</code> / <code>cbas -v</code> / <code>cbas -h</code> - Print help screen, copyright information</p>
+    <p><code>cbas filename</code> - attempt to compile file <code>filename</code>.</p>
     <p><code>cbas -m help</code> - view help manpages</p>
     <p><code>cbas -m reflection_library_code</code> - retrieve a reflection library written specifically for that implementation,
     and print it to standard out.</p>
     <p>static asserts or runtime tests should be included at the beginning of the compiler's invocation to ensure that the platform it is
-    running on is compatible with the assumptions made during the tool's development.</p>
+    running on is compatible with the assumptions made during the tool's development. These tests should be extremely thorough
+    to ensure that future implementers will be prevented from producing a non-functional version of the tool and using it
+    unwittingly.</p>
     <p></p>
     <p></p>
     <hr>
