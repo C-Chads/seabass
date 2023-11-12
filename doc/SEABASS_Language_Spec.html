@@ -517,6 +517,107 @@
     "[" REPEATEDLY_TRY_METAPROGRAMMING IDENT_FNAME "]" //the template function
     "(" PARSE_EXPR ")"
     "(" (PARSE_EXPR ",")* PARSE_EXPR? ")" //once again, see note above...
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    CONSTEXPRI = CEXPRI_PARSE_LOGBOOL
+    CONSTEXPRF = CEXPRD_PARSE_LOGBOOL
+    
+    //complete hierarchy for CEXPRD- parsing double math.
+    CEXPRD_PARSE_LOGBOOL = CEXPRD_PARSE_COMPARE (
+        ("||" CEXPRD_PARSE_COMPARE)|
+        ("&&" CEXPRD_PARSE_COMPARE)
+    )*
+    CEXPRD_PARSE_COMPARE = CEXPRD_PARSE_BIT (
+        ("<" CEXPRD_PARSE_BIT)|
+        (">" CEXPRD_PARSE_BIT)|
+        ("<=" CEXPRD_PARSE_BIT)|
+        (">=" CEXPRD_PARSE_BIT)|
+        ("==" CEXPRD_PARSE_BIT)|
+        ("!=" CEXPRD_PARSE_BIT)
+    )*
+    CEXPRD_PARSE_BIT = CEXPRD_PARSE_ADDSUB (
+        ("|" CEXPRD_PARSE_ADDSUB)|
+        ("&" CEXPRD_PARSE_ADDSUB)|
+        ("^" CEXPRD_PARSE_ADDSUB)|
+        ("<<" CEXPRD_PARSE_ADDSUB)|
+        (">>" CEXPRD_PARSE_ADDSUB)
+    )*
+    CEXPRD_PARSE_ADDSUB = CEXPRD_PARSE_MULDIV (
+        ("+" CEXPRD_PARSE_MULDIV)|
+        ("-" CEXPRD_PARSE_MULDIV)
+    )*
+    //doubles dont have modulus..
+    CEXPRD_PARSE_MULDIV = CEXPRD_PARSE_PREFIX (
+        ("*" CEXPRD_PARSE_PREFIX)|
+        ("/" CEXPRD_PARSE_PREFIX)
+    )*
+    CEXPRD_PARSE_PREFIX = (
+        "-"|
+        "~"|
+        "!"|
+        "++"|
+        "--"
+    )* CEXPRD_PARSE_POSTFIX
+    
+    CEXPRD_PARSE_POSTFIX = CEXPRD_PARSE_PAREN (
+        "++" | "--"
+    )*
+    CEXPRD_PARSE_PAREN = (
+        INT_LITERAL |
+        FLOAT_LITERAL |
+        IDENT | //a codegen variable.
+        ("constexprf" "(" CONSTEXPRF ")") |
+        ("constexpri" "(" CONSTEXPRI ")") |
+        ("(" CONSTEXPRF ")")
+    )
+    
+    //complete hierarchy for CEXPRI- parsing double math.
+    CEXPRI_PARSE_LOGBOOL = CEXPRI_PARSE_COMPARE (
+        ("||" CEXPRI_PARSE_COMPARE)|
+        ("&&" CEXPRI_PARSE_COMPARE)
+    )*
+    CEXPRI_PARSE_COMPARE = CEXPRI_PARSE_BIT (
+        ("<" CEXPRI_PARSE_BIT)|
+        (">" CEXPRI_PARSE_BIT)|
+        ("<=" CEXPRI_PARSE_BIT)|
+        (">=" CEXPRI_PARSE_BIT)|
+        ("==" CEXPRI_PARSE_BIT)|
+        ("!=" CEXPRI_PARSE_BIT)
+    )*
+    CEXPRI_PARSE_BIT = CEXPRI_PARSE_ADDSUB (
+        ("|" CEXPRI_PARSE_ADDSUB)|
+        ("&" CEXPRI_PARSE_ADDSUB)|
+        ("^" CEXPRI_PARSE_ADDSUB)|
+        ("<<" CEXPRI_PARSE_ADDSUB)|
+        (">>" CEXPRI_PARSE_ADDSUB)
+    )*
+    CEXPRI_PARSE_ADDSUB = CEXPRI_PARSE_MULDIV (
+        ("+" CEXPRI_PARSE_MULDIV)|
+        ("-" CEXPRI_PARSE_MULDIV)
+    )*
+    CEXPRI_PARSE_MULDIV = CEXPRI_PARSE_PREFIX (
+        ("*" CEXPRI_PARSE_PREFIX)|
+        ("%" CEXPRI_PARSE_PREFIX)|
+        ("/" CEXPRI_PARSE_PREFIX)
+    )*
+    CEXPRI_PARSE_PREFIX = (
+        "-"|
+        "~"|
+        "!"|
+        "++"|
+        "--"
+    )* CEXPRI_PARSE_POSTFIX
+    
+    CEXPRI_PARSE_POSTFIX = CEXPRI_PARSE_PAREN (
+        "++" | "--"
+    )*
+    CEXPRI_PARSE_PAREN = (
+        INT_LITERAL |
+        FLOAT_LITERAL |
+        IDENT | //a codegen variable.
+        ("constexprf" "(" CONSTEXPRF ")") |
+        ("constexpri" "(" CONSTEXPRI ")") |
+        ("(" CONSTEXPRI ")")
+    )
     
     </code></pre>
     <p></p>
