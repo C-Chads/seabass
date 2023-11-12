@@ -301,24 +301,54 @@
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     PARSE_STRUCTMEMBER = PARSE_TYPE REPEATEDLY_TRY_METAPROGRAMMING IDENT
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    PARSE_FN = "fn" REPEATEDLY_TRY_METAPROGRAMMING 
-                    ("predecl" | "codegen" | "noexport" | "pub" | "static" | "inline" | "pure" )*
-                    REPEATEDLY_TRY_METAPROGRAMMING IDENT
+    PARSE_FN = "fn"
+                    (REPEATEDLY_TRY_METAPROGRAMMING | "predecl" | "codegen" | "noexport" | "pub" | "static" | "inline" | "pure" )*
+                    REPEATEDLY_TRY_METAPROGRAMMING 
+                    IDENT
                     (
                         (
                             "("
-                                (REPEATEDLY_TRY_METAPROGRAMMING PARSE_TYPE REPEATEDLY_TRY_METAPROGRAMMING  IDENT ",")+
+                                (REPEATEDLY_TRY_METAPROGRAMMING PARSE_TYPE REPEATEDLY_TRY_METAPROGRAMMING  IDENT ",")*
                                 (REPEATEDLY_TRY_METAPROGRAMMING PARSE_TYPE REPEATEDLY_TRY_METAPROGRAMMING  IDENT)
                             ")"
                         )
                         |
+                        ("(" REPEATEDLY_TRY_METAPROGRAMMING  ")")
+                    )
+                    (
+                        ( //if predeclaration
+                            ";"
+                        )
+                        |
+                        ( //definition
+                            ":"
+                            PARSE_FBODY
+                        )
+                    )    
+    PARSE_METHOD = "method" 
+                    (REPEATEDLY_TRY_METAPROGRAMMING | "predecl" | "codegen" | "noexport" | "pub" | "static" | "inline" | "pure" )*
+                    PARSE_TYPE ("." | ":")?
+                    REPEATEDLY_TRY_METAPROGRAMMING 
+                    IDENT
+                    (
                         (
                             "("
-                                (REPEATEDLY_TRY_METAPROGRAMMING  PARSE_TYPE REPEATEDLY_TRY_METAPROGRAMMING IDENT)
+                                (REPEATEDLY_TRY_METAPROGRAMMING PARSE_TYPE REPEATEDLY_TRY_METAPROGRAMMING  IDENT ",")*
+                                (REPEATEDLY_TRY_METAPROGRAMMING PARSE_TYPE REPEATEDLY_TRY_METAPROGRAMMING  IDENT)
                             ")"
                         )
                         |
                         ("(" REPEATEDLY_TRY_METAPROGRAMMING  ")")
+                    )
+                    (
+                        ( //if predeclaration
+                            ";"
+                        )
+                        |
+                        ( //definition
+                            ":"
+                            PARSE_FBODY
+                        )
                     )
                     
                     
