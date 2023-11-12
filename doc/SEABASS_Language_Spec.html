@@ -291,13 +291,13 @@
     PARSE_TYPE = (IDENT_TYPENAME|KEYWORD_TYPENAME) "*"* ("[" REPEATEDLY_TRY_METAPROGRAMMING CONSTEXPRI "]")? //question mark means "zero or one"
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
     
-    DATA_STMT = "data" REPEATEDLY_TRY_METAPROGRAMMING ("predecl" | "codegen" | "noexport" | "pub" | "static")*
+    DATA_STMT = "data" (REPEATEDLY_TRY_METAPROGRAMMING | "predecl" | "codegen" | "noexport" | "pub" | "static")*
                     ("string" | PARSE_TYPE) REPEATEDLY_TRY_METAPROGRAMMING IDENT REPEATEDLY_TRY_METAPROGRAMMING
                     ( ((REPEATEDLY_TRY_METAPROGRAMMING (CONSTEXPRI | CONSTEXPRF) ",")+) | STRING_LITERAL) 
                     ";"
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
     
-    PARSE_SRUCTDECL = "struct" (PARSE_STRUCTMEMBER | REPEATEDLY_TRY_METAPROGRAMMING | ";" | "noexport" | "union" | INT_LITERAL)* "end" //NOTE: At least one member must be defined...
+    PARSE_SRUCTDECL = "struct" (REPEATEDLY_TRY_METAPROGRAMMING | PARSE_STRUCTMEMBER | ";" | "noexport" | "union" | INT_LITERAL)* "end" //NOTE: At least one member must be defined...
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     PARSE_STRUCTMEMBER = PARSE_TYPE REPEATEDLY_TRY_METAPROGRAMMING IDENT
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
