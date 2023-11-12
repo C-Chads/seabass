@@ -53,10 +53,10 @@
     <p>After parsing is finished, the compiler shall search for a codegen function in the unit called "codegen_main" and call it. If it cannot be found, the compiler may perform some safe implementation-defined behavior, such as printing out the parsed AST or emitting an error.</p>
     <p>The following discrete parts of compilation are defined:</p>
     <ol>
-        <li>File Scanning and Tokenization</li>
-        <li>Preprocessing</li>
-        <li>Parsing</li>
-        <li>codegen_main invocation</li>
+        <li>File Scanning and Tokenization - The source code is tokenized and all #include preprocessing directives are handled.</li>
+        <li>Preprocessing - String literals are processed to remove quotation marks and convert escape sequences for the parser. #define macro directives are handled. all whitespace is removed. character literals are converted to decimal integer literals.</li>
+        <li>Parsing/Validation - the translation unit is parsed into the AST. functions are validated as they are parsed. parsehooks are called where appropriate.</li>
+        <li>codegen_main invocation - the compiler searches for the codegen function `codegen_main` and attempts to call it. if it does not exist, it performs some implementation-defined graceful exit behavior (such as emitting an error, printing out the parsed AST, or etcetera).</li>
     </ol>
     <p></p>
     <hr>
@@ -237,7 +237,13 @@
     <h2 id="preprocessing">Pre-processing</h2>
     </center>
     <hr>
-    <p></p>
+    <ol>
+        <li>All #define sequences (beginning with #define followed by an identifier and ending with an unescaped newline) shall be used to perform token sequence replacements until a corresponding #undef is found, or until the end of the unit. Note that defines are not expanded</li>
+        <li>Character literals are converted to decimal integer constants.</li>
+        <li>string literals are processed to remove delimiting quotation marks and convert escape sequences into proper characters.</li>
+        <li>Newlines are deleted.</li>
+        <li>the tokenized translation unit is passed to the parser</li>
+    </ol>
     <p></p>
     <p></p>
     <p></p>
@@ -246,7 +252,7 @@
     <h2 id="parsing">Parsing</h2>
     </center>
     <hr>
-    <p></p>
+    <p>Seabass begins parsing a sequence of global symbols </p>
     <p></p>
     <p></p>
     <p></p>
