@@ -304,6 +304,23 @@
     PARSE_FN = "fn" REPEATEDLY_TRY_METAPROGRAMMING 
                     ("predecl" | "codegen" | "noexport" | "pub" | "static" | "inline" | "pure" )*
                     REPEATEDLY_TRY_METAPROGRAMMING IDENT
+                    (
+                        (
+                            "("
+                                (REPEATEDLY_TRY_METAPROGRAMMING PARSE_TYPE REPEATEDLY_TRY_METAPROGRAMMING  IDENT ",")+
+                                (REPEATEDLY_TRY_METAPROGRAMMING PARSE_TYPE REPEATEDLY_TRY_METAPROGRAMMING  IDENT)
+                            ")"
+                        )
+                        |
+                        (
+                            "("
+                                (REPEATEDLY_TRY_METAPROGRAMMING  PARSE_TYPE REPEATEDLY_TRY_METAPROGRAMMING IDENT)
+                            ")"
+                        )
+                        |
+                        ("(" REPEATEDLY_TRY_METAPROGRAMMING  ")")
+                    )
+                    
                     
     
     </code></pre>
