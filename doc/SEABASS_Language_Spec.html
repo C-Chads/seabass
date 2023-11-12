@@ -378,19 +378,27 @@
     BREAK = "break"
     RETURN = "return" PARSE_EXPR? ";"?
     EXPR_STMT = PARSE_EXPR ";"?
-    WHILE = "while" "(" PARSE_EXPR ")" PARSE_STMTS "end"
+    WHILE = "while" "(" PARSE_EXPR ")" PARSE_STMTS
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     IF = "if" "(" PARSE_EXPR ")" 
         PARSE_STMTS_ALLOW_ELSE_CHAIN 
     (PARSE_ELSE | PARSE_ELIF)? //based on what PARSE_STMTS_ALLOW_ELSE_CHAIN finds,
                                //we may parse an else or elseif statement...
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    PARSE_STMTS_ALLOW_ELSE_CHAIN = (PARSE_STMT*) //this looks ahead...
+    PARSE_ELIF = "elif" "(" PARSE_EXPR ")" 
+        PARSE_STMTS_ALLOW_ELSE_CHAIN 
+    (PARSE_ELSE | PARSE_ELIF)? //based on what PARSE_STMTS_ALLOW_ELSE_CHAIN finds,
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    PARSE_ELSE = "else" PARSE_STMTS
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    PARSE_STMTS_ALLOW_ELSE_CHAIN = (PARSE_STMT*) ("end" | "else" | "elif") //this looks ahead...
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     ASM = "asm" "(" REPEATEDLY_TRY_METAPROGRAMMING STRING_LITERAL ")"
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     SWITCH = "switch" "(" PARSE_EXPR ")" (REPEATEDLY_TRY_METAPROGRAMMING IDENT ","?)+ ";"
-    
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    FOR = "for" "(" PARSE_EXPR ("," | ";") PARSE_EXPR ("," | ";") PARSE_EXPR ")" PARSE_STMTS
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
     </code></pre>
     <p></p>
