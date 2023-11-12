@@ -471,6 +471,10 @@ I want my tools to belong to me- not some corporation, not the FSF, not GNU, me.
 So Seabass is public domain- CC0. Every person who downloads the compiler owns it
 all for themselves. You will never have GPL lawyers coming after you because
 you forgot to publish source code for a patch.
+
+Seabass is my gift to you in perpetuity.
+
+Don't think of it as my language- think of it as your language. Because it is.
 	
 # My Blessing to you
 
