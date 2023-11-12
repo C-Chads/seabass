@@ -399,7 +399,107 @@
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     FOR = "for" "(" PARSE_EXPR ("," | ";") PARSE_EXPR ("," | ";") PARSE_EXPR ")" PARSE_STMTS
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    
+    //THE BIG ONE
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    PARSE_EXPR = EXPR_PARSE_MOVE
+    EXPR_PARSE_MOVE = EXPR_PARSE_ASSIGN (":=" EXPR_PARSE_MOVE)?
+    EXPR_PARSE_ASSIGN = EXPR_PARSE_LOGBOOL ("=" EXPR_PARSE_ASSIGN)?
+    EXPR_PARSE_LOGBOOL = EXPR_PARSE_COMPARE (("||" EXPR_PARSE_COMPARE) | ("&&" EXPR_PARSE_COMPARE))*
+    EXPR_PARSE_COMPARE = EXPR_PARSE_BIT (
+        ("==" EXPR_PARSE_BIT) |
+        ("streq" EXPR_PARSE_BIT) |
+        ("strneq" EXPR_PARSE_BIT) |
+        ("!=" EXPR_PARSE_BIT) |
+        (">=" EXPR_PARSE_BIT) |
+        (">" EXPR_PARSE_BIT) |
+        ("<=" EXPR_PARSE_BIT) |
+        ("<" EXPR_PARSE_BIT)
+    )*
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    EXPR_PARSE_BIT = EXPR_PARSE_ADDSUB (
+        ("|" EXPR_PARSE_ADDSUB) |
+        ("&" EXPR_PARSE_ADDSUB) |
+        ("^" EXPR_PARSE_ADDSUB) |
+        ("<<" EXPR_PARSE_ADDSUB)|
+        (">>" EXPR_PARSE_ADDSUB)
+    )*
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    EXPR_PARSE_ADDSUB = EXPR_PARSE_MULDIVMOD (
+        ("+" EXPR_PARSE_MULDIVMOD)|
+        ("-" EXPR_PARSE_MULDIVMOD)
+    )*
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    EXPR_PARSE_MULDIVMOD = EXPR_PARSE_PREFIX (
+        ("*" EXPR_PARSE_PREFIX)|
+        ("/" EXPR_PARSE_PREFIX)|
+        ("%" EXPR_PARSE_PREFIX)
+    )*
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    EXPR_PARSE_PREFIX = (
+        ("!" EXPR_PARSE_PREFIX)|
+        ("~" EXPR_PARSE_PREFIX)|
+        ("-" EXPR_PARSE_PREFIX)|
+        ("--" EXPR_PARSE_PREFIX)|
+        ("++" EXPR_PARSE_PREFIX)|
+        ("cast" "(" REPEATEDLY_TRY_METAPROGRAMMING PARSE_TYPE ")" EXPR_PARSE_PREFIX)|
+        ("(" PARSE_TYPE ")" EXPR_PARSE_PREFIX) //C-style cast... Observe that it does NOT repeatedly try metaprogramming...
+    )* EXPR_PARSE_POSTFIX
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    EXPR_PARSE_POSTFIX = EXPR_PARSE_TERMINAL (
+        ("[" PARSE_EXPR "]")|
+        ("++")|
+        ("--")|
+        ("." REPEATEDLY_TRY_METAPROGRAMMING 
+            (
+                //member access..
+                IDENT
+            )|(
+                IDENT "(" 
+                    (
+                        PARSE_EXPR ","
+                    )*
+                    PARSE_EXPR?
+                ")"
+            )
+        
+        )|
+        (".&" REPEATEDLY_TRY_METAPROGRAMMING 
+            (
+                //member access..
+                IDENT
+            )
+        )|
+        (":" REPEATEDLY_TRY_METAPROGRAMMING             
+            IDENT "(" 
+                (
+                    PARSE_EXPR ","
+                )*
+                PARSE_EXPR?
+            ")"
+        )
+    )*
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    EXPR_PARSE_TERMINAL = (
+        (EXPR_PARSE_SIZEOF) |
+        (EXPR_PARSE_CONSTEXPRI) |
+        (EXPR_PARSE_CONSTEXPRF) |
+        (EXPR_PARSE_GETFNPTR) |
+        (EXPR_PARSE_CALLFNPTR) |
+        (EXPR_PARSE_GETGLOBALPTR) |
+        (EXPR_PARSE_FLOATLIT) |
+        (EXPR_PARSE_INTLIT) |
+        (EXPR_PARSE_BUILTIN_CALL) |
+        (EXPR_PARSE_FCALL) |
+        (EXPR_PARSE_IDENT) |
+        (EXPR_PARSE_PAREN) |
+        (EXPR_PARSE_STRING) |
+        ("@" IDENT EXPR_PARSE_TERMINAL)
+    )
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    EXPR_PARSE_SIZEOF = "sizeof" "(" REPEATEDLY_TRY_METAPROGRAMMING PARSE_TYPE ")"
+    EXPR_PARSE_STRING = STRING_LITERAL
+    EXPR_PARSE_BUILTIN_CALL = IDENT_BUILTIN_NAME "(" (PARSE_EXPR ",")* PARSE_EXPR? ")"
+    EXPR_PARSE_FCALL = IDENT_FNAME "(" (PARSE_EXPR ",")* PARSE_EXPR? ")"
     </code></pre>
     <p></p>
     <p></p>
