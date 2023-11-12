@@ -453,7 +453,15 @@ It is not enough to simply allow arbitrary syntaxes to be written. In order to m
 portable language, it must be possible to write your own code generators.
 
 This makes it so that you don't have to go through the hassle of installing a new toolchain
-just because you want to compile your code for an obtuse platform/
+just because you want to write code for an unusual platform.
+
+Want to write code for the Dreamcast?
+
+Want to compile your game to webassembly? 
+
+Your employer says you have to write code in a language you don't want to?
+
+Write (or get) a code generator. Bam. Done.
 
 ## Friendly
 
