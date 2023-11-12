@@ -193,8 +193,9 @@
     end
     </code>
     </pre>
-    <p>Where possible, prefer purely lowercase characters. <code>prefer_snake_case</code> over 
-    <code>doingThisThingWhichIsReallyHardToRead</code>. 
+    <p>prefer short all-lowercase identifier names, but if an identifier is multiple
+    words long, use <code>camelCase</code>. <code>snake_case</code>, while
+    sometimes easier to read, is harder to type.
     </p>
     <pre>
     <code>
@@ -202,13 +203,6 @@
         64
         llong catsCaught
         llong catsToBeDelivered
-    end
-    
-    //versus
-    class cat_catcher
-        64
-        llong cats_caught
-        llong cats_to_be_delivered
     end
     </code>
     </pre>
