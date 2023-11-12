@@ -484,8 +484,47 @@ Seabass is my gift to you in perpetuity.
 
 Don't think of it as my language- think of it as your language.
 
-## Easy to Compile
-	
+## Easy to Compile and Build
+
+I hate all existing build systems. Here is a 1 minute tutorial for building Seabass from source and running
+the unit test:
+
+```
+# From the root directory of the project
+cc -O3 *.c -o cbas
+cd tests
+../cbas vm_test.cbas
+```
+
+If it tells you "codegen_main executed successfully" it worked.
+
+Put `cbas` somewhere like `/usr/local/bin/`
+
+Want to install the standard library and compile a program to C? Here's how you do it.
+
+Navigate to the root of the repository.
+Run these commands with administrator privileges to install the standard library:
+```
+# From the root of the repository....
+mkdir -p /usr/include/cbas/
+# This just copies the contents of library/ to /usr/include/cbas/
+cp -a library/. /usr/include/cbas/
+```
+
+Then compile the fibonacci number program like so:
+
+```
+cbas tests2/toc_fib_example.cbas
+# the linker flags are needed to get the standard library stuff,
+# and also making signed-integer overflow defined.
+cc -O3 auto_out.c -lm -lpthread -fwrapv -o fib
+# use your shiny new fibonacci number program
+./fib 20
+```
+
+Never use Cmake again!
+
+
 # My Blessing to you
 
 This software was written for the public domain using the
