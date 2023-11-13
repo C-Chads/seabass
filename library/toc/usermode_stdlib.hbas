@@ -143,7 +143,6 @@ static inline TGT_IMAX __CBAS__atoi(unsigned char* text){
     return _STRTOI_((char*)text);
 #endif
 }
-
 static inline void __CBAS__srand(u32 seed){
     srand(seed);
 }
