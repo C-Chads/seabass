@@ -23,12 +23,11 @@ data codegen string SEABASS_STDLIB_PREFIX "
 #include <errno.h>
 #include <sys/types.h>
 #include <dirent.h>
-
+//#include <unistd.h>
 /*for unsupported platforms...*/
 #ifdef __APPLE__
 #define __CBAS_SINGLE_THREADED__
 #endif
-
 
 #ifndef __CBAS_SINGLE_THREADED__
 #include <pthread.h>
@@ -49,7 +48,6 @@ static inline void destroy_lsthread(lsthread* t);
 static inline void lock(lsthread* t);
 static inline void step(lsthread* t);
 static void* lsthread_func(void* me_void);
-
 static inline void init_lsthread(lsthread* t){
     pthread_mutex_init(&t->myMutex, NULL);
     pthread_barrier_init(&t->myBarrier, NULL, 2);
@@ -361,7 +359,17 @@ static inline i32 __CBAS__tm_isdst(unsigned char* tm_struct){
    return timeinfo.tm_isdst;
 }
 #define __CBAS__errno (errno)
-
+/*
+static inline i32 __CBAS__pipe(i32* pipefd){
+    int pd[2];
+    int retval;
+    pd[0] = pipefd[0];
+    pd[1] = pipefd[1];
+    retval = pipe(pd);
+    pipefd[0] = pd[0];
+    pipefd[1] = pd[1];
+    return retval;
+}*/
 static inline void __CBAS__mcpy(unsigned char* dst, unsigned char* src, TGT_UMAX sz){
     memcpy(dst, src, sz);
 }
@@ -950,8 +958,12 @@ fn predecl pure noexport tm_year(byte* tm_struct)->int;
 fn predecl pure noexport tm_wday(byte* tm_struct)->int;
 fn predecl pure noexport tm_yday(byte* tm_struct)->int;
 fn predecl pure noexport tm_isdst(byte* tm_struct)->int;
+fn predecl noexport pipe(int* pipefd)->int;
 
-noexport atomic TGT_IMAX errno;
+noexport atomic int errno;
+//POSIX....
+
+
 
 
 //memcpy...
