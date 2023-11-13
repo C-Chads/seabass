@@ -2017,9 +2017,6 @@ fn inline glViewport(
     @inline_C "glViewport($x, $y, $w, $h);"
 end
 
-
-
-
 noexport uint GL_2D;
 noexport uint GL_3D;
 noexport uint GL_3D_COLOR;
