@@ -1,4 +1,6 @@
 
+#guard toc_inline_c
+
 #include <stdmeta/tok_manip.hbas>
 
 /*
