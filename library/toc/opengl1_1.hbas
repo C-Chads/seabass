@@ -438,6 +438,7 @@ MKGLCONST(unsigned,ZOOM_Y)
 */
 #define GLboolean byte
 #define GLbyte sbyte
+#define GLchar sbyte
 #define GLubyte byte
 #define GLshort short
 #define GLushort ushort
@@ -449,7 +450,7 @@ MKGLCONST(unsigned,ZOOM_Y)
 #define GLsizei uint
 #define GLenum uint
 #define GLintptr int*
-#define GLsizeiptr uintptr
+#define GLsizeiptr uint*
 #define GLbitfield uint
 #define GLfloat f32
 #define GLclampf f32
