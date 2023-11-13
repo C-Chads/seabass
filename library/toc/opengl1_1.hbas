@@ -433,6 +433,29 @@ MKGLCONST(unsigned,ZOOM_Y)
 
 ";
 
+/*
+    Types..
+*/
+#define GLboolean byte
+#define GLbyte sbyte
+#define GLubyte byte
+#define GLshort short
+#define GLushort ushort
+#define GLint int
+#define GLuint uint
+#define GLfixed int
+#define GLint64 i64
+#define GLuint64 u64
+#define GLsizei uint
+#define GLenum uint
+#define GLintptr int*
+#define GLsizeiptr uintptr
+#define GLbitfield uint
+#define GLfloat f32
+#define GLclampf f32
+#define GLdouble f64
+#define GLclampd f64
+
 fn inline glAccum(
     uint op,
     float value
