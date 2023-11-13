@@ -1,0 +1,60 @@
+#include <toc_native_user>
+
+class myclass
+    int a
+    int b
+end
+
+int classctr = 0;
+
+method myclass.ctor():
+    this.a = 12;
+    this.b = this.a + 7;
+    classctr++;
+end
+
+method myclass.dtor():
+    classctr--;
+end
+
+fn mutateClass(myclass q, int a, int b):
+    q.a = q.a + a;
+    q.b = q.a * q.b * b;
+end
+
+fn doMath(int a, float b, double c)->byte:
+    int qq = a + b + c;
+    qq++;
+    qq--;
+    switch(qq&1)isOdd isEven;
+    
+    :isEven
+        return a * b * c;
+    :isOdd
+        return a * b * c * (37-3);
+end
+
+
+
+fn pub main(i32 argc, char** argv)->i32:
+    if(argc < 4)
+        println("enter 3 numbers...");
+        sys_exit(1)
+    end
+    doMath(atoi(argv[1]), atof(argv[2]), atof(argv[3]));
+end
+
+fn myFunction(): end
+
+class mytype
+    int a
+end
+
+method mytype.dostuff()->i32:
+    return 12;
+end
+
+
+fn codegen codegen_main():
+    cg_emitC(SEABASS_STDLIB_PREFIX);
+end

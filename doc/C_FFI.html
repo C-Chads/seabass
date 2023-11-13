@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>153</title>
+    <script></script>
+  </head>
+  <body>
+    <!-- Content -->
+    <center>
+    <h1>
+        Seabass Foreign Function Interfacing with C
+    </h1>
+    <hr>
+    <img src="../logo.png" alt="logo" style="width:100%">
+    </center>
+    <hr>
+    <!-- Index-->
+    <div style="margin-left:10%;">
+        <a href="../index.html">Main page</a><br>
+    </div>
+    <hr>
+    <div style="margin-left:10%;">
+        <a href="#namemangle">Name Mangling schemes used by Seabass</a><br>
+        <a href="#inlinec">asm and inline_C</a><br>
+        <a href="#license">License</a><br>
+    </div>
+    <hr>
+    <p>
+        Welcome, beloved.
+        <br><i>Saying, Blessed are they whose iniquities are forgiven, and whose sins are covered.</i> - Romans 4:7
+    </p>
+    <p>This page should teach you everything you need to know in order
+    to interop between C and Seabass.</p>
+    <hr>
+    <center>
+    <h2 id="namemangle">Name Mangling schemes used by Seabass</h2>
+    </center>
+    <hr>
+    <p>
+        The first and most important thing you need to know about seabass is that it
+        heavily leverages name mangling. All identifiers in the program are mangled,
+        excluding global symbols called "main" or "_start". This name mangling scheme
+        is done to prevent accidental collisions by seabass code with C libraries
+        which might be included in the same C compilation unit (for inline optimization).
+    </p>
+    <p>The `toc` translator originally written for Seabass performs the following name mangling:</p>
+    <p>
+    Methods are internally mangled using this scheme:
+    </p>
+    <pre><code>
+    __method_TYPENAME_____METHODNAME
+    </code></pre>
+    <p>methods always take a pointer as their first argument.</p>
+    
+    
+    
+    
+    <p>All global functions and variables are mangled to have</p>
+    <pre><code>
+    __CBAS__
+    </code></pre>
+    <p>All types are mangled to have</p>
+    <pre><code>
+    __CBAS__type_
+    </code></pre>
+    <p>Before them, and all local variables are mangled to have</p>
+    <pre><code>
+    __cbas_local_variable_mangled_name_
+    </code></pre>
+    <p>Before them.</p>
+    
+    
+    <p>
+    This declaration:
+    </p>
+    <pre><code>
+    fn myFunction(): end
+    </code></pre>
+    
+    <p>
+    would be converted to this C code:
+    </p>
+    
+    <pre><code>
+    static void __CBAS__myFunction()
+    {
+        
+
+        
+    }
+    </code></pre>
+    
+    <p>
+    This method:
+    </p>
+    <pre><code>
+    method mytype.dostuff()->i32:
+        return 12;
+    end
+    </code></pre>
+    
+    <p>
+    would be converted to this C code:
+    </p>
+    
+    <pre><code>
+    static int __CBAS____method_mytype_____dostuff(struct __CBAS__type__mytype* __cbas_local_variable_mangled_name_this)
+    {
+        
+        return (int)(12ull);
+        
+    }
+    </code></pre>
+    
+    
+    <p>
+    dispatch tables are generated with mangled names like this
+    </p>
+    <pre><code>
+    __cbas_dispatchtable_switch__X_____
+    </code></pre>
+    <p>where X is replaced by some integer.</p>
+    <p>Taking in everything you've learned so far, here is an example program in seabass:</p>
+    
+    <pre><code>
+    #include &lttoc_native_user&gt
+    
+    class myclass
+        int a
+        int b
+    end
+    
+    int classctr = 0;
+    
+    method myclass.ctor():
+        this.a = 12;
+        this.b = this.a + 7;
+        classctr++;
+    end
+    
+    method myclass.dtor():
+        classctr--;
+    end
+    
+    fn mutateClass(myclass q, int a, int b):
+        q.a = q.a + a;
+        q.b = q.a * q.b * b;
+    end
+    
+    fn doMath(int a, float b, double c)->byte:
+        int qq = a + b + c;
+        qq++;
+        qq--;
+        switch(qq&1)isOdd isEven;
+        
+        :isEven
+            return a * b * c;
+        :isOdd
+            return a * b * c * (37-3);
+    end
+    
+    
+    
+    fn pub main(i32 argc, char** argv)->i32:
+        if(argc < 4)
+            println("enter 3 numbers...");
+            sys_exit(1)
+        end
+        doMath(atoi(argv[1]), atof(argv[2]), atof(argv[3]));
+    end
+    
+    fn myFunction(): end
+    
+    class mytype
+        int a
+    end
+    
+    method mytype.dostuff()->i32:
+        return 12;
+    end
+    
+    
+    fn codegen codegen_main():
+        cg_emitC(SEABASS_STDLIB_PREFIX);
+    end
+    </code></pre>
+    <p>And here are the relevant portions of the generated source code:</p>
+    <pre><code>
+    
+    //from the type generation section....
+    struct __CBAS__type__myclass{
+        int  __CBAS__member__a;
+        int  __CBAS__member__b;
+    } ;
+    struct __CBAS__type__mytype{
+        int  __CBAS__member__a;
+    } ;
+    
+    //global variables section...
+    static int __CBAS__classctr = 0ll;
+    
+    //function predeclaration section...
+    static void __CBAS____method_myclass_____ctor(struct __CBAS__type__myclass* __cbas_local_variable_mangled_name_this);
+    static void __CBAS____method_myclass_____dtor(struct __CBAS__type__myclass* __cbas_local_variable_mangled_name_this);
+    static void __CBAS__mutateClass(struct __CBAS__type__myclass* __cbas_local_variable_mangled_name_q,int __cbas_local_variable_mangled_name_a,int __cbas_local_variable_mangled_name_b);
+    static unsigned char __CBAS__doMath(int __cbas_local_variable_mangled_name_a,float __cbas_local_variable_mangled_name_b,double __cbas_local_variable_mangled_name_c);
+    int main(int __cbas_local_variable_mangled_name_argc,unsigned char** __cbas_local_variable_mangled_name_argv);
+    static void __CBAS__myFunction();
+    static int __CBAS____method_mytype_____dostuff(struct __CBAS__type__mytype* __cbas_local_variable_mangled_name_this);
+    
+    
+    //generated function bodies
+    static void __CBAS____method_myclass_____ctor(struct __CBAS__type__myclass* __cbas_local_variable_mangled_name_this)
+    {
+        ((((struct __CBAS__type__myclass*)(__cbas_local_variable_mangled_name_this))->__CBAS__member__a)) = ((int)(12ull));
+        ((((struct __CBAS__type__myclass*)(__cbas_local_variable_mangled_name_this))->__CBAS__member__b)) = ((int)(((long long)((((struct __CBAS__type__myclass*)(__cbas_local_variable_mangled_name_this))->__CBAS__member__a))) + ((long long)(7ull))));
+        (__CBAS__classctr)++;
+        
+    }
+    static void __CBAS____method_myclass_____dtor(struct __CBAS__type__myclass* __cbas_local_variable_mangled_name_this)
+    {
+        (__CBAS__classctr)--;
+        
+    }
+    static void __CBAS__mutateClass(struct __CBAS__type__myclass* __cbas_local_variable_mangled_name_q,int __cbas_local_variable_mangled_name_a,int __cbas_local_variable_mangled_name_b)
+    {
+        ((((struct __CBAS__type__myclass*)(__cbas_local_variable_mangled_name_q))->__CBAS__member__a)) = (((int)((((struct __CBAS__type__myclass*)(__cbas_local_variable_mangled_name_q))->__CBAS__member__a))) + ((int)(__cbas_local_variable_mangled_name_a)));
+        ((((struct __CBAS__type__myclass*)(__cbas_local_variable_mangled_name_q))->__CBAS__member__b)) = ((((int)((((struct __CBAS__type__myclass*)(__cbas_local_variable_mangled_name_q))->__CBAS__member__a))) * ((int)((((struct __CBAS__type__myclass*)(__cbas_local_variable_mangled_name_q))->__CBAS__member__b)))) * ((int)(__cbas_local_variable_mangled_name_b)));
+        
+    }
+    static unsigned char __CBAS__doMath(int __cbas_local_variable_mangled_name_a,float __cbas_local_variable_mangled_name_b,double __cbas_local_variable_mangled_name_c)
+    {
+        const void* const __cbas_dispatchtable_switch__0_____[2ull] = {
+        &&__cbas_mangled_label__isOdd, &&__cbas_mangled_label__isEven
+        };
+        int __cbas_local_variable_mangled_name_qq;
+        (__cbas_local_variable_mangled_name_qq) = ((int)(((double)(((float)(__cbas_local_variable_mangled_name_a)) + ((float)(__cbas_local_variable_mangled_name_b)))) + ((double)(__cbas_local_variable_mangled_name_c))));
+        (__cbas_local_variable_mangled_name_qq)++;
+        (__cbas_local_variable_mangled_name_qq)--;
+        goto *__cbas_dispatchtable_switch__0_____[(long long)(((unsigned long long)(__cbas_local_variable_mangled_name_qq)) & (1ull))];;
+        __cbas_mangled_label__isEven:1;/*Statement with no effect generated for label...*/
+        
+        return (unsigned char)(((double)(((float)(__cbas_local_variable_mangled_name_a)) * ((float)(__cbas_local_variable_mangled_name_b)))) * ((double)(__cbas_local_variable_mangled_name_c)));
+        __cbas_mangled_label__isOdd:1;/*Statement with no effect generated for label...*/
+        
+        return (unsigned char)((((double)(((float)(__cbas_local_variable_mangled_name_a)) * ((float)(__cbas_local_variable_mangled_name_b)))) * ((double)(__cbas_local_variable_mangled_name_c))) * ((double)((37ull) - (3ull))));
+        
+    }
+    int main(int __cbas_local_variable_mangled_name_argc,unsigned char** __cbas_local_variable_mangled_name_argv)
+    {
+        if(((long long)(__cbas_local_variable_mangled_name_argc)) < ((long long)(4ull))){
+    
+        __CBAS__println((((unsigned char*)"enter 3 numbers...")));
+        __CBAS__sys_exit(((int)(1ull)));
+        }
+    
+        __CBAS__doMath(((int)(__CBAS__atoi(((unsigned char*)(((unsigned char**)(__cbas_local_variable_mangled_name_argv))[(long long)(1ull)]))))),((float)(__CBAS__atof(((unsigned char*)(((unsigned char**)(__cbas_local_variable_mangled_name_argv))[(long long)(2ull)]))))),(__CBAS__atof(((unsigned char*)(((unsigned char**)(__cbas_local_variable_mangled_name_argv))[(long long)(3ull)])))));
+        
+    }
+    static void __CBAS__myFunction()
+    {
+        
+    
+        
+    }
+    static int __CBAS____method_mytype_____dostuff(struct __CBAS__type__mytype* __cbas_local_variable_mangled_name_this)
+    {
+        
+        return (int)(12ull);
+        
+    }
+    </code></pre>
+    <p>Notice that `main` is not mangled.</p>
+    <hr>
+    <center>
+    <h2 id="inlinec">asm and inline_C</h2>
+    </center>
+    <hr>
+    <p></p>
+    
+    <hr>
+    <center>
+    <h2 id="license">License</h2>
+    </center>
+    <hr>
+    <pre>
+    Statement of Purpose
+    
+    The laws of most jurisdictions throughout the world automatically confer 
+    exclusive Copyright and Related Rights (defined below) upon the creator 
+    and subsequent owner(s) (each and all, an "owner") of an original work 
+    of authorship and/or a database (each, a "Work").
+    
+    Certain owners wish to permanently relinquish those rights to a Work for the
+    purpose of contributing to a commons of creative, cultural and scientific works
+    ("Commons") that the public can reliably and without fear of later claims of
+    infringement build upon, modify, incorporate in other works, reuse and redistribute
+    as freely as possible in any form whatsoever and for any purposes, including
+    without limitation commercial purposes. These owners may contribute to the
+    Commons to promote the ideal of a free culture and the further production of
+    creative, cultural and scientific works, or to gain reputation or greater
+    distribution for their Work in part through the use and efforts of others.
+    
+    For these and/or other purposes and motivations, and without any expectation of
+    additional consideration or compensation, the person associating CC0 with a
+    Work (the "Affirmer"), to the extent that he or she is an owner of Copyright
+    and Related Rights in the Work, voluntarily elects to apply CC0 to the Work and
+    publicly distribute the Work under its terms, with knowledge of his or her
+    Copyright and Related Rights in the Work and the meaning and intended legal effect of CC0 on those rights.
+    
+    1. Copyright and Related Rights. A Work made available under CC0 may be
+    protected by copyright and related or neighboring rights
+    ("Copyright and Related Rights"). Copyright and Related Rights include, but
+    are not limited to, the following:
+    
+    the right to reproduce, adapt, distribute, perform, display, communicate, and translate a Work;
+    moral rights retained by the original author(s) and/or performer(s);
+    publicity and privacy rights pertaining to a person's image or likeness depicted in a Work;
+    rights protecting against unfair competition in regards to a Work, subject to the limitations in paragraph 4(a), below;
+    rights protecting the extraction, dissemination, use and reuse of data in a Work;
+    database rights (such as those arising under Directive 96/9/EC of the European Parliament and of the
+    Council of 11 March 1996 on the legal protection of databases, and under any national implementation
+    thereof, including any amended or successor version of such directive); and other similar, 
+    equivalent or corresponding rights throughout the world based on applicable law or treaty,
+    and any national implementations thereof.
+    2. Waiver. To the greatest extent permitted by, but not in contravention of, applicable law,
+    Affirmer hereby overtly, fully, permanently, irrevocably and unconditionally waives, abandons, and
+    surrenders all of Affirmer's Copyright and Related Rights and associated claims and causes of action,
+    whether now known or unknown (including existing as well as future claims and causes of action),
+    in the Work (i) in all territories worldwide, (ii) for the maximum duration provided by applicable
+    law or treaty (including future time extensions), (iii) in any current or future medium and for any
+    number of copies, and (iv) for any purpose whatsoever, including without limitation commercial,
+    advertising or promotional purposes (the "Waiver"). Affirmer makes the Waiver for the benefit of each
+    member of the public at large and to the detriment of Affirmer's heirs and successors, fully intending
+    that such Waiver shall not be subject to revocation, rescission, cancellation, termination, or any other
+    legal or equitable action to disrupt the quiet enjoyment of the Work by the public as contemplated by
+    Affirmer's express Statement of Purpose.
+    
+    3. Public License Fallback. Should any part of the Waiver for any reason be judged legally invalid or
+    ineffective under applicable law, then the Waiver shall be preserved to the maximum extent permitted
+    taking into account Affirmer's express Statement of Purpose. In addition, to the extent the Waiver is
+    so judged Affirmer hereby grants to each affected person a royalty-free, non transferable, 
+    non sublicensable, non exclusive, irrevocable and unconditional license to exercise Affirmer's 
+    Copyright and Related Rights in the Work (i) in all territories worldwide, (ii) for the maximum 
+    duration provided by applicable law or treaty (including future time extensions), (iii) in any current 
+    or future medium and for any number of copies, and (iv) for any purpose whatsoever, including without 
+    limitation commercial, advertising or promotional purposes (the "License"). The License shall be deemed 
+    effective as of the date CC0 was applied by Affirmer to the Work. Should any part of the License for any 
+    reason be judged legally invalid or ineffective under applicable law, such partial invalidity or 
+    ineffectiveness shall not invalidate the remainder of the License, and in such case Affirmer hereby 
+    affirms that he or she will not (i) exercise any of his or her remaining Copyright and Related Rights 
+    in the Work or (ii) assert any associated claims and causes of action with respect to the Work, 
+    in either case contrary to Affirmer's express Statement of Purpose.
+    
+    4. Limitations and Disclaimers.
+    
+    No trademark or patent rights held by Affirmer are waived, abandoned, surrendered, licensed
+    or otherwise affected by this document.
+    Affirmer offers the Work as-is and makes no representations or warranties of any kind 
+    concerning the Work, express, implied, statutory or otherwise, including without limitation 
+    warranties of title, merchantability, fitness for a particular purpose, non infringement,
+    or the absence of latent or other defects, accuracy, or the present or absence of errors, 
+    whether or not discoverable, all to the greatest extent permissible under applicable law.
+    Affirmer disclaims responsibility for clearing rights of other persons that may apply to 
+    the Work or any use thereof, including without limitation any person's Copyright and Related 
+    Rights in the Work. Further, Affirmer disclaims responsibility for obtaining any necessary consents, 
+    permissions or other rights required for any use of the Work.
+    Affirmer understands and acknowledges that Creative Commons is not a party to this document and has 
+    no duty or obligation with respect to this CC0 or use of the Work.
+    
+    </pre>
+    <p></p>
+  </body>
+</html>
+
+
