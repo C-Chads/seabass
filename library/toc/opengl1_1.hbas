@@ -1,4 +1,6 @@
 
+#guard OPENGL_1_1
+
 #include <toc/inlinec.hbas>
 
 data codegen string OPENGL_PREFIX "
