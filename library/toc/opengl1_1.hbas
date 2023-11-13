@@ -6,19 +6,6 @@
 data codegen string OPENGL_PREFIX "
 #include <GL/gl.h>
 #define MKGLCONST(t,x) const t __CBAS__GL_##x = GL_##x;
-//glAccum
-//MKGLCONST(unsigned,ACCUM)
-//MKGLCONST(unsigned,LOAD)
-//MKGLCONST(unsigned,MULT)
-//MKGLCONST(unsigned,RETURN)
-//glAlphaFunc
-//MKGLCONST(unsigned,NEVER)
-//MKGLCONST(unsigned,LESS)
-//MKGLCONST(unsigned,LEQUAL)
-//MKGLCONST(unsigned,GREATER)
-//MKGLCONST(unsigned,NOTEQUAL)
-//MKGLCONST(unsigned,GEQUAL)
-//MKGLCONST(unsigned,COLOR_TEXTURE)
 //from constants list...
 MKGLCONST(unsigned,2D)
 MKGLCONST(unsigned,3D)
