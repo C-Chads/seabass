@@ -321,10 +321,77 @@
     <hr>
     <p>Seabass possesses a port of all of OpenGL 1.1 into the language.<br>
     Here are some excerpts from it:</p>
-    <p></p>
+    <p>I ported the constants my declaring unsigned integer constants inside of a
+    codegen string literal:</p>
     <pre><code>
+    data codegen string OPENGL_PREFIX "
+    #include <GL/gl.h>
+    #define MKGLCONST(t,x) const t __CBAS__GL_##x = GL_##x;
+    //from constants list...
+    MKGLCONST(unsigned,2D)
+    MKGLCONST(unsigned,3D)
+    MKGLCONST(unsigned,3D_COLOR)
+    MKGLCONST(unsigned,3D_COLOR_TEXTURE)
+    MKGLCONST(unsigned,4D_COLOR_TEXTURE)
+    MKGLCONST(unsigned,2_BYTES)
+    MKGLCONST(unsigned,3_BYTES)
+    MKGLCONST(unsigned,4_BYTES)
+    MKGLCONST(unsigned,ACCUM)
+    MKGLCONST(unsigned,ACCUM_ALPHA_BITS)
+    MKGLCONST(unsigned,ACCUM_BLUE_BITS)
+    MKGLCONST(unsigned,ACCUM_BUFFER_BIT)
+    MKGLCONST(unsigned,ACCUM_CLEAR_VALUE)
+    MKGLCONST(unsigned,ACCUM_GREEN_BITS)
+    MKGLCONST(unsigned,ACCUM_RED_BITS)
+    MKGLCONST(unsigned,ADD)
+    //[...]
+    MKGLCONST(unsigned,ZERO)
+    MKGLCONST(unsigned,ZOOM_X)
+    MKGLCONST(unsigned,ZOOM_Y)
     
+    #undef MKGLCONST
+    
+    ";
     </code></pre>
+    <p>Functions were ported one-by-one like so:</p>
+    <pre><code>
+    fn inline glDrawArrays(uint mode, int first, uint count):
+        @inline_C "glDrawArrays($mode, $first, $count);"
+    end
+    fn inline glDrawBuffer(uint mode):
+        @inline_C "glDrawBuffer($mode);"
+    end
+    fn inline glDrawElements(uint mode, uint count, uint t, byte* indices):
+        @inline_C "glDrawElements($mode, $count, $t, $indices);"
+    end
+    fn inline glDrawPixels(uint width, uint height, uint f, uint t, byte* p):
+        @inline_C "glDrawPixels($width, $height, $f, $t, $p);"
+    end
+    fn inline glEdgeFlag(byte flag):
+        @inline_C "glEdgeFlag($flag);"
+    end
+    fn inline glEdgeFlagv(byte* flag):
+        @inline_C "glEdgeFlagv($flag);"
+    end
+    fn inline glEdgeFlagPointer(uint stride, byte* p):
+        @inline_C "glEdgeFlagPointer($stride, $p);"
+    end
+    fn inline glEnable(uint cap):
+        @inline_C "glEnable($cap);"
+    end
+    fn inline glDisable(uint cap):
+        @inline_C "glDisable($cap);"
+    end
+    fn inline glEnableClientState(uint cap):
+        @inline_C "glEnableClientState($cap);"
+    end
+    fn inline glDisableClientState(uint cap):
+        @inline_C "glDisableClientState($cap);"
+    end
+    </code></pre>
+    <p></p>
+    
+    
     <hr>
     <center>
     <h2 id="license">License</h2>
