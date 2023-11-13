@@ -1,5 +1,5 @@
 #include <toc_native_user>
-
+#include <toc/inlinec.hbas>
 class myclass
     int a
     int b
@@ -42,6 +42,10 @@ fn pub main(i32 argc, char** argv)->i32:
         sys_exit(1)
     end
     doMath(atoi(argv[1]), atof(argv[2]), atof(argv[3]));
+    @inline_C"
+        printf(\"argc is %d\\n\", $argc);
+    "
+    
 end
 
 fn myFunction(): end

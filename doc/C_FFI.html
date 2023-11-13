@@ -121,6 +121,12 @@
     __cbas_dispatchtable_switch__X_____
     </code></pre>
     <p>where X is replaced by some integer.</p>
+    
+    <pre><code>
+        __cbas_mangled_label__
+    </code></pre>
+    <p>is used for labels.</p>
+    
     <p>Taking in everything you've learned so far, here is an example program in seabass:</p>
     
     <pre><code>
@@ -277,6 +283,35 @@
     <h2 id="inlinec">asm and inline_C</h2>
     </center>
     <hr>
+    <p>the `asm` statement is used to write 'target' code in-line with the rest of
+    your code. The `toc` translator respects this intent. For instance, you could
+    write this in your Seabass program:</p>
+    
+    <pre><code>
+    asm("puts(\"Hello world!\")");
+    </code></pre>
+    <p>It will then be inserted in the proper location in the generated code.</p>
+    <p>It is a real hassle, though, to write out mangled names yourself by-hand.
+    Luckily, a metaprogram was written to make this easy, called `inline_C`</p>
+    <pre><code>
+    fn pub main(i32 argc, char** argv)->i32:
+        @inline_C"
+            printf(\"argc is %d\\n\", $argc);
+        "
+    end
+    </code></pre>
+    <p>inline_C recognizes four special characters as "manglers". they are:</p>
+    <p><code>$</code> (dollar sign) - local variables</p>
+    <p><code>@</code> (at sign) - global symbols</p>
+    <p><code>`</code> (grave / backquote) - struct members</p>
+    <p><code>#</code> (pound sign / hashtag) - goto labels</p>
+    <p>Any time that you want to reference an identifier from Seabass, use one of
+    these symbols immediately before writing that identifier.</p>
+    <p>Note that you cannot escape these symbols inside of `inline_C`. If you
+    need to write a '$' into your C code, you should use `asm`.</p>
+    <p></p>
+    <p></p>
+    <p></p>
     <p></p>
     
     <hr>

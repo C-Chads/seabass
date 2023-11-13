@@ -30,12 +30,6 @@
     u64 i;
     for(i = 0; inlist.text[i]; i++)
         char z = inlist.text[i];
-        if(z == '\\')
-            i++;
-            c++; //hehe
-            c++; //hehe 2
-            continue
-        end
         //Variable reference... $ for local, @ for global, `for member...
         if(z == '$' || z == '@' || z == '`' || z == '#')
             u64 calc_begin = i - (c);
