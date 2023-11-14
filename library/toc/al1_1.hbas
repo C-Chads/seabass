@@ -7,57 +7,6 @@
 data codegen string AL_1_1_PREFIX "
 #include <AL/alc.h>
 #include <AL/al.h>
-#define MKALCONST(t,x) const t __CBAS__AL_##x = AL_##x;
-#define MKALCCONST(t,x) const t __CBAS__ALC_##x = ALC_##x;
-MKALCONST(unsigned,INVALID_VALUE)
-MKALCONST(unsigned,INVALID_OPERATION)
-MKALCONST(unsigned,INVALID_NAME)
-MKALCONST(unsigned,INVALID_ENUM)
-MKALCONST(unsigned,OUT_OF_MEMORY)
-MKALCONST(unsigned,NO_ERROR)
-MKALCONST(unsigned,FREQUENCY)
-MKALCONST(unsigned,BITS)
-MKALCONST(unsigned,CHANNELS)
-MKALCONST(unsigned,SIZE)
-MKALCONST(unsigned,PITCH)
-MKALCONST(unsigned,GAIN)
-MKALCONST(unsigned,MIN_GAIN)
-MKALCONST(unsigned,MAX_GAIN)
-MKALCONST(unsigned,MAX_DISTANCE)
-MKALCONST(unsigned,ROLLOFF_FACTOR)
-MKALCONST(unsigned,CONE_OUTER_GAIN)
-MKALCONST(unsigned,CONE_INNER_ANGLE)
-MKALCONST(unsigned,CONE_OUTER_ANGLE)
-MKALCONST(unsigned,REFERENCE_DISTANCE)
-MKALCONST(unsigned,POSITION)
-MKALCONST(unsigned,VELOCITY)
-MKALCONST(unsigned,DIRECTION)
-MKALCONST(unsigned,SOURCE_RELATIVE)
-MKALCONST(unsigned,SOURCE_TYPE)
-MKALCONST(unsigned,LOOPING)
-MKALCONST(unsigned,BUFFER)
-MKALCONST(unsigned,SOURCE_STATE)
-MKALCONST(unsigned,BUFFERS_QUEUED)
-MKALCONST(unsigned,BUFFERS_PROCESSED)
-MKALCONST(unsigned,SEC_OFFSET)
-MKALCONST(unsigned,SAMPLE_OFFSET)
-MKALCONST(unsigned,BYTE_OFFSET)
-MKALCONST(unsigned,ORIENTATION)
-MKALCONST(unsigned,DOPPLER_FACTOR)
-MKALCONST(unsigned,SPEED_OF_SOUND)
-MKALCONST(unsigned,DISTANCE_MODEL)
-//ALC constants...
-MKALCCONST(unsigned,FREQUENCY)
-MKALCCONST(unsigned,MONO_SOURCES)
-MKALCCONST(unsigned,STEREO_SOURCES)
-MKALCCONST(unsigned,REFRESH)
-MKALCCONST(unsigned,SYNC)
-MKALCCONST(unsigned,NO_ERROR)
-MKALCCONST(unsigned,INVALID_DEVICE)
-MKALCCONST(unsigned,INVALID_CONTEXT)
-MKALCCONST(unsigned,INVALID_ENUM)
-MKALCCONST(unsigned,INVALID_VALUE)
-MKALCCONST(unsigned,OUT_OF_MEMORY)
 ";
 #define ALboolean byte
 #define ALchar sbyte
@@ -439,54 +388,53 @@ fn inline alSpeedOfSound(ALfloat b):
 end
 
 //noexport uint AL_
-noexport uint AL_INVALID_VALUE;
-noexport uint AL_INVALID_OPERATION;
-noexport uint AL_INVALID_NAME;
-noexport uint AL_INVALID_ENUM;
-noexport uint AL_OUT_OF_MEMORY;
-noexport uint AL_NO_ERROR;
-noexport uint AL_FREQUENCY;
-noexport uint AL_BITS;
-noexport uint AL_CHANNELS;
-noexport uint AL_SIZE;
-noexport uint AL_PITCH;
-noexport uint AL_GAIN;
-noexport uint AL_MIN_GAIN;
-noexport uint AL_MAX_GAIN;
-noexport uint AL_MAX_DISTANCE;
-noexport uint AL_ROLLOFF_FACTOR;
-noexport uint AL_CONE_OUTER_GAIN;
-noexport uint AL_CONE_INNER_ANGLE;
-noexport uint AL_CONE_OUTER_ANGLE;
-noexport uint AL_REFERENCE_DISTANCE;
-noexport uint AL_POSITION;
-noexport uint AL_VELOCITY;
-noexport uint AL_DIRECTION;
-noexport uint AL_SOURCE_RELATIVE;
-noexport uint AL_SOURCE_TYPE;
-noexport uint AL_LOOPING;
-noexport uint AL_BUFFER;
-noexport uint AL_SOURCE_STATE;
-noexport uint AL_BUFFERS_QUEUED;
-noexport uint AL_BUFFERS_PROCESSED;
-noexport uint AL_SEC_OFFSET;
-noexport uint AL_SAMPLE_OFFSET;
-noexport uint AL_BYTE_OFFSET;
-noexport uint AL_ORIENTATION;
-noexport uint AL_DOPPLER_FACTOR;
-noexport uint AL_SPEED_OF_SOUND;
-noexport uint AL_DISTANCE_MODEL;
-
-noexport uint ALC_FREQUENCY;
-noexport uint ALC_MONO_SOURCES;
-noexport uint ALC_STEREO_SOURCES;
-noexport uint ALC_REFRESH;
-noexport uint ALC_SYNC;
-noexport uint ALC_NO_ERROR;
-noexport uint ALC_INVALID_DEVICE;
-noexport uint ALC_INVALID_CONTEXT;
-noexport uint ALC_INVALID_ENUM;
-noexport uint ALC_INVALID_VALUE;
-noexport uint ALC_OUT_OF_MEMORY;
+@wrap_c_constant uint AL_INVALID_VALUE;
+@wrap_c_constant uint AL_INVALID_OPERATION;
+@wrap_c_constant uint AL_INVALID_NAME;
+@wrap_c_constant uint AL_INVALID_ENUM;
+@wrap_c_constant uint AL_OUT_OF_MEMORY;
+@wrap_c_constant uint AL_NO_ERROR;
+@wrap_c_constant uint AL_FREQUENCY;
+@wrap_c_constant uint AL_BITS;
+@wrap_c_constant uint AL_CHANNELS;
+@wrap_c_constant uint AL_SIZE;
+@wrap_c_constant uint AL_PITCH;
+@wrap_c_constant uint AL_GAIN;
+@wrap_c_constant uint AL_MIN_GAIN;
+@wrap_c_constant uint AL_MAX_GAIN;
+@wrap_c_constant uint AL_MAX_DISTANCE;
+@wrap_c_constant uint AL_ROLLOFF_FACTOR;
+@wrap_c_constant uint AL_CONE_OUTER_GAIN;
+@wrap_c_constant uint AL_CONE_INNER_ANGLE;
+@wrap_c_constant uint AL_CONE_OUTER_ANGLE;
+@wrap_c_constant uint AL_REFERENCE_DISTANCE;
+@wrap_c_constant uint AL_POSITION;
+@wrap_c_constant uint AL_VELOCITY;
+@wrap_c_constant uint AL_DIRECTION;
+@wrap_c_constant uint AL_SOURCE_RELATIVE;
+@wrap_c_constant uint AL_SOURCE_TYPE;
+@wrap_c_constant uint AL_LOOPING;
+@wrap_c_constant uint AL_BUFFER;
+@wrap_c_constant uint AL_SOURCE_STATE;
+@wrap_c_constant uint AL_BUFFERS_QUEUED;
+@wrap_c_constant uint AL_BUFFERS_PROCESSED;
+@wrap_c_constant uint AL_SEC_OFFSET;
+@wrap_c_constant uint AL_SAMPLE_OFFSET;
+@wrap_c_constant uint AL_BYTE_OFFSET;
+@wrap_c_constant uint AL_ORIENTATION;
+@wrap_c_constant uint AL_DOPPLER_FACTOR;
+@wrap_c_constant uint AL_SPEED_OF_SOUND;
+@wrap_c_constant uint AL_DISTANCE_MODEL;
+@wrap_c_constant uint ALC_FREQUENCY;
+@wrap_c_constant uint ALC_MONO_SOURCES;
+@wrap_c_constant uint ALC_STEREO_SOURCES;
+@wrap_c_constant uint ALC_REFRESH;
+@wrap_c_constant uint ALC_SYNC;
+@wrap_c_constant uint ALC_NO_ERROR;
+@wrap_c_constant uint ALC_INVALID_DEVICE;
+@wrap_c_constant uint ALC_INVALID_CONTEXT;
+@wrap_c_constant uint ALC_INVALID_ENUM;
+@wrap_c_constant uint ALC_INVALID_VALUE;
+@wrap_c_constant uint ALC_OUT_OF_MEMORY;
 
 
