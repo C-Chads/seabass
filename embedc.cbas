@@ -43,7 +43,7 @@ fn pub main(i32 argc, char** argv)->i32:
             mmove(buf+i+1,buf+i,strlen(buf+i));
             buf[i] = '\\';
             i++;
-        elif(buf[i] > 127 || buf[i] == '\v' || buf[i] == '\f' || buf[i] == '\r')
+        elif(buf[i] > 127 || buf[i] == '\v' || buf[i] == '\f')
             buf[i] = ' ';
         elif(buf[i] == '\\')
             mmove(buf+i+1,buf+i,strlen(buf+i));
