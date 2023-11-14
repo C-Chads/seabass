@@ -9,8 +9,6 @@ data codegen string AL_1_1_PREFIX "
 #include <AL/al.h>
 #define MKALCONST(t,x) const t __CBAS__AL_##x = AL_##x;
 #define MKALCCONST(t,x) const t __CBAS__ALC_##x = ALC_##x;
-//MKALCONST(unsigned,DATA)
-
 MKALCONST(unsigned,INVALID_VALUE)
 MKALCONST(unsigned,INVALID_OPERATION)
 MKALCONST(unsigned,INVALID_NAME)
@@ -48,7 +46,7 @@ MKALCONST(unsigned,ORIENTATION)
 MKALCONST(unsigned,DOPPLER_FACTOR)
 MKALCONST(unsigned,SPEED_OF_SOUND)
 MKALCONST(unsigned,DISTANCE_MODEL)
-
+//ALC constants...
 MKALCCONST(unsigned,FREQUENCY)
 MKALCCONST(unsigned,MONO_SOURCES)
 MKALCCONST(unsigned,STEREO_SOURCES)
@@ -60,7 +58,6 @@ MKALCCONST(unsigned,INVALID_CONTEXT)
 MKALCCONST(unsigned,INVALID_ENUM)
 MKALCCONST(unsigned,INVALID_VALUE)
 MKALCCONST(unsigned,OUT_OF_MEMORY)
-
 ";
 #define ALboolean byte
 #define ALchar sbyte
