@@ -1763,6 +1763,9 @@ static inline void expr_parse_ident(expr_node** targ){
 }
 
 static inline void expr_parse_fcall(expr_node** targ, int is_no_parentheses_mode){
+#ifndef SEABASS_FEATURE_ZARG_FUNCTIONS_DONT_REQUIRE_PARENTHESES
+    is_no_parentheses_mode = 0; //forced
+#endif
     uint64_t required_arguments;
     int found_function = 0;
     unsigned long i;
@@ -2151,9 +2154,11 @@ void expr_parse_terminal(expr_node** targ){
     ){
         expr_parse_fcall(targ,0);
         return;
+#ifdef SEABASS_FEATURE_ZARG_FUNCTIONS_DONT_REQUIRE_PARENTHESES
     }else if(peek()->data == TOK_IDENT && peek_is_fname()){
         expr_parse_fcall(targ, 1);
         return;
+#endif
     }else if(peek()->data == TOK_IDENT){
         expr_parse_ident(targ);
         return;
