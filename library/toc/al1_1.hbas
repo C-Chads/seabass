@@ -4,7 +4,7 @@
 
 #include <toc/inlinec.hbas>
 
-data codegen string OPENAL_PREFIX "
+data codegen string AL_1_1_PREFIX "
 #include <AL/alc.h>
 #include <AL/al.h>
 #define MKALCONST(t,x) const t __CBAS__AL_##x = AL_##x;

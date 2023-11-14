@@ -3,7 +3,7 @@
 
 #include <toc/inlinec.hbas>
 
-data codegen string OPENGL_PREFIX "
+data codegen string GL_1_1_PREFIX "
 #include <GL/gl.h>
 #define MKGLCONST(t,x) const t __CBAS__GL_##x = GL_##x;
 //from constants list...
