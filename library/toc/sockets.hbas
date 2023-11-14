@@ -24,16 +24,6 @@ data codegen string INTERNET_SOCKETS_PREFIX "
 ";
 
 
-
-fn inline EAGAIN()->int:
-    @inline_C "return EAGAIN;"
-end
-
-fn inline EWOULDBLOCK()->int:
-    @inline_C "return EWOULDBLOCK;"
-end
-
-
 class px_socket
     int sock_fd
 end
