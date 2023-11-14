@@ -74,6 +74,7 @@ language constructs, and abstractions, but entirely new programming languages.
 Here is a minimal complete example program, which you can find under 'tests2/toc_fib_example.cbas'
 
 ```c
+
 #include <toc_native_user>
 
 
@@ -167,22 +168,22 @@ fn mutoa(char* dest, uint value):
     end
     /*Determine the highest power of 10.*/
     if(1)
-        uint pow
-        pow = 1;
-        while(value/pow >= 10)
-            pow = pow * 10; 
+        uint power
+        power = 1;
+        while(value/power >= 10)
+            power = power * 10; 
         end
-        /*found the highest power of 10*/
-        while(pow)
+        /*found the highest powerer of 10*/
+        while(power)
             uint temp
-            temp = value/pow; /*if we had the number 137, we would have gotten
-            100 as our pow. We now divide by pow to get the highest digit.*/
+            temp = value/power; /*if we had the number 137, we would have gotten
+            100 as our power. We now divide by power to get the highest digit.*/
             
             dest[0] = (temp + ('0')); dest++;
             
-            value = value - temp * pow; /*Get rid of the highest digit.*/
+            value = value - temp * power; /*Get rid of the highest digit.*/
             
-            pow = pow / 10 /*Divide pow by 10.*/
+            power = power / 10 /*Divide power by 10.*/
         end
     end
 

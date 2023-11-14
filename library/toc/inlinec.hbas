@@ -89,6 +89,9 @@
     Usage:
     
     @wrap_c_constant uint MY_CONSTANT
+    
+    THIS WRAPPER DOES NO ERROR CHECKING!!!!!
+    BE VERY CAREFUL!!!!
 */
 
 
