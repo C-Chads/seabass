@@ -2,6 +2,7 @@
 #include <toc/bit32.hbas>
 #include <toc/usermode_stdlib.hbas>
 #include <toc/inlinec.hbas>
+#include <toc/sockets.hbas>
 /*
     Compile like this
     cbas toc.cbas
@@ -447,6 +448,9 @@ fn ee():
 end*/
 
 fn codegen codegen_main():
-    cg_emitC(SEABASS_STDLIB_PREFIX);
+    cgstr q
+    q.fromstr(SEABASS_STDLIB_PREFIX);
+    q.addstr(INTERNET_SOCKETS_PREFIX);
+    cg_emitC(q.s);
 end
 

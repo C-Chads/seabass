@@ -45,7 +45,7 @@ end
 
 method inline px_socket.dtor():
     if(this.sock_fd != -1)
-        @inline_C "close($this->`sockfd);"
+        @inline_C "close($this->`sock_fd);"
     end
     this.sock_fd = -1;
 end
@@ -71,7 +71,7 @@ method inline px_socket.connectIPV4(char* address_text, uint port, uint is_udp)-
             close($sock_fd);
             return -1;
         }
-        if(connect(sock_fd, &saddri, sizeof(saddri))){
+        if(connect($sock_fd, (struct sockaddr* )&saddri, sizeof(saddri))){
             errno = ENOTCONN;
             close($sock_fd);
             return -1;
@@ -107,7 +107,7 @@ method inline px_socket.connectIPV6(char* address_text, uint port, uint is_udp)-
             close($sock_fd);
             return -1;
         }
-        if(connect(sock_fd, &saddri, sizeof(saddri))){
+        if(connect($sock_fd, (struct sockaddr* )&saddri, sizeof(saddri))){
             errno = ENOTCONN;
             close($sock_fd);
             return -1;
@@ -139,8 +139,8 @@ method inline px_socket.bindIPV4(uint port, uint is_udp)->int:
         
         saddri.sin_family = AF_INET;
         saddri.sin_port = htons($port);
-        saddri.sin_addr = htonl(inaddr_any);
-        if(bind(sock_fd, &saddri, sizeof(sockaddr_in))){
+        saddri.sin_addr.s_addr = htonl(INADDR_ANY);
+        if(bind($sock_fd, (struct sockaddr* )&saddri, sizeof(struct sockaddr_in))){
             errno = ENOTCONN;
             close($sock_fd);
             return -1;
@@ -171,7 +171,7 @@ method inline px_socket.bindIPV6(uint port, uint is_udp)->int:
         saddri.sin6_family = AF_INET6;
         saddri.sin6_port = htons($port);
         saddri.sin6_addr = in6addr_any;
-        if(bind(sock_fd, (struct sockaddr* )&saddri, sizeof(sockaddr_in6))){
+        if(bind($sock_fd, (struct sockaddr* )&saddri, sizeof(struct sockaddr_in6))){
             errno = ENOTCONN;
             close($sock_fd);
             return -1;
@@ -197,7 +197,7 @@ method inline px_socket.accept(char* addrout, uint maxlen, uint* addrlen)->int:
     int sfd = this.sock_fd;
     int rfd;
     @inline_C "
-        struct sockaddr aa
+        struct sockaddr aa;
         socklen_t slen;
         errno = 0;
         if($addrout){
@@ -208,7 +208,7 @@ method inline px_socket.accept(char* addrout, uint maxlen, uint* addrlen)->int:
     "
     if(rfd < 0)
         //-2 = no connection, but no real error...
-        if(errno == EAGAIN() || errno == EWOULDBLOCK)
+        if(errno == EAGAIN() || errno == EWOULDBLOCK())
             errno = 0;
             return -2;
         end
