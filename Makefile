@@ -74,7 +74,12 @@ string_stdlib_test:
 	
 dirlist:
 	cbas tests2/dirlist.cbas
-	$(CC) $(CFLAGS_CBAS) auto_out.c -o dirlist -lpthread -lm 
+	$(CC) $(CFLAGS_CBAS) auto_out.c -o dirlist -lpthread -lm 	
+
+formatter:
+	cbas tests2/formatter.cbas
+	$(CC) $(CFLAGS_CBAS) auto_out.c -o embedc -lpthread -lm 
+	mv embedc ~/bin/
 
 bigunit_compil_test:
 	cbas tests2/toc_test_lots_of_functions.cbas
@@ -99,4 +104,4 @@ push: clean
 	git push
 
 clean:
-	rm -f *.exe *.out *.bin *.o library/*.exe library/*.out library/*.bin library/*.o library/auto_out.c cbas cbas_dirty cbas_pure cbas_dbg cbas_dbg2 cbas_clean cbas_tcc auto_out.c toc_test fib strtest bigunit dirlist
+	rm -f *.exe *.out *.bin *.o library/*.exe library/*.out library/*.bin library/*.o library/auto_out.c cbas cbas_dirty cbas_pure cbas_dbg cbas_dbg2 cbas_clean cbas_tcc auto_out.c toc_test fib strtest bigunit dirlist embedc

@@ -1,0 +1,72 @@
+#include <toc_native_user>
+/*
+    TOOL FOR TURNING C CODE INTO A STRING LITERAL FOR SEABASS.
+*/
+@wksht prnt[
+    [
+        @pprint [println itoa ARG1]
+    ][
+        ARG1
+    ]
+]
+
+
+fn pub main(i32 argc, char** argv)->i32:
+    if(argc < 3)
+        @prnt[
+            /   "Usage:"
+            /   "embedc file.h file.hbas"
+        ]
+        sys_exit(1);
+    end
+    //open the file:
+    u64 fh = fopen(argv[1], "rb");
+    if(fh == 0 )
+        @prnt[
+            /   "Unable to open file:"
+            /   (argv[1])
+        ]
+        sys_exit(1);
+    end
+    fseek(fh, 0,SEEK_END() );
+    u64 sz = ftell(fh);
+    fseek(fh, 0,SEEK_SET() );
+    //we could escape every single character in the file...
+    char* buf = malloc(sz * 2);
+    fread(fh, buf, sz);
+    fclose(fh);
+    buf[sz] = 0;
+    u64 i
+    for(i = 0, buf[i],i++)
+        //if the current character is a quote, escape it...
+        if(buf[i] == '\"')
+            mmove(buf+i+1,buf+i,strlen(buf+i));
+            buf[i] = '\\';
+            i++;
+        elif(buf[i] > 127 || buf[i] == '\v' || buf[i] == '\f' || buf[i] == '\r')
+            buf[i] = ' ';
+        elif(buf[i] == '\\')
+            mmove(buf+i+1,buf+i,strlen(buf+i));
+            buf[i] = '\\';
+            i++;
+        end
+    end
+    fh = fopen(argv[2], "wb");
+    if(fh == 0)
+        @prnt[
+            /   "Unable to open file for writing:"
+            /   (argv[2])
+        ]
+        sys_exit(1);
+    end
+    char* prefix = "data codegen string INSERT_NAME_HERE \"\n";
+    char* postfix = "\n\";\n";
+    fwrite(fh, prefix, strlen(prefix));
+    fwrite(fh, buf, strlen(buf));
+    fwrite(fh, postfix, strlen(postfix));
+    fclose(fh);
+end
+
+fn codegen codegen_main():
+    cg_emitC(SEABASS_STDLIB_PREFIX);
+end
