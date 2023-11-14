@@ -76,9 +76,10 @@ dirlist:
 	cbas tests2/dirlist.cbas
 	$(CC) $(CFLAGS_CBAS) auto_out.c -o dirlist -lpthread -lm 	
 
-formatter:
-	cbas tests2/formatter.cbas
+embedc:
+	cbas embedc.cbas
 	$(CC) $(CFLAGS_CBAS) auto_out.c -o embedc -lpthread -lm 
+	#this step is for my machine....
 	mv embedc ~/bin/
 
 bigunit_compil_test:
