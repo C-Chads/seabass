@@ -249,16 +249,6 @@ static inline TGT_UMAX __CBAS__L_tmpnam(){
 static inline unsigned char* __CBAS__tmpnam(unsigned char* s){
     return (unsigned char*)tmpnam((char*)s);
 }
-static inline TGT_IMAX __CBAS__SEEK_SET(){
-    return SEEK_SET;
-}
-static inline TGT_IMAX __CBAS__SEEK_CUR(){
-    return SEEK_CUR;
-}
-static inline TGT_IMAX __CBAS__SEEK_END(){
-    return SEEK_END;
-}
-
 static inline TGT_UMAX __CBAS__unixtime(){
     return time(0);
 }
@@ -927,9 +917,15 @@ fn predecl noexport fwrite(TGT_UMAX fhandle, char* buf, TGT_UMAX nbytes)->TGT_UM
 fn predecl noexport fread(TGT_UMAX fhandle, char* buf, TGT_UMAX nbytes)->TGT_UMAX;
 fn predecl noexport feof(TGT_UMAX fhandle)->int;
 fn predecl noexport fseek(TGT_UMAX fhandle, TGT_IMAX offset, i32 whence)->i32;
-fn predecl noexport SEEK_SET()->TGT_IMAX;
-fn predecl noexport SEEK_CUR()->TGT_IMAX;
-fn predecl noexport SEEK_END()->TGT_IMAX;
+fn inline SEEK_SET()->TGT_IMAX:
+    asm("return SEEK_SET;");
+end
+fn inline SEEK_CUR()->TGT_IMAX:
+    asm("return SEEK_CUR;");
+end
+fn inline SEEK_END()->TGT_IMAX:
+    asm("return SEEK_END;");
+end
 fn predecl noexport ftell(TGT_UMAX fhandle)->TGT_IMAX;
 fn predecl noexport fremove(char* fname)->i32;
 fn predecl noexport frename(char* fname_old, char* fname_new)->i32;
@@ -958,6 +954,252 @@ fn predecl pure noexport tm_wday(byte* tm_struct)->int;
 fn predecl pure noexport tm_yday(byte* tm_struct)->int;
 fn predecl pure noexport tm_isdst(byte* tm_struct)->int;
 fn predecl noexport pipe(int* pipefd)->int;
+
+
+
+fn inline E2BIG()->int:
+    asm("return E2BIG;")
+end
+
+fn inline EACCES()->int:
+    asm("return EACCES;")
+end
+fn inline EADDRINUSE()->int:
+    asm("return EADDRINUSE;")
+end
+fn inline EADDRNOTAVAIL()->int:
+    asm("return EADDRNOTAVAIL;")
+end
+fn inline EAFNOSUPPORT()->int:
+    asm("return EAFNOSUPPORT;")
+end
+fn inline EAGAIN()->int:
+    asm("return EAGAIN;")
+end
+fn inline EALREADY()->int:
+    asm("return EALREADY;")
+end
+fn inline EBADF()->int:
+    asm("return EBADF;")
+end
+fn inline EBADMSG()->int:
+    asm("return EBADMSG;")
+end
+fn inline EBUSY()->int:
+    asm("return EBUSY;")
+end
+fn inline ECANCELED()->int:
+    asm("return ECANCELED;")
+end
+fn inline ECHILD()->int:
+    asm("return ECHILD;")
+end
+fn inline ECONNABORTED()->int:
+    asm("return ECONNABORTED;")
+end
+fn inline ECONNREFUSED()->int:
+    asm("return ECONNREFUSED;")
+end
+fn inline ECONNRESET()->int:
+    asm("return ECONNRESET;")
+end
+fn inline EDEADLK()->int:
+    asm("return EDEADLK;")
+end
+fn inline EDESTADDRREQ()->int:
+    asm("return EDESTADDRREQ;")
+end
+fn inline EDOM()->int:
+    asm("return EDOM;")
+end
+fn inline EDQUOT()->int:
+    asm("return EDQUOT;")
+end
+fn inline EEXIST()->int:
+    asm("return EEXIST;")
+end
+fn inline EFAULT()->int:
+    asm("return EFAULT;")
+end
+fn inline EFBIG()->int:
+    asm("return EFBIG;")
+end
+fn inline EHOSTUNREACH()->int:
+    asm("return EHOSTUNREACH;")
+end
+fn inline EIDRM()->int:
+    asm("return EIDRM;")
+end
+fn inline EILSEQ()->int:
+    asm("return EILSEQ;")
+end
+fn inline EINPROGRESS()->int:
+    asm("return EINPROGRESS;")
+end
+fn inline EINTR()->int:
+    asm("return EINTR;")
+end
+fn inline EINVAL()->int:
+    asm("return EINVAL;")
+end
+fn inline EIO()->int:
+    asm("return EIO;")
+end
+fn inline EISCONN()->int:
+    asm("return EISCONN;")
+end
+fn inline EISDIR()->int:
+    asm("return EISDIR;")
+end
+fn inline ELOOP()->int:
+    asm("return ELOOP;")
+end
+fn inline EMFILE()->int:
+    asm("return EMFILE;")
+end
+fn inline EMLINK()->int:
+    asm("return EMLINK;")
+end
+fn inline EMSGSIZE()->int:
+    asm("return EMSGSIZE;")
+end
+fn inline EMULTIHOP()->int:
+    asm("return EMULTIHOP;")
+end
+fn inline ENAMETOOLONG()->int:
+    asm("return ENAMETOOLONG;")
+end
+fn inline ENETDOWN()->int:
+    asm("return ENETDOWN;")
+end
+fn inline ENETRESET()->int:
+    asm("return ENETRESET;")
+end
+fn inline ENETUNREACH()->int:
+    asm("return ENETUNREACH;")
+end
+fn inline ENFILE()->int:
+    asm("return ENFILE;")
+end
+fn inline ENOBUFS()->int:
+    asm("return ENOBUFS;")
+end
+/*
+fn inline ENODATA()->int:
+    asm("return ENODATA;")
+end
+*/
+fn inline ENODEV()->int:
+    asm("return ENODEV;")
+end
+fn inline ENOEXEC()->int:
+    asm("return ENOEXEC;")
+end
+fn inline ENOLCK()->int:
+    asm("return ENOLCK;")
+end
+fn inline ENOLINK()->int:
+    asm("return ENOLINK;")
+end
+fn inline ENOMEM()->int:
+    asm("return ENOMEM;")
+end
+fn inline ENOMSG()->int:
+    asm("return ENOMSG;")
+end
+fn inline ENOPROTOOPT()->int:
+    asm("return ENOPROTOOPT;")
+end
+fn inline ENOSPC()->int:
+    asm("return ENOSPC;")
+end
+fn inline ENOSYS()->int:
+    asm("return ENOSYS;")
+end
+fn inline ENOTCONN()->int:
+    asm("return ENOTCONN;")
+end
+fn inline ENOTDIR()->int:
+    asm("return ENOTDIR;")
+end
+fn inline ENOTEMPTY()->int:
+    asm("return ENOTEMPTY;")
+end
+fn inline ENOTRECOVERABLE()->int:
+    asm("return ENOTRECOVERABLE;")
+end
+fn inline ENOTSOCK()->int:
+    asm("return ENOTSOCK;")
+end
+fn inline ENOTSUP()->int:
+    asm("return ENOTSUP;")
+end
+fn inline ENOTTY()->int:
+    asm("return ENOTTY;")
+end
+fn inline ENXIO()->int:
+    asm("return ENXIO;")
+end
+fn inline EOPNOTSUPP()->int:
+    asm("return EOPNOTSUPP;")
+end
+fn inline EOVERFLOW()->int:
+    asm("return EOVERFLOW;")
+end
+fn inline EOWNERDEAD()->int:
+    asm("return EOWNERDEAD;")
+end
+fn inline EPERM()->int:
+    asm("return EPERM;")
+end
+fn inline EPIPE()->int:
+    asm("return EPIPE;")
+end
+fn inline EPROTO()->int:
+    asm("return EPROTO;")
+end
+fn inline EPROTONOSUPPORT()->int:
+    asm("return EPROTONOSUPPORT;")
+end
+fn inline EPROTOTYPE()->int:
+    asm("return EPROTOTYPE;")
+end
+fn inline ERANGE()->int:
+    asm("return ERANGE;")
+end
+fn inline EROFS()->int:
+    asm("return EROFS;")
+end
+fn inline ESPIPE()->int:
+    asm("return ESPIPE;")
+end
+fn inline ESRCH()->int:
+    asm("return ESRCH;")
+end
+fn inline ESTALE()->int:
+    asm("return ESTALE;")
+end
+fn inline ETIMEDOUT()->int:
+    asm("return ETIMEDOUT;")
+end
+fn inline ETXTBSY()->int:
+    asm("return ETXTBSY;")
+end
+fn inline EWOULDBLOCK()->int:
+    asm("return EWOULDBLOCK;")
+end
+fn inline EXDEV()->int:
+    asm("return EXDEV;")
+end
+
+
+
+
+
+
+
+
+
 
 noexport atomic int errno;
 //POSIX....
