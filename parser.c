@@ -1762,7 +1762,7 @@ static inline void expr_parse_ident(expr_node** targ){
     return;
 }
 
-static inline void expr_parse_fcall(expr_node** targ){
+static inline void expr_parse_fcall(expr_node** targ, int is_no_parentheses_mode){
     uint64_t required_arguments;
     int found_function = 0;
     unsigned long i;
@@ -1793,11 +1793,16 @@ static inline void expr_parse_fcall(expr_node** targ){
     
     //we already know that this is an opening parentheses!
     //require(peek()->data == TOK_OPAREN, "expr_parse_fcall requires opening parentheses");
-    consume();
-
+    if(!is_no_parentheses_mode){
+        consume();
+    } else if(required_arguments){
+        parse_error("no-parentheses function invocation on function which takes arguments...");
+    }
     /*
         Parse a list of arguments.
     */
+    
+    
     for( i = 0; i < required_arguments; i++){
         parse_expr(f.subnodes + i);
         if(i != required_arguments-1){
@@ -1806,8 +1811,10 @@ static inline void expr_parse_fcall(expr_node** targ){
         }
     }
     
-    require(peek()->data == TOK_CPAREN, "expr_parse_fcall requires closing parentheses");
-    consume();
+    if(!is_no_parentheses_mode){
+        require(peek()->data == TOK_CPAREN, "expr_parse_fcall requires closing parentheses");
+        consume();
+    }
     EXPR_PARSE_BOILERPLATE
 }
 
@@ -2142,10 +2149,12 @@ void expr_parse_terminal(expr_node** targ){
         peek()->data == TOK_IDENT &&
         peek()->right->data == TOK_OPAREN
     ){
-        expr_parse_fcall(targ);
+        expr_parse_fcall(targ,0);
         return;
-    }
-    else if(peek()->data == TOK_IDENT){
+    }else if(peek()->data == TOK_IDENT && peek_is_fname()){
+        expr_parse_fcall(targ, 1);
+        return;
+    }else if(peek()->data == TOK_IDENT){
         expr_parse_ident(targ);
         return;
     }
