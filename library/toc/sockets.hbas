@@ -50,7 +50,7 @@ method inline px_socket.dtor():
     this.sock_fd = -1;
 end
 
-method inline px_socket.connectIPV4(char* address_text, uint port, uint is_udp)->int:
+method inline px_socket.connectIPV4(char* address_text, uint port, uint is_udp, uint nonblock)->int:
     int sock_fd
     this.dtor();
     
@@ -78,6 +78,7 @@ method inline px_socket.connectIPV4(char* address_text, uint port, uint is_udp)-
             return -1;
         }
         //default to non-blocking...
+        if($nonblock)
         {
             int a = fcntl($sock_fd, F_GETFL);
             a = a | O_NONBLOCK;
@@ -89,7 +90,7 @@ method inline px_socket.connectIPV4(char* address_text, uint port, uint is_udp)-
 end
 
 
-method inline px_socket.connectIPV6(char* address_text, uint port, uint is_udp)->int:
+method inline px_socket.connectIPV6(char* address_text, uint port, uint is_udp, uint nonblock)->int:
     int sock_fd
     this.dtor();
     
@@ -114,6 +115,7 @@ method inline px_socket.connectIPV6(char* address_text, uint port, uint is_udp)-
             return -1;
         }
         //default to non-blocking...
+        if($nonblock)
         {
             int a = fcntl($sock_fd, F_GETFL);
             a = a | O_NONBLOCK;
@@ -126,7 +128,7 @@ end
 
 
 
-method inline px_socket.bindIPV4(uint port, uint is_udp)->int:
+method inline px_socket.bindIPV4(uint port, uint is_udp, uint nonblock)->int:
     int sock_fd
     this.dtor();
     
@@ -149,6 +151,7 @@ method inline px_socket.bindIPV4(uint port, uint is_udp)->int:
             return -1;
         }
         //default to non-blocking...
+        if($nonblock)
         {
             int a = fcntl($sock_fd, F_GETFL);
             a = a | O_NONBLOCK;
@@ -160,7 +163,7 @@ method inline px_socket.bindIPV4(uint port, uint is_udp)->int:
 end
 
 
-method inline px_socket.bindIPV6(uint port, uint is_udp)->int:
+method inline px_socket.bindIPV6(uint port, uint is_udp, uint nonblock)->int:
     int sock_fd
     this.dtor();
     @inline_C "
@@ -182,6 +185,7 @@ method inline px_socket.bindIPV6(uint port, uint is_udp)->int:
             return -1;
         }
         //default to non-blocking...
+        if($nonblock)
         {
             int a = fcntl($sock_fd, F_GETFL);
             a = a | O_NONBLOCK;
@@ -198,7 +202,7 @@ method inline px_socket.listen(int bl):
     @inline_C "listen($sfd, $bl);"
     return
 end
-method inline px_socket.accept(char* addrout, uint maxlen, uint* addrlen)->int:
+method inline px_socket.accept(char* addrout, uint maxlen, uint* addrlen, uint nonblock)->int:
     int sfd = this.sock_fd;
     int rfd;
     @inline_C "
@@ -230,6 +234,7 @@ method inline px_socket.accept(char* addrout, uint maxlen, uint* addrlen)->int:
             if($addrlen) {$addrlen[0] = slen;}
         }
         //Force rfd to be non-blocking...
+        if($nonblock)
         {
             int a = fcntl($rfd, F_GETFL);
             a = a | O_NONBLOCK;
