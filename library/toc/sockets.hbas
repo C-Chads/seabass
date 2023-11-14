@@ -61,6 +61,7 @@ method inline px_socket.connectIPV4(char* address_text, uint port, uint is_udp)-
         if($is_udp) type = SOCK_DGRAM;
         $sock_fd = socket(AF_INET, type, 0);
         if($sock_fd == -1) {errno = ENOTCONN; return -1;}
+        
         struct sockaddr_in saddri;
         
         saddri.sin_family = AF_INET;
@@ -131,10 +132,12 @@ method inline px_socket.bindIPV4(uint port, uint is_udp)->int:
     
     @inline_C "
         int type;
+        int reuse = 1;
         type = SOCK_STREAM;
         if($is_udp) type = SOCK_DGRAM;
         $sock_fd = socket(AF_INET, type, 0);
         if($sock_fd == -1) {errno = ENOTCONN; return -1;}
+        setsockopt($sock_fd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(int));
         struct sockaddr_in saddri;
         
         saddri.sin_family = AF_INET;
@@ -162,10 +165,12 @@ method inline px_socket.bindIPV6(uint port, uint is_udp)->int:
     this.dtor();
     @inline_C "
         int type;
+        int reuse = 1;
         type = SOCK_STREAM;
         if($is_udp) type = SOCK_DGRAM;
         $sock_fd = socket(AF_INET6, type, 0);
         if($sock_fd == -1) {errno = ENOTCONN; return -1;}
+        setsockopt($sock_fd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(int));
         struct sockaddr_in6 saddri;
         
         saddri.sin6_family = AF_INET6;
