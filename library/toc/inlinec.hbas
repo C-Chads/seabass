@@ -3,9 +3,6 @@
 
 #include <stdmeta/tok_manip.hbas>
 
-/*
-    HARDWARE TOUCHING LIBRARY FOR SEABASS
-*/
 
 /*
     Usage: 
@@ -88,3 +85,48 @@
     return retval;
 ]
 
+/*
+    Usage:
+    
+    @wrap_c_constant uint MY_CONSTANT
+*/
+
+
+@mkbldrn wrap_c_constant 2 [
+
+    @dupell_inlist
+    
+    cgstrll* type;
+    cgstrll* constant;
+    @foldout_arg type inlist_dupe
+    @foldout_arg constant inlist_dupe
+    
+    //we now have what we need...
+    @initqtok "fn"
+    @pushqtok "inline"
+    @pushtok [constant.dupe()]
+    @pushqtok "("
+    @pushqtok ")"
+    @pushqtok "->"
+    @pushtok [type] //MOVE
+    @pushqtok ":"
+    @pushqtok "asm"
+    @pushqtok "("
+    //create a string like this:
+    //"return CONSTANT_NAME;"
+        cgstr f
+        f.fromstr("return ");
+        f.addstr(constant.text);
+        constant.freelist();
+        f.addstr(";");
+        cgstrll* p = (cgstrll*)__builtin_malloc(sizeof(cgstrll));
+        p.right = 0;
+        p.text = f.s;
+        p.d = CG_TOK_STRING;
+        @pushtok [p]
+    
+    @pushqtok ")"
+    @pushqtok "end"
+    return retval;
+
+]

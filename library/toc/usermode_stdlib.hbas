@@ -12,6 +12,7 @@
 
 #guard SEABASS_STDLIB_USERMODE_C
 #include <toc/toc.hbas>
+#include <toc/inlinec.hbas>
 
 //The glories of a multi-line string literal!
 data codegen string SEABASS_STDLIB_PREFIX "
@@ -1008,12 +1009,11 @@ end
 fn inline EDESTADDRREQ()->int:
     asm("return EDESTADDRREQ;")
 end
-fn inline EDOM()->int:
+/*fn inline EDOM()->int:
     asm("return EDOM;")
-end
-fn inline EDQUOT()->int:
-    asm("return EDQUOT;")
-end
+end*/
+@wrap_c_constant int EDOM
+@wrap_c_constant int EDQUOT
 fn inline EEXIST()->int:
     asm("return EEXIST;")
 end
