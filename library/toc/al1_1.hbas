@@ -17,7 +17,6 @@ MKALCONST(unsigned,INVALID_NAME)
 MKALCONST(unsigned,INVALID_ENUM)
 MKALCONST(unsigned,OUT_OF_MEMORY)
 MKALCONST(unsigned,NO_ERROR)
-MKALCONST(unsigned,FREQUENCY)
 MKALCONST(unsigned,BITS)
 MKALCONST(unsigned,CHANNELS)
 MKALCONST(unsigned,SIZE)
@@ -447,7 +446,6 @@ noexport uint AL_INVALID_NAME;
 noexport uint AL_INVALID_ENUM;
 noexport uint AL_OUT_OF_MEMORY;
 noexport uint AL_NO_ERROR;
-noexport uint AL_FREQUENCY;
 noexport uint AL_BITS;
 noexport uint AL_CHANNELS;
 noexport uint AL_SIZE;
