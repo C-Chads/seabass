@@ -321,37 +321,18 @@
     <hr>
     <p>Seabass possesses a port of all of OpenGL 1.1 into the language.<br>
     Here are some excerpts from it:</p>
-    <p>I ported the constants by declaring unsigned integer constants inside of a
-    codegen string literal:</p>
+    <p>I ported the constants by using a metaprogramming macro called "wrap_c_constant" that
+    writes functions that return the constant:</p>
     <pre><code>
-    data codegen string OPENGL_PREFIX "
-    #include <GL/gl.h>
-    #define MKGLCONST(t,x) const t __CBAS__GL_##x = GL_##x;
-    //from constants list...
-    MKGLCONST(unsigned,2D)
-    MKGLCONST(unsigned,3D)
-    MKGLCONST(unsigned,3D_COLOR)
-    MKGLCONST(unsigned,3D_COLOR_TEXTURE)
-    MKGLCONST(unsigned,4D_COLOR_TEXTURE)
-    MKGLCONST(unsigned,2_BYTES)
-    MKGLCONST(unsigned,3_BYTES)
-    MKGLCONST(unsigned,4_BYTES)
-    MKGLCONST(unsigned,ACCUM)
-    MKGLCONST(unsigned,ACCUM_ALPHA_BITS)
-    MKGLCONST(unsigned,ACCUM_BLUE_BITS)
-    MKGLCONST(unsigned,ACCUM_BUFFER_BIT)
-    MKGLCONST(unsigned,ACCUM_CLEAR_VALUE)
-    MKGLCONST(unsigned,ACCUM_GREEN_BITS)
-    MKGLCONST(unsigned,ACCUM_RED_BITS)
-    MKGLCONST(unsigned,ADD)
-    //[...]
-    MKGLCONST(unsigned,ZERO)
-    MKGLCONST(unsigned,ZOOM_X)
-    MKGLCONST(unsigned,ZOOM_Y)
-    
-    #undef MKGLCONST
-    
-    ";
+    @wrap_c_constant uint GL_2D;
+    @wrap_c_constant uint GL_3D;
+    @wrap_c_constant uint GL_3D_COLOR;
+    @wrap_c_constant uint GL_3D_COLOR_TEXTURE;
+    @wrap_c_constant uint GL_4D_COLOR_TEXTURE;
+    @wrap_c_constant uint GL_2_BYTES;
+    @wrap_c_constant uint GL_3_BYTES;
+    @wrap_c_constant uint GL_4_BYTES;
+    //..
     </code></pre>
     <p>Functions were ported one-by-one like so:</p>
     <pre><code>
@@ -389,7 +370,8 @@
         @inline_C "glDisableClientState($cap);"
     end
     </code></pre>
-    <p>In total, the process of writing, compiling, and proof-reading the port took about a day.</p>
+    <p>OpenAL 1.1 was also wrapped in a very similar fashion. You can view both ported libraries
+    in `library/toc/gl1_1.hbas` and `library/toc/al1_1.hbas`</p>
     
     
     <hr>

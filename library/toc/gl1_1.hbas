@@ -5,9 +5,6 @@
 
 data codegen string GL_1_1_PREFIX "\n#include <GL/gl.h>\n";
 
-/*
-    Types..
-*/
 #define GLboolean byte
 #define GLbyte sbyte
 #define GLchar sbyte
