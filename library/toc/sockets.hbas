@@ -1,0 +1,257 @@
+
+#guard INTERNET_SOCKETS
+/*
+
+    TCP/UDP SOCKETS FOR SEABASS- A SIMPLE IMPLEMENTATION.
+
+
+*/
+
+
+
+#include <toc/usermode_stdlib.hbas>
+#include <toc/inlinec.hbas>
+
+data codegen string INTERNET_SOCKETS_PREFIX "
+#include <unistd.h>
+#include <errno.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <fcntl.h>
+";
+
+
+
+fn inline EAGAIN()->int:
+    @inline_C "return EAGAIN;"
+end
+
+fn inline EWOULDBLOCK()->int:
+    @inline_C "return EWOULDBLOCK;"
+end
+
+
+class px_socket
+    int sock_fd
+end
+
+
+method inline px_socket.ctor():
+    this.sock_fd = -1;
+end
+
+method inline px_socket.dtor():
+    if(this.sock_fd != -1)
+        @inline_C "close($this->`sockfd);"
+    end
+    this.sock_fd = -1;
+end
+
+method inline px_socket.connectIPV4(char* address_text, uint port, uint is_udp)->int:
+    int sock_fd
+    this.dtor();
+    
+    
+    @inline_C "
+        int type;
+        type = SOCK_STREAM;
+        if($is_udp) type = SOCK_DGRAM;
+        $sock_fd = socket(AF_INET, type, 0);
+        if($sock_fd == -1) {errno = ENOTCONN; return -1;}
+        struct sockaddr_in saddri;
+        
+        saddri.sin_family = AF_INET;
+        saddri.sin_port = htons($port);
+        //saddri.sin_addr.s_addr = inet_addr((char*)$address_text);
+        if(inet_pton(AF_INET, $address_text, &saddri.sin_addr) != 1){
+            errno = ENOTCONN;
+            close($sock_fd);
+            return -1;
+        }
+        if(connect(sock_fd, &saddri, sizeof(saddri))){
+            errno = ENOTCONN;
+            close($sock_fd);
+            return -1;
+        }
+        //default to non-blocking...
+        {
+            int a = fcntl($sock_fd, F_GETFL);
+            a = a | O_NONBLOCK;
+            fcntl($sock_fd, F_SETFL, a);
+        }
+    "
+    this.sock_fd = sock_fd;
+    return 0;
+end
+
+
+method inline px_socket.connectIPV6(char* address_text, uint port, uint is_udp)->int:
+    int sock_fd
+    this.dtor();
+    
+    @inline_C "
+        int type;
+        type = SOCK_STREAM;
+        if($is_udp) type = SOCK_DGRAM;
+        $sock_fd = socket(AF_INET6, type, 0);
+        if($sock_fd == -1) {errno = ENOTCONN; return -1;}
+        struct sockaddr_in6 saddri;
+        
+        saddri.sin6_family = AF_INET6;
+        saddri.sin6_port = htons($port);
+        if(inet_pton(AF_INET6, $address_text, &saddri.sin6_addr) != 1){
+            errno = ENOTCONN;
+            close($sock_fd);
+            return -1;
+        }
+        if(connect(sock_fd, &saddri, sizeof(saddri))){
+            errno = ENOTCONN;
+            close($sock_fd);
+            return -1;
+        }
+        //default to non-blocking...
+        {
+            int a = fcntl($sock_fd, F_GETFL);
+            a = a | O_NONBLOCK;
+            fcntl($sock_fd, F_SETFL, a);
+        }
+    "
+    this.sock_fd = sock_fd;
+    return 0;
+end
+
+
+
+method inline px_socket.bindIPV4(uint port, uint is_udp)->int:
+    int sock_fd
+    this.dtor();
+    
+    @inline_C "
+        int type;
+        type = SOCK_STREAM;
+        if($is_udp) type = SOCK_DGRAM;
+        $sock_fd = socket(AF_INET, type, 0);
+        if($sock_fd == -1) {errno = ENOTCONN; return -1;}
+        struct sockaddr_in saddri;
+        
+        saddri.sin_family = AF_INET;
+        saddri.sin_port = htons($port);
+        saddri.sin_addr = htonl(inaddr_any);
+        if(bind(sock_fd, &saddri, sizeof(sockaddr_in))){
+            errno = ENOTCONN;
+            close($sock_fd);
+            return -1;
+        }
+        //default to non-blocking...
+        {
+            int a = fcntl($sock_fd, F_GETFL);
+            a = a | O_NONBLOCK;
+            fcntl($sock_fd, F_SETFL, a);
+        }
+    "
+    this.sock_fd = sock_fd;
+    return 0;
+end
+
+
+method inline px_socket.bindIPV6(uint port, uint is_udp)->int:
+    int sock_fd
+    this.dtor();
+    @inline_C "
+        int type;
+        type = SOCK_STREAM;
+        if($is_udp) type = SOCK_DGRAM;
+        $sock_fd = socket(AF_INET6, type, 0);
+        if($sock_fd == -1) {errno = ENOTCONN; return -1;}
+        struct sockaddr_in6 saddri;
+        
+        saddri.sin6_family = AF_INET6;
+        saddri.sin6_port = htons($port);
+        saddri.sin6_addr = in6addr_any;
+        if(bind(sock_fd, (struct sockaddr* )&saddri, sizeof(sockaddr_in6))){
+            errno = ENOTCONN;
+            close($sock_fd);
+            return -1;
+        }
+        //default to non-blocking...
+        {
+            int a = fcntl($sock_fd, F_GETFL);
+            a = a | O_NONBLOCK;
+            fcntl($sock_fd, F_SETFL, a);
+        }
+    "
+    this.sock_fd = sock_fd;
+    return 0;
+end
+
+//listen...
+method inline px_socket.listen(int bl):
+    int sfd = this.sock_fd;
+    @inline_C "listen($sfd, $bl);"
+    return
+end
+method inline px_socket.accept(char* addrout, uint maxlen, uint* addrlen)->int:
+    int sfd = this.sock_fd;
+    int rfd;
+    @inline_C "
+        struct sockaddr aa
+        socklen_t slen;
+        errno = 0;
+        if($addrout){
+            $rfd = accept($sfd, &aa, &slen);
+        }else{
+            $rfd = accept($sfd, NULL, NULL);
+        }
+    "
+    if(rfd < 0)
+        //-2 = no connection, but no real error...
+        if(errno == EAGAIN() || errno == EWOULDBLOCK)
+            errno = 0;
+            return -2;
+        end
+        return -1;
+    end
+    @inline_C "
+        if($addrout){
+            //not large enough buffer... Reject the connection...
+            if(slen > $maxlen || slen < 0){
+                close($rfd);
+                return -1;
+            }
+            memcpy($addrout, &aa, slen);
+            if($addrlen) {$addrlen[0] = slen;}
+        }
+        //Force rfd to be non-blocking...
+        {
+            int a = fcntl($rfd, F_GETFL);
+            a = a | O_NONBLOCK;
+            fcntl($rfd, F_SETFL, a);
+        }
+    "
+    return rfd;
+end
+
+fn inline px_send(int sfd, byte* buf, uint nbytes)->TGT_IMAX:
+    TGT_IMAX rval;
+    errno = 0;
+    @inline_C "$rval = send($sfd, $buf, $nbytes, 0);"
+    if(rval < 0 && (errno == EAGAIN() || errno == EWOULDBLOCK()))
+        return -2;
+    end
+    return rval
+end
+
+fn inline px_recv(int sfd, byte* buf, uint nbytes)->TGT_IMAX:
+    TGT_IMAX rval;
+    errno = 0;
+    @inline_C "$rval = recv($sfd, $buf, $nbytes, 0);"
+    if(rval < 0 && (errno == EAGAIN() || errno == EWOULDBLOCK()))
+        return -2;
+    end
+    return rval
+end
+
+
+
+
