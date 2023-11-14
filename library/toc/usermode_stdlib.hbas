@@ -960,7 +960,6 @@ fn predecl noexport pipe(int* pipefd)->int;
 fn inline E2BIG()->int:
     asm("return E2BIG;")
 end
-
 fn inline EACCES()->int:
     asm("return EACCES;")
 end
@@ -1084,11 +1083,6 @@ end
 fn inline ENOBUFS()->int:
     asm("return ENOBUFS;")
 end
-/*
-fn inline ENODATA()->int:
-    asm("return ENODATA;")
-end
-*/
 fn inline ENODEV()->int:
     asm("return ENODEV;")
 end
@@ -1193,16 +1187,7 @@ fn inline EXDEV()->int:
 end
 
 
-
-
-
-
-
-
-
-
 noexport atomic int errno;
-//POSIX....
 
 
 
