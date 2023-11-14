@@ -17,6 +17,7 @@ MKALCONST(unsigned,INVALID_NAME)
 MKALCONST(unsigned,INVALID_ENUM)
 MKALCONST(unsigned,OUT_OF_MEMORY)
 MKALCONST(unsigned,NO_ERROR)
+MKALCONST(unsigned,FREQUENCY)
 MKALCONST(unsigned,BITS)
 MKALCONST(unsigned,CHANNELS)
 MKALCONST(unsigned,SIZE)
@@ -47,6 +48,7 @@ MKALCONST(unsigned,ORIENTATION)
 MKALCONST(unsigned,DOPPLER_FACTOR)
 MKALCONST(unsigned,SPEED_OF_SOUND)
 MKALCONST(unsigned,DISTANCE_MODEL)
+
 MKALCCONST(unsigned,FREQUENCY)
 MKALCCONST(unsigned,MONO_SOURCES)
 MKALCCONST(unsigned,STEREO_SOURCES)
@@ -446,6 +448,7 @@ noexport uint AL_INVALID_NAME;
 noexport uint AL_INVALID_ENUM;
 noexport uint AL_OUT_OF_MEMORY;
 noexport uint AL_NO_ERROR;
+noexport uint AL_FREQUENCY;
 noexport uint AL_BITS;
 noexport uint AL_CHANNELS;
 noexport uint AL_SIZE;
@@ -476,16 +479,17 @@ noexport uint AL_ORIENTATION;
 noexport uint AL_DOPPLER_FACTOR;
 noexport uint AL_SPEED_OF_SOUND;
 noexport uint AL_DISTANCE_MODEL;
-noexport uint AL_FREQUENCY;
-noexport uint AL_MONO_SOURCES;
-noexport uint AL_STEREO_SOURCES;
-noexport uint AL_REFRESH;
-noexport uint AL_SYNC;
-noexport uint AL_NO_ERROR;
-noexport uint AL_INVALID_DEVICE;
-noexport uint AL_INVALID_CONTEXT;
-noexport uint AL_INVALID_ENUM;
-noexport uint AL_INVALID_VALUE;
-noexport uint AL_OUT_OF_MEMORY;
+
+noexport uint ALC_FREQUENCY;
+noexport uint ALC_MONO_SOURCES;
+noexport uint ALC_STEREO_SOURCES;
+noexport uint ALC_REFRESH;
+noexport uint ALC_SYNC;
+noexport uint ALC_NO_ERROR;
+noexport uint ALC_INVALID_DEVICE;
+noexport uint ALC_INVALID_CONTEXT;
+noexport uint ALC_INVALID_ENUM;
+noexport uint ALC_INVALID_VALUE;
+noexport uint ALC_OUT_OF_MEMORY;
 
 
