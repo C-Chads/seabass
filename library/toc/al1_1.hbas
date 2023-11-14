@@ -9,6 +9,7 @@ data codegen string AL_1_1_PREFIX "
 #include <AL/al.h>
 #define MKALCONST(t,x) const t __CBAS__AL_##x = AL_##x;
 #define MKALCCONST(t,x) const t __CBAS__ALC_##x = ALC_##x;
+//MKALCONST(unsigned,DATA)
 
 MKALCONST(unsigned,INVALID_VALUE)
 MKALCONST(unsigned,INVALID_OPERATION)
@@ -20,7 +21,6 @@ MKALCONST(unsigned,FREQUENCY)
 MKALCONST(unsigned,BITS)
 MKALCONST(unsigned,CHANNELS)
 MKALCONST(unsigned,SIZE)
-MKALCONST(unsigned,DATA)
 MKALCONST(unsigned,PITCH)
 MKALCONST(unsigned,GAIN)
 MKALCONST(unsigned,MIN_GAIN)
@@ -90,7 +90,7 @@ MKALCCONST(unsigned,OUT_OF_MEMORY)
 //context management...
 fn inline alcCreateContext(byte* dev, int* attrlist)->byte*:
     @inline_C "return (unsigned char*)alcCreateContext(
-        (ALCcontext*)$dev,
+        (ALCdevice*)$dev,
         $attrlist
     );"
 end
@@ -199,46 +199,46 @@ fn inline alBufferData( ALuint b, ALenum f, byte *d, ALsizei size, ALsizei freq)
     @inline_C "alBufferData($b, $f, $d, $size, $freq);"
 end
 
-fn inline alBufferf( ALuint b, Alenum param, ALfloat v):
+fn inline alBufferf( ALuint b, ALenum param, ALfloat v):
     @inline_C "alBufferf($b, $param, $v);"
 end
-fn inline alBuffer3f( ALuint b, Alenum param, ALfloat v1, ALfloat v2, ALfloat v3):
+fn inline alBuffer3f( ALuint b, ALenum param, ALfloat v1, ALfloat v2, ALfloat v3):
     @inline_C "alBuffer3f($b, $param, $v1, $v2, $v3);"
 end
-fn inline alBufferfv( ALuint b, Alenum param, ALfloat* v):
+fn inline alBufferfv( ALuint b, ALenum param, ALfloat* v):
     @inline_C "alBufferfv($b, $param, $v);"
 end
 
 
-fn inline alBufferi( ALuint b, Alenum param, ALint v):
+fn inline alBufferi( ALuint b, ALenum param, ALint v):
     @inline_C "alBufferi($b, $param, $v);"
 end
-fn inline alBuffer3i( ALuint b, Alenum param, ALint v1, ALint v2, ALint v3):
+fn inline alBuffer3i( ALuint b, ALenum param, ALint v1, ALint v2, ALint v3):
     @inline_C "alBuffer3i($b, $param, $v1, $v2, $v3);"
 end
-fn inline alBufferiv( ALuint b, Alenum param, ALint* v):
+fn inline alBufferiv( ALuint b, ALenum param, ALint* v):
     @inline_C "alBufferiv($b, $param, $v);"
 end
 
 
-fn inline alGetBufferf( ALuint b, Alenum param, ALfloat* v):
+fn inline alGetBufferf( ALuint b, ALenum param, ALfloat* v):
     @inline_C "alGetBufferf($b, $param, $v);"
 end
-fn inline alGetBuffer3f( ALuint b, Alenum param, ALfloat* v1, ALfloat* v2, ALfloat* v3):
+fn inline alGetBuffer3f( ALuint b, ALenum param, ALfloat* v1, ALfloat* v2, ALfloat* v3):
     @inline_C "alGetBuffer3f($b, $param, $v1, $v2, $v3);"
 end
-fn inline alGetBufferfv( ALuint b, Alenum param, ALfloat* v):
+fn inline alGetBufferfv( ALuint b, ALenum param, ALfloat* v):
     @inline_C "alGetBufferfv($b, $param, $v);"
 end
 
 
-fn inline alGetBufferi( ALuint b, Alenum param, ALint* v):
+fn inline alGetBufferi( ALuint b, ALenum param, ALint* v):
     @inline_C "alGetBufferi($b, $param, $v);"
 end
-fn inline alGetBuffer3i( ALuint b, Alenum param, ALint* v1, ALint* v2, ALint* v3):
+fn inline alGetBuffer3i( ALuint b, ALenum param, ALint* v1, ALint* v2, ALint* v3):
     @inline_C "alGetBuffer3i($b, $param, $v1, $v2, $v3);"
 end
-fn inline alGetBufferiv( ALuint b, Alenum param, ALint* v):
+fn inline alGetBufferiv( ALuint b, ALenum param, ALint* v):
     @inline_C "alGetBufferiv($b, $param, $v);"
 end
 fn inline alGenSources( ALsizei n, ALuint* s):
@@ -253,45 +253,45 @@ fn inline alIsSource(ALuint b)->ALboolean:
 end
 
 //alSource
-fn inline alSourcef( ALuint b, Alenum param, ALfloat v):
+fn inline alSourcef( ALuint b, ALenum param, ALfloat v):
     @inline_C "alSourcef($b, $param, $v);"
 end
-fn inline alSource3f( ALuint b, Alenum param, ALfloat v1, ALfloat v2, ALfloat v3):
+fn inline alSource3f( ALuint b, ALenum param, ALfloat v1, ALfloat v2, ALfloat v3):
     @inline_C "alSource3f($b, $param, $v1, $v2, $v3);"
 end
-fn inline alSourcefv( ALuint b, Alenum param, ALfloat* v):
+fn inline alSourcefv( ALuint b, ALenum param, ALfloat* v):
     @inline_C "alSourcefv($b, $param, $v);"
 end
 
-fn inline alSourcei( ALuint b, Alenum param, ALint v):
+fn inline alSourcei( ALuint b, ALenum param, ALint v):
     @inline_C "alSourcei($b, $param, $v);"
 end
-fn inline alSource3i( ALuint b, Alenum param, ALint v1, ALint v2, ALint v3):
+fn inline alSource3i( ALuint b, ALenum param, ALint v1, ALint v2, ALint v3):
     @inline_C "alSource3i($b, $param, $v1, $v2, $v3);"
 end
-fn inline alSourceiv( ALuint b, Alenum param, ALint* v):
+fn inline alSourceiv( ALuint b, ALenum param, ALint* v):
     @inline_C "alSourceiv($b, $param, $v);"
 end
 
 
 
-fn inline alGetSourcef( ALuint b, Alenum param, ALfloat* v):
+fn inline alGetSourcef( ALuint b, ALenum param, ALfloat* v):
     @inline_C "alGetSourcef($b, $param, $v);"
 end
-fn inline alGetSource3f( ALuint b, Alenum param, ALfloat* v1, ALfloat* v2, ALfloat* v3):
+fn inline alGetSource3f( ALuint b, ALenum param, ALfloat* v1, ALfloat* v2, ALfloat* v3):
     @inline_C "alGetSource3f($b, $param, $v1, $v2, $v3);"
 end
-fn inline alGetSourcefv( ALuint b, Alenum param, ALfloat* v):
+fn inline alGetSourcefv( ALuint b, ALenum param, ALfloat* v):
     @inline_C "alGetSourcefv($b, $param, $v);"
 end
 
-fn inline alGetSourcei( ALuint b, Alenum param, ALint* v):
+fn inline alGetSourcei( ALuint b, ALenum param, ALint* v):
     @inline_C "alGetSourcei($b, $param, $v);"
 end
-fn inline alGetSource3i( ALuint b, Alenum param, ALint* v1, ALint* v2, ALint* v3):
+fn inline alGetSource3i( ALuint b, ALenum param, ALint* v1, ALint* v2, ALint* v3):
     @inline_C "alGetSource3i($b, $param, $v1, $v2, $v3);"
 end
-fn inline alGetSourceiv( ALuint b, Alenum param, ALint* v):
+fn inline alGetSourceiv( ALuint b, ALenum param, ALint* v):
     @inline_C "alGetSourceiv($b, $param, $v);"
 end
 
@@ -346,45 +346,45 @@ end
 
 
 //alSource
-fn inline alListenerf( Alenum param, ALfloat v):
+fn inline alListenerf( ALenum param, ALfloat v):
     @inline_C "alListenerf($param, $v);"
 end
-fn inline alListener3f( Alenum param, ALfloat v1, ALfloat v2, ALfloat v3):
+fn inline alListener3f( ALenum param, ALfloat v1, ALfloat v2, ALfloat v3):
     @inline_C "alListener3f($param, $v1, $v2, $v3);"
 end
-fn inline alListenerfv(  Alenum param, ALfloat* v):
+fn inline alListenerfv(  ALenum param, ALfloat* v):
     @inline_C "alListenerfv($param, $v);"
 end
 
-fn inline alListeneri(Alenum param, ALint v):
+fn inline alListeneri(ALenum param, ALint v):
     @inline_C "alListeneri($param, $v);"
 end
-fn inline alListener3i(Alenum param, ALint v1, ALint v2, ALint v3):
+fn inline alListener3i(ALenum param, ALint v1, ALint v2, ALint v3):
     @inline_C "alListener3i($param, $v1, $v2, $v3);"
 end
-fn inline alListeneriv(Alenum param, ALint* v):
+fn inline alListeneriv(ALenum param, ALint* v):
     @inline_C "alListeneriv($param, $v);"
 end
 
 
 
-fn inline alGetListenerf(Alenum param, ALfloat* v):
+fn inline alGetListenerf(ALenum param, ALfloat* v):
     @inline_C "alGetListenerf($param, $v);"
 end
-fn inline alGetListener3f( Alenum param, ALfloat* v1, ALfloat* v2, ALfloat* v3):
+fn inline alGetListener3f( ALenum param, ALfloat* v1, ALfloat* v2, ALfloat* v3):
     @inline_C "alGetListener3f($param, $v1, $v2, $v3);"
 end
-fn inline alGetListenerfv(Alenum param, ALfloat* v):
+fn inline alGetListenerfv(ALenum param, ALfloat* v):
     @inline_C "alGetListenerfv($param, $v);"
 end
 
-fn inline alGetListeneri(Alenum param, ALint* v):
+fn inline alGetListeneri(ALenum param, ALint* v):
     @inline_C "alGetListeneri($param, $v);"
 end
-fn inline alGetListener3i(Alenum param, ALint* v1, ALint* v2, ALint* v3):
+fn inline alGetListener3i(ALenum param, ALint* v1, ALint* v2, ALint* v3):
     @inline_C "alGetListener3i($param, $v1, $v2, $v3);"
 end
-fn inline alGetListeneriv(Alenum param, ALint* v):
+fn inline alGetListeneriv(ALenum param, ALint* v):
     @inline_C "alGetListeneriv($param, $v);"
 end
 
@@ -412,20 +412,20 @@ fn inline alGetInteger(ALenum b)->ALint:
     @inline_C "return alGetInteger($b);"
 end
 
-fn inline alGetBooleanv(Alenum param, ALboolean* v):
-    @inline_C "alGetBooleanv($param, $v);"
+fn inline alGetBooleanv(ALenum param, ALboolean* v):
+    @inline_C "alGetBooleanv($param, (ALboolean*)$v);"
 end
 
-fn inline alGetDoublev(Alenum param, ALdouble* v):
+fn inline alGetDoublev(ALenum param, ALdouble* v):
     @inline_C "alGetDoublev($param, $v);"
 end
 
-fn inline alGetFloatv(Alenum param, ALfloat* v):
+fn inline alGetFloatv(ALenum param, ALfloat* v):
     @inline_C "alGetFloatv($param, $v);"
 end
 
 
-fn inline alGetIntegerv(Alenum param, ALint* v):
+fn inline alGetIntegerv(ALenum param, ALint* v):
     @inline_C "alGetIntegerv($param, $v);"
 end
 fn inline alDistanceModel(ALenum b):
@@ -439,4 +439,55 @@ end
 fn inline alSpeedOfSound(ALfloat b):
     @inline_C "alSpeedOfSound($b);"
 end
+
+//noexport uint AL_
+noexport uint AL_INVALID_VALUE;
+noexport uint AL_INVALID_OPERATION;
+noexport uint AL_INVALID_NAME;
+noexport uint AL_INVALID_ENUM;
+noexport uint AL_OUT_OF_MEMORY;
+noexport uint AL_NO_ERROR;
+noexport uint AL_FREQUENCY;
+noexport uint AL_BITS;
+noexport uint AL_CHANNELS;
+noexport uint AL_SIZE;
+noexport uint AL_PITCH;
+noexport uint AL_GAIN;
+noexport uint AL_MIN_GAIN;
+noexport uint AL_MAX_GAIN;
+noexport uint AL_MAX_DISTANCE;
+noexport uint AL_ROLLOFF_FACTOR;
+noexport uint AL_CONE_OUTER_GAIN;
+noexport uint AL_CONE_INNER_ANGLE;
+noexport uint AL_CONE_OUTER_ANGLE;
+noexport uint AL_REFERENCE_DISTANCE;
+noexport uint AL_POSITION;
+noexport uint AL_VELOCITY;
+noexport uint AL_DIRECTION;
+noexport uint AL_SOURCE_RELATIVE;
+noexport uint AL_SOURCE_TYPE;
+noexport uint AL_LOOPING;
+noexport uint AL_BUFFER;
+noexport uint AL_SOURCE_STATE;
+noexport uint AL_BUFFERS_QUEUED;
+noexport uint AL_BUFFERS_PROCESSED;
+noexport uint AL_SEC_OFFSET;
+noexport uint AL_SAMPLE_OFFSET;
+noexport uint AL_BYTE_OFFSET;
+noexport uint AL_ORIENTATION;
+noexport uint AL_DOPPLER_FACTOR;
+noexport uint AL_SPEED_OF_SOUND;
+noexport uint AL_DISTANCE_MODEL;
+noexport uint AL_FREQUENCY;
+noexport uint AL_MONO_SOURCES;
+noexport uint AL_STEREO_SOURCES;
+noexport uint AL_REFRESH;
+noexport uint AL_SYNC;
+noexport uint AL_NO_ERROR;
+noexport uint AL_INVALID_DEVICE;
+noexport uint AL_INVALID_CONTEXT;
+noexport uint AL_INVALID_ENUM;
+noexport uint AL_INVALID_VALUE;
+noexport uint AL_OUT_OF_MEMORY;
+
 
