@@ -3,8 +3,10 @@
 /*
 
     TCP/UDP SOCKETS FOR SEABASS- A SIMPLE IMPLEMENTATION.
-
-
+    
+    This library should provide a very basic implementation of Sockets for Seabass.
+    
+    It wraps *nix sockets.
 */
 
 
