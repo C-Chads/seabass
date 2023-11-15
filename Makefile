@@ -56,9 +56,9 @@ install: cbas_dirty cbas_clean
 	cp ./cbas_dirty /usr/local/bin/cbas
 
 install_win: cbas_dirty cbas_clean
-	cp ./cbas_dirty /usr/local/bin/
-	cp ./cbas_clean /usr/local/bin/
-	cp ./cbas_dirty /usr/local/bin/cbas
+	cp ./cbas_dirty.exe /usr/local/bin/
+	cp ./cbas_clean.exe /usr/local/bin/
+	cp ./cbas_dirty.exe /usr/local/bin/cbas
 
 install_all: all install_stdlib
 	cp ./cbas_dirty /usr/local/bin/
