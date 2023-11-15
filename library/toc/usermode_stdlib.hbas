@@ -369,6 +369,9 @@ static inline void __CBAS__mcpy(unsigned char* dst, unsigned char* src, TGT_UMAX
 static inline void __CBAS__mmove(unsigned char* dst, unsigned char* src, TGT_UMAX sz){
     memmove(dst, src, sz);
 }
+static inline void __CBAS__memclear(unsigned char* buf, TGT_UMAX sz){
+    memset(buf, 0, sz);
+}
 static inline unsigned char* __CBAS__malloc(TGT_UMAX amt){
     return malloc(amt);
 }
@@ -1210,6 +1213,7 @@ fn predecl pure noexport mmove(char* dst, char* src, TGT_UMAX sz);
 fn inline pure memmove(char* dst, char* src, TGT_UMAX sz):
     mmove(dst, src, sz);
 end
+fn predecl pure noexport memclear(char* dest, TGT_UMAX sz);
 
 
 fn predecl noexport println(char* s);
