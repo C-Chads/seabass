@@ -1202,8 +1202,14 @@ noexport atomic int errno;
 
 //memcpy...
 fn predecl pure noexport mcpy(char* dst, char* src, TGT_UMAX sz);
-fn predecl pure noexport mmove(char* dst, char* src, TGT_UMAX sz);
+fn inline pure memcpy(char* dst, char* src, TGT_UMAX sz):
+    mcpy(dst, src, sz);
+end
 
+fn predecl pure noexport mmove(char* dst, char* src, TGT_UMAX sz);
+fn inline pure memmove(char* dst, char* src, TGT_UMAX sz):
+    mmove(dst, src, sz);
+end
 
 
 fn predecl noexport println(char* s);
