@@ -237,6 +237,31 @@ fn inline setWindowResizable(byte toggle):
     @inline_C "SDL_SetWindowResizable(sdl_win, $toggle);"
 end
 
+fn inline getClipboardText->byte*:
+    @inline_C "return (unsigned char*)SDL_GetClipboardText();"
+end
+
+fn inline setClipboardText(byte* txt)->int:
+    @inline_C "return SDL_SetClipboardText((char*)$txt);"
+end
+
+fn inline hasClipboardText()->byte:
+    @inline_C "return SDL_HasClipboardText();"
+end
+
+fn inline startTextInput: @inline_C "SDL_StartTextInput();" end
+fn inline stopTextInput: @inline_C "SDL_StopTextInput();" end
+fn inline setTextInputRect(int x, int y, int w, int h):
+    @inline_C "
+        SDL_Rect rr;
+        rr.x = $x;
+        rr.y = $y;
+        rr.w = $w;
+        rr.h = $h;
+        SDL_SetTextInputRect(&rr);
+    "
+end
+
 
 
 //keys
@@ -546,6 +571,7 @@ static void __CBAS__appClose();
 static void __CBAS__onTextInput(unsigned char* text);
 static void __CBAS__onTextEdit(unsigned char* text, int start, int length);
 static void __CBAS__onKey(int keycode, unsigned char state);
+static void __CBAS__onKeyRepeat(int keycode, unsigned char state);
 static void __CBAS__onScroll(int x, int y);
 
 static void __CBAS__onResize(int w, int h);
@@ -610,9 +636,13 @@ static void pollevents(){
 		} else if (ev.type == SDL_KEYDOWN){
 		    if(ev.key.repeat == 0) 
 		        __CBAS__onKey(SDL_GetKeyFromScancode(ev.key.keysym.scancode), 1);
+		    else
+		        __CBAS__onKeyRepeat(SDL_GetKeyFromScancode(ev.key.keysym.scancode), 1);
 		} else if (ev.type == SDL_KEYUP){
 		    if(ev.key.repeat == 0)
 		        __CBAS__onKey(SDL_GetKeyFromScancode(ev.key.keysym.scancode), 0);
+            else
+  		        __CBAS__onKeyRepeat(SDL_GetKeyFromScancode(ev.key.keysym.scancode), 0);
 		} else if(ev.type == SDL_WINDOWEVENT){
 		    if(ev.window.event == SDL_WINDOWEVENT_RESIZED){
 		        __CBAS__width = ev.window.data1;
