@@ -530,7 +530,7 @@
     EXPR_PARSE_BUILTIN_CALL = IDENT_BUILTIN_NAME "(" (PARSE_EXPR ",")* PARSE_EXPR? ")"
     EXPR_PARSE_FCALL = IDENT_FNAME "(" (PARSE_EXPR ",")* PARSE_EXPR? ")"
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    EXPR_PARSE_IDENT = IDENT
+    EXPR_PARSE_IDENT = IDENT | IDENT_FNAME  //it is possible to invoke a function with zero arguments using just its name, no parentheses.
     EXPR_PARSE_CONSTEXPRI = "constexpri" "(" CONSTEXPRI ")"
     EXPR_PARSE_CONSTEXPRF = "constexprf" "(" CONSTEXPRF ")"
     EXPR_PARSE_GETFNPTR = "getfnptr" "(" REPEATEDLY_TRY_METAPROGRAMMING IDENT ")"
