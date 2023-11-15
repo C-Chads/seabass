@@ -206,6 +206,100 @@
     end
     </code>
     </pre>
+    <p>In seabass you can omit parentheses from functions that take zero arguments:</p>
+    <pre>
+    <code>
+    fn GET7->int:
+        return 7
+    end
+    
+    fn myFunction(int a, int b)->int:
+        return GET7 + GET7() + a + b; //OK
+    end
+    </code>
+    </pre>
+    <p>You can also <i><b>declare</b></i> methods omitting parentheses, but
+    you can't call them this way.</p>
+    <pre>
+    <code>
+    method catCatcher.catchCat:
+        println("Caught Cat!")
+    end
+    
+    fn myFunction:
+    
+        catCatcher jerry
+        
+        jerry:catchCat; //error! method invocation requires opening parentheses.
+        jerry.catchCat; //error! struct "catCatcher" contains no member called "catchCat"
+        
+        jerry.catchCat(); //OK
+        jerry:catchCat(); //OK
+    end
+    </code>
+    </pre>
+    <p>Declarations are universally fine, however you should use omitted parentheses calling syntax 
+    <b><i>extremely sparingly.</i></b> I find the following use-cases acceptable:</p>
+    <ol>
+        <li>Wrapping an immutable constant so that it cannot be modified.</li>
+        <li>Random number generators.</li>
+        <li>Global state getters- functions which retrieve some property about
+        global state and perform no internal logic.</li>
+    </ol>
+    <p>The reason that you should avoid using omitted parentheses invocation syntax
+    is that it can make your programs <i><b>extremely unreadable</b></i>.<br>
+    It can be difficult to tell where function calls are even happening let alone
+    debug them.
+    </p>
+    <pre>
+    <code>
+    fn predecl funk2->float;
+    fn predecl funk3->float;
+    fn predecl funk4->int;
+    
+    float x;
+    float y;
+    
+    fn funk:
+        x = funk2;
+        y = funk3;
+        int a = funk4;
+    end
+    
+    fn funk2->float:
+        println("hello world!");
+        tail funk3
+    end
+    
+    fn funk3->float:
+        println("Check out this integer:");
+        return 8.3;
+    end
+    
+    int gen = 0;
+    fn funk4->int:
+        @prnt[
+            /   "Handing out integer..."
+            /int(gen+1)
+            /   "X is:"
+            /int(x)
+            /   "Y is:"
+            /int(y)
+        ]
+        return ++gen;
+    end
+    </code>
+    </pre>
+    <p>If you use zero-argument functions for storing constants you should make their names ALL_CAPS:</p>
+    <pre>
+    <code>
+    fn inline ERR_PRIME->int:
+        return 29;
+    end
+    </code>
+    </pre>
+    <p></p>
+    
     
     <hr>
     <center>
