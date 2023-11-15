@@ -61,11 +61,11 @@
     <pre><code>
     __CBAS__
     </code></pre>
-    <p>All types are mangled to have</p>
+    <p>and All struct/class names are mangled to have</p>
     <pre><code>
     __CBAS__type_
     </code></pre>
-    <p>Before them, and all local variables are mangled to have</p>
+    <p>and all local variables are mangled to have</p>
     <pre><code>
     __cbas_local_variable_mangled_name_
     </code></pre>
@@ -76,7 +76,9 @@
     This declaration:
     </p>
     <pre><code>
-    fn myFunction(): end
+    fn myFunction():
+    
+    end
     </code></pre>
     
     <p>
@@ -126,7 +128,7 @@
     <pre><code>
         __cbas_mangled_label__
     </code></pre>
-    <p>is used for labels.</p>
+    <p>is the prefix used for labels.</p>
     
     <p>Taking in everything you've learned so far, here is an example program in seabass:</p>
     
@@ -310,9 +312,10 @@
     these symbols immediately before writing that identifier.</p>
     <p>Note that you cannot escape these symbols inside of `inline_C`. If you
     need to write a '$' into your C code, you should use `asm`.</p>
-    <p></p>
-    <p></p>
-    <p></p>
+    <p>the inline C header also declares a special macro called "wrap_c_constant"</p>
+    <p><code>@wrap_c_constant [TYPE] IDENTIFIER;</code></p>
+    <p>this programmatically manufactures functions taking zero arguments returning
+    constants with the name IDENTIFIER in C. Its usage is demonstrated later.</p>
     <p></p>
     <hr>
     <center>
