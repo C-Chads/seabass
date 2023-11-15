@@ -336,7 +336,7 @@
                         )
                         |
                         ("(" REPEATEDLY_TRY_METAPROGRAMMING  ")")
-                    )?
+                    )? //it is possible to declare a function with zero arguments without parentheses.
                     (
                         "->"
                         REPEATEDLY_TRY_METAPROGRAMMING
@@ -367,7 +367,7 @@
                         )
                         |
                         ("(" REPEATEDLY_TRY_METAPROGRAMMING  ")")
-                    )
+                    )? //it is possible to declare a method which takes only "this" without parentheses.
                     (
                         "->"
                         REPEATEDLY_TRY_METAPROGRAMMING

@@ -156,14 +156,14 @@ method codegen pure cgstr:isempty()->u8:
     return 0;
 end
 
-method codegen pure cgstr:isnull()->u8:
+method codegen pure cgstr:isnull->u8:
     if(this.s == cast(char*)0)
         return 1; 
     end
     return 0;
 end
 
-method codegen pure cgstr:len()->u64:
+method codegen pure cgstr:len->u64:
     u64 i
     i = 0;
 
@@ -180,7 +180,7 @@ end
 
 
 
-method codegen cgstr:print():
+method codegen cgstr:print:
     __builtin_puts(this.s);
 end
 
