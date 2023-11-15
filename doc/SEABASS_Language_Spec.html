@@ -31,6 +31,7 @@
         <a href="#grammar">Grammar</a><br>
         <a href="#codegen">Codegen Execution Environment</a><br>
         <a href="#extensions">Extensions, Options, and Ports</a><br>
+        <a href="#targetbehavior">Target Code Behavior</a><br>
         <a href="#license">License</a><br>
     </div>
     <hr>
@@ -747,6 +748,8 @@
     or not 64 bit, the following should be enforced:</p>
     <ul>
         <li>char will not be signed, if possible.</li>
+        <li>`uptr` will be an alias of an unsigned integeral type equivalent in size to a pointer
+        in the codegen environment.</li>
         <li>sizeof will return the size of a type in machine-addressable units.</li>
         <li>all pointers must be the same size, regardless of type.</li>
         <li>there must be a primitive integral type which can hold a pointer</li>
@@ -769,6 +772,7 @@
     all be held true:</p>
     <ul>
         <li>All pointers shall be 128 bit</li>
+        <li>`uptr` should be the size of a pointer in the codegen environment.</li>
         <li>There may be a 128 bit floating point type, and if there is, it should be the default
         (see below)</li>
     </ul>
@@ -793,6 +797,21 @@
         it is possible to provide a "pretend" interface to the codegen environment.</li>
         <li>#include should be disabled</li>
     </ul>
+    <h3>32 bit Seabass</h3>
+    <p>If the need should ever arise to port seabass to a platform
+    with 32 bit pointers, the standard demands the following be true:</p>
+    <ol>
+        <li>uptr shall be equivalent to `uint`</li>
+        <li>u64, i64, double shall be optional types.</li>
+    </ol>
+    <hr>
+    <center>
+    <h2 id="targetbehavior">Target Code Behavior</h2>
+    </center>
+    <hr>
+    <p>Seabass code compiled for a target should behave similarly to the codegen environment, as much as is possible for
+    that target.</p>
+    <p>This is, of course, entirely up to the user to decide...</p>
     <p></p>
     <p></p>
     <p></p>
