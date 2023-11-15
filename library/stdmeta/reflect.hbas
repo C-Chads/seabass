@@ -184,13 +184,13 @@ method codegen cgstr:print:
     __builtin_puts(this.s);
 end
 
-method codegen cgstr:start():
+method codegen cgstr:start:
     this.s = cast(char*)0;
 end
 
 
 
-method codegen cgstr:free():
+method codegen cgstr:free:
     __builtin_free(this.s);
     this.s = cast(char*)0;
 end
@@ -227,7 +227,7 @@ method codegen pure cgstr:postfixed(cgstr o)->u8: //is THIS postfixed by o?
     return h:prefixed(o);
 end
 
-method codegen cgstr:invert():
+method codegen cgstr:invert:
     uqword e;
     uqword i;
     i = 0;
