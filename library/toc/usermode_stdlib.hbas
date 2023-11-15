@@ -1024,7 +1024,7 @@ fn inline EDESTADDRREQ()->int:
     asm("return EDESTADDRREQ;")
 end
 @wrap_c_constant int EDOM
-@wrap_c_constant int EDQUOT
+//@wrap_c_constant int EDQUOT
 fn inline EEXIST()->int:
     asm("return EEXIST;")
 end
@@ -1073,9 +1073,11 @@ end
 fn inline EMSGSIZE()->int:
     asm("return EMSGSIZE;")
 end
+/*
 fn inline EMULTIHOP()->int:
     asm("return EMULTIHOP;")
 end
+*/
 fn inline ENAMETOOLONG()->int:
     asm("return ENAMETOOLONG;")
 end
@@ -1181,9 +1183,11 @@ end
 fn inline ESRCH()->int:
     asm("return ESRCH;")
 end
+/*
 fn inline ESTALE()->int:
     asm("return ESTALE;")
 end
+*/
 fn inline ETIMEDOUT()->int:
     asm("return ETIMEDOUT;")
 end
