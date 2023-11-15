@@ -17,7 +17,6 @@ fn codegen codegen_main():
     cgstr q
     q.fromstr(SEABASS_STDLIB_PREFIX);
     q.addstr(GL_1_1_PREFIX);
-    q.addstr(AL_1_1_PREFIX);
     q.addstr(FUNBAS_STB_CONFIGS);
     q.addstr(STB_IMAGE);
     q.addstr(STB_TRUETYPE);
