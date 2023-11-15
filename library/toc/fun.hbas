@@ -1,0 +1,833 @@
+
+#include <toc_native_user>
+#include <toc/gl1_1.hbas>
+#include <toc/al1_1.hbas>
+
+//main API
+//stateful constants...
+predecl int width;
+predecl int height;
+predecl int display_scale;
+predecl int mousex;
+predecl int mousey;
+predecl int mousex_rel;
+predecl int mousey_rel;
+predecl int argc;
+predecl char** argv;
+
+
+fn inline openWindow(char* text, uint w, uint h):
+    @inline_C "
+        __CBAS__width = $w;
+        __CBAS__height = $h;
+        sdl_win = SDL_CreateWindow(
+            (char*)$text,
+    		SDL_WINDOWPOS_UNDEFINED,
+    		SDL_WINDOWPOS_UNDEFINED,
+    		__CBAS__width, 
+    		__CBAS__height,
+    		SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE
+    	);
+    	if(!sdl_win)
+    	{
+    		printf(\"SDL2 window creation failed.\\n\"
+    			\"SDL_Error: %s\\n\", SDL_GetError());
+    		exit(1);
+    	}
+    	sdl_glcontext = SDL_GL_CreateContext(sdl_win);
+        if(!sdl_glcontext){
+    		printf(\"SDL2 GL Context creation failed.\\n\"
+    		\"SDL_Error: %s\\n\", SDL_GetError());
+    		exit(1);
+    	}
+    	SDL_GL_MakeCurrent(sdl_win, sdl_glcontext);
+	"
+    glViewport(0,0,width,height);
+	glEnable(GL_CULL_FACE());
+	glCullFace(GL_BACK());
+	
+	glDisable(GL_TEXTURE_2D());
+	glDisable(GL_LIGHTING());
+	
+	glEnable(GL_DEPTH_TEST());
+	glShadeModel(GL_SMOOTH());
+
+	glEnable(GL_NORMALIZE());
+	glClearColor(0.0, 0.0, 0.0, 0.0);
+
+	glMatrixMode(GL_PROJECTION());
+	glLoadIdentity();
+	glMatrixMode(GL_MODELVIEW());
+	glLoadIdentity();
+end
+fn inline closeWindow():
+    @inline_C "    
+        if(sdl_glcontext)
+            SDL_GL_DeleteContext(sdl_glcontext);
+        if(sdl_win)
+   	        SDL_DestroyWindow(sdl_win);
+   	    sdl_win = NULL;
+   	    sdl_glcontext = NULL;
+    "
+end
+fn inline clearScreen(f32 r, f32 g, f32 b):
+	glClearColor(r, g, b, 0.0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+end
+fn inline displayModel(
+    uint dl, 
+    float x, float y, float z, //position
+    float rx, float ry, float rz //euler rotation
+):
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+    	glRotatef(ry, 0,1,0);
+    	glRotatef(rz, 0,0,1);
+    	glRotatef(rx, 1,0,0);
+    	glTranslatef(x,y,z);
+    	glCallList(dl);
+	glPopMatrix();
+end
+function inline setSwapInterval(int a)->int:
+    @inline_C "return SDL_GL_SetSwapInterval($a);"
+end
+fn noexport loadRGBATexture(char* buf, uint w, uint h)->uint;
+fn noexport loadRGBTexture(char* buf, uint w, uint h)->uint;
+fn noexport loadSample(char* filename)->byte*;
+fn noexport freeSample(char* sampleobject);
+fn noexport playSample(char* sampleobject, i32 loops)->i32;
+fn inline lockCursor(int state)->int:
+    @inline_C "return SDL_SetRelativeMouseMode($state);"
+end
+fn noexport loadMusic(char* filename)->byte*;
+fn noexport setSoundPosition(int chan, int angle, char dist);
+fn noexport haltSound(int chan);
+fn noexport playMusic(byte* musbuf, int loops, int ms)->i32;
+fn noexport haltMusic();
+fn noexport loadFont(char* fname, float pxsz)->byte*;
+fn noexport renderText(char* text, byte* fonth, f32 x, f32 y, f32 vertical);
+fn noexport renderTextMono(char* text, byte* fonth, f32 x, f32 y, f32 spacing, f32 vertical);
+fn inline beginUI:
+    glDisable(GL_CULL_FACE());
+    glDisable(GL_DEPTH_TEST());
+
+    glMatrixMode(GL_PROJECTION());
+    glPushMatrix();
+    glLoadIdentity();
+    glOrtho(0,width,height,0,-1,1);
+    
+    glMatrixMode(GL_MODELVIEW());
+    glPushMatrix();
+    glLoadIdentity();
+
+    glEnable(GL_TEXTURE_2D());
+end
+fn inline endUI:
+    glDisable(GL_BLEND());
+    glEnable(GL_CULL_FACE());
+    glEnable(GL_DEPTH_TEST());
+	glDisable(GL_TEXTURE_2D());
+    glMatrixMode(GL_MODELVIEW());
+    glPopMatrix();
+    glMatrixMode(GL_PROJECTION());
+    glPopMatrix();
+
+end
+fn inline swapDisplay():
+    @inline_C "SDL_GL_SwapWindow(sdl_win);"
+end
+//wrapped api calls...
+fn inline numJoysticks->int:
+    @inline_C "return SDL_NumJoysticks();"
+end
+fn inline isGameController(int ind)->byte:
+    @inline_C "return SDL_IsGameController($ind);"
+end
+
+fn inline openGameController(int ind)->byte*:
+    @inline_C "return (unsigned char*)SDL_GameControllerOpen($ind);"
+end
+
+fn inline closeGameController(byte* h):
+    @inline_C "SDL_GameControllerClose((SDL_GameController*)$h);"
+end
+
+fn inline gameControllerGetAxis(byte* h, int which)->short:
+    @inline_C "
+        SDL_GameController* gc = (SDL_GameController*)$h;
+        return SDL_GameControllerGetAxis(gc, $which);
+    "
+end
+
+fn inline gameControllerGetButton(byte* h, int which)->byte:
+   @inline_C "
+        SDL_GameController* gc = (SDL_GameController*)$h;
+        return SDL_GameControllerGetButton(gc, $which);
+    "
+end
+fn inline CONTROLLER_BUTTON_A->int:
+    @inline_C "return SDL_CONTROLLER_BUTTON_A;"
+end
+fn inline CONTROLLER_BUTTON_B->int:
+    @inline_C "return SDL_CONTROLLER_BUTTON_B;"
+end
+fn inline CONTROLLER_BUTTON_X->int:
+    @inline_C "return SDL_CONTROLLER_BUTTON_X;"
+end
+fn inline CONTROLLER_BUTTON_Y->int:
+    @inline_C "return SDL_CONTROLLER_BUTTON_Y;"
+end
+fn inline CONTROLLER_BUTTON_BACK->int:
+    @inline_C "return SDL_CONTROLLER_BUTTON_BACK;"
+end
+fn inline CONTROLLER_BUTTON_GUIDE->int:
+    @inline_C "return SDL_CONTROLLER_BUTTON_GUIDE;"
+end
+fn inline CONTROLLER_BUTTON_START->int:
+    @inline_C "return SDL_CONTROLLER_BUTTON_START;"
+end
+fn inline CONTROLLER_BUTTON_LEFTSTICK->int: 
+    @inline_C "return SDL_CONTROLLER_BUTTON_LEFTSTICK;"
+end
+fn inline CONTROLLER_BUTTON_RIGHTSTICK->int: 
+    @inline_C "return SDL_CONTROLLER_BUTTON_RIGHTSTICK;"
+end
+fn inline CONTROLLER_BUTTON_LEFTSHOULDER->int: 
+    @inline_C "return SDL_CONTROLLER_BUTTON_LEFTSHOULDER;"
+end
+fn inline CONTROLLER_BUTTON_RIGHTSHOULDER->int: 
+    @inline_C "return SDL_CONTROLLER_BUTTON_RIGHTSHOULDER;"
+end
+fn inline CONTROLLER_BUTTON_DPAD_UP->int:
+    @inline_C "return SDL_CONTROLLER_BUTTON_DPAD_UP;"
+end
+fn inline CONTROLLER_BUTTON_DPAD_DOWN->int:
+    @inline_C "return SDL_CONTROLLER_BUTTON_DPAD_DOWN;"
+end
+fn inline CONTROLLER_BUTTON_DPAD_LEFT->int:
+    @inline_C "return SDL_CONTROLLER_BUTTON_DPAD_LEFT;"
+end
+fn inline CONTROLLER_BUTTON_DPAD_RIGHT->int:
+    @inline_C "return SDL_CONTROLLER_BUTTON_DPAD_RIGHT;"
+end
+fn inline CONTROLLER_BUTTON_MISC1->int:
+    @inline_C "return SDL_CONTROLLER_BUTTON_MISC1;"
+end
+
+fn inline CONTROLLER_BUTTON_PADDLE1->int:
+    @inline_C "return SDL_CONTROLLER_BUTTON_PADDLE1;"
+end
+fn inline CONTROLLER_BUTTON_PADDLE2->int:
+    @inline_C "return SDL_CONTROLLER_BUTTON_PADDLE2;"
+end
+fn inline CONTROLLER_BUTTON_PADDLE3->int:
+    @inline_C "return SDL_CONTROLLER_BUTTON_PADDLE3;"
+end
+fn inline CONTROLLER_BUTTON_PADDLE4->int:
+    @inline_C "return SDL_CONTROLLER_BUTTON_PADDLE4;"
+end
+fn inline CONTROLLER_BUTTON_TOUCHPAD->int:
+    @inline_C "return SDL_CONTROLLER_BUTTON_TOUCHPAD;"
+end
+fn inline CONTROLLER_BUTTON_MAX->int:
+    @inline_C "return SDL_CONTROLLER_BUTTON_MAX;"
+end
+
+fn inline setWindowResizable(byte toggle):
+    @inline_C "SDL_SetWindowResizable(sdl_win, $toggle);"
+end
+
+
+
+//keys
+fn predecl noexport KEY_0()->uint;
+fn predecl noexport KEY_1()->uint;
+fn predecl noexport KEY_2()->uint;
+fn predecl noexport KEY_3()->uint;
+fn predecl noexport KEY_4()->uint;
+fn predecl noexport KEY_5()->uint;
+fn predecl noexport KEY_6()->uint;
+fn predecl noexport KEY_7()->uint;
+fn predecl noexport KEY_8()->uint;
+fn predecl noexport KEY_9()->uint;
+fn predecl noexport KEY_a()->uint;
+fn predecl noexport KEY_A()->uint;
+fn predecl noexport KEY_b()->uint;
+fn predecl noexport KEY_B()->uint;
+fn predecl noexport KEY_c()->uint;
+fn predecl noexport KEY_C()->uint;
+fn predecl noexport KEY_d()->uint;
+fn predecl noexport KEY_D()->uint;
+fn predecl noexport KEY_e()->uint;
+fn predecl noexport KEY_E()->uint;
+fn predecl noexport KEY_f()->uint;
+fn predecl noexport KEY_F()->uint;
+fn predecl noexport KEY_g()->uint;
+fn predecl noexport KEY_G()->uint;
+fn predecl noexport KEY_h()->uint;
+fn predecl noexport KEY_H()->uint;
+fn predecl noexport KEY_i()->uint;
+fn predecl noexport KEY_I()->uint;
+fn predecl noexport KEY_j()->uint;
+fn predecl noexport KEY_J()->uint;
+fn predecl noexport KEY_k()->uint;
+fn predecl noexport KEY_K()->uint;
+fn predecl noexport KEY_l()->uint;
+fn predecl noexport KEY_L()->uint;
+fn predecl noexport KEY_m()->uint;
+fn predecl noexport KEY_M()->uint;
+fn predecl noexport KEY_n()->uint;
+fn predecl noexport KEY_N()->uint;
+fn predecl noexport KEY_o()->uint;
+fn predecl noexport KEY_O()->uint;
+fn predecl noexport KEY_p()->uint;
+fn predecl noexport KEY_P()->uint;
+fn predecl noexport KEY_q()->uint;
+fn predecl noexport KEY_Q()->uint;
+fn predecl noexport KEY_r()->uint;
+fn predecl noexport KEY_R()->uint;
+fn predecl noexport KEY_s()->uint;
+fn predecl noexport KEY_S()->uint;
+fn predecl noexport KEY_t()->uint;
+fn predecl noexport KEY_T()->uint;
+fn predecl noexport KEY_u()->uint;
+fn predecl noexport KEY_U()->uint;
+fn predecl noexport KEY_v()->uint;
+fn predecl noexport KEY_V()->uint;
+fn predecl noexport KEY_w()->uint;
+fn predecl noexport KEY_W()->uint;
+fn predecl noexport KEY_x()->uint;
+fn predecl noexport KEY_X()->uint;
+fn predecl noexport KEY_y()->uint;
+fn predecl noexport KEY_Y()->uint;
+fn predecl noexport KEY_z()->uint;
+fn predecl noexport KEY_Z()->uint;
+fn predecl noexport KEY_ALTERASE()->uint;
+fn predecl noexport KEY_LSHIFT()->uint;
+fn predecl noexport KEY_RSHIFT()->uint;
+fn predecl noexport KEY_RETURN()->uint;
+fn predecl noexport KEY_RETURN2()->uint;
+fn predecl noexport KEY_TAB()->uint;
+fn predecl noexport KEY_QUOTE()->uint;
+fn predecl noexport KEY_BACKSLASH()->uint;
+fn predecl noexport KEY_BACKSPACE()->uint;
+fn predecl noexport KEY_CAPSLOCK()->uint;
+fn predecl noexport KEY_COMMA()->uint;
+fn predecl noexport KEY_UP()->uint;
+fn predecl noexport KEY_DOWN()->uint;
+fn predecl noexport KEY_LEFT()->uint;
+fn predecl noexport KEY_RIGHT()->uint;
+fn predecl noexport KEY_HOME()->uint;
+fn predecl noexport KEY_END()->uint;
+fn predecl noexport KEY_ESCAPE()->uint;
+fn predecl noexport KEY_PAGEUP()->uint;
+fn predecl noexport KEY_PAGEDOWN()->uint;
+fn predecl noexport KEY_PGUP()->uint;
+fn predecl noexport KEY_PGDN()->uint;
+fn predecl noexport KEY_DELETE()->uint;
+fn predecl noexport KEY_INSERT()->uint;
+fn predecl noexport KEY_PERIOD()->uint;
+fn predecl noexport KEY_F1()->uint;
+fn predecl noexport KEY_F2()->uint;
+fn predecl noexport KEY_F3()->uint;
+fn predecl noexport KEY_F4()->uint;
+fn predecl noexport KEY_F5()->uint;
+fn predecl noexport KEY_F6()->uint;
+fn predecl noexport KEY_F7()->uint;
+fn predecl noexport KEY_F8()->uint;
+fn predecl noexport KEY_F9()->uint;
+fn predecl noexport KEY_F10()->uint;
+fn predecl noexport KEY_F11()->uint;
+fn predecl noexport KEY_F12()->uint;
+fn predecl noexport KEY_BACKQUOTE()->uint;
+fn predecl noexport KEY_GRAVE()->uint;
+fn predecl noexport KEY_KP_0()->uint;
+fn predecl noexport KEY_KP_1()->uint;
+fn predecl noexport KEY_KP_2()->uint;
+fn predecl noexport KEY_KP_3()->uint;
+fn predecl noexport KEY_KP_4()->uint;
+fn predecl noexport KEY_KP_5()->uint;
+fn predecl noexport KEY_KP_6()->uint;
+fn predecl noexport KEY_KP_7()->uint;
+fn predecl noexport KEY_KP_8()->uint;
+fn predecl noexport KEY_KP_9()->uint;
+fn predecl noexport KEY_KP_PERIOD()->uint;
+fn predecl noexport KEY_KP_PLUS()->uint;
+fn predecl noexport KEY_KP_MINUS()->uint;
+fn predecl noexport KEY_KP_ENTER()->uint;
+fn predecl noexport KEY_KP_MULTIPLY()->uint;
+fn predecl noexport KEY_KP_STAR()->uint;
+fn predecl noexport KEY_KP_DIVIDE()->uint;
+fn predecl noexport KEY_KP_SLASH()->uint;
+fn predecl noexport KEY_SCROLLLOCK()->uint;
+fn predecl noexport KEY_SEMICOLON()->uint;
+fn predecl noexport KEY_SLASH()->uint;
+fn predecl noexport KEY_RIGHTBRACKET()->uint;
+fn predecl noexport KEY_LEFTBRACKET()->uint;
+fn predecl noexport KEY_LEFTPAREN()->uint;
+fn predecl noexport KEY_RIGHTPAREN()->uint;
+fn predecl noexport KEY_LCTRL()->uint;
+fn predecl noexport KEY_LALT()->uint;
+fn predecl noexport KEY_RCTRL()->uint;
+fn predecl noexport KEY_RALT()->uint;
+fn predecl noexport KEY_SYSREQ()->uint;
+fn predecl noexport KEY_EQUALS()->uint;
+fn predecl noexport KEY_MINUS()->uint;
+
+data codegen string FUNBAS_STB_CONFIGS "
+#define STB_IMAGE_IMPLEMENTATION
+#define STB_TRUETYPE_IMPLEMENTATION
+#define STBTT_STATIC
+";
+
+#include <toc/stb_image.hbas>
+#include <toc/stb_truetype.hbas>
+ 
+
+
+data codegen string FUNBAS_PREFIX "
+#include <SDL2/SDL.h>
+#include <GL/gl.h>
+#include <SDL2/SDL_mixer.h>
+#include <SDL2/SDL_ttf.h>
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+//---INTERNAL STATE---
+static SDL_Window *sdl_win = NULL;
+static SDL_GLContext* sdl_glcontext = NULL;
+static int shouldquit = 0;
+static int __CBAS__width = 640, __CBAS__height = 480, __CBAS__display_scale = 1;
+static int __CBAS__mousex = 0, __CBAS__mousey = 0, __CBAS__mousexrel=0, __CBAS__mouseyrel=0;
+static int is_window_open = 0;
+
+unsigned char ttf_buffer[1<<20];
+#define TEMP_BITMAP_DIM 1024
+unsigned char temp_bitmap[TEMP_BITMAP_DIM*TEMP_BITMAP_DIM];
+
+typedef struct{
+    stbtt_bakedchar cdata[96]; // ASCII 32..126 is 95 glyphs
+    unsigned ftex;
+} rfont;
+
+
+static unsigned char* __CBAS__loadFont(unsigned char* fname, float pxsz)
+{
+    FILE* f = fopen((char*)fname, \"rb\");
+    if(f == NULL){
+        puts(\"<FONT LOADING ERROR>\");
+        puts(\"Could not open font:\");
+        puts((char*)fname);
+        exit(1);
+    }
+    rfont* ft = malloc(sizeof(rfont));
+    fread(ttf_buffer, 1, 1<<20, f);
+    stbtt_BakeFontBitmap(ttf_buffer,0, pxsz, temp_bitmap,
+    TEMP_BITMAP_DIM,
+    TEMP_BITMAP_DIM, 
+    32,96, ft->cdata); // no guarantee this fits!
+    // can free ttf_buffer at this point
+    glGenTextures(1, &ft->ftex);
+    glBindTexture(GL_TEXTURE_2D, ft->ftex);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, 
+    TEMP_BITMAP_DIM,
+    TEMP_BITMAP_DIM, 
+    0, GL_ALPHA, GL_UNSIGNED_BYTE, temp_bitmap);
+    // can free temp_bitmap at this point
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    return (unsigned char*)ft;
+}
+/*
+static void __CBAS__beginUI(){
+    glDisable(GL_CULL_FACE);
+    glDisable(GL_DEPTH_TEST);
+
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    glOrtho(0,width,height,0,-1,1);
+    
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadIdentity();
+
+    glEnable(GL_TEXTURE_2D);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+}
+
+static void __CBAS__endUI(){
+    glDisable(GL_BLEND);
+    glEnable(GL_CULL_FACE);
+    glEnable(GL_DEPTH_TEST);
+	glDisable(GL_TEXTURE_2D);
+    glMatrixMode(GL_MODELVIEW);
+    glPopMatrix();
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+}
+*/
+
+static void __CBAS__renderText(unsigned char *text, unsigned char* fontin, float x, float y, float vert)
+{
+    rfont* ft = (rfont*)fontin;
+   // assume orthographic projection with units = screen pixels, origin at top left
+   glEnable(GL_BLEND);
+   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+   glEnable(GL_TEXTURE_2D);
+   glBindTexture(GL_TEXTURE_2D, ft->ftex);
+   glBegin(GL_QUADS);
+    float w;
+    float yoff = 0;
+    float x_orig = x;
+    float y_orig = y;
+
+    while (*text) {
+        w = x;
+        y = y_orig + yoff;
+        if (*text >= 32 && *text < 128) {
+            stbtt_aligned_quad q;
+            stbtt_GetBakedQuad(ft->cdata, TEMP_BITMAP_DIM,TEMP_BITMAP_DIM, *text-32, &x,&y,&q,1);//1=opengl & d3d10+,0=d3d9
+            q.x1 = q.x1 - q.x0;
+            q.x0 = w;
+            q.x1 = w + q.x1;
+            glTexCoord2f(q.s0,q.t0); glVertex2f(q.x0,q.y0);
+            glTexCoord2f(q.s1,q.t0); glVertex2f(q.x1,q.y0);
+            glTexCoord2f(q.s1,q.t1); glVertex2f(q.x1,q.y1);
+            glTexCoord2f(q.s0,q.t1); glVertex2f(q.x0,q.y1);
+        }
+        ++text;
+        //x = w + spacing;
+        if(text[0] == \'\\n\') {yoff= yoff + vert;w = x_orig;x = x_orig;}
+    }
+   glEnd();
+}
+static void __CBAS__renderTextMono(unsigned char *text, unsigned char* fontin, float x, float y, float spacing, float vert)
+{
+    rfont* ft = (rfont*)fontin;
+    // assume orthographic projection with units = screen pixels, origin at top left
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, ft->ftex);
+    glBegin(GL_QUADS);
+    float w;
+    float yoff = 0;
+    float x_orig = x;
+    float y_orig = y;
+
+    while (*text) {
+        w = x;
+        y = y_orig + yoff;
+        if (*text >= 32 && *text < 128) {
+            stbtt_aligned_quad q;
+            stbtt_GetBakedQuad(ft->cdata, TEMP_BITMAP_DIM,TEMP_BITMAP_DIM, *text-32, &x,&y,&q,1);//1=opengl & d3d10+,0=d3d9
+            q.x1 = q.x1 - q.x0;
+            q.x0 = w;
+            q.x1 = w + q.x1;
+            glTexCoord2f(q.s0,q.t0); glVertex2f(q.x0,q.y0);
+            glTexCoord2f(q.s1,q.t0); glVertex2f(q.x1,q.y0);
+            glTexCoord2f(q.s1,q.t1); glVertex2f(q.x1,q.y1);
+            glTexCoord2f(q.s0,q.t1); glVertex2f(q.x0,q.y1);
+        }
+        ++text;
+        x = w + spacing;
+        if(text[0] == \'\\n\') {yoff= yoff + vert;w = x_orig;x = x_orig;}
+    }
+    glEnd();
+}
+
+
+static void __CBAS__onClick(int btn, int state);
+static void __CBAS__appInit();
+static void __CBAS__appUpdate();
+static void __CBAS__appClose();
+static void __CBAS__onTextInput(unsigned char* text);
+static void __CBAS__onTextEdit(unsigned char* text, int start, int length);
+static void __CBAS__onKey(int keycode, unsigned char state);
+static void __CBAS__onScroll(int x, int y);
+
+static void __CBAS__onResize(int w, int h);
+//game controller stuff...
+
+
+
+static unsigned long long get_gamerbuttons(){
+	unsigned long long retval = 0;
+	const unsigned char *state;
+	state = SDL_GetKeyboardState(NULL);
+	retval |= 0x1 * (state[SDL_SCANCODE_UP]!=0);
+	retval |= 0x2 * (state[SDL_SCANCODE_DOWN]!=0);
+	retval |= 0x4 * (state[SDL_SCANCODE_LEFT]!=0);
+	retval |= 0x8 * (state[SDL_SCANCODE_RIGHT]!=0);
+	retval |= 0x10 * (state[SDL_SCANCODE_RETURN]!=0);
+	retval |= 0x20 * (state[SDL_SCANCODE_RSHIFT]!=0);
+	retval |= 0x40 * (state[SDL_SCANCODE_Z]!=0);
+	retval |= 0x80 * (state[SDL_SCANCODE_X]!=0);
+	retval |= 0x100 * (state[SDL_SCANCODE_C]!=0);
+	retval |= 0x200 * (state[SDL_SCANCODE_A]!=0);
+	retval |= 0x400 * (state[SDL_SCANCODE_S]!=0);
+	retval |= 0x800 * (state[SDL_SCANCODE_D]!=0);
+	retval |= 0x1000 * (state[SDL_SCANCODE_W]!=0);
+	retval |= 0x2000 * (state[SDL_SCANCODE_E]!=0);
+	retval |= 0x4000 * (state[SDL_SCANCODE_R]!=0);
+	retval |= 0x8000 * (state[SDL_SCANCODE_F]!=0);
+	retval |= 0x10000 * (state[SDL_SCANCODE_Q]!=0);
+	retval |= 0x20000 * (state[SDL_SCANCODE_LSHIFT]!=0);
+	return retval;
+}
+
+static void pollevents(){
+	SDL_Event ev;
+	while(SDL_PollEvent(&ev)){
+		if(ev.type == SDL_QUIT) {shouldquit = 0xFFff; /*Magic value for quit.*/}
+		else if(ev.type == SDL_MOUSEMOTION){
+			__CBAS__mousex = ev.motion.x;
+			__CBAS__mousey = ev.motion.y;
+			__CBAS__mousexrel = ev.motion.xrel;
+			__CBAS__mouseyrel = ev.motion.yrel;
+		} else if (ev.type == SDL_MOUSEBUTTONDOWN){
+			if(ev.button.button == SDL_BUTTON_LEFT){
+				__CBAS__onClick(0,1);
+			} else if(ev.button.button == SDL_BUTTON_RIGHT){
+				__CBAS__onClick(1,1);
+			}else if(ev.button.button == SDL_BUTTON_MIDDLE){
+				__CBAS__onClick(2,1);
+			}
+		} else if (ev.type == SDL_MOUSEBUTTONUP){
+			if(ev.button.button == SDL_BUTTON_LEFT){
+				__CBAS__onClick(0,0);
+			} else if(ev.button.button == SDL_BUTTON_RIGHT){
+				__CBAS__onClick(1,0);
+			}else if(ev.button.button == SDL_BUTTON_MIDDLE){
+				__CBAS__onClick(2,0);
+			}
+		} else if (ev.type == SDL_TEXTINPUT){
+		    __CBAS__onTextInput((unsigned char*)ev.text.text);
+		} else if (ev.type == SDL_TEXTEDITING){
+		    __CBAS__onTextEdit((unsigned char*)ev.edit.text, ev.edit.start, ev.edit.length);
+		} else if (ev.type == SDL_KEYDOWN){
+		    if(ev.key.repeat == 0) 
+		        __CBAS__onKey(SDL_GetKeyFromScancode(ev.key.keysym.scancode), 1);
+		} else if (ev.type == SDL_KEYUP){
+		    if(ev.key.repeat == 0)
+		        __CBAS__onKey(SDL_GetKeyFromScancode(ev.key.keysym.scancode), 0);
+		} else if(ev.type == SDL_WINDOWEVENT){
+		    if(ev.window.event == SDL_WINDOWEVENT_RESIZED){
+		        __CBAS__width = ev.window.data1;
+		        __CBAS__height = ev.window.data2;
+		        __CBAS__onResize(__CBAS__width, __CBAS__height);
+		    }
+		} else if(ev.type == SDL_MOUSEWHEEL){
+		    __CBAS__onScroll(ev.wheel.x, ev.wheel.y);
+		}
+	}
+}
+
+
+typedef Mix_Music track;
+
+unsigned char* __CBAS__loadMusic(unsigned char* t){
+    return (unsigned char*)Mix_LoadMUS((char*)t);
+
+}
+void __CBAS__setSoundPosition(int chan, int angle, unsigned char dist){Mix_SetPosition(chan,angle,dist);}
+void __CBAS__haltSound(int chan){Mix_HaltChannel(chan);}
+int __CBAS__playMusic(unsigned char* mus,int loops, int ms){return Mix_FadeInMusic((track*)mus,loops,ms);}
+void __CBAS__haltMusic(){Mix_HaltMusic();}
+
+static unsigned char* __CBAS__loadSample(unsigned char* name){
+	Mix_Chunk* v = NULL;
+	
+	v = Mix_LoadWAV((char*)name);
+	if(v == NULL) 
+	{exit(1);return NULL;}
+	//samples[nsamples++] = v;
+	return (unsigned char*)v;
+}
+
+static void __CBAS__freeSample(unsigned char* buf){
+	Mix_Chunk* v = (Mix_Chunk*)buf;
+    Mix_FreeChunk(v);
+}
+
+static int __CBAS__playSample(unsigned char* sampl, int loops){
+    Mix_Chunk* samp= (Mix_Chunk*)sampl;
+	return Mix_PlayChannel(-1, samp, loops);
+}
+
+static unsigned __CBAS__loadRGBTexture(unsigned char* buf, unsigned int w, unsigned int h) {
+	GLuint t = 0;
+	glGenTextures(1, &t);
+	glBindTexture(GL_TEXTURE_2D, t);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexImage2D(GL_TEXTURE_2D, 0, 3, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, buf);
+	return t;
+}
+
+static unsigned __CBAS__loadRGBATexture(unsigned char* buf, unsigned int w, unsigned int h) {
+	GLuint t = 0;
+	glGenTextures(1, &t);
+	glBindTexture(GL_TEXTURE_2D, t);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexImage2D(GL_TEXTURE_2D, 0, 4, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, buf);
+	return t;
+}
+
+
+
+
+
+
+
+#define MKCONST(d) static inline unsigned __CBAS__KEY_##d() { return SDLK_##d; }
+#define MKCONST2(d,b) static inline unsigned __CBAS__KEY_##d() {return SDLK_##b;}
+MKCONST(0)
+MKCONST(1)
+MKCONST(2)
+MKCONST(3)
+MKCONST(4)
+MKCONST(5)
+MKCONST(6)
+MKCONST(7)
+MKCONST(8)
+MKCONST(9)
+
+MKCONST(a)
+MKCONST2(A,a)
+MKCONST(b)
+MKCONST2(B,b)
+MKCONST(c)
+MKCONST2(C,c)
+MKCONST(d)
+MKCONST2(D,d)
+MKCONST(e)
+MKCONST2(E,e)
+MKCONST(f)
+MKCONST2(F,f)
+MKCONST(g)
+MKCONST2(G,g)
+MKCONST(h)
+MKCONST2(H,h)
+MKCONST(i)
+MKCONST2(I,i)
+MKCONST(j)
+MKCONST2(J,j)
+MKCONST(k)
+MKCONST2(K,k)
+MKCONST(l)
+MKCONST2(L,l)
+MKCONST(m)
+MKCONST2(M,m)
+MKCONST(n)
+MKCONST2(N,n)
+MKCONST(o)
+MKCONST2(O,o)
+MKCONST(p)
+MKCONST2(P,p)
+MKCONST(q)
+MKCONST2(Q,q)
+MKCONST(r)
+MKCONST2(R,r)
+MKCONST(s)
+MKCONST2(S,s)
+MKCONST(t)
+MKCONST2(T,t)
+MKCONST(u)
+MKCONST2(U,u)
+MKCONST(v)
+MKCONST2(V,v)
+MKCONST(w)
+MKCONST2(W,w)
+MKCONST(x)
+MKCONST2(X,x)
+MKCONST(y)
+MKCONST2(Y,y)
+MKCONST(z)
+MKCONST2(Z,z)
+
+MKCONST(ALTERASE)
+MKCONST(LSHIFT)
+MKCONST(RSHIFT)
+MKCONST(RETURN)
+MKCONST(RETURN2)
+MKCONST(TAB)
+MKCONST(QUOTE)
+
+MKCONST(BACKSLASH)
+MKCONST(BACKSPACE)
+
+MKCONST(CAPSLOCK)
+MKCONST(COMMA)
+MKCONST(UP)
+MKCONST(DOWN)
+MKCONST(LEFT)
+MKCONST(RIGHT)
+MKCONST(HOME)
+MKCONST(END)
+MKCONST(ESCAPE)
+MKCONST(PAGEUP)
+MKCONST(PAGEDOWN)
+const unsigned __CBAS__KEY_PGDN = SDLK_PAGEDOWN;
+const unsigned __CBAS__KEY_PGUP = SDLK_PAGEUP;
+MKCONST(DELETE)
+MKCONST(INSERT)
+MKCONST(PERIOD)
+MKCONST(F1)
+MKCONST(F2)
+MKCONST(F3)
+MKCONST(F4)
+MKCONST(F5)
+MKCONST(F6)
+MKCONST(F7)
+MKCONST(F8)
+MKCONST(F9)
+MKCONST(F10)
+MKCONST(F11)
+MKCONST(F12)
+MKCONST(BACKQUOTE)
+const unsigned __CBAS__KEY_GRAVE = SDLK_BACKQUOTE;
+MKCONST(KP_0)
+MKCONST(KP_1)
+MKCONST(KP_2)
+MKCONST(KP_3)
+MKCONST(KP_4)
+MKCONST(KP_5)
+MKCONST(KP_6)
+MKCONST(KP_7)
+MKCONST(KP_8)
+MKCONST(KP_9)
+MKCONST(KP_PERIOD)
+MKCONST(KP_PLUS)
+MKCONST(KP_MINUS)
+MKCONST(KP_ENTER)
+MKCONST(KP_MULTIPLY)
+const unsigned __CBAS__KEY_KP_STAR = SDLK_KP_MULTIPLY;
+MKCONST(KP_DIVIDE)
+const unsigned __CBAS__KEY_KP_SLASH = SDLK_KP_DIVIDE;
+MKCONST(SCROLLLOCK)
+MKCONST(SEMICOLON)
+MKCONST(SLASH)
+MKCONST(RIGHTBRACKET)
+MKCONST(LEFTBRACKET)
+MKCONST(LEFTPAREN)
+MKCONST(RIGHTPAREN)
+MKCONST(LCTRL)
+MKCONST(LALT)
+MKCONST(RCTRL)
+MKCONST(RALT)
+MKCONST(SYSREQ)
+MKCONST(EQUALS)
+MKCONST(MINUS)
+#undef MKCONST
+#undef MKCONST2
+";
+
+

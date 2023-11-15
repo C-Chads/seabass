@@ -1,0 +1,60 @@
+
+/*
+
+    THE FUNBAS PROGRAMMING LIBRARY FOR SEABASS
+    Here's how you compile the generated C code:
+    
+    cc -O3 auto_out.c -o PUT_YOUR_EXE_NAME_HERE -lm -lSDL2 -lGL -lSDL2_mixer -lSDL2_ttf -fwrapv -Wall -Wno-unused
+
+
+    note that the linker flags may be different on some systems...
+*/
+
+
+#include "fun.hbas"
+
+fn codegen codegen_main():
+    cgstr q
+    q.fromstr(SEABASS_STDLIB_PREFIX);
+    q.addstr(GL_1_1_PREFIX);
+    q.addstr(AL_1_1_PREFIX);
+    q.addstr(FUNBAS_STB_CONFIGS);
+    q.addstr(STB_IMAGE);
+    q.addstr(STB_TRUETYPE);
+    q.addstr(FUNBAS_PREFIX);
+    q.addstr("
+    static int __CBAS__argc = 0;
+    static unsigned char** __CBAS__argv = NULL;
+    int main(int argc, char** argv){
+    	__CBAS__argv = (unsigned char**)argv;
+    	__CBAS__argc = argc;
+        if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMECONTROLLER | SDL_INIT_JOYSTICK) < 0)
+        {
+            printf(\"SDL2 could not be initialized!\\n\"
+                   \"SDL_Error: %s\\n\", SDL_GetError());
+            exit(1);
+        }
+    	Mix_Init(MIX_INIT_OGG | MIX_INIT_MP3);
+    	if (Mix_OpenAudio(44100,/*AUDIO_S16SYS*/ MIX_DEFAULT_FORMAT, 2, 1024) < 0){
+            fprintf(stderr,\"\\r\\nSDL2 mixer audio opening failed!\\r\\n\"
+            \"SDL_Error: %s\\r\\n\", SDL_GetError());
+            exit(-1);
+    	}
+    	if(Mix_AllocateChannels(32) < 0){
+            fprintf(stderr,\"\\r\\nSDL2 mixer channel allocation failed!\\r\\n\"
+            \"SDL_Error: %s\\r\\n\", SDL_GetError());
+            exit(-1);
+    	}
+    	__CBAS__appInit();
+    	while(!shouldquit){
+    		pollevents();
+    		__CBAS__appUpdate();
+    	}
+    	__CBAS__appClose();
+    	Mix_CloseAudio();
+        SDL_Quit();
+    }
+    ");
+    cg_emitC(q.s);
+    q.free();
+end
