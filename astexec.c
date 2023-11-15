@@ -2819,14 +2819,7 @@ void ast_execute_function(symdecl* s){
                 
                 //we have, apparently, already cached this information in code_validator.c...
                 which_stmt = cur_stmt->switch_label_indices[val];
-                /*
-                for(i = 0; i < (int64_t)cur_stmt->whereami->nstmts; i++){
-                    if(stmt_list[i].kind == STMT_LABEL)
-                        if(streq(name, stmt_list[i].referenced_label_name)){
-                            which_stmt = i;
-                            goto continue_executing_scope;
-                        }
-                }*/
+
                 goto do_next_stmt;
             }
             if(stmt_kind == STMT_RETURN){
