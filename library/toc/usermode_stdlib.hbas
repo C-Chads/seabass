@@ -927,6 +927,13 @@ end
 fn inline SEEK_END()->TGT_IMAX:
     asm("return SEEK_END;");
 end
+fn inline PI()->double:
+    //more than you will ever need!
+    asm("return 3.141592653589793238462643383279502884197169399375105820974944592307816406286208998628034825342117067982148086513;")
+end
+fn inline M_PI()->double:
+    return PI;
+end
 fn predecl noexport ftell(TGT_UMAX fhandle)->TGT_IMAX;
 fn predecl noexport fremove(char* fname)->i32;
 fn predecl noexport frename(char* fname_old, char* fname_new)->i32;
