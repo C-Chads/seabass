@@ -59,23 +59,60 @@ fn codegen test_loops:
     have_failed = 1;
     :after_for_111
     i64 i
+    i64 j = 0
     //if(1)
     for(i = 0, i < 20; i++)
-    ;
         __builtin_puts("You should see this print!");
         if(i == 3)
+            j--;
             break
         end
+        j++;
     end
-    if(i != 3)
+    if(i != 3 || j != (3-1))
         __builtin_puts("Failed Loop Test 1");
         char[50] buf
         __builtin_utoa(buf, i);
         __builtin_puts(buf);
+        __builtin_utoa(buf, j);
+        __builtin_puts(buf);
         have_failed = 1
     end
     //end
-
+    i = 12;
+    j = -13;
+    while(i > 0)
+        i = i - 1;
+        j--;
+    end
+    if(i != 0 || j != -25)
+        __builtin_puts("Failed Loop Test 2");
+        char[50] buf
+        __builtin_itoa(buf, i);
+        __builtin_puts(buf);
+        __builtin_itoa(buf, j);
+        __builtin_puts(buf);
+        have_failed = 1
+    end 
+    
+    i = 12;
+    j = -13;
+    while(1)
+        i = i - 1;
+        j--;
+        if(i == 0)
+            break
+        end
+    end
+    if(i != 0 || j != -25)
+        __builtin_puts("Failed Loop Test 2");
+        char[50] buf
+        __builtin_itoa(buf, i);
+        __builtin_puts(buf);
+        __builtin_itoa(buf, j);
+        __builtin_puts(buf);
+        have_failed = 1
+    end
 
 
 
