@@ -131,7 +131,6 @@ fn inline endUI:
     glPopMatrix();
     glMatrixMode(GL_PROJECTION());
     glPopMatrix();
-
 end
 
 fn inline swapDisplay():
