@@ -5,6 +5,10 @@ ______________________________________________________________
 ![logo](logo.png)
 ______________________________________________________________
 
+![Official Documentation and Introduction](https://gek169.github.io/seabass/)
+
+
+
 Seabass is a public domain, self-retargeting, self-extending, 
 self-modifying metaprogramming language and general-purpose 
 metaprogramming tool.
