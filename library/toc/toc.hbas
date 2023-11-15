@@ -1882,25 +1882,28 @@ method codegen cgsymdecl:gen_code(cgast* ast, char is_local, u64 my_symid)->char
                 ff.s = "static ";
                 out:add(ff);
             end
-            /*
-                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                IMPL_README
-                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                
-                If you are compiling for a strictly C99
-                target, please remove this code. It is
-                not compatible with C99. `_Atomic` is a
-                C11 feature.
-            */
-            if(this.is_volatile)
-                ff.s = "volatile ";
-                out:add(ff);
-            elif(this.is_atomic)
-                //It must be atomic!
-                was_atomic_thing = 1;
-                ff.s = "_Atomic ";
-                out:add(ff);
+            if(this.t.pointerlevel == 0)
+                /*
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                    IMPL_README
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                    
+                    If you are compiling for a strictly C99
+                    target, please remove this code. It is
+                    not compatible with C99. `_Atomic` is a
+                    C11 feature.
+                */
+                if(this.is_volatile)
+                    ff.s = "volatile ";
+                    out:add(ff);
+                elif(this.is_atomic)
+                    //It must be atomic!
+                    was_atomic_thing = 1;
+                    ff.s = "_Atomic ";
+                    out:add(ff);
+                end
             end
+
         end
         /*
             Check to see if the object is a struct with an algn...
@@ -1922,6 +1925,27 @@ method codegen cgsymdecl:gen_code(cgast* ast, char is_local, u64 my_symid)->char
         ff.s = this.t:gen_code(ast);
         out:add(ff); ff:free();
         ff.s = " ";
+        if(!is_local && this.t.pointerlevel)
+            /*
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                IMPL_README
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                
+                If you are compiling for a strictly C99
+                target, please remove this code. It is
+                not compatible with C99. `_Atomic` is a
+                C11 feature.
+            */
+            if(this.is_volatile)
+                ff.s = "volatile ";
+                out:add(ff);
+            elif(this.is_atomic)
+                //It must be atomic!
+                was_atomic_thing = 1;
+                ff.s = "_Atomic ";
+                out:add(ff);
+            end
+        end
         out:add(ff);
         if(is_local)
             //local variables are always mangled!
