@@ -282,9 +282,22 @@ static void assign_lsym_gsym(expr_node* ee){
         for(i = 0; i < (int64_t)nsymbols; i++)
             if(streq(ee->symname, symbol_table[i]->name)){
                 /*Do some validation. It can't be a function...*/
-                if(symbol_table[i]->t.is_function)
+                if(
+                    symbol_table[i]->t.is_function && 
+                    symbol_table[i]->nargs == 0
+                ){
+                    //transform into an EXPR_FCALL....
+                    ee->kind = EXPR_FCALL;
+                    ee->is_function = 1;
+                    ee->symid = i;
+                    ee->t = symbol_table[i]->t;
+                    ee->t.is_function = 0;
+                    return;
+                    
+                } else if(symbol_table[i]->t.is_function)
                 {
-                    puts("<INTERNAL ERROR> Uncaught usage of function name as identifier?");
+                    //
+                    puts("<INTERNAL ERROR> Uncaught usage of function (with >0 args) name as identifier");
                     puts("Active Function:");
                     puts(symbol_table[active_function]->name);
                     puts("Identifier:");
