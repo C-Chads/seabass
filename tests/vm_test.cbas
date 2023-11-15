@@ -661,7 +661,9 @@ fn codegen switch_test(int a):
 				int j
 				//break
 				for(j = 0, j < 2, j++)
-					__builtin_puts("I should print twice six times! Unless you put a break here:");continue break
+					__builtin_puts("I should print twice six times! Unless you put a break here:"); 
+					continue 
+					break
 				end
 			end
 			:getout

@@ -1939,6 +1939,7 @@ int main(int argc, char** argv){
     {
         {
             t = DUP_PATH_STRING(infilename, NULL);
+            free(infilename);
         } 
         if(!t) {
             puts("\r\nCannot find file realpath!\n");

@@ -2728,9 +2728,10 @@ void ast_execute_function(symdecl* s){
                     ast_vm_stack_pop();
                 }
                 for(i = 0; i < cur_stmt->goto_scopediff; i++ ){
-                    //debug_print("goto popping stacks...",0,0);
                     scope_executing_stack_pop();
                 }
+                scope_positions[n_scopes_executings-1].is_in_loop = 0; //breaks out of the loop, is_in_loop is undone.
+
                 //find our new position...
                 stmt_list = scope_executing_stack_gettop()->stmts;
                 which_stmt = cur_stmt->goto_where_in_scope;
@@ -2747,6 +2748,7 @@ void ast_execute_function(symdecl* s){
                     //debug_print("goto popping stacks...",0,0);
                     scope_executing_stack_pop();
                 }
+
                 //TODO- make a symbol linkage.
                 i = cur_stmt->symid;
                 /*for(i = 0; i < (int64_t)nsymbols; i++)
@@ -2768,6 +2770,7 @@ void ast_execute_function(symdecl* s){
                     //debug_print("goto popping stacks...",0,0);
                     scope_executing_stack_pop();
                 }
+
                 //find our new position...
                 stmt_list = scope_executing_stack_gettop()->stmts;
                 uint64_t pp1;
