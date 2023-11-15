@@ -30,7 +30,15 @@ char* DUP_PATH_STRING(char* L, char* A){
     System include directory.
 */
 
+#ifdef __WIN32__
+
+const char* sys_include_dir = "C:/cbas/";
+
+#else
+
 const char* sys_include_dir = "/usr/include/cbas/";
+
+#endif
 
 LIBMIN_UINT atou_hex(char* s){
 LIBMIN_UINT retval = 0;

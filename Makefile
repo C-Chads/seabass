@@ -3,7 +3,7 @@ CFLAGS= -O3 -s -std=gnu99 -march=native -fwrapv
 CFLAGS_DBG= -Og -g -fwrapv -fsanitize=address,undefined,leak -std=gnu99 -DCOMPILER_CLEANS_UP
 CFLAGS_DBGVG= -Og -g -fwrapv -std=gnu99 -DCOMPILER_CLEANS_UP
 CFLAGS_CLEAN= -O3 -s -fwrapv -std=gnu99 -DCOMPILER_CLEANS_UP
-CFLAGS_PURE= -O3 -fwrapv -std=gnu99 -DCOMPILER_CLEANS_UP
+CFLAGS_PURE=  -O3 -fwrapv -std=gnu99 -DCOMPILER_CLEANS_UP
 CFLAGS_CBAS= -O3 -fwrapv -s -std=gnu11
 
 
@@ -33,17 +33,26 @@ install_stdlib:
 	mkdir -p /usr/include/cbas
 	cp -a library/. /usr/include/cbas/
 	
+install_stdlib_win:
+	mkdir -p "C:/cbas/"
+	cp -a library/. "C:/cbas/"
+	
 uninstall_stdlib:
 	rm -rf /usr/include/cbas
 	
 upd_lib: uninstall_stdlib install_stdlib
 
-install: all_not_tcc
+install_no_tcc: all_not_tcc
 	cp ./cbas_dirty /usr/local/bin/
 	cp ./cbas_dbg /usr/local/bin/
 	cp ./cbas_dbg2 /usr/local/bin/
 	cp ./cbas_clean /usr/local/bin/
 	cp ./cbas_pure /usr/local/bin/
+	cp ./cbas_dirty /usr/local/bin/cbas
+	
+install: cbas_dirty cbas_clean
+	cp ./cbas_dirty /usr/local/bin/
+	cp ./cbas_clean /usr/local/bin/
 	cp ./cbas_dirty /usr/local/bin/cbas
 
 install_all: all install_stdlib
