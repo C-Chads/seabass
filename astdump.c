@@ -74,7 +74,6 @@ static void astdump_printsymbol(symdecl* s,
     uint64_t indentlevel, 
     int should_print_isfunction
 ){
-    char buf[80];
     fputs("\n",stdout);
     do_indent(indentlevel);
     if(s->t.is_function) fputs("fn ",stdout);
@@ -84,12 +83,12 @@ static void astdump_printsymbol(symdecl* s,
     if(s->is_impure_globals_or_asm) fputs("known-impure ",stdout);
     if(s->is_incomplete) fputs("incomplete ",stdout);
     if(s->cdata != NULL) fputs("has-cdata ",stdout);
-    if(s->cdata_sz > 0){
-        fputs("cdata_sz=",stdout);
-        mutoa(buf, s->cdata_sz);
-        fputs(buf,stdout);
-        fputs(" ",stdout);
-    }
+    // if(s->cdata_sz > 0){
+    //     fputs("cdata_sz=",stdout);
+    //     mutoa(buf, s->cdata_sz);
+    //     fputs(buf,stdout);
+    //     fputs(" ",stdout);
+    // }
     astdump_print_type(s->t, should_print_isfunction);
     fputs(s->name, stdout);
 }
@@ -433,6 +432,7 @@ void astdump(){
             do_indent(2);
             astdump_print_type(symbol_table[i]->fargs[j][0],1);
         }
-        astdump_printscope(symbol_table[i]->fbody,4);
+        if(symbol_table[i]->is_codegen == 0)
+            astdump_printscope(symbol_table[i]->fbody,4);
     }
 }

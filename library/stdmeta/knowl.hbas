@@ -156,7 +156,7 @@ end
 //TODO: implement adding of types and type traits, as well as cloning props from
 //other types...
 
-#__cbas_run_fn cg__INTERNAL__init_traitsystem ;
+__cbas_run_fn cg__INTERNAL__init_traitsystem ;
 
 
 //end of unit...
