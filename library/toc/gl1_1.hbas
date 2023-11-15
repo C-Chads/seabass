@@ -454,6 +454,20 @@ fn inline glFrustum(
 ):
     @inline_C "glFrustum($left, $right, $bottom, $top, $zNear, $zFar);"
 end
+//Based on
+//http://nehe.gamedev.net/article/replacement_for_gluperspective/21002/
+fn inline glPerspective(
+    double fovy,
+    double aspect,
+    double zn,
+    double zf
+):
+    double fw
+    double fh
+    fh = tan(fovy/360 * PI) * zn;
+    fw = fh * aspect;
+    glFrustum(-fw, fw, -fh, fh, zn, zf);
+end
 fn inline glGenLists(uint range)->uint:
     @inline_C "return glGenLists($range);"
 end
