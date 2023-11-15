@@ -62,7 +62,7 @@ fn codegen test_loops:
     i64 j = 0
     //if(1)
     for(i = 0, i < 20; i++)
-        __builtin_puts("You should see this print!");
+        __builtin_puts("You should see this print! (for i = 0 to 3 inclusive, 4 times)");
         if(i == 3)
             j--;
             break
@@ -106,6 +106,64 @@ fn codegen test_loops:
     end
     if(i != 0 || j != -25)
         __builtin_puts("Failed Loop Test 2");
+        char[50] buf
+        __builtin_itoa(buf, i);
+        __builtin_puts(buf);
+        __builtin_itoa(buf, j);
+        __builtin_puts(buf);
+        have_failed = 1
+    end
+    
+    i = 23;
+    j = 0;
+    while(1)
+        i++
+        while(1)
+           j++;
+           if(i == j)
+                break
+           end
+        end
+        if(i == 40)
+            break
+        end
+    end
+    
+    
+    if(i != j || i != 40)
+        __builtin_puts("Failed Loop Test 3");
+        char[50] buf
+        __builtin_itoa(buf, i);
+        __builtin_puts(buf);
+        __builtin_itoa(buf, j);
+        __builtin_puts(buf);
+        have_failed = 1
+    end
+
+    
+    i = 23;
+    j = 0;
+    while(1)
+        i++
+        while(1)
+           j++;
+           if(i == j)
+                goto out1
+           end
+        end
+        :out1
+        if(i == 40)
+            jump out2
+        end
+    end
+    :out2
+    i64 k
+    for(k = 0, k < i, k++)
+        ;
+    end
+    
+    if(i != j || i != 40 || i != k)
+        __builtin_puts("Failed Loop Test 3");
         char[50] buf
         __builtin_itoa(buf, i);
         __builtin_puts(buf);
