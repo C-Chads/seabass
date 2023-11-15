@@ -159,6 +159,9 @@ static inline TGT_IMAX __CBAS__memcmp(unsigned char* a, unsigned char* b, TGT_UM
 static inline TGT_UMAX __CBAS__strlen(unsigned char* s){
     return strlen((char*)s);
 }
+static inline void __CBAS__strcpy(unsigned char* d, unsigned char* s){
+    strcpy((char*)d, (char*)s);
+}
 
 static inline TGT_UMAX __CBAS__fopen(unsigned char* fname, unsigned char* mode){
     return (TGT_UMAX)fopen((char*)fname, (char*)mode);
@@ -892,6 +895,7 @@ fn predecl noexport srand(u32 seed);
 fn predecl noexport pure strcmp(char* a, char* b)->TGT_IMAX;
 fn predecl noexport pure memcmp(char* a, char* b, TGT_UMAX sz)->TGT_IMAX;
 fn predecl noexport pure strlen(char* s)->TGT_UMAX;
+fn predecl noexport pure strcpy(char* d, char* s);
 
 
 fn predecl noexport fopen(char* fname, char* mode)->TGT_UMAX; //returns a handle...
