@@ -1545,7 +1545,8 @@ static void strll_process_charliterals(strll* in){
             (current = current->right)
     ){
         if(current->data == (void*)3){
-            mstrcpy(current->text, current->text+1);
+            //mstrcpy(current->text, current->text+1);
+            memmove(current->text, current->text+1, strlen(current->text+1)+1);
             current->text[strlen(current->text)-1] = '\0';
 
             for(i = 0; i < strlen(current->text);i++){
@@ -1598,63 +1599,105 @@ static void strll_process_stringliterals(strll* in){
             (current = current->right)
     ){
         if(current->data == (void*)2){
-            mstrcpy(current->text, current->text+1);
+            //mstrcpy(current->text, current->text+1);
+            memmove(current->text, current->text+1, strlen(current->text+1)+1);
+
             current->text[strlen(current->text)-1] = '\0';
             for(i = 0; i < strlen(current->text);i++){
                 if(current->text[i] == '\\'){
                     if(current->text[i+1] == 'a'){
                         current->text[i] = '\a';
-                        mstrcpy(current->text+i+1, 
+                        /*mstrcpy(current->text+i+1, 
                                 current->text+i+2
+                        );*/
+                        memmove(
+                            current->text+i+1, 
+                            current->text+i+2,
+                            strlen(current->text+i+2)+1
                         );
                         continue;
                     }
                     if(current->text[i+1] == 'b'){
                         current->text[i] = '\b';
-                        mstrcpy(current->text+i+1, 
+                        /*mstrcpy(current->text+i+1, 
                                 current->text+i+2
+                        );*/
+                        memmove(
+                            current->text+i+1, 
+                            current->text+i+2,
+                            strlen(current->text+i+2)+1
                         );
                         continue;
                     }
                     if(current->text[i+1] == 'e'){
                         current->text[i] = '\e';
-                        mstrcpy(current->text+i+1, 
+                        /*mstrcpy(current->text+i+1, 
                                 current->text+i+2
+                        );*/
+                        memmove(
+                            current->text+i+1, 
+                            current->text+i+2,
+                            strlen(current->text+i+2)+1
                         );
                         continue;
                     }
                     if(current->text[i+1] == 'f'){
                         current->text[i] = '\f';
-                        mstrcpy(current->text+i+1, 
+                        /*mstrcpy(current->text+i+1, 
                                 current->text+i+2
+                        );*/
+                        memmove(
+                            current->text+i+1, 
+                            current->text+i+2,
+                            strlen(current->text+i+2)+1
                         );
                         continue;
                     }
                     if(current->text[i+1] == 'n'){
                         current->text[i] = '\n';
-                        mstrcpy(current->text+i+1, 
+                        /*mstrcpy(current->text+i+1, 
                                 current->text+i+2
+                        );*/
+                        memmove(
+                            current->text+i+1, 
+                            current->text+i+2,
+                            strlen(current->text+i+2)+1
                         );
                         continue;
                     }
                     if(current->text[i+1] == 'r'){
                         current->text[i] = '\r';
-                        mstrcpy(current->text+i+1, 
+                        /*mstrcpy(current->text+i+1, 
                                 current->text+i+2
+                        );*/
+                        memmove(
+                            current->text+i+1, 
+                            current->text+i+2,
+                            strlen(current->text+i+2)+1
                         );
                         continue;
                     }
                     if(current->text[i+1] == 't'){
                         current->text[i] = '\t';
-                        mstrcpy(current->text+i+1, 
+                        /*mstrcpy(current->text+i+1, 
                                 current->text+i+2
+                        );*/
+                        memmove(
+                            current->text+i+1, 
+                            current->text+i+2,
+                            strlen(current->text+i+2)+1
                         );
                         continue;
                     }
                     if(current->text[i+1] == 'v'){
                         current->text[i] = '\v';
-                        mstrcpy(current->text+i+1, 
+                        /*mstrcpy(current->text+i+1, 
                                 current->text+i+2
+                        );*/
+                        memmove(
+                            current->text+i+1, 
+                            current->text+i+2,
+                            strlen(current->text+i+2)+1
                         );
                         continue;
                     }
@@ -1663,7 +1706,9 @@ static void strll_process_stringliterals(strll* in){
                         exit(1);
                     }
                     /*if it is not a recognized sequence... get rid of the backslash.*/
-                    mstrcpy(current->text+i, current->text+i+1);
+                    //mstrcpy(current->text+i, current->text+i+1);
+                    memmove(current->text+i, current->text+i+1, strlen(current->text+i+1)+1);
+
                     continue;
                 }
             }
