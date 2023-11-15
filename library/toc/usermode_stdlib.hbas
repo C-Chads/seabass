@@ -1023,8 +1023,11 @@ end
 fn inline EDESTADDRREQ()->int:
     asm("return EDESTADDRREQ;")
 end
-@wrap_c_constant int EDOM
+//@wrap_c_constant int EDOM
 //@wrap_c_constant int EDQUOT
+fn inline EDOM()->int:
+    asm("return EDOM;")
+end
 fn inline EEXIST()->int:
     asm("return EEXIST;")
 end
