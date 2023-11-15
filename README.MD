@@ -5,7 +5,7 @@ ______________________________________________________________
 ![logo](logo.png)
 ______________________________________________________________
 
-![Official Documentation and Introduction](https://gek169.github.io/seabass/)
+[Official Documentation and Introduction](https://gek169.github.io/seabass/)
 
 
 
@@ -410,12 +410,6 @@ All Glory to the Lord Jesus Christ, whose blessings I do not deserve.
 # MANIFESTO
 
 For the maximum utilization of Man's God-given talents.
-
-# DOCUMENTATION
-
-Github pages is used to host the documentation. Click this link:
-
-https://gek169.github.io/seabass/index.html
 
 # Theories / Design Principle
 
