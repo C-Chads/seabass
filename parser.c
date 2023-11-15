@@ -1382,60 +1382,71 @@ void parse_fn(int is_method){
         n = strcatafb(t_,n);
     }
     consume(); /*eat the identifier*/
-    //do not allow a parsehook here...
-    require(peek()->data == TOK_OPAREN, "fn requires opening parentheses");
-    consume();
+    //Allow the parentheses to be skipped for zero-arg declarations...
+    if(peek()->data == TOK_OPAREN){
+        //
+        //require(peek()->data == TOK_OPAREN, "fn/method requires opening parentheses");
+        consume();
 
-    if(is_method){
-        t_method_struct.membername = strdup("this");
-        s.fargs[0] = c_allocX(sizeof(type));
-        
-        s.fargs[0][0] = t_method_struct;
-        nargs = 1;
-    }
-    while(1){
-        parse_repeatedly_try_metaprogramming(); //allow individual function prototype arguments to be metaprogrammed.
-        if(peek()->data == TOK_CPAREN) break;
-        /*there is an argument to parse, it has both a type and a name.*/
-        t_temp = type_init();
-        t_temp = parse_type();
-        require(t_temp.arraylen == 0, "Cannot pass array to function.");
-        if(t_temp.basetype == BASE_STRUCT && t_temp.pointerlevel == 0){
-            t_temp.pointerlevel=1; //fn myfunc(mystruct x): turns into fn myfunc(mystruct* x):
+        if(is_method){
+            t_method_struct.membername = strdup("this");
+            s.fargs[0] = c_allocX(sizeof(type));
+            
+            s.fargs[0][0] = t_method_struct;
+            nargs = 1;
         }
-        if(t_temp.basetype == BASE_VOID)
-            require(t_temp.pointerlevel > 0, "Cannot pass void into function.");
-        
-        parse_repeatedly_try_metaprogramming(); //allow the name of a function prototype variable to be metaprogrammed.
-        require(peek()->data == TOK_IDENT, "fn argument requires identifier. Syntax is not C-like.");
-        require(!peek_is_fname(), "fn argument cannot be named after a function.");
-        require(!peek_is_typename(), "fn argument cannot be named after a type.");
-        t_temp.membername = strdup(peek()->text);
-        t_temp.is_lvalue = 1;
-        require(nargs < MAX_FARGS, "fn has too many arguments.");
-        /*validate that function arguments thus far are not by the same name.*/
-        for(k = 0; k < nargs; k++){
-            if(streq(s.fargs[k]->membername, t_temp.membername)){
-                puts("Function Parsing Error:");
-                puts("An argument is duplicated by name.");
-                puts(t_temp.membername);
-                puts("In function:");
-                puts(n);
-                parse_error("Syntax Error: Function Arg Duplicated");
+        while(1){
+            parse_repeatedly_try_metaprogramming(); //allow individual function prototype arguments to be metaprogrammed.
+            if(peek()->data == TOK_CPAREN) break;
+            /*there is an argument to parse, it has both a type and a name.*/
+            t_temp = type_init();
+            t_temp = parse_type();
+            require(t_temp.arraylen == 0, "Cannot pass array to function.");
+            if(t_temp.basetype == BASE_STRUCT && t_temp.pointerlevel == 0){
+                t_temp.pointerlevel=1; //fn myfunc(mystruct x): turns into fn myfunc(mystruct* x):
             }
+            if(t_temp.basetype == BASE_VOID)
+                require(t_temp.pointerlevel > 0, "Cannot pass void into function.");
+            
+            parse_repeatedly_try_metaprogramming(); //allow the name of a function prototype variable to be metaprogrammed.
+            require(peek()->data == TOK_IDENT, "fn argument requires identifier. Syntax is not C-like.");
+            require(!peek_is_fname(), "fn argument cannot be named after a function.");
+            require(!peek_is_typename(), "fn argument cannot be named after a type.");
+            t_temp.membername = strdup(peek()->text);
+            t_temp.is_lvalue = 1;
+            require(nargs < MAX_FARGS, "fn has too many arguments.");
+            /*validate that function arguments thus far are not by the same name.*/
+            for(k = 0; k < nargs; k++){
+                if(streq(s.fargs[k]->membername, t_temp.membername)){
+                    puts("Function Parsing Error:");
+                    puts("An argument is duplicated by name.");
+                    puts(t_temp.membername);
+                    puts("In function:");
+                    puts(n);
+                    parse_error("Syntax Error: Function Arg Duplicated");
+                }
+            }
+
+            s.fargs[nargs] = c_allocX(sizeof(type));
+            s.fargs[nargs][0] = t_temp;
+            nargs++;
+            consume(); /*Eat the identifier.*/
+            if(peek()->data == TOK_CPAREN) break;
+            require(peek()->data == TOK_COMMA, "fn argument list is comma separated.");
+            consume(); //eat the comma
+
         }
-
-        s.fargs[nargs] = c_allocX(sizeof(type));
-        s.fargs[nargs][0] = t_temp;
-        nargs++;
-        consume(); /*Eat the identifier.*/
-        if(peek()->data == TOK_CPAREN) break;
-        require(peek()->data == TOK_COMMA, "fn argument list is comma separated.");
-        consume(); //eat the comma
-
+        require(peek()->data == TOK_CPAREN, "fn requires closing parentheses");
+        consume();
+    } else {
+        if(is_method){
+            t_method_struct.membername = strdup("this");
+            s.fargs[0] = c_allocX(sizeof(type));
+            
+            s.fargs[0][0] = t_method_struct;
+            nargs = 1;
+        }
     }
-    require(peek()->data == TOK_CPAREN, "fn requires closing parentheses");
-    consume();
 
     s.nargs = nargs;
 
