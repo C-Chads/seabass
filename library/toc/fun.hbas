@@ -133,6 +133,19 @@ fn inline endUI:
     glPopMatrix();
 
 end
+//Based on: http://nehe.gamedev.net/article/replacement_for_gluperspective/21002/
+fn inline glPerspective(
+    double fovy,
+    double aspect,
+    double zn,
+    double zf
+):
+    double fw
+    double fh
+    fh = tan(fovy/360 * PI) * zn;
+    fw = fh * aspect;
+    glFrustum(-fw, fw, -fh, fh, zn, zf);
+end
 fn inline swapDisplay():
     @inline_C "SDL_GL_SwapWindow(sdl_win);"
 end
