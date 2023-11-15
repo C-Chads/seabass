@@ -11,7 +11,7 @@
 */
 
 
-#include "fun.hbas"
+#include <toc/fun.hbas>
 
 fn codegen codegen_main():
     cgstr q
