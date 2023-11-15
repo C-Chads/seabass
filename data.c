@@ -474,7 +474,7 @@ void print_manpage(char* subject){
     };
     m(dedicatory){
         b(dedicatory)
-        l("All Glory, might, praise, power, honor, and glory to Jesus of Nazareth, King of Kings and Lord of Lords.")
+        l("All Glory, might, praise, power, and honor to Jesus of Nazareth, King of Kings and Lord of Lords.")
         l("Without the blessings of God our Father and our Lord Jesus Christ, none of this would be possible.")
         l("Never forget him!")
         l(bar)
