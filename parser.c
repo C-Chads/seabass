@@ -1762,10 +1762,8 @@ static inline void expr_parse_ident(expr_node** targ){
     return;
 }
 
-static inline void expr_parse_fcall(expr_node** targ, int is_no_parentheses_mode){
-#ifndef SEABASS_FEATURE_ZARG_FUNCTIONS_DONT_REQUIRE_PARENTHESES
-    is_no_parentheses_mode = 0; //forced
-#endif
+static inline void expr_parse_fcall(expr_node** targ){
+
     uint64_t required_arguments;
     int found_function = 0;
     unsigned long i;
@@ -1796,11 +1794,9 @@ static inline void expr_parse_fcall(expr_node** targ, int is_no_parentheses_mode
     
     //we already know that this is an opening parentheses!
     //require(peek()->data == TOK_OPAREN, "expr_parse_fcall requires opening parentheses");
-    if(!is_no_parentheses_mode){
-        consume();
-    } else if(required_arguments){
-        parse_error("no-parentheses function invocation on function which takes arguments...");
-    }
+
+    consume();
+
     /*
         Parse a list of arguments.
     */
@@ -1814,7 +1810,7 @@ static inline void expr_parse_fcall(expr_node** targ, int is_no_parentheses_mode
         }
     }
     
-    if(!is_no_parentheses_mode){
+    {
         require(peek()->data == TOK_CPAREN, "expr_parse_fcall requires closing parentheses");
         consume();
     }
@@ -2152,13 +2148,8 @@ void expr_parse_terminal(expr_node** targ){
         peek()->data == TOK_IDENT &&
         peek()->right->data == TOK_OPAREN
     ){
-        expr_parse_fcall(targ,0);
+        expr_parse_fcall(targ);
         return;
-#ifdef SEABASS_FEATURE_ZARG_FUNCTIONS_DONT_REQUIRE_PARENTHESES
-    }else if(peek()->data == TOK_IDENT && peek_is_fname()){
-        expr_parse_fcall(targ, 1);
-        return;
-#endif
     }else if(peek()->data == TOK_IDENT){
         expr_parse_ident(targ);
         return;
