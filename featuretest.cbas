@@ -172,6 +172,88 @@ fn codegen testmath:
             have_failed = 1;
         end
     end
+    
+    //test sign conversion...
+    if(1)
+        sbyte a = -100;
+        i64 b = a;
+        u64 c = a;
+        if(b != c || b != -100)
+            __builtin_puts("Failed sign extension test 1");
+            have_failed = 1;
+        end
+    
+    end    
+    if(1)
+        short a = -100;
+        i64 b = a;
+        u64 c = a;
+        if(b != c || b != -100)
+            __builtin_puts("Failed sign extension test 2");
+            have_failed = 1;
+        end
+    
+    end    
+    if(1)
+        i32 a = -100;
+        i64 b = a;
+        u64 c = a;
+        if(b != c || b != -100)
+            __builtin_puts("Failed sign extension test 3");
+            have_failed = 1;
+        end
+    
+    end
+    if(1)
+        sbyte a = -100;
+        i32 b = a;
+        u32 c = a;
+        if(b != c || b != -100)
+            __builtin_puts("Failed sign extension test 4");
+            have_failed = 1;
+        end
+    
+    end
+    if(1)
+        sbyte a = -100;
+        i16 b = a;
+        u16 c = a;
+        if(b != c || b != -100)
+            __builtin_puts("Failed sign extension test 5");
+            have_failed = 1;
+        end
+    
+    end
+    //test non-conversions...
+    if(1)
+        byte a = 255;
+        u64 b = a;
+        if(b != 255)
+                    __builtin_puts("Failed sign (non) extension test 1");
+            have_failed = 1;
+        end
+    end
+    //test non-conversions...
+    if(1)
+        ushort a = 65535;
+        u64 b = a;
+        if(b != 65535)
+            __builtin_puts("Failed sign (non) extension test 2");
+            have_failed = 1;
+        end
+        //also check shifting....
+        if(b != ((255)<<8) | 255)
+            __builtin_puts("Failed bit shift test 1");
+            have_failed = 1;        
+        end        
+        
+        //also check shifting....
+        if(b != (((255)<<14) | (255<<6) )>>6  )
+            __builtin_puts("Failed bit shift test 2");
+            have_failed = 1;        
+        end
+    end
+    
 end
 
 fn codegen test_loops:
