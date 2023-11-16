@@ -368,6 +368,7 @@ end
 proc codegen test_tail_calls2->i64;
 proc codegen test_tail_calls3->i64;
 proc codegen test_tail_calls4(int a, int b)->i64;
+proc codegen test_tail_calls5(int a, int b)->i64;
 
 
 proc codegen test_tail_calls1->i64:
@@ -388,6 +389,15 @@ proc codegen test_tail_calls4(int a, int b)->i64:
     b++;
     tail test_tail_calls4
 end
+function codegen test_tail_calls5(int a, int b)->i64:
+    while(a < 200)
+        a++
+        if(a == 189) break end
+    end
+    tail test_tail_calls4
+end
+
+
 
 proc codegen test_tail_calls:
 
@@ -404,8 +414,13 @@ proc codegen test_tail_calls:
     end    
     qq = test_tail_calls4(200,100);
     if(qq != 300)
-        __builtin_puts("Failed Tail Call Test 2");
+        __builtin_puts("Failed Tail Call Test 3");
         have_failed = 1;    
+    end
+    qq = test_tail_calls5(100, 100);
+    if(qq != 289)
+        __builtin_puts("Failed Tail Call Test 4");
+        have_failed = 1;        
     end
 
 end
