@@ -43,4 +43,11 @@ NOTABLE SOURCES OF COPYRIGHT ERRORS
 
     If either of these file formats implicitly use copyrighted work, then those
     files cannot be considered public domain. I believe they are fine.
+    
+3. GIT HISTORY
+
+    On occasion, I may compile a binary or something and then accidentally `git push`
+    with it in the repository source tree.
+    
+    As such, I cannot consider the contents of `.git` to be venerably public domain.
 
