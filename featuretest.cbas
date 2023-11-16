@@ -345,8 +345,6 @@ procedure codegen test_ctor_dtor:
     
     while(1)
         myclass qq
-        __builtin_puts(".");
-        __builtin_puts("!!");
         while(1)
             myclass rr
             rr.b = ff;
@@ -354,7 +352,6 @@ procedure codegen test_ctor_dtor:
             qq.c = 23;
             break
         end
-        __builtin_puts("?");
         if(ff[0] != -91)
             __builtin_puts("Failed destructor test 2");
             have_failed = 1;
