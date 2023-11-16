@@ -590,7 +590,14 @@ static inline uint64_t peek_basetype(uint64_t* sid){
                 //check what the system's default is...
                 return get_target_word();
             }*/
-            return BASE_U64; //Standard update: uptr is _always_ U64...
+            if(POINTER_SIZE == 8){
+                return BASE_U64; //Standard update: uptr is _always_ U64...
+            }else if(POINTER_SIZE == 4){
+                return BASE_U32;
+            }else{
+                puts("<CONFIGURATION ERROR>");
+                puts("Unsupported POINTER_SIZE");
+            }
         }
         parse_error("Unknown peek_basetype keyword!");
         return 0;

@@ -12,6 +12,7 @@ enum{
 
 typedef struct{
     //type t;
+    
     uint64_t smalldata;
     uint8_t* ldata; /*for arrays and structs.*/
     uint32_t identification;

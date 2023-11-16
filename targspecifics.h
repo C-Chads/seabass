@@ -7,9 +7,20 @@
 #define LIBMIN_INT int64_t
 #define LIBMIN_UINT uint64_t
 #define LIBMIN_FLOAT double
-#define POINTER_SIZE 8
 #define MAX_FARGS 64
+#define SEABASS_CODEGEN_64
+/*#define SEABASS_CODEGEN_32*/
 
+#ifdef SEABASS_CODEGEN_64
+#define POINTER_SIZE 8
+#else
+#ifdef SEABASS_CODEGEN_32
+#define POINTER_SIZE 4
+#else
+#error "Unsupported SEABASS_CODEGEN (either not defined, or wrong value....)"
+
+#endif
+#endif
 /*
     Notice that "unsigned long" is used all over the place here.
 
