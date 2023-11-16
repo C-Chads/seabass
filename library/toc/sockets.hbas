@@ -257,6 +257,10 @@ fn inline px_recv(int sfd, byte* buf, uint nbytes)->TGT_IMAX:
     return rval
 end
 
+method inline px_socket.recv(byte* buf, uint nbytes)->TGT_IMAX:
+    return px_recv(this.sock_fd, buf, nbytes);
+end
+
 
 
 
