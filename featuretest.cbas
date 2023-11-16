@@ -275,6 +275,14 @@ procedure codegen test_arrays_pointers:
         __builtin_puts("Failed Pointer Arithmetic Test 2");
         have_failed = 1;    
     end
+    if((u64)(arr+12) - (u64)(arr+10) != 16)
+        __builtin_puts("Failed Pointer Arithmetic Test 3");
+        have_failed = 1;        
+    end
+    if((arr+12) - 10 != arr + 2)
+        __builtin_puts("Failed Pointer Arithmetic Test 4");
+        have_failed = 1;            
+    end
 end
 
 
