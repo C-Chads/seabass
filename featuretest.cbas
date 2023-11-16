@@ -103,7 +103,15 @@ fn codegen test_loops:
         i = i - 1;
         j--;
         if(i == 0)
-            break
+            if(1)
+            if(1)
+            if(1)
+            if(1)
+                break
+            end
+            end
+            end
+            end
         end
     end
     if(i != 0 || j != -25)
@@ -243,5 +251,6 @@ fn codegen codegen_main:
         __builtin_puts("Success!!!!");
     else
         __builtin_puts("------------FAILED--------------------");
+        __builtin_exit(1);
     end
 end
