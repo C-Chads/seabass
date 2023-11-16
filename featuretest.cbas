@@ -45,6 +45,12 @@ fn codegen testmath:
         __builtin_puts("Failed modulo 2");
         have_failed = 1
     end
+    
+    a = 1 ^ 1;
+    if(a != 0)
+        __builtin_puts("Failed Xor 1");
+        have_failed = 1;
+    end
 end
 
 fn codegen test_loops:
