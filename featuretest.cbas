@@ -422,6 +422,11 @@ proc codegen test_tail_calls:
         __builtin_puts("Failed Tail Call Test 4");
         have_failed = 1;        
     end
+    qq = test_tail_calls5(189, 500);
+    if(qq != 700)
+        __builtin_puts("Failed Tail Call Test 5");
+        have_failed = 1;        
+    end
 
 end
 
