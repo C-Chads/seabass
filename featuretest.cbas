@@ -50,6 +50,22 @@ fn codegen testmath:
     if(a != 0)
         __builtin_puts("Failed Xor 1");
         have_failed = 1;
+    end   
+    a = 1 ^ 0;
+    if(a != 1)
+        __builtin_puts("Failed Xor 2");
+        have_failed = 1;
+    end
+    a = 0 ^ 1;
+    if(a != 1)
+        __builtin_puts("Failed Xor 3");
+        have_failed = 1;
+    end
+    
+    a = 9 * -7;
+    if(a != -63)
+        __builtin_puts("Failed Multiplication 1");
+        have_failed = 1;
     end
 end
 
