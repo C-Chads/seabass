@@ -18,9 +18,15 @@
 #define POINTER_SIZE 4
 #else
 #error "Unsupported SEABASS_CODEGEN (either not defined, or wrong value....)"
+#endif
+#endif
 
+#ifdef SEABASS_CODEGEN_64
+#ifdef SEABASS_CODEGEN_32
+#error "Only one SEABASS_CODEGEN_XX define can be used at a time..."
 #endif
 #endif
+
 /*
     Notice that "unsigned long" is used all over the place here.
 

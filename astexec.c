@@ -636,10 +636,24 @@ void do_expr(expr_node_astexec* ee){
         return;
     }
     if(ee->kind == EXPR_CALLFNPTR){
+// #ifdef SEABASS_CODEGEN_64
         uint64_t retrieved_pointer;
+// #endif
+// #ifdef SEABASS_CODEGEN_32
+//         uint32_t retrieved_pointer;
+// #endif
         int64_t i;
         //int found = 0;
+
+// #ifdef SEABASS_CODEGEN_64
         retrieved_pointer = vm_stack[vm_stackpointer-1].smalldata; //function pointer was on top.
+// #else
+//         memcpy(
+//             &retrieved_pointer, 
+//             &vm_stack[vm_stackpointer-1].smalldata,
+//             POINTER_SIZE
+//         );
+// #endif
         ast_vm_stack_pop();
         saved_cur_func_frame_size = cur_func_frame_size;
         saved_cur_expr_stack_usage = cur_expr_stack_usage;
@@ -925,6 +939,7 @@ void do_expr(expr_node_astexec* ee){
             POINTER_SIZE
         );
         //incrementing a pointer.
+// #ifdef SEABASS_CODEGEN_64
         if(ee->t.pointerlevel > 0){
             uint64_t how_much_to_change;
             //grab the actual value at that address...
@@ -940,9 +955,42 @@ void do_expr(expr_node_astexec* ee){
                 val = val + how_much_to_change;
             if(!is_incr)
                 val = val - how_much_to_change;
-            memcpy(p1, &val, POINTER_SIZE);
+            
+            memcpy(p1, &val, 8);
             goto end_expr_pre_incr;
         }
+// #endif
+// #ifdef SEABASS_CODEGEN_32
+//         if(ee->t.pointerlevel > 0){
+//         
+//             /*
+//             memcpy(&val, p1, 4); valpre = val;
+//             memcpy(&i32data, &val, 4);
+//             if(is_incr) i32data++;
+//             if(!is_incr) i32data--;
+//             memcpy(p1, &i32data, 4);
+//             goto end_expr_pre_incr;
+//             */
+//             uint64_t how_much_to_change;
+//             //grab the actual value at that address...
+//             memcpy(&val, p1, 4); valpre = val;
+//             memcpy(&i32data, &val, 4);
+//             //type we are pointing to...
+//             type t2;
+//             t2 = ee->t;
+//             t2.pointerlevel--;
+//             
+//             how_much_to_change = type_getsz(t2);
+//             
+//             if(is_incr)
+//                 i32data = i32data + how_much_to_change;
+//             if(!is_incr)
+//                 i32data = i32data - how_much_to_change;
+//             
+//             memcpy(p1, &i32data, 4);
+//             goto end_expr_pre_incr;
+//         }
+// #endif
         if(
             ee->t.basetype == BASE_I64 || 
             ee->t.basetype == BASE_U64
@@ -1028,8 +1076,19 @@ void do_expr(expr_node_astexec* ee){
 
     
     if(ee->kind == EXPR_CAST){
+// #ifdef SEABASS_CODEGEN_64
         uint64_t data;
         data = vm_stack[vm_stackpointer-1].smalldata;
+// #endif
+// #ifdef SEABASS_CODEGEN_32
+//         uint32_t data;
+//         //data = vm_stack[vm_stackpointer-1].smalldata;
+//         memcpy(
+//             &data,
+//             &vm_stack[vm_stackpointer-1].smalldata,
+//             4
+//         );
+// #endif
         /*
         if is_lvalue, then small data was a pointer!
         do a dereference...
