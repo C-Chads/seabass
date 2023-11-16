@@ -6,7 +6,6 @@ CFLAGS_CLEAN= -O3 -s -fwrapv -std=gnu99 -DCOMPILER_CLEANS_UP
 CFLAGS_PURE=  -O3 -fwrapv -std=gnu99 -DCOMPILER_CLEANS_UP
 CFLAGS_CBAS= -O3 -fwrapv -s -std=gnu11
 
-
 cbas_dirty:
 	$(CC) $(CFLAGS) ctok.c parser.c data.c constexpr.c metaprogramming.c code_validator.c astexec.c astdump.c reflection_library.c ast_opt.c -o cbas_dirty -lm -g
 	
