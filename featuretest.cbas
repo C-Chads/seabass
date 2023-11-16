@@ -23,8 +23,42 @@ class myclass2
     sbyte f
 end
 
+class cascader
+    int which
+end
+
+method codegen cascader.ctor:
+    this.which = 0;
+end
+codegen int[10] cask;
+fn codegen resetCask:
+    u64 i
+    for(i = 0, i < 10, i++)
+        cask[i] = 0;
+    end
+end
+method codegen cascader.dtor:
+    //if we are 0, just set it...
+    if(this.which == 0)
+        cask[0] = 12;
+        return
+    end
+    //verify that cask[this.which-1] is 12...
+    if(cask[this.which-1] != 12)
+        char[50] buf
+        __builtin_puts("Cascade Destruction test failed...");
+        __builtin_itoa(buf,this.which);
+        __builtin_puts("On:");
+        __builtin_puts(buf);
+        have_failed = 1;
+    else
+        cask[this.which] = 12;
+    end
+end
+
 codegen int setme = 0;
 codegen int releaseme = 0;
+
 
 method codegen myclass.ctor:
     this.a = 12;
@@ -390,7 +424,95 @@ procedure codegen test_ctor_dtor:
         __builtin_puts("Failed destructor test 3");
         have_failed = 1;
     end
-    :outof
+    
+    resetCask();
+    //verify cascade destruction....
+    if(1)
+        cascader a;a.which = 3;
+        if(1)
+            cascader b;b.which = 2;
+            if(1)
+                cascader c;c.which = 1;
+                if(1)
+                    cascader d;d.which = 0;
+                end
+            end
+        end
+    end
+    //2....
+    resetCask();
+    //verify cascade destruction....
+    while(1)
+        cascader a;a.which = 3;
+        while(1)
+            cascader b;b.which = 2;
+            while(1)
+                cascader c;c.which = 1;
+                while(1)
+                    cascader d;d.which = 0;
+                    goto beyond
+                end
+            end
+        end
+    end
+    :beyond    
+    resetCask();
+    //verify cascade destruction....
+    while(1)
+        cascader a;a.which = 3;
+        while(1)
+            cascader b;b.which = 2;
+            while(1)
+                cascader c;c.which = 1;
+                while(1)
+                    cascader d;d.which = 0;
+                    break
+                end
+                break
+            end
+            goto beyond2
+        end
+    end
+    :beyond2    
+    resetCask();
+    //verify cascade destruction....
+    while(1)
+        cascader a;a.which = 3;
+        while(1)
+            cascader b;b.which = 2;
+            while(1)
+                cascader c;c.which = 1;
+                while(1)
+                    cascader d;d.which = 0;
+                    break
+                end
+                break
+            end
+            break
+        end
+        break
+    end    
+    //verify cascade destruction....
+    while(1)
+        cascader a;a.which = 3;
+        while(1)
+            cascader b;b.which = 2;
+            while(1)
+                cascader c;c.which = 1;
+                while(1)
+                    cascader d;d.which = 0;
+                    return
+                end
+                break
+            end
+            break
+        end
+        break
+    end
+    //unreachable...
+    __builtin_puts("You should never see this text. Failed deeply nested destructor cascade.");
+    have_failed = 1;
+    
 end
 
 proc codegen test_tail_calls2->i64;
