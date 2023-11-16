@@ -14,6 +14,18 @@ class myclass
     sbyte f
 end
 
+class myclass2
+    int a
+    int* b
+    int c
+    float d
+    byte e
+    sbyte f
+end
+
+codegen int setme = 0;
+codegen int releaseme = 0;
+
 method codegen myclass.ctor:
     this.a = 12;
     this.b = 0;
@@ -27,6 +39,22 @@ method codegen myclass.dtor:
     elif(this.b != 0 && this.c)
         this.b[0] = this.c;
     end
+end
+method codegen myclass2.ctor:
+    this.a = 12;
+    this.b = 0;
+    this.f = 115;
+    this.c = 0;
+    setme++;
+end
+
+method codegen myclass2.dtor:
+    if(this.b != 0 && this.c == 0)
+        this.b[0] = -91;
+    elif(this.b != 0 && this.c)
+        this.b[0] = this.c;
+    end
+    releaseme++;
 end
 
 fn codegen testmath:
@@ -372,13 +400,15 @@ proc codegen test_tail_calls5(int a, int b)->i64;
 
 
 proc codegen test_tail_calls1->i64:
+    myclass2 a
     tail test_tail_calls2
-
 end
 proc codegen test_tail_calls2->i64:
+    myclass2 a
     tail test_tail_calls3
 end
 proc codegen test_tail_calls3->i64:
+    myclass2 a
     return -473
 end
 proc codegen test_tail_calls4(int a, int b)->i64:
@@ -405,6 +435,10 @@ proc codegen test_tail_calls:
     if(qq != -473)
         __builtin_puts("Failed Tail Call Test 1");
         have_failed = 1;
+    end
+    if(setme != 3 || releaseme != 3)
+        __builtin_puts("Failed Tail Call Test 1 (CTOR DTOR)");
+        have_failed = 1;    
     end
     
     qq = test_tail_calls4(200,0);
