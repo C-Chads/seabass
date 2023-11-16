@@ -154,6 +154,30 @@ fn codegen testmath:
         __builtin_puts("Failed Multiplication 1");
         have_failed = 1;
     end
+    if(1)
+    
+        //test conversion between pointer and integer
+        u64[1] a
+        u64*[1] b
+        u64[1] c
+        u64[1] d
+        c[0] = -497;
+        b[0] = c; //make b[0] point to c[0].
+        __builtin_memcpy((byte*)a,(byte*)b,8); //memcpy to a
+        d[0] = (u64)b[0]; //convert b[0] to a u64...
+        if(d[0] != a[0])
+            __builtin_puts("Failed pointer-to-u64 conversion test 1...");
+            have_failed = 1;
+        end
+        if(b[0][0] != -497)
+            __builtin_puts("Failed pointer test 1");
+            have_failed = 1;
+        end
+        
+        
+        
+        
+    end
 end
 
 fn codegen test_loops:
