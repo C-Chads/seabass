@@ -2625,22 +2625,7 @@ static void walk_assign_lsym_gsym(scope* current_scope, int phase){
 
         //on both phases, we must perform validation of goto...
         if(stmtlist[i].kind == STMT_GOTO){
-//             int found = 0;
-//             for(j = 0; j < (int64_t)n_discovered_labels; j++){
-//                 if(streq(stmtlist[i].referenced_label_name, discovered_labels[j])){
-//                     found = 1;
-//                     break;
-//                 }
-//             }
-//             if(!found)
-//             {
-//                 puts("Goto target:");
-//                 puts(stmtlist[i].referenced_label_name);
-//                 puts("Does not exist in function:");
-//                 puts(symbol_table[active_function]->name);
-//                 validator_exit_err();
-// 
-//             }
+
             scopestack_push(current_scope);
                 validate_goto_target(stmtlist + i, stmtlist[i].referenced_label_name);
             scopestack_pop();
