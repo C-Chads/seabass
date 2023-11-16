@@ -363,8 +363,51 @@ procedure codegen test_ctor_dtor:
         have_failed = 1;
     end
     :outof
+end
+
+proc codegen test_tail_calls2->i64;
+proc codegen test_tail_calls3->i64;
+proc codegen test_tail_calls4(int a, int b)->i64;
+
+
+proc codegen test_tail_calls1->i64:
+    tail test_tail_calls2
+
+end
+proc codegen test_tail_calls2->i64:
+    tail test_tail_calls3
+end
+proc codegen test_tail_calls3->i64:
+    return -473
+end
+proc codegen test_tail_calls4(int a, int b)->i64:
+    if(a <= 0)
+        return b;
+    end
+    a--;
+    b++;
+    tail test_tail_calls4
+end
+
+proc codegen test_tail_calls:
+
+    i64 qq = test_tail_calls1();
+    if(qq != -473)
+        __builtin_puts("Failed Tail Call Test 1");
+        have_failed = 1;
+    end
     
-    
+    qq = test_tail_calls4(200,0);
+    if(qq != 200)
+        __builtin_puts("Failed Tail Call Test 2");
+        have_failed = 1;    
+    end    
+    qq = test_tail_calls4(200,100);
+    if(qq != 300)
+        __builtin_puts("Failed Tail Call Test 2");
+        have_failed = 1;    
+    end
+
 end
 
 
@@ -381,6 +424,8 @@ fn codegen codegen_main:
     test_writefile_readfile();
     __builtin_puts("TESTING CTOR_DTOR");
     test_ctor_dtor();
+    __builtin_puts("TESTING TAIL CALLS");
+    test_tail_calls();
     if(!have_failed)
         __builtin_puts("Success!!!!");
     else
