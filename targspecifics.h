@@ -27,6 +27,10 @@
 #endif
 #endif
 
+#ifdef SEABASS_CODEGEN_32
+#error "Support for 32 bit mode has yet to be added."
+#endif
+
 /*
     Notice that "unsigned long" is used all over the place here.
 
