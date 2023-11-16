@@ -1,0 +1,5 @@
+This compiler makes the following assumptions about the host...
+
+1. 64 bit pointer size.
+2. byte-addressable flat memory model
+3. int is 32 bit, short 16, char 8, long long is 64
