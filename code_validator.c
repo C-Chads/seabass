@@ -2729,18 +2729,6 @@ static void walk_assign_lsym_gsym(scope* current_scope, int phase){
                 //is going. We're only dealing with its expression....
                 qq.basetype = SIGNED_WORD_BASE;
                 insert_implied_type_conversion((expr_node**)stmtlist[i].expressions, qq);
-            }else if(
-                stmtlist[i].kind == STMT_CONTINUE ||
-                stmtlist[i].kind == STMT_BREAK
-            )
-            {
-                stmtlist[i].referenced_loop = loopstack[nloops-1];
-                scopestack_push(current_scope);
-                    assign_scopediff_vardiff(
-                        stmtlist+i,
-                        stmtlist[i].referenced_loop->whereami
-                    );
-                scopestack_pop();
             }
             else if(stmtlist[i].kind == STMT_ASM){
                 symbol_table[active_function]->is_impure_globals_or_asm = 1;
@@ -2867,8 +2855,7 @@ static void walk_assign_lsym_gsym(scope* current_scope, int phase){
             }
             //...but we always push onto the loopstack...
             loopstack_push(stmtlist + i);
-        }	
-        else if(stmtlist[i].kind == STMT_WHILE){
+        }else if(stmtlist[i].kind == STMT_WHILE){
             //this portion is Phase 0 only- dealing with the implied type conversion...
             if(phase == 0){
                 type qq = ((expr_node*)stmtlist[i].expressions[0])->t;
@@ -2886,6 +2873,17 @@ static void walk_assign_lsym_gsym(scope* current_scope, int phase){
             }
             //...but we always push onto the loopstack...
             loopstack_push(stmtlist + i);
+        }else if(
+            stmtlist[i].kind == STMT_CONTINUE ||
+            stmtlist[i].kind == STMT_BREAK
+        ){
+            stmtlist[i].referenced_loop = loopstack[nloops-1];
+            scopestack_push(current_scope);
+                assign_scopediff_vardiff(
+                    stmtlist+i,
+                    stmtlist[i].referenced_loop->whereami
+                );
+            scopestack_pop();
         }
 
 

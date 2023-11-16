@@ -225,6 +225,12 @@ fn codegen test_loops:
         have_failed = 1
     end
 
+    while(1)
+        while(1)    
+            break
+        end
+        break
+    end
 
 
 end
@@ -309,7 +315,9 @@ end
 
 procedure codegen test_ctor_dtor:
     int[1] ff;
-    
+    int[1] gg;
+    ff[0] = 0;
+    gg[0] = 0;
     if(1)
         myclass qq
         if(qq.a != 12 || qq.f != 115)
@@ -319,9 +327,39 @@ procedure codegen test_ctor_dtor:
         qq.b = ff;
     end
     if(ff[0] != -91)
-            __builtin_puts("Failed Destructor Test 1");
-            have_failed = 1;    
+        __builtin_puts("Failed Destructor Test 1");
+        have_failed = 1;    
     end
+    ff[0] =0;
+    while(1)
+        myclass qq
+        while(1)
+            break
+        end
+        break
+    end
+    
+    
+    while(1)
+        myclass qq
+        __builtin_puts(".");
+        __builtin_puts("!!");
+        while(1)
+            myclass rr
+            rr.b = ff;
+            qq.b = gg;
+            break
+        end
+        __builtin_puts("?");
+        if(ff[0] != -91)
+            __builtin_puts("Failed destructor test 2");
+            have_failed = 1;
+        end
+        break
+    end
+    :outof
+    
+    
 end
 
 

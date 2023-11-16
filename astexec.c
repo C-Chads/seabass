@@ -2787,6 +2787,7 @@ void ast_execute_function(symdecl* s){
                     if(stmt_kind == STMT_CONTINUE)
                         goto continue_executing_scope; //continues in the loop, is_in_loop is preserved.
                     if(stmt_kind == STMT_BREAK){
+                        //which_stmt++;
                         scope_positions[n_scopes_executings-1].is_in_loop = 0; //breaks out of the loop, is_in_loop is undone.
                         goto do_next_stmt; //we do the very next statement.
                     }
