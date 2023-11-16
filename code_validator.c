@@ -2874,6 +2874,7 @@ static void walk_assign_lsym_gsym(scope* current_scope, int phase){
             //...but we always push onto the loopstack...
             loopstack_push(stmtlist + i);
         }else if(
+            //these have to be calculated twice because the stmt references may be invalidated by ctor/dtor insertion.....
             stmtlist[i].kind == STMT_CONTINUE ||
             stmtlist[i].kind == STMT_BREAK
         ){
