@@ -13,7 +13,7 @@ char* DUP_PATH_STRING(char* L, char* A){
 }
 
 
-
+#define SEABASS_VER_STRING "0.80 Beta (Bootstrap)"
 
 #include "targspecifics.h"
 #include "libmin.h"
@@ -1884,6 +1884,9 @@ int main(int argc, char** argv){
     ){
         const char* bar = "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
         puts("The CBAS Metaprogramming Tool");
+        puts(bar);
+        puts("Version string:");
+        puts(SEABASS_VER_STRING);
         puts(bar);
         puts("  For the maximum utilization of Man's");
         puts("            God-Given Talents");
