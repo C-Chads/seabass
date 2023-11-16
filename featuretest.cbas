@@ -259,10 +259,30 @@ fn codegen test_writefile_readfile:
     __builtin_free(p);
 end
 
+procedure codegen test_arrays_pointers:
+    u64[512] arr;
+    arr[0] = 12;
+    arr[57] = 13;
+    arr[58] = ~0;
+    arr[56] = ~0;
+    
+    if((arr+57)[0] != 13)
+        __builtin_puts("Failed Pointer Arithmetic Test 1");
+        have_failed = 1;
+    end
+    
+    if((arr + 100) - (100-57) != arr + 57 )
+        __builtin_puts("Failed Pointer Arithmetic Test 2");
+        have_failed = 1;    
+    end
+end
+
 
 fn codegen codegen_main:
     __builtin_puts("TESTING BASIC ARITHMETIC");
     testmath();
+    __builtin_puts("TESTING ARRAYS AND POINTERS");
+    test_arrays_pointers();
     __builtin_puts("TESTING LOOPS");
     test_loops();
     __builtin_puts("TESTING SWITCH");
