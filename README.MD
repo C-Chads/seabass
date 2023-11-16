@@ -13,7 +13,7 @@ Seabass is a public domain, self-retargeting, self-extending,
 self-modifying metaprogramming language and general-purpose 
 metaprogramming tool.
 
-Let's talk about what that means, shall we?
+What does that mean?
 
 ## Public Domain
 
