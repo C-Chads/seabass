@@ -1,0 +1,109 @@
+
+#include <toc_native_user>
+#include <toc/sockets.hbas>
+
+
+
+@wksht prnt [
+    [
+        @pprint [println mutoa ARG1]
+    ][
+        ARG1
+    ]
+]
+
+
+fn client:
+    px_socket a
+    
+    int q = a.connectIPV4("127.0.0.1", 9999,0, 0);
+    if(q == -1)
+        perror("CLIENT CONNECT ERROR: ");
+        sys_exit(1);
+    end
+    //let the server send us data....
+    char[512] buf
+    memclear(buf, 512);
+    if(px_recv(a.sock_fd, buf, 512) == -1)
+        perror("CLIENT RECV ERROR: ");
+        sys_exit(1);
+    end
+    //print it to the screen...
+    @prnt[
+        /   "CLIENT RECEIVED:"
+        /   (buf)
+    ]
+
+end
+
+fn server:
+    errno = 0;
+    px_socket a
+    int q = a.bindIPV4(9999,0,0);
+    if(q == -1)
+        perror("SERVER ERROR: ");
+        sys_exit(1);
+    end
+    //set to listen
+    a.listen(5);
+    if(errno)
+        perror("SERVER LISTEN ERROR: ");
+        sys_exit(1);
+    end
+    //accept a single client...
+    q = a.accept((char*)0, 0, (uint*)0, 0);
+    if(q == -1)
+        perror("SERVER ACCEPT ERROR: ");
+        sys_exit(1);
+    end
+    char[512] buf
+    memclear(buf, 512);
+    //
+    srand(unixtime);
+    
+    itoa(buf, rand);
+    @prnt[
+        /   "SERVER SENDING:"
+        /   (buf)
+    ]
+    px_send(q, buf, 512);
+    //close it...
+    px_close(q);
+
+end
+
+
+fn pub main(int argc, schar** argv)->int:
+    if(argc < 2)
+        @prnt[
+            /   "Is this the client or the server?"
+            /   "say `client` or `server`"
+        ]
+        sys_exit(1)
+    end
+    if(
+        (char*)argv[1] streq "server" ||
+        (char*)argv[1] streq "SERVER" ||
+        (char*)argv[1] streq "Server" ||
+        (char*)argv[1] streq "serv" ||
+        (char*)argv[1] streq "SERV" ||
+        (char*)argv[1] streq "Serv" 
+    )
+        server();
+        return 0;
+    else
+        client();
+        return 0;
+    end
+    return 0;
+end
+
+fn codegen codegen_main():
+    cgstr pref
+    pref.fromstr(SEABASS_STDLIB_PREFIX);
+    pref.addstr(INTERNET_SOCKETS_PREFIX);
+    cg_emitC(pref.s);
+    pref.free();
+end
+
+

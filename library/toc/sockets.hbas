@@ -28,6 +28,9 @@ class px_socket
     int sock_fd
 end
 
+fn inline px_close(int fd):
+    @inline_C "close($fd);"
+end
 
 method inline px_socket.ctor():
     this.sock_fd = -1;
@@ -207,7 +210,7 @@ method inline px_socket.accept(char* addrout, uint maxlen, uint* addrlen, uint n
     "
     if(rfd < 0)
         //-2 = no connection, but no real error...
-        if(errno == EAGAIN() || errno == EWOULDBLOCK())
+        if(errno == EAGAIN || errno == EWOULDBLOCK)
             errno = 0;
             return -2;
         end
@@ -238,7 +241,7 @@ fn inline px_send(int sfd, byte* buf, uint nbytes)->TGT_IMAX:
     TGT_IMAX rval;
     errno = 0;
     @inline_C "$rval = send($sfd, $buf, $nbytes, 0);"
-    if(rval < 0 && (errno == EAGAIN() || errno == EWOULDBLOCK()))
+    if(rval < 0 && (errno == EAGAIN || errno == EWOULDBLOCK))
         return -2;
     end
     return rval
@@ -248,7 +251,7 @@ fn inline px_recv(int sfd, byte* buf, uint nbytes)->TGT_IMAX:
     TGT_IMAX rval;
     errno = 0;
     @inline_C "$rval = recv($sfd, $buf, $nbytes, 0);"
-    if(rval < 0 && (errno == EAGAIN() || errno == EWOULDBLOCK()))
+    if(rval < 0 && (errno == EAGAIN || errno == EWOULDBLOCK))
         return -2;
     end
     return rval

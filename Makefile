@@ -89,6 +89,10 @@ string_stdlib_test:
 dirlist:
 	cbas tests2/dirlist.cbas
 	$(CC) $(CFLAGS_CBAS) auto_out.c -o dirlist -lpthread -lm 	
+	
+sock_test1:
+	cbas tests2/sockets_test.cbas
+	$(CC) $(CFLAGS_CBAS) auto_out.c -o sock_test1 -lpthread -lm
 
 embedc:
 	cbas embedc.cbas

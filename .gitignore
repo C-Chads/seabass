@@ -21,3 +21,4 @@ strtest
 bigunit
 dirlist
 embedc
+sock_test*
