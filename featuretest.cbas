@@ -1,8 +1,30 @@
 
 
 
-//TEST 2: compiletime math
+
 codegen int have_failed = 0;
+
+
+class myclass
+    int a
+    int* b
+    int c
+    float d
+    byte e
+    sbyte f
+end
+
+method codegen myclass.ctor:
+    this.a = 12;
+    this.b = 0;
+    this.f = 115;
+end
+
+method codegen myclass.dtor:
+    if(this.b != 0)
+        this.b[0] = -91;
+    end
+end
 
 fn codegen testmath:
     int a = 7
@@ -285,6 +307,23 @@ procedure codegen test_arrays_pointers:
     end
 end
 
+procedure codegen test_ctor_dtor:
+    int[1] ff;
+    
+    if(1)
+        myclass qq
+        if(qq.a != 12 || qq.f != 115)
+            __builtin_puts("Failed Constructor Test 1");
+            have_failed = 1;
+        end
+        qq.b = ff;
+    end
+    if(ff[0] != -91)
+            __builtin_puts("Failed Destructor Test 1");
+            have_failed = 1;    
+    end
+end
+
 
 fn codegen codegen_main:
     __builtin_puts("TESTING BASIC ARITHMETIC");
@@ -297,6 +336,8 @@ fn codegen codegen_main:
     test_switch;
     __builtin_puts("TESTING FILES");
     test_writefile_readfile();
+    __builtin_puts("TESTING CTOR_DTOR");
+    test_ctor_dtor();
     if(!have_failed)
         __builtin_puts("Success!!!!");
     else
