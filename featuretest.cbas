@@ -254,6 +254,16 @@ fn codegen testmath:
         end
     end
     
+    //test non-conversions...
+    if(1)
+        u32 a = 1<<31;
+        u64 b = a;
+        if(b != (1<<31) || b == 0 || b & (1<<30) || b != a)
+            __builtin_puts("Failed sign (non) extension test 3");
+            have_failed = 1;
+        end
+    end
+    
 end
 
 fn codegen test_loops:
