@@ -493,6 +493,7 @@ procedure codegen test_ctor_dtor:
         break
     end    
     //verify cascade destruction....
+    resetCask()
     while(1)
         cascader a;a.which = 3;
         while(1)
