@@ -155,8 +155,6 @@ fn codegen testmath:
         have_failed = 1;
     end
     if(1)
-    
-        //test conversion between pointer and integer
         u64[1] a
         u64*[1] b
         u64[1] c
@@ -173,10 +171,6 @@ fn codegen testmath:
             __builtin_puts("Failed pointer test 1");
             have_failed = 1;
         end
-        
-        
-        
-        
     end
 end
 
