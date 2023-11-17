@@ -104,6 +104,12 @@ fn noexport setSoundPosition(int chan, int angle, char dist);
 fn noexport haltSound(int chan);
 fn noexport playMusic(byte* musbuf, int loops, int ms)->i32;
 fn noexport haltMusic();
+fn inline freeMusic(byte* p):
+    @inline_C "
+        Mix_Music* m = (Mix_Music*)$p;
+        Mix_FreeMusic(m);
+    "
+end
 fn noexport loadFont(char* fname, float pxsz)->byte*;
 fn noexport renderText(char* text, byte* fonth, f32 x, f32 y, f32 vertical);
 fn noexport renderTextMono(char* text, byte* fonth, f32 x, f32 y, f32 spacing, f32 vertical);
