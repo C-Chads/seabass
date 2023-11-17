@@ -2716,8 +2716,8 @@ static void walk_assign_lsym_gsym(scope* current_scope, int phase){
                 insert_implied_type_conversion((expr_node**)stmtlist[i].expressions, qq);
             }
             else if(stmtlist[i].kind == STMT_ASM){
-                symbol_table[active_function]->is_impure_globals_or_asm = 1;
-                symbol_table[active_function]->is_impure = 1;
+                //symbol_table[active_function]->is_impure_globals_or_asm = 1;
+                //symbol_table[active_function]->is_impure = 1;
                 if(symbol_table[active_function]->is_codegen != 0){
                     puts("VALIDATION ERROR!");
                     puts("asm blocks may not exist in codegen functions.");
@@ -2726,6 +2726,7 @@ static void walk_assign_lsym_gsym(scope* current_scope, int phase){
                     puts("Was declared 'codegen' so you cannot use 'asm' blocks in it.");
                     validator_exit_err();
                 }
+                /*
                 if(symbol_table[active_function]->is_pure > 0){
                     puts("VALIDATION ERROR!");
                     puts("asm blocks may not exist in pure functions.");
@@ -2734,6 +2735,7 @@ static void walk_assign_lsym_gsym(scope* current_scope, int phase){
                     puts("Was declared 'pure' so you cannot use 'asm' blocks in it.");
                     validator_exit_err();
                 }
+                */
             }
             else if(stmtlist[i].kind == STMT_IF){
                 type qq = ((expr_node*)stmtlist[i].expressions[0])->t;
