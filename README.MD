@@ -6,7 +6,7 @@ ______________________________________________________________
 ______________________________________________________________
 
 [Official Documentation and Introduction](https://gek169.github.io/seabass/)
-
+[Tutorials](https://github.com/gek169/funbas)
 
 
 Seabass is a public domain, self-retargeting, self-extending, 
