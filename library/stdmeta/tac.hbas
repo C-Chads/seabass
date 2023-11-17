@@ -1,0 +1,89 @@
+
+//Three Address Codes for Seabass
+#guard codegen_three_address_code_library_DMHSW
+#include <stdmeta/reflect.hbas>
+
+codegen int CG_TAC_NOP = 0;
+codegen int CG_TAC_EXPR = 1;
+codegen int CG_TAC_GOTO = 2;
+codegen int CG_TAC_GOTOIF = 3;
+codegen int CG_TAC_SCOPE = 4;
+codegen int CG_TAC_RETURN = 5;
+
+
+class cg_tac_expr
+    noexport
+    cgtype t
+    i64[CG_MAX_FARGS] operands
+    cgsymdecl* ref_gsym //function template for callfnptr, or function to call for EXPR_METHOD/EXPR_FCALL
+                        //for getglobalptr and EXPR_GSYM this is used for retrieving global symbols.
+    i64 dst
+    i64 ival            //for integer constants...
+    f64 dval            //for double constants...
+    char* stringval     //for string constants...
+    short kind
+end
+
+class cg_tac_insn
+    noexport
+    byte* scope
+    cg_tac_expr expr
+    byte kind // of the above kinds...
+end
+
+method codegen cg_tac_insn.ctor:
+    this.scope = 0;
+    this.kind = 0;
+    this.expr.ref_gsym = 0;
+    this.expr.type = -1;
+end
+
+
+
+
+class cg_tac_symbol
+    noexport
+    i64 id //negative if it's a function argument...
+end
+
+class cg_tac_scope
+    noexport
+    cg_tac_insn* insns
+    u64 n_ninsns
+    cg_tac_symbol* syms
+    u64 n_syms
+    byte isFunctionBody //is this scope a function body?
+    byte isInline //is this an inline function?
+end
+
+method codegen cg_tac_scope.ctor:
+    this.insns = 0;
+    this.n_insns=0;
+    this.syms = 0;
+    this.n_syms = 0;
+    this.isFunctionBody = 0;
+    this.isInline = 0;
+end
+method codegen cg_tac_scope.dtor:
+    u64 i
+    for(i = 0, i < this.n_insns, i++)
+        cg_tac_scope* p = this.insns[i].scope;
+        if(p != 0)
+            p.dtor();
+            __builtin_free((u8*)p);
+        end
+    end
+    if(this.insns != 0)
+        __builtin_free((u8*)this.insns);
+    end
+    if(this.syms != 0)
+        __builtin_free((u8*)this.syms);
+    end
+    
+end
+
+
+codegen uqword cg_tac_symgen = 1;
+fn codegen cg_tac_gen_symname->u64:
+    return cg_tac_gen_symname++
+end
