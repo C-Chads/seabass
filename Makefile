@@ -1,4 +1,4 @@
-CC= gcc
+CC= cc
 CFLAGS= -O3 -s -std=gnu99 -march=native -fwrapv
 CFLAGS_DBG= -Og -g -fwrapv -fsanitize=address,undefined,leak -std=gnu99 -DCOMPILER_CLEANS_UP
 CFLAGS_DBGVG= -Og -g -fwrapv -std=gnu99 -DCOMPILER_CLEANS_UP
