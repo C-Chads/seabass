@@ -5,8 +5,20 @@ ______________________________________________________________
 ![logo](logo.png)
 ______________________________________________________________
 
+## NOTICE
+
+This software is currently under development and not ready for production use.
+
+Expect to find errors, mistakes, and bugs. Future updates may be incompatible
+with any code you write now, in whole or in part.
+
+______________________________________________________________
+
+
+
 [Official Documentation and Introduction](https://gek169.github.io/seabass/)
-[Tutorials](https://github.com/gek169/funbas)
+
+[Tutorials, In development](https://github.com/gek169/funbas)
 
 
 Seabass is a public domain, self-retargeting, self-extending, 
