@@ -972,235 +972,235 @@ fn predecl noexport pipe(int* pipefd)->int;
 
 
 
-fn inline E2BIG()->int:
+fn inline pure E2BIG()->int:
     asm("return E2BIG;")
 end
-fn inline EACCES()->int:
+fn inline pure EACCES()->int:
     asm("return EACCES;")
 end
-fn inline EADDRINUSE()->int:
+fn inline pure EADDRINUSE()->int:
     asm("return EADDRINUSE;")
 end
-fn inline EADDRNOTAVAIL()->int:
+fn inline pure EADDRNOTAVAIL()->int:
     asm("return EADDRNOTAVAIL;")
 end
-fn inline EAFNOSUPPORT()->int:
+fn inline pure EAFNOSUPPORT()->int:
     asm("return EAFNOSUPPORT;")
 end
-fn inline EAGAIN()->int:
+fn inline pure EAGAIN()->int:
     asm("return EAGAIN;")
 end
-fn inline EALREADY()->int:
+fn inline pure EALREADY()->int:
     asm("return EALREADY;")
 end
-fn inline EBADF()->int:
+fn inline pure EBADF()->int:
     asm("return EBADF;")
 end
-fn inline EBADMSG()->int:
+fn inline pure EBADMSG()->int:
     asm("return EBADMSG;")
 end
-fn inline EBUSY()->int:
+fn inline pure EBUSY()->int:
     asm("return EBUSY;")
 end
-fn inline ECANCELED()->int:
+fn inline pure ECANCELED()->int:
     asm("return ECANCELED;")
 end
-fn inline ECHILD()->int:
+fn inline pure ECHILD()->int:
     asm("return ECHILD;")
 end
-fn inline ECONNABORTED()->int:
+fn inline pure ECONNABORTED()->int:
     asm("return ECONNABORTED;")
 end
-fn inline ECONNREFUSED()->int:
+fn inline pure ECONNREFUSED()->int:
     asm("return ECONNREFUSED;")
 end
-fn inline ECONNRESET()->int:
+fn inline pure ECONNRESET()->int:
     asm("return ECONNRESET;")
 end
-fn inline EDEADLK()->int:
+fn inline pure EDEADLK()->int:
     asm("return EDEADLK;")
 end
-fn inline EDESTADDRREQ()->int:
+fn inline pure EDESTADDRREQ()->int:
     asm("return EDESTADDRREQ;")
 end
 //@wrap_c_constant int EDOM
 //@wrap_c_constant int EDQUOT
-fn inline EDOM()->int:
+fn inline pure EDOM()->int:
     asm("return EDOM;")
 end
-fn inline EEXIST()->int:
+fn inline pure EEXIST()->int:
     asm("return EEXIST;")
 end
-fn inline EFAULT()->int:
+fn inline pure EFAULT()->int:
     asm("return EFAULT;")
 end
-fn inline EFBIG()->int:
+fn inline pure EFBIG()->int:
     asm("return EFBIG;")
 end
-fn inline EHOSTUNREACH()->int:
+fn inline pure EHOSTUNREACH()->int:
     asm("return EHOSTUNREACH;")
 end
-fn inline EIDRM()->int:
+fn inline pure EIDRM()->int:
     asm("return EIDRM;")
 end
-fn inline EILSEQ()->int:
+fn inline pure EILSEQ()->int:
     asm("return EILSEQ;")
 end
-fn inline EINPROGRESS()->int:
+fn inline pure EINPROGRESS()->int:
     asm("return EINPROGRESS;")
 end
-fn inline EINTR()->int:
+fn inline pure EINTR()->int:
     asm("return EINTR;")
 end
-fn inline EINVAL()->int:
+fn inline pure EINVAL()->int:
     asm("return EINVAL;")
 end
-fn inline EIO()->int:
+fn inline pure EIO()->int:
     asm("return EIO;")
 end
-fn inline EISCONN()->int:
+fn inline pure EISCONN()->int:
     asm("return EISCONN;")
 end
-fn inline EISDIR()->int:
+fn inline pure EISDIR()->int:
     asm("return EISDIR;")
 end
-fn inline ELOOP()->int:
+fn inline pure ELOOP()->int:
     asm("return ELOOP;")
 end
-fn inline EMFILE()->int:
+fn inline pure EMFILE()->int:
     asm("return EMFILE;")
 end
-fn inline EMLINK()->int:
+fn inline pure EMLINK()->int:
     asm("return EMLINK;")
 end
-fn inline EMSGSIZE()->int:
+fn inline pure EMSGSIZE()->int:
     asm("return EMSGSIZE;")
 end
 /*
-fn inline EMULTIHOP()->int:
+fn inline pure EMULTIHOP()->int:
     asm("return EMULTIHOP;")
 end
 */
-fn inline ENAMETOOLONG()->int:
+fn inline pure ENAMETOOLONG()->int:
     asm("return ENAMETOOLONG;")
 end
-fn inline ENETDOWN()->int:
+fn inline pure ENETDOWN()->int:
     asm("return ENETDOWN;")
 end
-fn inline ENETRESET()->int:
+fn inline pure ENETRESET()->int:
     asm("return ENETRESET;")
 end
-fn inline ENETUNREACH()->int:
+fn inline pure ENETUNREACH()->int:
     asm("return ENETUNREACH;")
 end
-fn inline ENFILE()->int:
+fn inline pure ENFILE()->int:
     asm("return ENFILE;")
 end
-fn inline ENOBUFS()->int:
+fn inline pure ENOBUFS()->int:
     asm("return ENOBUFS;")
 end
-fn inline ENODEV()->int:
+fn inline pure ENODEV()->int:
     asm("return ENODEV;")
 end
-fn inline ENOEXEC()->int:
+fn inline pure ENOEXEC()->int:
     asm("return ENOEXEC;")
 end
-fn inline ENOLCK()->int:
+fn inline pure ENOLCK()->int:
     asm("return ENOLCK;")
 end
-fn inline ENOLINK()->int:
+fn inline pure ENOLINK()->int:
     asm("return ENOLINK;")
 end
-fn inline ENOMEM()->int:
+fn inline pure ENOMEM()->int:
     asm("return ENOMEM;")
 end
-fn inline ENOMSG()->int:
+fn inline pure ENOMSG()->int:
     asm("return ENOMSG;")
 end
-fn inline ENOPROTOOPT()->int:
+fn inline pure ENOPROTOOPT()->int:
     asm("return ENOPROTOOPT;")
 end
-fn inline ENOSPC()->int:
+fn inline pure ENOSPC()->int:
     asm("return ENOSPC;")
 end
-fn inline ENOSYS()->int:
+fn inline pure ENOSYS()->int:
     asm("return ENOSYS;")
 end
-fn inline ENOTCONN()->int:
+fn inline pure ENOTCONN()->int:
     asm("return ENOTCONN;")
 end
-fn inline ENOTDIR()->int:
+fn inline pure ENOTDIR()->int:
     asm("return ENOTDIR;")
 end
-fn inline ENOTEMPTY()->int:
+fn inline pure ENOTEMPTY()->int:
     asm("return ENOTEMPTY;")
 end
-fn inline ENOTRECOVERABLE()->int:
+fn inline pure ENOTRECOVERABLE()->int:
     asm("return ENOTRECOVERABLE;")
 end
-fn inline ENOTSOCK()->int:
+fn inline pure ENOTSOCK()->int:
     asm("return ENOTSOCK;")
 end
-fn inline ENOTSUP()->int:
+fn inline pure ENOTSUP()->int:
     asm("return ENOTSUP;")
 end
-fn inline ENOTTY()->int:
+fn inline pure ENOTTY()->int:
     asm("return ENOTTY;")
 end
-fn inline ENXIO()->int:
+fn inline pure ENXIO()->int:
     asm("return ENXIO;")
 end
-fn inline EOPNOTSUPP()->int:
+fn inline pure EOPNOTSUPP()->int:
     asm("return EOPNOTSUPP;")
 end
-fn inline EOVERFLOW()->int:
+fn inline pure EOVERFLOW()->int:
     asm("return EOVERFLOW;")
 end
-fn inline EOWNERDEAD()->int:
+fn inline pure EOWNERDEAD()->int:
     asm("return EOWNERDEAD;")
 end
-fn inline EPERM()->int:
+fn inline pure EPERM()->int:
     asm("return EPERM;")
 end
-fn inline EPIPE()->int:
+fn inline pure EPIPE()->int:
     asm("return EPIPE;")
 end
-fn inline EPROTO()->int:
+fn inline pure EPROTO()->int:
     asm("return EPROTO;")
 end
-fn inline EPROTONOSUPPORT()->int:
+fn inline pure EPROTONOSUPPORT()->int:
     asm("return EPROTONOSUPPORT;")
 end
-fn inline EPROTOTYPE()->int:
+fn inline pure EPROTOTYPE()->int:
     asm("return EPROTOTYPE;")
 end
-fn inline ERANGE()->int:
+fn inline pure ERANGE()->int:
     asm("return ERANGE;")
 end
-fn inline EROFS()->int:
+fn inline pure EROFS()->int:
     asm("return EROFS;")
 end
-fn inline ESPIPE()->int:
+fn inline pure ESPIPE()->int:
     asm("return ESPIPE;")
 end
-fn inline ESRCH()->int:
+fn inline pure ESRCH()->int:
     asm("return ESRCH;")
 end
 /*
-fn inline ESTALE()->int:
+fn inline pure ESTALE()->int:
     asm("return ESTALE;")
 end
 */
-fn inline ETIMEDOUT()->int:
+fn inline pure ETIMEDOUT()->int:
     asm("return ETIMEDOUT;")
 end
-fn inline ETXTBSY()->int:
+fn inline pure ETXTBSY()->int:
     asm("return ETXTBSY;")
 end
-fn inline EWOULDBLOCK()->int:
+fn inline pure EWOULDBLOCK()->int:
     asm("return EWOULDBLOCK;")
 end
-fn inline EXDEV()->int:
+fn inline pure EXDEV()->int:
     asm("return EXDEV;")
 end
 

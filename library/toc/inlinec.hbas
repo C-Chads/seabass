@@ -107,11 +107,13 @@
     //we now have what we need...
     @initqtok "fn"
     @pushqtok "inline"
+    @pushqtok "pure"
     @pushtok [constant.dupe()]
-    @pushqtok "("
-    @pushqtok ")"
+    //@pushqtok "("
+    //@pushqtok ")"
     @pushqtok "->"
     @pushtok [type] //MOVE
+    @rwalk_skip ;
     @pushqtok ":"
     @pushqtok "asm"
     @pushqtok "("
