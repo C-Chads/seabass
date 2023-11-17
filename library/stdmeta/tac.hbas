@@ -18,12 +18,16 @@ class cg_tac_expr
     noexport
     cgtype t
     i64[CG_MAX_FARGS] operands
+    
     cgsymdecl* ref_gsym //function template for callfnptr, or function to call for EXPR_METHOD/EXPR_FCALL
                         //for getglobalptr and EXPR_GSYM this is used for retrieving global symbols.
+                        //EXPR_GSYM is obviously converted into getglobalptr....
+                        
     i64 dst             //destination variable uuid
     i64 ival            //for integer constants...
     f64 dval            //for double constants...
     char* stringval     //for string constants...
+    
     short kind          //CG_EXPR_ type.... some kinds will not appear such as EXPR_MEMBER
                         //because we will always convert it to a sequence which uses
                         //EXPR_MEMBERPTR
@@ -36,6 +40,7 @@ class cg_tac_insn
     byte kind // CG_TAC_ ...
     cgsymdecl* ref_symbol //for tail
     cg_tac_insn** goto_targs //goto targets... need multiple for SWITCH.
+                            //for goto we pun this into cg_tac_insn* (not double ptr)
     u64 n_goto_targs
 end
 
@@ -55,6 +60,7 @@ class cg_tac_symbol
     noexport
     i64 id //negative if it's a function argument...
     cgtype t //type of the symbol
+    char* srcname //name of the original variable this came from.
 end
 
 class cg_tac_scope
@@ -100,38 +106,85 @@ fn codegen cg_tac_gen_symname->u64:
     return cg_tac_gen_symname++
 end
 
-method codegen cg_tac_scope.push_farg(cgtype p)->i64:
+method codegen cg_tac_scope.push_farg(cgtype p,char* n)->i64:
     //TODO
     this.syms = __builtin_realloc((u8*)this.syms, sizeof(cg_tac_symbol) * ++this.n_syms);
     u64 w = this.n_syms-1;
     
     this.syms[w].id = cg_tac_gen_symname * -1;
     this.syms[w].t := p;
+    this.syms[w].srcname = n;
     return this.syms[w].id;
 end
 
-method codegen cg_tac_scope.push_var(cgtype p)->i64:
+method codegen cg_tac_scope.push_var(cgtype p, char* n)->i64:
     //TODO
     this.syms = __builtin_realloc((u8*)this.syms, sizeof(cg_tac_symbol) * ++this.n_syms);
     u64 w = this.n_syms-1;
     
     this.syms[w].id = cg_tac_gen_symname;
     this.syms[w].t := p;
+    this.syms[w].srcname = n;
     return this.syms[w].id;
+end
+
+codegen cgscope*[0x1000000] cg_tac_scopestack;
+codegen uqword cg_tac_scopestack_depth = 0;
+
+fn codegen cg_tac_scopestack_push(cgscope* s):
+    cg_tac_scopestack[cg_tac_scopestack_depth++] = s;
+end
+
+fn codegen cg_tac_scopestack_pop():
+    cg_tac_scopestack_depth--;
+end
+
+
+fn codegen cg_tac_convert_expr(
+    cg_tac_scope cur_scope, //The scope to add this expression instruction to
+    cgexpr_node srcnode,    //the source expression node.
+    cgstmt srcstmt,         //the source statement of the expressio node.
+    cgscope srcscope,       //the scope from which this stmt came
+    cgsymdecl srcfn         //the function the scope is in.
+):
+    //TODO... complicated! This creates tac_insns
+end
+
+fn codegen cg_tac_convert_stmt(cg_tac_scope cur_scope, cgstmt srcstmt, cgscope srcscope,cgsymdecl srcfn):
+    //TODO... convert this statement...
+end
+
+fn codegen cg_tac_convert_scope(cg_tac_insn parent_insn, cgscope srcscope, cgsymdecl srcfn):
+    parent_insn.scope = __builtin_malloc(sizeof(cg_tac_scope));
+    cg_tac_scope* s = parent_insn.scope;
+    //TODO... convert srcscope...
 end
 
 
 //Main entry point...
 fn codegen cg_tac_convert_function(cgsymdecl* s)->cg_tac_scope:
+    cg_tac_scopestack_depth = 0; //reset the scopestack...
     cg_tac_scope* rval;
+    cgscope* fbody = s->fbody;
     rval = __builtin_malloc(sizeof(cg_tac_scope));
     rval.ctor();
+    rval.isFunctionBody = 1;
     //TODO- convert function arguments...
     i64 i
     for(i = 0, i < s.nargs, i++)
-        rval.push_farg(s.fargs[i]);
+        rval.push_farg(s.fargs[i],s.fargs[i].membername);
     end
-    //TODO: Convert function body...
+    //TODO: Convert function body..
+    //safety- catch fbody is null (Should never happen....)
+    if(fbody == 0)
+        return rval
+    end
+    for(i = 0, i < fbody.nsyms, i++)
+        rval.push_var(fbody.syms[i].t, fbody.syms[i].name);
+    end
+    for(i = 0, i < fbody.nstmts, i++)
+        cg_tac_convert_stmt(rval, ((cgstmt*)fbody.stmts)[i], s);
+    end
     
     return rval;
 end
