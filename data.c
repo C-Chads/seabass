@@ -331,6 +331,7 @@ void print_manpage(char* subject){
         o(codegen)
         o(metaprogramming)
         o(short_circuiting)
+        o(functions_omitted_parentheses)
         o(reflection)
         o(parsehook)
         o(keywords)
@@ -1061,6 +1062,41 @@ void print_manpage(char* subject){
         l("That function is responsible for emitting the final output.")
         l(bar)
     };
+    m(functions_omitted_parentheses){
+        b(functions_omitted_parentheses)
+        l("Seabass allows you to define functions and methods with zero arguments")
+        l("omitting parentheses:")
+        nl
+        ll("fn myfunction:")
+        lll("doStuff(37)")
+        ll("end")
+        nl
+        l("You can also call a function taking zero arguments by omitting parentheses:")
+        nl
+        ll("myfunction; //equivalent to myfunction();")
+        nl
+        l("You should use this invocation syntax sparingly as it can make your code much")
+        l("harder to read. It is best used for wrapping constants:")
+        nl
+        ll("fn inline MY_CONSTANT->i32:")
+        lll("return 173 * -22;")
+        ll("end")
+        nl
+        l("You cannot invoke a method taking zero arguments without parentheses:")
+        nl
+        ll("method myclass:mymethod->i32: //OK")
+        lll("this.mymember = 73;")
+        lll("return -21")
+        ll("end")
+        nl
+        ll("proc someFunction(int arg1):")
+        lll("myclass q")
+        lll("sint a")
+        lll("a = q.mymethod;   //ERROR!!!!")
+        lll("a = q.mymethod(); //OK")
+        ll("end")
+        l(bar)
+    };
     
     
     ;
@@ -1083,6 +1119,7 @@ void print_manpage(char* subject){
     r(undefined_behavior)
     r(function_pointers)
     r(short_circuiting)
+    r(functions_omitted_parentheses)
     r(optimization)
     r(for_c_programmers)
     r(reflection_library_code)
