@@ -12,6 +12,7 @@ codegen int CG_TAC_RETURN = 5;
 codegen int CG_TAC_TAIL = 6; //Explicit tail call
 codegen int CG_TAC_SWITCH = 7; //Switch stmt
 codegen int CG_TAC_LABEL = 8; //Label.
+codegen int CG_TAC_ASM = 9; //code
 
 
 class cg_tac_expr
@@ -39,8 +40,8 @@ class cg_tac_insn
     cg_tac_expr expr
     byte kind // CG_TAC_ ...
     cgsymdecl* ref_symbol //for tail
-    cg_tac_insn** goto_targs //goto targets... need multiple for SWITCH.
-                            //for goto we pun this into cg_tac_insn* (not double ptr)
+    char** goto_targs //goto targets... need multiple for SWITCH.
+                      //for goto/label we pun this into char* (not double ptr)
     u64 n_goto_targs
 end
 
@@ -71,6 +72,7 @@ class cg_tac_scope
     u64 n_syms
     byte isFunctionBody //is this scope a function body?
     byte isInline //is this an inline function?
+    byte detectedInliningLoop //Is an inlining loop detected?
 end
 
 method codegen cg_tac_scope.ctor:
@@ -80,6 +82,7 @@ method codegen cg_tac_scope.ctor:
     this.n_syms = 0;
     this.isFunctionBody = 0;
     this.isInline = 0;
+    this.detectedInliningLoop = 0;
 end
 method codegen cg_tac_scope.dtor:
     u64 i

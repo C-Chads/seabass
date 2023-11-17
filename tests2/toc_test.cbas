@@ -398,7 +398,7 @@ fn pub main()->int:
     
     :real_end
     if(1)
-        u64 mylocal = 3;
+        u32 mylocal = 3;
         @inline_C "
             $mylocal = 15-$mylocal; /*INSERTED BY INLINE_C*/
             puts(\"Hello World!\");
@@ -417,7 +417,7 @@ fn pub main()->int:
         /   "Check out these 30 numbers:"
     ]
     if(1)
-        u64 i
+        u32 i
         for(i = 0; i < 30; i++)
             @cpprint[
                 /int(myintegers[i])
