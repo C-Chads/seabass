@@ -48,7 +48,7 @@ method codegen cg_tac_insn.ctor:
     this.scope = 0;
     this.kind = 0;
     this.expr.ref_gsym = 0;
-    this.expr.type = -1;
+    this.expr.kind = -1;
     this.goto_targs = 0;
     this.n_goto_targs = 0;
 end
@@ -67,7 +67,7 @@ class cg_tac_scope
     noexport
     cg_tac_insn* insns
     cg_tac_symbol* syms
-    u64 n_ninsns
+    u64 n_insns
     u64 n_syms
     byte isFunctionBody //is this scope a function body?
     byte isInline //is this an inline function?
@@ -75,7 +75,7 @@ end
 
 method codegen cg_tac_scope.ctor:
     this.insns = 0;
-    this.n_insns=0;
+    this.n_insns =0;
     this.syms = 0;
     this.n_syms = 0;
     this.isFunctionBody = 0;
@@ -84,12 +84,12 @@ end
 method codegen cg_tac_scope.dtor:
     u64 i
     for(i = 0, i < this.n_insns, i++)
-        cg_tac_scope* p = this.insns[i].scope;
+        cg_tac_scope* p = (cg_tac_scope*)this.insns[i].scope;
         if(p != 0)
             p.dtor();
             __builtin_free((u8*)p);
         end
-        if(this.insns[i].goto_targs && this.insns[i].kind == CG_TAC_SWITCH)
+        if(this.insns[i].goto_targs != 0 && this.insns[i].kind == CG_TAC_SWITCH)
             __builtin_free((u8*)this.insns[i].goto_targs);
         end
     end
@@ -103,12 +103,12 @@ end
 
 codegen uqword cg_tac_symgen = 1;
 fn codegen cg_tac_gen_symname->u64:
-    return cg_tac_gen_symname++
+    return cg_tac_symgen++
 end
 
 method codegen cg_tac_scope.push_farg(cgtype p,char* n)->i64:
     //TODO
-    this.syms = __builtin_realloc((u8*)this.syms, sizeof(cg_tac_symbol) * ++this.n_syms);
+    this.syms = (cg_tac_symbol*)__builtin_realloc((u8*)this.syms, sizeof(cg_tac_symbol) * ++this.n_syms);
     u64 w = this.n_syms-1;
     
     this.syms[w].id = cg_tac_gen_symname * -1;
@@ -119,7 +119,7 @@ end
 
 method codegen cg_tac_scope.push_var(cgtype p, char* n)->i64:
     //TODO
-    this.syms = __builtin_realloc((u8*)this.syms, sizeof(cg_tac_symbol) * ++this.n_syms);
+    this.syms = (cg_tac_symbol*)__builtin_realloc((u8*)this.syms, sizeof(cg_tac_symbol) * ++this.n_syms);
     u64 w = this.n_syms-1;
     
     this.syms[w].id = cg_tac_gen_symname;
@@ -128,16 +128,35 @@ method codegen cg_tac_scope.push_var(cgtype p, char* n)->i64:
     return this.syms[w].id;
 end
 
-codegen cgscope*[0x1000000] cg_tac_scopestack;
+codegen cgscope*[0x10000] cg_tac_cgscopestack;
+codegen cg_tac_scope*[0x10000] cg_tac_scopestack;
+codegen uqword cg_tac_cgscopestack_depth = 0;
 codegen uqword cg_tac_scopestack_depth = 0;
 
-fn codegen cg_tac_scopestack_push(cgscope* s):
+fn codegen cg_tac_cgscopestack_push(cgscope* s):
+    cg_tac_cgscopestack[cg_tac_cgscopestack_depth++] = s;
+end
+
+fn codegen cg_tac_cgscopestack_pop():
+    cg_tac_cgscopestack_depth--;
+end
+
+
+fn codegen cg_tac_scopestack_push(cg_tac_scope* s):
     cg_tac_scopestack[cg_tac_scopestack_depth++] = s;
 end
 
 fn codegen cg_tac_scopestack_pop():
     cg_tac_scopestack_depth--;
 end
+
+fn codegen cg_tac_cgscopestack_gettop()->cgscope:
+    return cg_tac_cgscopestack[cg_tac_cgscopestack_depth-1];
+end
+fn codegen cg_tac_scopestack_gettop()->cg_tac_scope:
+    return cg_tac_scopestack[cg_tac_scopestack_depth-1];
+end
+
 
 
 fn codegen cg_tac_convert_expr(
@@ -156,7 +175,7 @@ end
 
 fn codegen cg_tac_convert_scope(cg_tac_insn parent_insn, cgscope srcscope, cgsymdecl srcfn):
     parent_insn.scope = __builtin_malloc(sizeof(cg_tac_scope));
-    cg_tac_scope* s = parent_insn.scope;
+    cg_tac_scope* s = (cg_tac_scope*)parent_insn.scope;
     //TODO... convert srcscope...
 end
 
@@ -165,12 +184,14 @@ end
 fn codegen cg_tac_convert_function(cgsymdecl* s)->cg_tac_scope:
     cg_tac_scopestack_depth = 0; //reset the scopestack...
     cg_tac_scope* rval;
-    cgscope* fbody = s->fbody;
-    rval = __builtin_malloc(sizeof(cg_tac_scope));
+    cgscope* fbody = (cgscope*)s.fbody;
+    rval = (cg_tac_scope*)__builtin_malloc(sizeof(cg_tac_scope));
     rval.ctor();
     rval.isFunctionBody = 1;
     //TODO- convert function arguments...
     i64 i
+    cg_tac_scopestack_push(rval);
+    cg_tac_cgscopestack_push(fbody);
     for(i = 0, i < s.nargs, i++)
         rval.push_farg(s.fargs[i],s.fargs[i].membername);
     end
@@ -179,12 +200,15 @@ fn codegen cg_tac_convert_function(cgsymdecl* s)->cg_tac_scope:
     if(fbody == 0)
         return rval
     end
+    
     for(i = 0, i < fbody.nsyms, i++)
         rval.push_var(fbody.syms[i].t, fbody.syms[i].name);
     end
     for(i = 0, i < fbody.nstmts, i++)
-        cg_tac_convert_stmt(rval, ((cgstmt*)fbody.stmts)[i], s);
+        cg_tac_convert_stmt(rval, ((cgstmt*)fbody.stmts)[i], fbody,  s);
     end
+    cg_tac_cgscopestack_pop();
+    cg_tac_scopestack_pop();
     
     return rval;
 end
