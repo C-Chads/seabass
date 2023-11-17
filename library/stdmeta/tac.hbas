@@ -14,6 +14,11 @@ codegen int CG_TAC_SWITCH = 7; //Switch stmt
 codegen int CG_TAC_LABEL = 8; //Label.
 codegen int CG_TAC_ASM = 9; //code
 
+codegen uqword cg_tac_symgen = 1; //symbol generation starts at 1....
+fn codegen cg_tac_gen_symname->u64:
+    return cg_tac_symgen++
+end
+
 
 class cg_tac_expr
     noexport
@@ -104,10 +109,11 @@ method codegen cg_tac_scope.dtor:
     end
 end
 
-codegen uqword cg_tac_symgen = 1;
-fn codegen cg_tac_gen_symname->u64:
-    return cg_tac_symgen++
+method codegen cg_tac_scope:copy(cg_tac_scope** dest, byte is_inlining):
+    //TODO
 end
+
+
 
 method codegen cg_tac_scope.push_farg(cgtype p,char* n)->i64:
     //TODO
