@@ -9,6 +9,9 @@ codegen int CG_TAC_GOTO = 2;
 codegen int CG_TAC_GOTOIF = 3;
 codegen int CG_TAC_SCOPE = 4;
 codegen int CG_TAC_RETURN = 5;
+codegen int CG_TAC_TAIL = 6; //Explicit tail call
+codegen int CG_TAC_SWITCH = 7; //Switch stmt
+codegen int CG_TAC_LABEL = 8; //Label.
 
 
 class cg_tac_expr
@@ -17,18 +20,23 @@ class cg_tac_expr
     i64[CG_MAX_FARGS] operands
     cgsymdecl* ref_gsym //function template for callfnptr, or function to call for EXPR_METHOD/EXPR_FCALL
                         //for getglobalptr and EXPR_GSYM this is used for retrieving global symbols.
-    i64 dst
+    i64 dst             //destination variable uuid
     i64 ival            //for integer constants...
     f64 dval            //for double constants...
     char* stringval     //for string constants...
-    short kind
+    short kind          //CG_EXPR_ type.... some kinds will not appear such as EXPR_MEMBER
+                        //because we will always convert it to a sequence which uses
+                        //EXPR_MEMBERPTR
 end
 
 class cg_tac_insn
     noexport
     byte* scope
     cg_tac_expr expr
-    byte kind // of the above kinds...
+    byte kind // CG_TAC_ ...
+    cgsymdecl* ref_symbol //for tail
+    cg_tac_insn** goto_targs //goto targets... need multiple for SWITCH.
+    u64 n_goto_targs
 end
 
 method codegen cg_tac_insn.ctor:
@@ -36,6 +44,8 @@ method codegen cg_tac_insn.ctor:
     this.kind = 0;
     this.expr.ref_gsym = 0;
     this.expr.type = -1;
+    this.goto_targs = 0;
+    this.n_goto_targs = 0;
 end
 
 
@@ -44,13 +54,14 @@ end
 class cg_tac_symbol
     noexport
     i64 id //negative if it's a function argument...
+    cgtype t //type of the symbol
 end
 
 class cg_tac_scope
     noexport
     cg_tac_insn* insns
-    u64 n_ninsns
     cg_tac_symbol* syms
+    u64 n_ninsns
     u64 n_syms
     byte isFunctionBody //is this scope a function body?
     byte isInline //is this an inline function?
@@ -72,6 +83,9 @@ method codegen cg_tac_scope.dtor:
             p.dtor();
             __builtin_free((u8*)p);
         end
+        if(this.insns[i].goto_targs && this.insns[i].kind == CG_TAC_SWITCH)
+            __builtin_free((u8*)this.insns[i].goto_targs);
+        end
     end
     if(this.insns != 0)
         __builtin_free((u8*)this.insns);
@@ -79,11 +93,47 @@ method codegen cg_tac_scope.dtor:
     if(this.syms != 0)
         __builtin_free((u8*)this.syms);
     end
-    
 end
-
 
 codegen uqword cg_tac_symgen = 1;
 fn codegen cg_tac_gen_symname->u64:
     return cg_tac_gen_symname++
 end
+
+method codegen cg_tac_scope.push_farg(cgtype p)->i64:
+    //TODO
+    this.syms = __builtin_realloc((u8*)this.syms, sizeof(cg_tac_symbol) * ++this.n_syms);
+    u64 w = this.n_syms-1;
+    
+    this.syms[w].id = cg_tac_gen_symname * -1;
+    this.syms[w].t := p;
+    return this.syms[w].id;
+end
+
+method codegen cg_tac_scope.push_var(cgtype p)->i64:
+    //TODO
+    this.syms = __builtin_realloc((u8*)this.syms, sizeof(cg_tac_symbol) * ++this.n_syms);
+    u64 w = this.n_syms-1;
+    
+    this.syms[w].id = cg_tac_gen_symname;
+    this.syms[w].t := p;
+    return this.syms[w].id;
+end
+
+
+//Main entry point...
+fn codegen cg_tac_convert_function(cgsymdecl* s)->cg_tac_scope:
+    cg_tac_scope* rval;
+    rval = __builtin_malloc(sizeof(cg_tac_scope));
+    rval.ctor();
+    //TODO- convert function arguments...
+    i64 i
+    for(i = 0, i < s.nargs, i++)
+        rval.push_farg(s.fargs[i]);
+    end
+    //TODO: Convert function body...
+    
+    return rval;
+end
+
+
