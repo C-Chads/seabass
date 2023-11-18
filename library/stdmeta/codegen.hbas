@@ -19,6 +19,16 @@
     only the `kind` is used to determine what the
     operation does.
     
+    We can optimize this representation of an
+    expression extremely easily and it matches
+    what a register allocator would do quite well.
+    
+    TOOL 2- STRUCTUREDECAY
+    
+    After we've decayed every single expression into FIFTH,
+    we should decay the program structure into something
+    FIFTH-like as well...
+    
     
     
     
@@ -153,71 +163,229 @@ end
     Note that this sequence must start with a terminal
     and end with an operator.
     
+    But this...
     
-    1
+    a 2 3 + *
+    
+    cannot be reordered into this:
+    
+    2 3 a + * 
+    
+    because it changes the meaning!
+    
+    We can know which constants to reorder based on the
+    ending token.
+    
+    19 a 5 7 + + 7  *
+             ^------^ Stop! Backtrack to the last plus sign....
+             ^-^ 2 plus signs...
+       ^-------^    three terminals back (1+opcounter)
+    
 
 */
+
+method codegen cgir_fifthexpr.reorder_constants_range(
+    i64 s,
+    i64 e
+):
+    //TODO
+    i64 i
+    i64 j
+    i64 k
+    i64 l
+    
+    for(i = s, i <= e-1, i++)
+        i64 knd = this.vec[i].kind;
+        //Can't swap into an operator
+        //or a constant....
+        if(
+            !cgir_kind_is_terminal(knd) ||
+            cgir_kind_is_constant(knd)
+        )
+            continue
+        end
+        //search after us for a constant...
+        for(j = i+1, j <= e, j++)
+            knd = this.vec[j].kind;
+            //Not a constant...
+            if(!cgir_kind_is_constant(knd))
+                continue
+            end
+            //Swap the two!
+            this.swap_entries(i,j)
+            break //a constant is now stored here, so we shouldn't
+                  //waste our time by swapping ANOTHER constant in....
+        end
+    end
+
+end
+
 method codegen cgir_fifthexpr.reorder_constants(int opkind):
     //TODO
     i64 i
     i64 j
     i64 k
     i64 l
-    for(i = 0, i < (i64)this.nentries-(i64)1, i++)
-        //cannot start from a non-terminal...
-        if(!cgir_kind_is_terminal(this.vec[i].kind))
+    i64 nentries = this.nentries;
+    i64 opcounter = 0;
+    i64 knd
+    for(i = 0, i < nentries, i++)
+        knd = this.vec[i].kind;
+        //nothing to do!
+        if(
+            knd != opkind &&
+            opcounter == 0
+        )
+            continue
+        end
+        //We found an operator!!!
+        if(knd == opkind)
+            opcounter++
             continue
         end
         
-        for(
-            j = i,
-            j < this.nentries && (
-                cgir_kind_is_constant(this.vec[j].kind) ||
-                this.vec[j].kind == CG_EXPR_LSYM ||
-                this.vec[j].kind == CG_EXPR_GSYM ||
-                this.vec[j].kind == opkind
-            )
-            , 
-            j++
-        )
-            //empty body...
-        end
-        //if 
-        if(j == i)
-            continue
-        end
-        j--;
-        while(this.vec[j].kind != opkind && j > i)
-            j--
-        end
-        /*
-            We cannot possibly optimize with too few constants...
-        */
-        if(
-            (j-i) <= 3 ||
-            this.vec[j].kind != opkind
-        )
-            continue
-        end
-        //we have some potential re-ordering to do!
-        for(k = 0, k < j-2, k++)
-            if(!cgir_kind_is_terminal(this.vec[k].kind) ||
-                cgir_kind_is_constant(this.vec[k].kind) //no switching to do....
-            )
-                continue
+        l = i
+        if(!cgir_kind_is_terminal(knd) && knd != opkind)
+            //go back to the last opkind!
+            while(this.vec[l].kind != opkind)
+                l--
             end
-            //check if t
-            for(l = k+1, l < j-1, l++)
-                if(
-                    !cgir_kind_is_constant(this.vec[l].kind)
-                )
+            //From the last one...
+            k = l;
+            j = 0
+            while(j < opcounter+1)
+                knd = this.vec[--k].kind
+                if(cgir_kind_is_terminal(knd))
+                    j++
+                elif(knd == opkind)
                     continue
+                else
+                    //this is not an optimizable sequence....
+                    opcounter = 0;
+                    goto not_optimizable_sequence
                 end
-                //vec[k] is not a constant, but vec[l] is!
-                this.swap_entries(l,k);
-            end //loop from k+1 to j-1... (l)
-        end //loop over our small little area to j-2... (k)
-    end //loop over all entries...
+            end
+            this.reorder_constants_range(k, l-1);
+        
+            opcounter = 0
+            continue
+        end
+        //the discovered sequence was not optimizable...
+        :not_optimizable_sequence
+    end
+
+end
+
+method codegen cgir_fifthexpr.optimize:
+    this.reorder_constants(CG_EXPR_ADD);
+    this.reorder_constants(CG_EXPR_MUL);
+    this.reorder_constants(CG_EXPR_BITOR);
+    this.reorder_constants(CG_EXPR_BITAND);
+    this.reorder_constants(CG_EXPR_BITXOR);
+    //TODO
+end
+
+method codegen cgir_fifthexpr.debug_print:
+    i64 i
+    for(i = 0, i < this.nentries, i++)
+        i64 knd = this.vec[i].kind;
+        if(knd == CG_EXPR_FCALL)
+            __builtin_puts("FCALL");
+        elif(knd == CG_EXPR_SIZEOF)
+            __builtin_puts("SZOF");
+        elif(
+            knd == CG_EXPR_INTLIT ||
+            knd == CG_EXPR_CONSTEXPR_INT
+        )
+            __builtin_puts("INT");
+        elif(
+            knd == CG_EXPR_FLOATLIT ||
+            knd == CG_EXPR_CONSTEXPR_FLOAT
+        )
+            __builtin_puts("FLOAT");
+        elif(knd == CG_EXPR_STRINGLIT)
+            __builtin_puts("STRING");
+        elif(knd == CG_EXPR_LSYM)
+            __builtin_puts("LSYM");
+        elif(knd == CG_EXPR_GSYM)
+            __builtin_puts("GSYM");
+        elif(knd == CG_EXPR_POST_INCR)
+            __builtin_puts("_++");
+        elif(knd == CG_EXPR_POST_DECR)
+            __builtin_puts("_--");        
+        elif(knd == CG_EXPR_PRE_INCR)
+            __builtin_puts("++_");
+        elif(knd == CG_EXPR_PRE_DECR)
+            __builtin_puts("--_");
+        elif(knd == CG_EXPR_MEMBER)
+            __builtin_puts(".MEMB");
+        elif(knd == CG_EXPR_METHOD)
+            __builtin_puts(":MTHD()");
+        elif(knd == CG_EXPR_CAST)
+            __builtin_puts("CAST()");
+        elif(knd == CG_EXPR_NEG)
+            __builtin_puts("-_");
+        elif(knd == CG_EXPR_COMPL)
+            __builtin_puts("~_");
+        elif(knd == CG_EXPR_NOT)
+            __builtin_puts("!_");
+        elif(knd == CG_EXPR_MUL)
+            __builtin_puts("*");
+        elif(knd == CG_EXPR_DIV)
+            __builtin_puts("/");
+        elif(knd == CG_EXPR_MOD)
+            __builtin_puts("%");
+        elif(knd == CG_EXPR_ADD)
+            __builtin_puts("+");
+        elif(knd == CG_EXPR_SUB)
+            __builtin_puts("-");
+        elif(knd == CG_EXPR_BITOR)
+            __builtin_puts("|");
+        elif(knd == CG_EXPR_BITAND)
+            __builtin_puts("&");
+        elif(knd == CG_EXPR_BITXOR)
+            __builtin_puts("^");
+        elif(knd == CG_EXPR_LSH)
+            __builtin_puts("<<");
+        elif(knd == CG_EXPR_RSH)
+            __builtin_puts(">>");
+        elif(knd == CG_EXPR_LOGOR)
+            __builtin_puts("||");
+        elif(knd == CG_EXPR_LOGAND)
+            __builtin_puts("&&");
+        elif(knd == CG_EXPR_LT)
+            __builtin_puts("<");
+        elif(knd == CG_EXPR_GT)
+            __builtin_puts(">");
+        elif(knd == CG_EXPR_LTE)
+            __builtin_puts("<=");
+        elif(knd == CG_EXPR_GTE)
+            __builtin_puts(">=");
+        elif(knd == CG_EXPR_EQ)
+            __builtin_puts("==");
+        elif(knd == CG_EXPR_NEQ)
+            __builtin_puts("!=");
+        elif(knd == CG_EXPR_ASSIGN)
+            __builtin_puts("=");
+        elif(knd == CG_EXPR_MOVE)
+            __builtin_puts(":=");
+        elif(knd == CG_EXPR_STREQ)
+            __builtin_puts("streq");
+        elif(knd == CG_EXPR_STRNEQ)
+            __builtin_puts("strneq");
+        elif(knd == CG_EXPR_MEMBERPTR)
+            __builtin_puts(".&MEMB");
+        elif(knd == CG_EXPR_GETFNPTR)
+            __builtin_puts("GETFNPTR()");
+        elif(knd == CG_EXPR_CALLFNPTR)
+            __builtin_puts("CALLFNPTR[]()");
+        elif(knd == CG_EXPR_GETGLOBALPTR)
+            __builtin_puts("GETGLOBPTR()");
+        else
+            __builtin_puts("??????");
+        end    
+    end
+
 end
 
 
