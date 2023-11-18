@@ -3,6 +3,7 @@
 #guard Compile_Cbas_To_C_DMHSW
 
 #include <stdmeta/tok_manip.hbas>
+#include <stdmeta/codegen.hbas>
 
 
 /*
@@ -1442,6 +1443,7 @@ method codegen cgstmt:gen_code(cgast* ast, char* disptablename, u64 active_fun_s
         cgexpr_node* enode
 
         enode = cast(cgexpr_node*)(this.expressions[0]);
+        cg_optimizer_operand_swap(enode);
         qq.s = enode:gen_code(ast);
         qq2.s = ";";
         qq:add(qq2);
@@ -1492,6 +1494,7 @@ method codegen cgstmt:gen_code(cgast* ast, char* disptablename, u64 active_fun_s
         myscope = this.myscope;
         qq:fromstr("while(");
             enode = cast(cgexpr_node*)this.expressions[0];
+            cg_optimizer_operand_swap(enode);
             qq2.s = enode:gen_code(ast);
             qq:add(qq2); qq2:free();
         qq2.s = "){\n"; qq:add(qq2);
@@ -1508,14 +1511,17 @@ method codegen cgstmt:gen_code(cgast* ast, char* disptablename, u64 active_fun_s
         myscope = this.myscope;
         qq:fromstr("for(");
             enode = cast(cgexpr_node*)this.expressions[0];
+            cg_optimizer_operand_swap(enode);
             qq2.s = enode:gen_code(ast);
             qq:add(qq2); qq2:free();
         qq2.s = ";"; qq:add(qq2);
             enode = cast(cgexpr_node*)this.expressions[1];
+            cg_optimizer_operand_swap(enode);
             qq2.s = enode:gen_code(ast);
             qq:add(qq2); qq2:free();
         qq2.s = ";"; qq:add(qq2);
             enode = cast(cgexpr_node*)this.expressions[2];
+            cg_optimizer_operand_swap(enode);
             qq2.s = enode:gen_code(ast);
             qq:add(qq2); qq2:free();
         qq2.s = "){\n"; qq:add(qq2);
@@ -1532,6 +1538,7 @@ method codegen cgstmt:gen_code(cgast* ast, char* disptablename, u64 active_fun_s
         myscope = this.myscope;
         qq:fromstr("if(");
             enode = cast(cgexpr_node*)this.expressions[0];
+            cg_optimizer_operand_swap(enode);
             qq2.s = enode:gen_code(ast);
             qq:add(qq2); qq2:free();
         qq2.s = "){\n"; qq:add(qq2);
@@ -1548,6 +1555,7 @@ method codegen cgstmt:gen_code(cgast* ast, char* disptablename, u64 active_fun_s
         myscope = this.myscope;
         qq:fromstr("else if(");
             enode = cast(cgexpr_node*)this.expressions[0];
+            cg_optimizer_operand_swap(enode);
             qq2.s = enode:gen_code(ast);
             qq:add(qq2); qq2:free();
         qq2.s = "){\n"; qq:add(qq2);
@@ -1573,6 +1581,7 @@ method codegen cgstmt:gen_code(cgast* ast, char* disptablename, u64 active_fun_s
             cgstr qq2
             qq:fromstr("\n    return ");
             enode = cast(cgexpr_node*)(this.expressions[0]);
+            cg_optimizer_operand_swap(enode);
 
             qq2.s = enode:gen_code(ast); qq:add(qq2);
 
@@ -1655,6 +1664,7 @@ method codegen cgstmt:gen_code(cgast* ast, char* disptablename, u64 active_fun_s
         qq2.s = "[";
         qq:add(qq2);
             enode = cast(cgexpr_node*)(this.expressions[0]);
+            cg_optimizer_operand_swap(enode);
            qq2.s = enode:gen_code(ast); qq:add(qq2);
             qq2:free();
         qq2.s = "];";

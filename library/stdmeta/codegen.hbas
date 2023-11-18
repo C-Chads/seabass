@@ -2,10 +2,13 @@
 /*
     CODE GENERATOR TOOLS
     
-    Tools for writing code generators.
+    Tools for writing code generators and
+    optimizing the AST.
     
     TOOL 1- cg_optimizer_constant_swap
-    
+        Optimizies the order of certain commutative
+        operations so that register allocation
+        will be more efficient.
     
     
     
