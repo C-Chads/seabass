@@ -32,6 +32,8 @@ What does that mean?
 Seabass is a public domain dedication, so that your joy
 may be full. No attribution required.
 
+For legalese details, see the LICENSE file.
+
 ## Language
 
 Seabass is, fundamentally, a programming language. You can write
