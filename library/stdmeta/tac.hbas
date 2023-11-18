@@ -176,13 +176,82 @@ fn codegen cg_tac_convert_expr(
     cgsymdecl srcfn         //the function the scope is in.
 ):
     //TODO... complicated! This creates tac_insns
+    if(srcnode.kind == CG_EXPR_BAD || srcnode.kind == CG_EXPR_BUILTIN_CALL)
+    //TODO
+    elif(srcnode.kind == CG_EXPR_FCALL || srcnode.kind == CG_EXPR_METHOD)
+    elif(srcnode.kind == CG_EXPR_SIZEOF)
+    elif(srcnode.kind == CG_EXPR_INTLIT || srcnode.kind == CG_EXPR_CONSTEXPR_INT)
+    elif(srcnode.kind == CG_EXPR_FLOATLIT || srcnode.kind == CG_EXPR_CONSTEXPR_FLOAT)
+    elif(srcnode.kind == CG_EXPR_LSYM)
+    elif(srcnode.kind == CG_EXPR_GSYM)
+        //This will yield a POINTER to the gsym....
+        //luckily, we CAST every SYM usage, so this
+        //will be TRANSFORMED into a value!
+        //by the cast for a read, but for a write,
+        //we must detect it inside of ASSIGN/INCR/DECR
+    elif(srcnode.kind == CG_EXPR_POST_INCR)
+        //REMEMBER the LSYM detail!!! (GSYM/INDEX require conversion to MOVEs)
+    elif(srcnode.kind == CG_EXPR_POST_DECR)
+        //REMEMBER the LSYM detail!!!
+    elif(srcnode.kind == CG_EXPR_INDEX)
+    elif(srcnode.kind == CG_EXPR_MEMBER)
+    elif(srcnode.kind == CG_EXPR_CAST)
+        //if it was an INDEX or CAST we must read the pointer into a value...
+    elif(srcnode.kind == CG_EXPR_NEG)
+    elif(srcnode.kind == CG_EXPR_COMPL)
+    elif(srcnode.kind == CG_EXPR_PRE_INCR)
+        //NOTE: we must detect if this is LSYM to see if it's valid to literally just increment...
+    elif(srcnode.kind == CG_EXPR_PRE_DECR)
+        //NOTE: we must detect if this is LSYM to see if it's valid to literally just decrement...
+    elif(srcnode.kind == CG_EXPR_MUL)
+    elif(srcnode.kind == CG_EXPR_DIV)
+    elif(srcnode.kind == CG_EXPR_MOD)
+    elif(srcnode.kind == CG_EXPR_ADD)
+    elif(srcnode.kind == CG_EXPR_SUB)
+    elif(srcnode.kind == CG_EXPR_BITOR)
+    elif(srcnode.kind == CG_EXPR_BITAND)
+    elif(srcnode.kind == CG_EXPR_LSH)
+    elif(srcnode.kind == CG_EXPR_RSH)
+    elif(srcnode.kind == CG_EXPR_LOGOR)
+    elif(srcnode.kind == CG_EXPR_LOGAND)
+    elif(srcnode.kind == CG_EXPR_LT)
+    elif(srcnode.kind == CG_EXPR_GT)
+    elif(srcnode.kind == CG_EXPR_LTE)
+    elif(srcnode.kind == CG_EXPR_GTE)
+    elif(srcnode.kind == CG_EXPR_EQ)
+    elif(srcnode.kind == CG_EXPR_NEQ)
+    elif(srcnode.kind == CG_EXPR_ASSIGN)
+    elif(srcnode.kind == CG_EXPR_MOVE)
+    elif(srcnode.kind == CG_EXPR_STREQ)
+    elif(srcnode.kind == CG_EXPR_STRNEQ)
+    elif(srcnode.kind == CG_EXPR_MEMBERPTR)
+    elif(srcnode.kind == CG_EXPR_GETFNPTR)
+    elif(srcnode.kind == CG_EXPR_CALLFNPTR)
+    elif(srcnode.kind == CG_EXPR_GETGLOBALPTR)
+    end
 end
 
-fn codegen cg_tac_convert_stmt(cg_tac_scope cur_scope, cgstmt srcstmt, cgscope srcscope,cgsymdecl srcfn):
+fn codegen cg_tac_convert_scope(
+    cg_tac_insn parent_insn, 
+    cgscope srcscope, 
+    cgsymdecl srcfn
+);
+
+fn codegen cg_tac_convert_stmt(
+    cg_tac_scope cur_scope, 
+    cgstmt srcstmt, 
+    cgscope srcscope,
+    cgsymdecl srcfn
+):
     //TODO... convert this statement...
+    
 end
 
-fn codegen cg_tac_convert_scope(cg_tac_insn parent_insn, cgscope srcscope, cgsymdecl srcfn):
+fn codegen cg_tac_convert_scope(
+    cg_tac_insn parent_insn, 
+    cgscope srcscope, 
+    cgsymdecl srcfn
+):
     parent_insn.scope = __builtin_malloc(sizeof(cg_tac_scope));
     cg_tac_scope* s = (cg_tac_scope*)parent_insn.scope;
     //TODO... convert srcscope...
