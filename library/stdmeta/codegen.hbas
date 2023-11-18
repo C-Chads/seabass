@@ -114,6 +114,31 @@ fn codegen cgir_kind_is_terminal(int kind)->i64:
         kind == CG_EXPR_GETFNPTR
     );
 end
+fn codegen cgir_kind_is_terminal_or_unary(int kind)->i64:
+    return (
+        kind == CG_EXPR_LSYM ||
+        kind == CG_EXPR_CAST ||
+        kind == CG_EXPR_NEG ||
+        kind == CG_EXPR_COMPL ||
+        kind == CG_EXPR_NOT ||
+        kind == CG_EXPR_PRE_INCR ||
+        kind == CG_EXPR_PRE_DECR ||
+        //post incr and post decr require
+        //slightly more assembly, but
+        //we still want to re-order if we can...
+        kind == CG_EXPR_POST_INCR ||
+        kind == CG_EXPR_POST_DECR ||
+        kind == CG_EXPR_GSYM ||
+        kind == CG_EXPR_SIZEOF ||
+        kind == CG_EXPR_INTLIT ||
+        kind == CG_EXPR_FLOATLIT ||
+        kind == CG_EXPR_STRINGLIT ||
+        kind == CG_EXPR_CONSTEXPR_FLOAT ||
+        kind == CG_EXPR_CONSTEXPR_INT ||
+        kind == CG_EXPR_GETGLOBALPTR ||
+        kind == CG_EXPR_GETFNPTR
+    );
+end
 
 method codegen cgir_fifthexpr.pushnode(cgexpr_node* addme):
     this.vec = (cgexpr_node**)__builtin_realloc(
@@ -123,8 +148,45 @@ method codegen cgir_fifthexpr.pushnode(cgexpr_node* addme):
     this.vec[this.nentries-1] = addme;
 end
 
-method codegen cgir_fifthexpr.buildfrom(cgexpr_node* root):
+//constant swap- used to opimize fifth codegen....
+//this ensures register allocation is more efficient...
+fn codegen cg_optimizer_constant_swap(
+    cgexpr_node ee
+):
     i64 i
+    for(i = 0, i < CG_MAX_FARGS, i++)
+        if(ee.subnodes[i] == 0) continue end
+        cg_optimizer_constant_swap(ee.subnodes[i]);
+    end
+    //only commutative operations....
+    if(
+        !(
+            ee.kind == CG_EXPR_EQ ||
+            ee.kind == CG_EXPR_NEQ ||
+            ee.kind == CG_EXPR_STREQ ||
+            ee.kind == CG_EXPR_STRNEQ ||
+            ee.kind == CG_EXPR_ADD ||
+            ee.kind == CG_EXPR_MUL ||
+            ee.kind == CG_EXPR_BITAND ||
+            ee.kind == CG_EXPR_BITXOR ||
+            ee.kind == CG_EXPR_BITOR
+        )
+    )
+        return
+    end
+    u64 l_is_terminal = cgir_kind_is_terminal_or_unary(ee.subnodes[0].kind);
+    u64 r_is_terminal = cgir_kind_is_terminal_or_unary(ee.subnodes[1].kind);
+    if(!r_is_terminal && l_is_terminal)
+        cgexpr_node* q = ee.subnodes[0];
+        ee.subnodes[0] = ee.subnodes[1];
+        ee.subnodes[1] = q;
+    end
+
+end
+
+method codegen cgir_fifthexpr.inner_buildfrom(cgexpr_node* root):
+    i64 i
+    //
     if(
         root.kind == CG_EXPR_METHOD ||
         root.kind == CG_EXPR_FCALL ||
@@ -132,13 +194,13 @@ method codegen cgir_fifthexpr.buildfrom(cgexpr_node* root):
     )
         for(i = CG_MAX_FARGS-1, i > -1, i--)
             if(root.subnodes[i] != 0)
-                this.buildfrom(root.subnodes[i])
+                this.inner_buildfrom(root.subnodes[i])
             end
         end
     elif(!cgir_kind_is_constant(root.kind)) //constants never have subexpressions....
         for(i = 0, i < CG_MAX_FARGS, i++)
             if(root.subnodes[i] != 0)
-                this.buildfrom(root.subnodes[i])
+                this.inner_buildfrom(root.subnodes[i])
             else
                 break //there are no more!
             end
@@ -146,6 +208,11 @@ method codegen cgir_fifthexpr.buildfrom(cgexpr_node* root):
     end
     //we now do ourselves...
     this.pushnode(root);
+end
+
+method codegen cgir_fifthexpr.buildfrom(cgexpr_node* root):
+    cg_optimizer_constant_swap(root);
+    this.inner_buildfrom(root);
 end
 
 /*
@@ -276,6 +343,8 @@ method codegen cgir_fifthexpr.reorder_constants(int opkind):
 
 end
 
+
+
 method codegen cgir_fifthexpr.optimize:
     this.reorder_constants(CG_EXPR_ADD);
     this.reorder_constants(CG_EXPR_MUL);
@@ -383,7 +452,7 @@ method codegen cgir_fifthexpr.debug_print:
             __builtin_puts("GETGLOBPTR()");
         else
             __builtin_puts("??????");
-        end    
+        end
     end
 
 end
@@ -397,58 +466,8 @@ end
 
 //perform a bottom-level swap between two nodes
 //based on their constant-ness...
-/*
-fn codegen cg_optimizer_constant_swap(
-    cgexpr_node ee
-):
-    i64 i
-    for(i = 0, i < CG_MAX_FARGS, i++)
-        if(ee.subnodes[i] == 0) continue end
-        cg_optimizer_constant_swap(ee.subnodes[i]);
-    end
-    if(
-        !(
-            ee.kind == CG_EXPR_EQ ||
-            ee.kind == CG_EXPR_STREQ ||
-            ee.kind == CG_EXPR_NEQ ||
-            ee.kind == CG_EXPR_STRNEQ ||
-            ee.kind == CG_EXPR_ADD ||
-            ee.kind == CG_EXPR_MUL ||
-            ee.kind == CG_EXPR_BITAND ||
-            ee.kind == CG_EXPR_BITOR
-        )
-    )
-        return
-    end
-    u64 l_is_const = (
-        ee.subnodes[0].kind == CG_EXPR_SIZEOF ||
-        ee.subnodes[0].kind == CG_EXPR_INTLIT ||
-        ee.subnodes[0].kind == CG_EXPR_FLOATLIT ||
-        ee.subnodes[0].kind == CG_EXPR_STRINGLIT ||
-        ee.subnodes[0].kind == CG_EXPR_CONSTEXPR_FLOAT ||
-        ee.subnodes[0].kind == CG_EXPR_CONSTEXPR_INT ||
-        ee.subnodes[0].kind == CG_EXPR_GETGLOBALPTR ||
-        ee.subnodes[0].kind == CG_EXPR_GETFNPTR
-    );
-    
-    u64 r_is_const = (
-        ee.subnodes[1].kind == CG_EXPR_SIZEOF ||
-        ee.subnodes[1].kind == CG_EXPR_INTLIT ||
-        ee.subnodes[1].kind == CG_EXPR_FLOATLIT ||
-        ee.subnodes[1].kind == CG_EXPR_STRINGLIT ||
-        ee.subnodes[1].kind == CG_EXPR_CONSTEXPR_FLOAT ||
-        ee.subnodes[1].kind == CG_EXPR_CONSTEXPR_INT ||
-        ee.subnodes[1].kind == CG_EXPR_GETGLOBALPTR ||
-        ee.subnodes[1].kind == CG_EXPR_GETFNPTR
-    );
-    if(!l_is_const && r_is_const)
-        cgexpr_node* q = ee.subnodes[0];
-        ee.subnodes[0] = ee.subnodes[1];
-        ee.subnodes[1] = q;
-    end
 
-end
-*/
+
 
 
 

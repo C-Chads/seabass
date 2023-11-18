@@ -1,0 +1,60 @@
+
+#include <meta>
+#include <stdmeta/codegen.hbas>
+
+fn myFunction(int a, int b, int c)->int:
+    return a + b + c;
+
+end
+
+
+fn bruh:
+    int a
+    a = myFunction(1+3,4+5*9,6+7);
+end
+
+
+
+fn codegen test_optimize_fifth(cgexpr_node* ee):
+    cgir_fifthexpr ff
+    ff.buildfrom(ee);
+    //ff.optimize();
+    @pprint[
+        /   "DUMPING OPTIMIZED EXPRESSION....."
+        /bar
+    ]
+    ff.debug_print();
+    @pprint[
+        /bar
+    ]
+end
+
+fn codegen codegen_main:
+    cgast* ast
+    ast = cast(cgast*)__builtin_get_ast();
+
+    i64 i
+    u8* p
+    for(i = 0, i < ast.nsymbols[0]; i++)
+        if
+        (
+            !(ast.symbol_table[0]+i)[0].t.is_function ||
+            (ast.symbol_table[0]+i)[0].is_codegen ||
+            (ast.symbol_table[0]+i)[0].fbody == 0
+        )
+            continue
+        end
+        //we found a target function with a body...
+        cgscope* s = (cgscope*)(ast.symbol_table[0]+i)[0].fbody;
+        cgstmt* stmts = (cgstmt*)s.stmts;
+        i64 j
+        for(j = 0; j < s.nstmts; j++)
+            if(stmts[j].kind == CG_STMT_EXPR)
+                test_optimize_fifth((cgexpr_node*)stmts[j].expressions[0]);
+            end
+        end
+    end
+
+end
+
+
