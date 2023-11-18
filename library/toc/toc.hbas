@@ -719,14 +719,14 @@ method codegen cgexpr_node:gen_code(cgast* ast)->char*:
         return retval.s;
     elif(this.kind == CG_EXPR_COMPL)
         cgstr ff
-        retval.s = __builtin_strdup("~(");
+        retval.s = __builtin_strdup("(TGT_UMAX)~(");
             ff.s = this.subnodes[0]:gen_code(ast);
             retval:add(ff); ff:free();
         ff.s = ")"; retval:add(ff);
         return retval.s;
     elif(this.kind == CG_EXPR_NOT)
         cgstr ff
-        retval.s = __builtin_strdup("!(");
+        retval.s = __builtin_strdup("(TGT_UMAX)!(");
             ff.s = this.subnodes[0]:gen_code(ast);
             retval:add(ff); ff:free();
         ff.s = ")"; retval:add(ff);
@@ -804,53 +804,53 @@ method codegen cgexpr_node:gen_code(cgast* ast)->char*:
         return retval.s;
     elif(this.kind == CG_EXPR_BITOR)
         cgstr ff
-        retval:fromstr("(");
+        retval:fromstr("(TGT_UMAX)((");
             ff.s = this.subnodes[0]:gen_code(ast);
             retval:add(ff); ff:free();
         ff.s = ") | ("; retval:add(ff);
             ff.s = this.subnodes[1]:gen_code(ast);
             retval:add(ff); ff:free();
-        ff.s = ")"; retval:add(ff);
+        ff.s = "))"; retval:add(ff);
         return retval.s;
     elif(this.kind == CG_EXPR_BITAND)
         cgstr ff
-        retval:fromstr("(");
+        retval:fromstr("(TGT_UMAX)((");
             ff.s = this.subnodes[0]:gen_code(ast);
             retval:add(ff); ff:free();
         ff.s = ") & ("; retval:add(ff);
             ff.s = this.subnodes[1]:gen_code(ast);
             retval:add(ff); ff:free();
-        ff.s = ")"; retval:add(ff);
+        ff.s = "))"; retval:add(ff);
         return retval.s;
     elif(this.kind == CG_EXPR_BITXOR)
         cgstr ff
-        retval:fromstr("(");
+        retval:fromstr("(TGT_UMAX)((");
             ff.s = this.subnodes[0]:gen_code(ast);
             retval:add(ff); ff:free();
         ff.s = ") ^ ("; retval:add(ff);
             ff.s = this.subnodes[1]:gen_code(ast);
             retval:add(ff); ff:free();
-        ff.s = ")"; retval:add(ff);
+        ff.s = "))"; retval:add(ff);
         return retval.s;
     elif(this.kind == CG_EXPR_LSH)
         cgstr ff
-        retval:fromstr("(");
+        retval:fromstr("(TGT_UMAX)((");
             ff.s = this.subnodes[0]:gen_code(ast);
             retval:add(ff); ff:free();
         ff.s = ") << ("; retval:add(ff);
             ff.s = this.subnodes[1]:gen_code(ast);
             retval:add(ff); ff:free();
-        ff.s = ")"; retval:add(ff);
+        ff.s = "))"; retval:add(ff);
         return retval.s;
     elif(this.kind == CG_EXPR_RSH)
         cgstr ff
-        retval:fromstr("(");
+        retval:fromstr("(TGT_UMAX)((");
             ff.s = this.subnodes[0]:gen_code(ast);
             retval:add(ff); ff:free();
         ff.s = ") >> ("; retval:add(ff);
             ff.s = this.subnodes[1]:gen_code(ast);
             retval:add(ff); ff:free();
-        ff.s = ")"; retval:add(ff);
+        ff.s = "))"; retval:add(ff);
         return retval.s;
     elif(this.kind == CG_EXPR_LOGOR)
         cgstr ff
@@ -887,63 +887,99 @@ method codegen cgexpr_node:gen_code(cgast* ast)->char*:
         return retval.s;
     elif(this.kind == CG_EXPR_LT)
         cgstr ff
-        retval:fromstr("(");
+    /*
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        IMPL_README
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        All comparisons must yield SIGNED_WORDBASE...
+    */
+        retval:fromstr("(TGT_IMAX)((");
             ff.s = this.subnodes[0]:gen_code(ast);
             retval:add(ff); ff:free();
         ff.s = ") < ("; retval:add(ff);
             ff.s = this.subnodes[1]:gen_code(ast);
             retval:add(ff); ff:free();
-        ff.s = ")"; retval:add(ff);
+        ff.s = "))"; retval:add(ff);
         return retval.s;
     elif(this.kind == CG_EXPR_GT)
             cgstr ff
-        retval:fromstr("(");
+    /*
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        IMPL_README
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        All comparisons must yield SIGNED_WORDBASE...
+    */
+        retval:fromstr("(TGT_IMAX)((");
             ff.s = this.subnodes[0]:gen_code(ast);
             retval:add(ff); ff:free();
         ff.s = ") > ("; retval:add(ff);
             ff.s = this.subnodes[1]:gen_code(ast);
             retval:add(ff); ff:free();
-        ff.s = ")"; retval:add(ff);
+        ff.s = "))"; retval:add(ff);
         return retval.s;
     elif(this.kind == CG_EXPR_LTE)
         cgstr ff
-        retval:fromstr("(");
+    /*
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        IMPL_README
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        All comparisons must yield SIGNED_WORDBASE...
+    */
+        retval:fromstr("(TGT_IMAX)((");
             ff.s = this.subnodes[0]:gen_code(ast);
             retval:add(ff); ff:free();
         ff.s = ") <= ("; retval:add(ff);
             ff.s = this.subnodes[1]:gen_code(ast);
             retval:add(ff); ff:free();
-        ff.s = ")"; retval:add(ff);
+        ff.s = "))"; retval:add(ff);
         return retval.s;
     elif(this.kind == CG_EXPR_GTE)
         cgstr ff
-        retval:fromstr("(");
+    /*
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        IMPL_README
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        All comparisons must yield SIGNED_WORDBASE...
+    */
+        retval:fromstr("(TGT_IMAX)((");
             ff.s = this.subnodes[0]:gen_code(ast);
             retval:add(ff); ff:free();
         ff.s = ") >= ("; retval:add(ff);
             ff.s = this.subnodes[1]:gen_code(ast);
             retval:add(ff); ff:free();
-        ff.s = ")"; retval:add(ff);
+        ff.s = "))"; retval:add(ff);
         return retval.s;
     elif(this.kind == CG_EXPR_EQ)
         cgstr ff
-        retval:fromstr("(");
+    /*
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        IMPL_README
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        All comparisons must yield SIGNED_WORDBASE...
+    */
+        retval:fromstr("(TGT_IMAX)((");
             ff.s = this.subnodes[0]:gen_code(ast);
             retval:add(ff); ff:free();
         ff.s = ") == ("; retval:add(ff);
             ff.s = this.subnodes[1]:gen_code(ast);
             retval:add(ff); ff:free();
-        ff.s = ")"; retval:add(ff);
+        ff.s = "))"; retval:add(ff);
         return retval.s;
     elif(this.kind == CG_EXPR_NEQ) 
             cgstr ff
-        retval:fromstr("(");
+    /*
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        IMPL_README
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        All comparisons must yield SIGNED_WORDBASE...
+    */
+        retval:fromstr("(TGT_IMAX)((");
             ff.s = this.subnodes[0]:gen_code(ast);
             retval:add(ff); ff:free();
         ff.s = ") != ("; retval:add(ff);
             ff.s = this.subnodes[1]:gen_code(ast);
             retval:add(ff); ff:free();
-        ff.s = ")"; retval:add(ff);
+        ff.s = "))"; retval:add(ff);
         return retval.s;
     elif(this.kind == CG_EXPR_ASSIGN)
         cgstr ff
@@ -956,25 +992,6 @@ method codegen cgexpr_node:gen_code(cgast* ast)->char*:
         ff.s = ")"; retval:add(ff);
         return retval.s;
     elif(this.kind == CG_EXPR_MOVE)
-        /*
-            cgstr ff
-            cgtype t_t
-            retval:fromstr("memcpy(");
-                    ff.s = this.subnodes[0]:gen_code(ast);
-                    retval:add(ff); ff:free();
-                ff.s = ","; retval:add(ff);
-                    ff.s = this.subnodes[1]:gen_code(ast);
-                    retval:add(ff); ff:free();
-                
-                //Generate a sizeof command on the type being passed around...
-                ff.s = ",sizeof("; retval:add(ff);
-                    t_t := this.subnodes[0].t;
-                    t_t.pointerlevel--; //memcpy took two pointers, decrease pointer level
-                    ff.s = t_t:gen_code(ast);
-                    retval:add(ff); ff:free();
-            ff.s = "))"; retval:add(ff);
-            return retval.s;
-        */
         cgstr ff
         retval:fromstr("(*(");
             ff.s = this.subnodes[0]:gen_code(ast);
@@ -999,8 +1016,10 @@ method codegen cgexpr_node:gen_code(cgast* ast)->char*:
             This is a location where name mangling
             occurs. Please verify that this name mangling
             scheme is compatible with your target platform.
+            
+            also, this must yield SIGNED_WORDBASE
         */
-        retval:fromstr("__CBAS__impl_streq((");
+        retval:fromstr("(TGT_IMAX)__CBAS__impl_streq((");
             ff.s = this.subnodes[0]:gen_code(ast);
             retval:add(ff); ff:free();
             ff.s = "),(";
@@ -1019,8 +1038,10 @@ method codegen cgexpr_node:gen_code(cgast* ast)->char*:
             This is a location where name mangling
             occurs. Please verify that this name mangling
             scheme is compatible with your target platform.
+                        
+            also, this must yield SIGNED_WORDBASE
         */
-        retval:fromstr("!__CBAS__impl_streq((");
+        retval:fromstr("(TGT_IMAX)!__CBAS__impl_streq((");
             ff.s = this.subnodes[0]:gen_code(ast);
             retval:add(ff); ff:free();
             ff.s = "),(";
