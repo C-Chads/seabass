@@ -2,6 +2,8 @@
 //Three Address Codes for Seabass
 #guard codegen_three_address_code_library_DMHSW
 #include <stdmeta/reflect.hbas>
+//#include <stdmeta/tok_manip.hbas>
+
 
 codegen int CG_TAC_NOP = 0;
 codegen int CG_TAC_EXPR = 1;
@@ -14,6 +16,8 @@ codegen int CG_TAC_SWITCH = 7; //Switch stmt
 codegen int CG_TAC_LABEL = 8; //Label.
 codegen int CG_TAC_ASM = 9; //code
 
+codegen int CG_EXPR_LOAD = 500; //used for pointer load, same as [0]
+
 codegen uqword cg_tac_symgen = 1; //symbol generation starts at 1....
 fn codegen cg_tac_gen_symname->u64:
     return cg_tac_symgen++
@@ -24,7 +28,7 @@ class cg_tac_expr
     noexport
     cgtype t
     i64[CG_MAX_FARGS] operands
-    
+    u64 n_operands
     cgsymdecl* ref_gsym //function template for callfnptr, or function to call for EXPR_METHOD/EXPR_FCALL
                         //for getglobalptr and EXPR_GSYM this is used for retrieving global symbols.
                         //EXPR_GSYM is obviously converted into getglobalptr....
@@ -54,6 +58,8 @@ method codegen cg_tac_insn.ctor:
     this.scope = 0;
     this.kind = 0;
     this.expr.ref_gsym = 0;
+    this.expr.stringval = 0;
+    this.expr.n_operands = 0;
     this.expr.kind = -1;
     this.goto_targs = 0;
     this.n_goto_targs = 0;
@@ -120,7 +126,7 @@ method codegen cg_tac_scope.push_farg(cgtype p,char* n)->i64:
     this.syms = (cg_tac_symbol*)__builtin_realloc((u8*)this.syms, sizeof(cg_tac_symbol) * ++this.n_syms);
     u64 w = this.n_syms-1;
     
-    this.syms[w].id = cg_tac_gen_symname * -1;
+    this.syms[w].id = cg_tac_gen_symname() * -1;
     this.syms[w].t := p;
     this.syms[w].srcname = n;
     return this.syms[w].id;
@@ -131,10 +137,18 @@ method codegen cg_tac_scope.push_var(cgtype p, char* n)->i64:
     this.syms = (cg_tac_symbol*)__builtin_realloc((u8*)this.syms, sizeof(cg_tac_symbol) * ++this.n_syms);
     u64 w = this.n_syms-1;
     
-    this.syms[w].id = cg_tac_gen_symname;
+    this.syms[w].id = cg_tac_gen_symname();
     this.syms[w].t := p;
     this.syms[w].srcname = n;
     return this.syms[w].id;
+end
+
+method codegen cg_tac_scope.push_insn(cg_tac_insn insn):
+
+    this.insns = (cg_tac_insn*)__builtin_realloc((u8*)this.insns, sizeof(cg_tac_insn) * ++this.n_insns);
+    u64 w = this.n_insns-1;
+    this.insns[w] := insn;
+    //DONE
 end
 
 codegen cgscope*[0x10000] cg_tac_cgscopestack;
@@ -166,7 +180,26 @@ fn codegen cg_tac_scopestack_gettop()->cg_tac_scope:
     return cg_tac_scopestack[cg_tac_scopestack_depth-1];
 end
 
-
+fn codegen cg_tac_insert_pointer_read(
+    i64 readfrom, //variable to read from...
+    cgtype* t     //the type of the variable to be read from.
+):
+    //TODO: generate an CG_EXPR_LOAD
+    i64 v
+    //cgtype tdecayed
+    cg_tac_insn loadinsn
+    loadinsn.kind = CG_TAC_EXPR;
+    loadinsn.expr.t := t;
+    loadinsn.expr.t.is_lvalue = 0;
+    loadinsn.expr.kind = CG_EXPR_LOAD; // pointer decay...
+    v = cg_tac_scopestack_gettop().push_var(loadinsn.expr.t, (char*)0);
+    loadinsn.expr.dst = v;
+    loadinsn.expr.operands[0] = readfrom;
+    loadinsn.expr.n_operands = 1;
+    cg_tac_scopestack_gettop().push_insn(loadinsn);
+    
+    
+end
 
 fn codegen cg_tac_convert_expr(
     cg_tac_scope cur_scope, //The scope to add this expression instruction to
@@ -176,9 +209,7 @@ fn codegen cg_tac_convert_expr(
     cgsymdecl srcfn         //the function the scope is in.
 ):
     //TODO... complicated! This creates tac_insns
-    if(srcnode.kind == CG_EXPR_BAD || srcnode.kind == CG_EXPR_BUILTIN_CALL)
-    //TODO
-    elif(srcnode.kind == CG_EXPR_FCALL || srcnode.kind == CG_EXPR_METHOD)
+    if(srcnode.kind == CG_EXPR_FCALL || srcnode.kind == CG_EXPR_METHOD)
     elif(srcnode.kind == CG_EXPR_SIZEOF)
     elif(srcnode.kind == CG_EXPR_INTLIT || srcnode.kind == CG_EXPR_CONSTEXPR_INT)
     elif(srcnode.kind == CG_EXPR_FLOATLIT || srcnode.kind == CG_EXPR_CONSTEXPR_FLOAT)
@@ -186,7 +217,7 @@ fn codegen cg_tac_convert_expr(
     elif(srcnode.kind == CG_EXPR_GSYM)
         //This will yield a POINTER to the gsym....
         //luckily, we CAST every SYM usage, so this
-        //will be TRANSFORMED into a value!
+        //will be TRANSFORMED into a value
         //by the cast for a read, but for a write,
         //we must detect it inside of ASSIGN/INCR/DECR
     elif(srcnode.kind == CG_EXPR_POST_INCR)
@@ -194,6 +225,10 @@ fn codegen cg_tac_convert_expr(
     elif(srcnode.kind == CG_EXPR_POST_DECR)
         //REMEMBER the LSYM detail!!!
     elif(srcnode.kind == CG_EXPR_INDEX)
+        //Indexing a pointer yields an LVALUE, which is ASSIGNABLE.
+        //We must remember this whenever we do an ASSIGNMENT or a CAST.
+        //ASSIGNMENT must convert the assignment into an EXPR_MOVE
+        //CAST must perform a READ from the pointer....
     elif(srcnode.kind == CG_EXPR_MEMBER)
     elif(srcnode.kind == CG_EXPR_CAST)
         //if it was an INDEX or CAST we must read the pointer into a value...
