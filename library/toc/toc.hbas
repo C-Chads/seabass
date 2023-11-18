@@ -854,7 +854,13 @@ method codegen cgexpr_node:gen_code(cgast* ast)->char*:
         return retval.s;
     elif(this.kind == CG_EXPR_LOGOR)
         cgstr ff
-        retval:fromstr("(size_t)((");
+    /*
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        IMPL_README
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        LOGOR and LOGAND must yield WORD_BASE (unsigned)
+    */
+        retval:fromstr("(TGT_UMAX)((");
             ff.s = this.subnodes[0]:gen_code(ast);
             retval:add(ff); ff:free();
         ff.s = ") || ("; retval:add(ff);
@@ -864,7 +870,13 @@ method codegen cgexpr_node:gen_code(cgast* ast)->char*:
         return retval.s;
     elif(this.kind == CG_EXPR_LOGAND)
         cgstr ff
-        retval:fromstr("(size_t)((");
+    /*
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        IMPL_README
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        LOGOR and LOGAND must yield WORD_BASE (unsigned)
+    */
+        retval:fromstr("(TGT_UMAX)((");
 
             ff.s = this.subnodes[0]:gen_code(ast);
             retval:add(ff); ff:free();
