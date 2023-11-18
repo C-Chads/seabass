@@ -10,7 +10,7 @@ end
 
 fn bruh:
     int a
-    a = myFunction(1+3,4+5*9,6+7);
+    a = myFunction(1+3,4+5*9,6-7-5);
 end
 
 
