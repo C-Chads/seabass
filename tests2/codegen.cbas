@@ -15,18 +15,8 @@ end
 
 
 
-fn codegen test_optimize_fifth(cgexpr_node* ee):
-    cgir_fifthexpr ff
-    ff.buildfrom(ee);
-    //ff.optimize();
-    @pprint[
-        /   "DUMPING OPTIMIZED EXPRESSION....."
-        /bar
-    ]
-    ff.debug_print();
-    @pprint[
-        /bar
-    ]
+fn codegen test_optimize(cgexpr_node* ee):
+    cg_optimizer_operand_swap(ee);
 end
 
 fn codegen codegen_main:
@@ -50,7 +40,7 @@ fn codegen codegen_main:
         i64 j
         for(j = 0; j < s.nstmts; j++)
             if(stmts[j].kind == CG_STMT_EXPR)
-                test_optimize_fifth((cgexpr_node*)stmts[j].expressions[0]);
+                test_optimize((cgexpr_node*)stmts[j].expressions[0]);
             end
         end
     end
