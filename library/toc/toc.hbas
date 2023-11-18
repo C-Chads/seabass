@@ -854,23 +854,24 @@ method codegen cgexpr_node:gen_code(cgast* ast)->char*:
         return retval.s;
     elif(this.kind == CG_EXPR_LOGOR)
         cgstr ff
-        retval:fromstr("(");
+        retval:fromstr("(size_t)((");
             ff.s = this.subnodes[0]:gen_code(ast);
             retval:add(ff); ff:free();
         ff.s = ") || ("; retval:add(ff);
             ff.s = this.subnodes[1]:gen_code(ast);
             retval:add(ff); ff:free();
-        ff.s = ")"; retval:add(ff);
+        ff.s = "))"; retval:add(ff);
         return retval.s;
     elif(this.kind == CG_EXPR_LOGAND)
         cgstr ff
-        retval:fromstr("(");
+        retval:fromstr("(size_t)((");
+
             ff.s = this.subnodes[0]:gen_code(ast);
             retval:add(ff); ff:free();
         ff.s = ") && ("; retval:add(ff);
             ff.s = this.subnodes[1]:gen_code(ast);
             retval:add(ff); ff:free();
-        ff.s = ")"; retval:add(ff);
+        ff.s = "))"; retval:add(ff);
         return retval.s;
     elif(this.kind == CG_EXPR_LT)
         cgstr ff
