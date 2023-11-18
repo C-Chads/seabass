@@ -1301,7 +1301,7 @@ method codegen cg_cemitter_disptable:emit_table(cgast* ast)->char*:
             ff:add(ff2);
             ff2:free();
             if(i != (this.nlabels-1))
-                ff2.s = ", ";
+                ff2.s = ",\n    ";
                 ff:add(ff2);
             end
             if(i%8 == 7)
