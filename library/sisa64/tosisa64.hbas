@@ -1,0 +1,106 @@
+
+
+/*
+    DIRECT SISA64 CODE GENERATION.
+    
+    The rough idea is that we directly generate SISA64 code,
+    then we take the sisa64 code and we optimize that.
+    
+    Q: HOW DO WE HANDLE INLINE FUNCTIONS?
+    A: We traverse them as if in-line.
+    
+    Q: HOW DO WE HANDLE SHORT CIRCUITING?
+    A: after the code generated for the first subexpression,
+        we generate a `jnz` or `jz` to the label we are going
+        to place at the end of the short circuit.
+    Q: WHAT ABOUT ADJACENT LABELS?
+    A: The assembler will handle that.... they end up as the exact same address!
+    Q: HOW DO WE HANDLE SWITCH?
+    A: same way we did for generating C code.
+    
+*/
+#guard seabass_sisa64_codegen
+#include <stdmeta/reflect.hbas>
+
+codegen u64 cg_s64gen_uuidgen = 1;
+
+
+fn codegen cg_s64_uuid->u64:
+    return cg_s64gen_uuidgen++
+end
+
+codegen i64 cg_s64gen_register_allocator=0;
+
+fn codegen cg_s64_ralloc->u64:
+    return cg_s64gen_register_allocator++;
+end
+
+fn codegen cg_s64_rpop(u64 howmany):
+    cg_s64gen_register_allocator = cg_s64gen_register_allocator - howmany;
+    if(cg_s64gen_register_allocator < 0)
+        __builtin_puts("<S64 CODE GENERATOR ERROR> Register Allocator went negative...");
+        __builtin_exit(1);
+    end
+end
+
+fn codegen cg_s64_genlabel->char*:
+    cgstr qq
+    char[50] buf
+    __builtin_utoa(buf, cg_s64_uuid);
+    qq.fromstr("SEABASS_GENERATED_LABEL_");
+    qq.addstr(buf);
+    return qq.s
+end
+
+//used for for....
+fn codegen cg_s64_mutate_label(char* labelin)->char*:
+    char* f = cg_s64_genlabel();
+    cgstr qq
+    qq.fromstr(labelin);
+    qq.addeatstr(f);
+    return qq.s
+end
+
+class cg_s64_scopestackentry
+    noexport
+    cgscope* s
+    char* endscopelabel //label pointing to the end of the scope...
+end
+
+class cg_s64_loopstackentry
+    noexport
+    cgstmt* s
+    char* breaklabel //where break goes...
+    char* contlabel //where continue goes...
+end
+
+
+
+struct cg_s64_disptable
+    noexport
+    char** label_name_list
+    char* name
+    u64 nlabels
+    char is_superseded //do we emit this one?
+    cg_s64_disptable* earlier //correct entry...
+end
+
+
+method codegen cg_s64_disptable:iseq(cg_s64_disptable o)->byte:
+    i64 i
+    if(this.nlabels != o.nlabels)
+        return 0; 
+    end
+    for(i = 0, i < o.nlabels, i++)
+        if(this.label_name_list[i] strneq o.label_name_list[i])
+            return 0;
+        end
+    end
+    
+    return 1;
+end
+
+method codegen cg_s64_disptable:emit_table(cgast* ast)->char*:
+    //TODO
+end
+
