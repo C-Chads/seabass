@@ -1,6 +1,20 @@
 
-//Three Address Codes for Seabass
 #guard codegen_three_address_code_library_DMHSW
+/*
+    THREE ADDRESS CODE GENERATION FOR SEABASS
+    
+    SEMANTIC DETAILS:
+    
+    1. We already did all the work of generating jump target linkages
+    for goto, continue, break, if, elseif, etcetera. We should
+    use this information to generate our TAC- I.E., we should
+    not have to reproduce this information again....
+    
+    So we should use a LINKED LIST of insns instead of a vector
+    so that we can create all necessary labels beforehand...
+    
+    2. 
+*/
 #include <stdmeta/reflect.hbas>
 //#include <stdmeta/tok_manip.hbas>
 
@@ -18,6 +32,7 @@ codegen int CG_TAC_ASM = 9; //code
 
 codegen int CG_EXPR_LOAD = 500; //used for pointer load, same as [0]
 
+//generate unique IDs for every symbol inside of scopes....
 codegen uqword cg_tac_symgen = 1; //symbol generation starts at 1....
 fn codegen cg_tac_gen_symname->u64:
     return cg_tac_symgen++
@@ -30,7 +45,7 @@ class cg_tac_expr
     i64[CG_MAX_FARGS] operands
     u64 n_operands
     cgsymdecl* ref_gsym //function template for callfnptr, or function to call for EXPR_METHOD/EXPR_FCALL
-                        //for getglobalptr and EXPR_GSYM this is used for retrieving global symbols.
+                        //for getglobalptr, getfnptr, and EXPR_GSYM this is used for retrieving global symbols.
                         //EXPR_GSYM is obviously converted into getglobalptr....
                         
     i64 dst             //destination variable uuid
@@ -48,10 +63,19 @@ class cg_tac_insn
     byte* scope
     cg_tac_expr expr
     byte kind // CG_TAC_ ...
+    i64 labelid //for labels and goto- what ID does this label have? 
     cgsymdecl* ref_symbol //for tail
-    char** goto_targs //goto targets... need multiple for SWITCH.
-                      //for goto/label we pun this into char* (not double ptr)
-    u64 n_goto_targs
+    cgstmt* src_stmt //statement that generated this instruction...
+                     //for jump target generation, this is used to determine the correct
+                     //jump target destination.
+                     //for instance, it tells us the scope difference
+                     //of the jump (Calculated by the code validator)
+    cg_tac_insn* right //next element in linked list of insns....
+    
+    cg_tac_insn* jtarget1
+    cg_tac_insn* jtarget2
+    cg_tac_insn** jtargetlist
+    u64 n_jtargets
 end
 
 method codegen cg_tac_insn.ctor:
@@ -61,8 +85,26 @@ method codegen cg_tac_insn.ctor:
     this.expr.stringval = 0;
     this.expr.n_operands = 0;
     this.expr.kind = -1;
-    this.goto_targs = 0;
-    this.n_goto_targs = 0;
+    this.src_stmt = 0;
+    this.labelid = 0;
+    this.right = 0;
+    this.jtarget1 = 0;
+    this.jtarget2 = 0;
+    this.jtargetlist = 0;
+    this.n_jtargets = 0;
+end
+method codegen cg_tac_insn.dtor:
+    :top //recursive self tail calls, but for methods
+    
+    cg_tac_insn* saved_right = this.right;
+    if(this.jtargetlist != 0)
+        __builtin_free((u8*)this.jtargetlist);
+    end
+    __builtin_free((u8*)this);
+    if(saved_right != 0)
+        this = saved_right
+        jump top // can't tail a method... or can we?
+    end
 end
 
 
@@ -77,9 +119,8 @@ end
 
 class cg_tac_scope
     noexport
-    cg_tac_insn* insns
+    cg_tac_insn* insn_head
     cg_tac_symbol* syms
-    u64 n_insns
     u64 n_syms
     byte isFunctionBody //is this scope a function body?
     byte isInline //is this an inline function?
@@ -87,8 +128,7 @@ class cg_tac_scope
 end
 
 method codegen cg_tac_scope.ctor:
-    this.insns = 0;
-    this.n_insns =0;
+    this.insn_head = 0;
     this.syms = 0;
     this.n_syms = 0;
     this.isFunctionBody = 0;
@@ -97,26 +137,23 @@ method codegen cg_tac_scope.ctor:
 end
 method codegen cg_tac_scope.dtor:
     u64 i
-    for(i = 0, i < this.n_insns, i++)
-        cg_tac_scope* p = (cg_tac_scope*)this.insns[i].scope;
-        if(p != 0)
-            p.dtor();
-            __builtin_free((u8*)p);
-        end
-        if(this.insns[i].goto_targs != 0 && this.insns[i].kind == CG_TAC_SWITCH)
-            __builtin_free((u8*)this.insns[i].goto_targs);
-        end
+    
+    if(this.insn_head != 0)
+        this.insn_head.dtor()
     end
-    if(this.insns != 0)
-        __builtin_free((u8*)this.insns);
-    end
+    this.insn_head = 0;
     if(this.syms != 0)
         __builtin_free((u8*)this.syms);
     end
 end
 
 method codegen cg_tac_scope:copy(cg_tac_scope** dest, byte is_inlining):
-    //TODO
+    //TODO- needed for 
+    cg_tac_scope* generated
+    generated = cast(cg_tac_scope*)__builtin_malloc(sizeof(cg_tac_scope));
+    generated := this;
+    // TODO!
+    dest[0] = generated;
 end
 
 
@@ -144,11 +181,23 @@ method codegen cg_tac_scope.push_var(cgtype p, char* n)->i64:
 end
 
 method codegen cg_tac_scope.push_insn(cg_tac_insn insn):
+    if(this.insn_head == 0)
+        this.insn_head = insn;
+        return
+    end
+    //we must walk the list....
+    cg_tac_insn* z = this.insn_head;
+    while(z.right != 0)
+        z = z.right
+    end
+    //assign to end of list...
+    z.right = insn
+end
 
-    this.insns = (cg_tac_insn*)__builtin_realloc((u8*)this.insns, sizeof(cg_tac_insn) * ++this.n_insns);
-    u64 w = this.n_insns-1;
-    this.insns[w] := insn;
-    //DONE
+method codegen cg_tac_scope.prepend_insn(cg_tac_insn insn):
+    cg_tac_insn* old_head = this.insn_head;
+    this.insn_head = insn;
+    insn.right = old_head;
 end
 
 codegen cgscope*[0x10000] cg_tac_cgscopestack;
@@ -186,8 +235,9 @@ fn codegen cg_tac_insert_pointer_read(
 ):
     //TODO: generate an CG_EXPR_LOAD
     i64 v
-    //cgtype tdecayed
-    cg_tac_insn loadinsn
+    cg_tac_insn* loadinsn
+    loadinsn = cast(cg_tac_insn*)__builtin_malloc(sizeof(cg_tac_insn));
+    loadinsn.ctor();
     loadinsn.kind = CG_TAC_EXPR;
     loadinsn.expr.t := t;
     loadinsn.expr.t.is_lvalue = 0;
@@ -197,8 +247,15 @@ fn codegen cg_tac_insert_pointer_read(
     loadinsn.expr.operands[0] = readfrom;
     loadinsn.expr.n_operands = 1;
     cg_tac_scopestack_gettop().push_insn(loadinsn);
-    
-    
+end
+
+fn codegen cg_tac_insert_nop:
+    //TODO: generate an CG_EXPR_LOAD
+    cg_tac_insn* nopinsn
+    nopinsn = cast(cg_tac_insn*)__builtin_malloc(sizeof(cg_tac_insn));
+    nopinsn.ctor();
+    nopinsn.kind = CG_TAC_NOP;
+    cg_tac_scopestack_gettop().push_insn(nopinsn);
 end
 
 fn codegen cg_tac_convert_expr(
@@ -207,7 +264,8 @@ fn codegen cg_tac_convert_expr(
     cgstmt srcstmt,         //the source statement of the expressio node.
     cgscope srcscope,       //the scope from which this stmt came
     cgsymdecl srcfn         //the function the scope is in.
-):
+)->i64: //returns the name of the variable that stored the value of this expression.
+        
     //TODO... complicated! This creates tac_insns
     if(srcnode.kind == CG_EXPR_FCALL || srcnode.kind == CG_EXPR_METHOD)
     elif(srcnode.kind == CG_EXPR_SIZEOF)
@@ -264,32 +322,43 @@ fn codegen cg_tac_convert_expr(
     elif(srcnode.kind == CG_EXPR_CALLFNPTR)
     elif(srcnode.kind == CG_EXPR_GETGLOBALPTR)
     end
+    //
+    __builtin_puts("!!!!WARNING/ERROR!!!!! cg_tac_convert_expr fell through.....");
+    return 0;
 end
 
-fn codegen cg_tac_convert_scope(
-    cg_tac_insn parent_insn, 
-    cgscope srcscope, 
-    cgsymdecl srcfn
-);
 
-fn codegen cg_tac_convert_stmt(
-    cg_tac_scope cur_scope, 
-    cgstmt srcstmt, 
-    cgscope srcscope,
-    cgsymdecl srcfn
-):
-    //TODO... convert this statement...
-    
-end
-
-fn codegen cg_tac_convert_scope(
+//Generating the raw instructions...
+fn codegen cg_tac_convert_scope_pass1(
     cg_tac_insn parent_insn, 
     cgscope srcscope, 
     cgsymdecl srcfn
 ):
     parent_insn.scope = __builtin_malloc(sizeof(cg_tac_scope));
     cg_tac_scope* s = (cg_tac_scope*)parent_insn.scope;
-    //TODO... convert srcscope...
+    u64 i
+    for(i = 0, i < srcscope.nsyms, i++)
+        s.push_var(srcscope.syms[i].t, srcscope.syms[i].name);
+    end
+    //TODO... convert stmts....
+    /*
+        In this pass, we ONLY generate the instructions themselves
+        but NOT any jump targets.
+        After all instructions are generated, we then traverse 
+        the entire tree and insert goto targets
+    
+    */
+    //at the end of the scope, we will have a NOP....
+
+end
+
+fn codegen cg_tac_scope_process_pass2(
+    cg_tac_insn parent_insn
+):
+    cg_tac_scope* s = (cg_tac_scope*)parent_insn.scope;
+
+    //TODO: Generate all jump targets....
+
 end
 
 
@@ -317,9 +386,7 @@ fn codegen cg_tac_convert_function(cgsymdecl* s)->cg_tac_scope:
     for(i = 0, i < fbody.nsyms, i++)
         rval.push_var(fbody.syms[i].t, fbody.syms[i].name);
     end
-    for(i = 0, i < fbody.nstmts, i++)
-        cg_tac_convert_stmt(rval, ((cgstmt*)fbody.stmts)[i], fbody,  s);
-    end
+    //TODO: Convert statements...
     cg_tac_cgscopestack_pop();
     cg_tac_scopestack_pop();
     
