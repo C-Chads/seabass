@@ -32,6 +32,17 @@ codegen int CG_TAC_ASM = 9; //code
 
 codegen int CG_EXPR_LOAD = 500; //used for pointer load, same as [0]
 
+codegen int CG_TAC_PORTION_LOGOR_SHORTCIRCUIT = 1;
+codegen int CG_TAC_PORTION_LOGAND_SHORTCIRCUIT = 2;
+codegen int CG_TAC_PORTION_WHILE_TOP_LABEL = 3;
+codegen int CG_TAC_PORTION_WHILE_SKIP_LABEL = 4;
+codegen int CG_TAC_PORTION_WHILE_TEST = 5; //the gotoif for the while...
+codegen int CG_TAC_PORTION_WHILE_JMP = 6; //the jump to the top of the while...
+codegen int CG_TAC_PORTION_FOR_TEST = 7; 
+codegen int CG_TAC_PORTION_FOR_TEST_LABEL = 8; 
+codegen int CG_TAC_PORTION_FOR_SKIP_LABEL = 9; 
+codegen int CG_TAC_PORTION_FOR_JMP = 10; 
+
 //generate unique IDs for every symbol inside of scopes....
 codegen uqword cg_tac_symgen = 1; //symbol generation starts at 1....
 fn codegen cg_tac_gen_symname->u64:
@@ -76,6 +87,7 @@ class cg_tac_insn
     cg_tac_insn* jtarget2
     cg_tac_insn** jtargetlist
     u64 n_jtargets
+    short structure_part //What part of the structure is this part of?
 end
 
 method codegen cg_tac_insn.ctor:
@@ -92,6 +104,7 @@ method codegen cg_tac_insn.ctor:
     this.jtarget2 = 0;
     this.jtargetlist = 0;
     this.n_jtargets = 0;
+    this.structure_part = 0;
 end
 method codegen cg_tac_insn.dtor:
     :top //recursive self tail calls, but for methods
@@ -345,7 +358,8 @@ fn codegen cg_tac_convert_scope_pass1(
         In this pass, we ONLY generate the instructions themselves
         but NOT any jump targets.
         After all instructions are generated, we then traverse 
-        the entire tree and insert goto targets
+        the entire tree and insert goto targets based on
+        the kind of in
     
     */
     //at the end of the scope, we will have a NOP....
@@ -358,6 +372,17 @@ fn codegen cg_tac_scope_process_pass2(
     cg_tac_scope* s = (cg_tac_scope*)parent_insn.scope;
 
     //TODO: Generate all jump targets....
+    /*
+        FOR IF STATEMENTS:
+            Generate the jump to the end of the elif chain.
+        FOR ELIF STATEMENTS:
+            Generate the jump to the end of the elif chain.
+        FOR ELSE STATEMENTS:
+            Do nothing...
+        FOR WHILE STATEMENTS:
+            Generate the jump immediately past end of the while,
+            as well as the jump to the beginning of the while.
+    */
 
 end
 
