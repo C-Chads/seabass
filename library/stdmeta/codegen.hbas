@@ -1,0 +1,286 @@
+
+/*
+    CODE GENERATOR TOOLS
+    
+    Tools for writing code generators.
+    
+    TOOL 1- FIFTH.
+    
+    The "Fifth" expression representation allows
+    us to easily convert any expression into an
+    easy-to-parse IR which converts trivially to
+    any register allocator or stack-based VM.
+    
+    It takes an expression and turns it into a
+    vector of expr_node*, each representing
+    some operation.
+    
+    the children of the expr_node* are unimportant,
+    only the `kind` is used to determine what the
+    operation does.
+    
+    
+    
+    
+    FOR(X,Y,Z)
+        W
+    end
+    
+    turns into...
+    
+    X
+    :COND
+    gotoif(!Y) -> PAST
+    W
+    Z
+    goto COND
+    :PAST
+    
+    While is simpler....
+    while(X)
+        Y
+    end
+    
+    :COND
+    gotoif(!X) -> PAST
+    Y
+    goto COND
+    :PAST
+    
+*/
+#guard seabass_codegen_tools
+
+#include <stdmeta/reflect.hbas>
+
+
+class cgir_fifthexpr
+    noexport
+    //the node we came from- dictates our kind...
+    cgexpr_node** vec
+    u64 nentries
+end
+
+method codegen cgir_fifthexpr.ctor:
+    this.vec = 0;
+    this.nentries = 0;
+end
+
+method codegen cgir_fifthexpr.dtor:
+    if(this.vec != 0)
+        __builtin_free((u8*)this.vec);
+    end
+end
+
+method codegen cgir_fifthexpr.swap_entries(i64 a, i64 b):
+    cgexpr_node* c = this.vec[a];
+    this.vec[a] = this.vec[b];
+    this.vec[b] = c;
+end
+
+fn codegen cgir_kind_is_constant(int kind)->i64:
+    return (
+        kind == CG_EXPR_SIZEOF ||
+        kind == CG_EXPR_INTLIT ||
+        kind == CG_EXPR_FLOATLIT ||
+        kind == CG_EXPR_STRINGLIT ||
+        kind == CG_EXPR_CONSTEXPR_FLOAT ||
+        kind == CG_EXPR_CONSTEXPR_INT ||
+        kind == CG_EXPR_GETGLOBALPTR ||
+        kind == CG_EXPR_GETFNPTR
+    );
+end
+
+fn codegen cgir_kind_is_terminal(int kind)->i64:
+    return (
+        kind == CG_EXPR_LSYM ||
+        kind == CG_EXPR_GSYM ||
+        kind == CG_EXPR_SIZEOF ||
+        kind == CG_EXPR_INTLIT ||
+        kind == CG_EXPR_FLOATLIT ||
+        kind == CG_EXPR_STRINGLIT ||
+        kind == CG_EXPR_CONSTEXPR_FLOAT ||
+        kind == CG_EXPR_CONSTEXPR_INT ||
+        kind == CG_EXPR_GETGLOBALPTR ||
+        kind == CG_EXPR_GETFNPTR
+    );
+end
+
+method codegen cgir_fifthexpr.pushnode(cgexpr_node* addme):
+    this.vec = (cgexpr_node**)__builtin_realloc(
+        (u8*)this.vec, 
+        sizeof(u8*) * ++this.nentries
+    );
+    this.vec[this.nentries-1] = addme;
+end
+
+method codegen cgir_fifthexpr.buildfrom(cgexpr_node* root):
+    i64 i
+    if(
+        root.kind == CG_EXPR_METHOD ||
+        root.kind == CG_EXPR_FCALL ||
+        root.kind == CG_EXPR_CALLFNPTR
+    )
+        for(i = CG_MAX_FARGS-1, i > -1, i--)
+            if(root.subnodes[i] != 0)
+                this.buildfrom(root.subnodes[i])
+            end
+        end
+    elif(!cgir_kind_is_constant(root.kind)) //constants never have subexpressions....
+        for(i = 0, i < CG_MAX_FARGS, i++)
+            if(root.subnodes[i] != 0)
+                this.buildfrom(root.subnodes[i])
+            else
+                break //there are no more!
+            end
+        end
+    end
+    //we now do ourselves...
+    this.pushnode(root);
+end
+
+/*
+    OPTIMIZATION- REORDER CONSTANTS
+    
+    Turn this:
+    
+    1 3 + a + b + 5 + c + 8 + 
+    
+    into this:
+    
+    1 3 + 5 + 8 + a + b + c +
+    
+    
+    Note that this sequence must start with a terminal
+    and end with an operator.
+    
+    
+    1
+
+*/
+method codegen cgir_fifthexpr.reorder_constants(int opkind):
+    //TODO
+    i64 i
+    i64 j
+    i64 k
+    i64 l
+    for(i = 0, i < (i64)this.nentries-(i64)1, i++)
+        //cannot start from a non-terminal...
+        if(!cgir_kind_is_terminal(this.vec[i].kind))
+            continue
+        end
+        
+        for(
+            j = i,
+            j < this.nentries && (
+                cgir_kind_is_constant(this.vec[j].kind) ||
+                this.vec[j].kind == CG_EXPR_LSYM ||
+                this.vec[j].kind == CG_EXPR_GSYM ||
+                this.vec[j].kind == opkind
+            )
+            , 
+            j++
+        )
+            //empty body...
+        end
+        //if 
+        if(j == i)
+            continue
+        end
+        j--;
+        while(this.vec[j].kind != opkind && j > i)
+            j--
+        end
+        /*
+            We cannot possibly optimize with too few constants...
+        */
+        if(
+            (j-i) <= 3 ||
+            this.vec[j].kind != opkind
+        )
+            continue
+        end
+        //we have some potential re-ordering to do!
+        for(k = 0, k < j-2, k++)
+            if(!cgir_kind_is_terminal(this.vec[k].kind) ||
+                cgir_kind_is_constant(this.vec[k].kind) //no switching to do....
+            )
+                continue
+            end
+            //check if t
+            for(l = k+1, l < j-1, l++)
+                if(
+                    !cgir_kind_is_constant(this.vec[l].kind)
+                )
+                    continue
+                end
+                //vec[k] is not a constant, but vec[l] is!
+                this.swap_entries(l,k);
+            end //loop from k+1 to j-1... (l)
+        end //loop over our small little area to j-2... (k)
+    end //loop over all entries...
+end
+
+
+
+
+
+
+
+
+//perform a bottom-level swap between two nodes
+//based on their constant-ness...
+/*
+fn codegen cg_optimizer_constant_swap(
+    cgexpr_node ee
+):
+    i64 i
+    for(i = 0, i < CG_MAX_FARGS, i++)
+        if(ee.subnodes[i] == 0) continue end
+        cg_optimizer_constant_swap(ee.subnodes[i]);
+    end
+    if(
+        !(
+            ee.kind == CG_EXPR_EQ ||
+            ee.kind == CG_EXPR_STREQ ||
+            ee.kind == CG_EXPR_NEQ ||
+            ee.kind == CG_EXPR_STRNEQ ||
+            ee.kind == CG_EXPR_ADD ||
+            ee.kind == CG_EXPR_MUL ||
+            ee.kind == CG_EXPR_BITAND ||
+            ee.kind == CG_EXPR_BITOR
+        )
+    )
+        return
+    end
+    u64 l_is_const = (
+        ee.subnodes[0].kind == CG_EXPR_SIZEOF ||
+        ee.subnodes[0].kind == CG_EXPR_INTLIT ||
+        ee.subnodes[0].kind == CG_EXPR_FLOATLIT ||
+        ee.subnodes[0].kind == CG_EXPR_STRINGLIT ||
+        ee.subnodes[0].kind == CG_EXPR_CONSTEXPR_FLOAT ||
+        ee.subnodes[0].kind == CG_EXPR_CONSTEXPR_INT ||
+        ee.subnodes[0].kind == CG_EXPR_GETGLOBALPTR ||
+        ee.subnodes[0].kind == CG_EXPR_GETFNPTR
+    );
+    
+    u64 r_is_const = (
+        ee.subnodes[1].kind == CG_EXPR_SIZEOF ||
+        ee.subnodes[1].kind == CG_EXPR_INTLIT ||
+        ee.subnodes[1].kind == CG_EXPR_FLOATLIT ||
+        ee.subnodes[1].kind == CG_EXPR_STRINGLIT ||
+        ee.subnodes[1].kind == CG_EXPR_CONSTEXPR_FLOAT ||
+        ee.subnodes[1].kind == CG_EXPR_CONSTEXPR_INT ||
+        ee.subnodes[1].kind == CG_EXPR_GETGLOBALPTR ||
+        ee.subnodes[1].kind == CG_EXPR_GETFNPTR
+    );
+    if(!l_is_const && r_is_const)
+        cgexpr_node* q = ee.subnodes[0];
+        ee.subnodes[0] = ee.subnodes[1];
+        ee.subnodes[1] = q;
+    end
+
+end
+*/
+
+
+
