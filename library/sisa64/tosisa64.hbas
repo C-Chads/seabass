@@ -17,6 +17,10 @@
     A: The assembler will handle that.... they end up as the exact same address!
     Q: HOW DO WE HANDLE SWITCH?
     A: same way we did for generating C code.
+    Q: HOW DO WE DO REGISTER ALLOCATION / OPTIMIZATION?
+    A: For the most part, we do the naive route (allocate registers for each variable, do
+        recursive descent code generation for expressions treating each intermediate value
+        
     
 */
 #guard seabass_sisa64_codegen
@@ -100,7 +104,19 @@ method codegen cg_s64_disptable:iseq(cg_s64_disptable o)->byte:
     return 1;
 end
 
-method codegen cg_s64_disptable:emit_table(cgast* ast)->char*:
-    //TODO
+method codegen cg_s64_disptable:emit_table->char*:
+    cgstr s
+    s.fromstr("\n:");
+    s.addstr(this.name);
+    s.addstr(":\n");
+    u64 i
+    for(i = 0, i < this.nlabels, i++)
+        s.addstr("qwords q%");
+        s.addstr(this.label_name_list[i]);
+        s.addstr("%;\n");
+    end
+    return s.s;
 end
+
+
 
