@@ -3006,6 +3006,9 @@ void parse_lvardecl(){
         pp->right = peek()->right;
         pp->data = peek()->data;
         pp->text = strdup(peek()->text);
+        pp->filename = peek()->filename;
+        pp->linenum = peek()->linenum;
+        pp->colnum = peek()->colnum;
         peek()->right = pp;
     }
     consume();
