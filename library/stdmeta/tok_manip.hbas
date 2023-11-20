@@ -218,7 +218,7 @@
             finish
         ]
         //this is a string expression.
-        do command_printstringexpr
+        go command_printstringexpr
     ]
     dobar[
         cgstrll* rwalk
