@@ -65,17 +65,17 @@ fn codegen codegen_main():
             q.a = 45;
             mystructvec.push(q);
             q.a = 1<<30;
-            mystructvec.push(q);
+            mystructvec.insert(q,0);
             q.a = 29;
             mystructvec.push(q);
         end
         @pprint[
             /   "Dumping mystructvec (classes)..."
             /int(mystructvec.d[0].a)
-            /int(mystructvec.d[1].a)
-            /int(mystructvec.d[2].a)
             /   "For comparison, 1<<30 is..."
             /int(1<<30)
+            /int(mystructvec.d[1].a)
+            /int(mystructvec.d[2].a)
             /int(mystructvec.d[3].a)
         ]
     end
