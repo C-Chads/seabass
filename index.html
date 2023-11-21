@@ -559,6 +559,9 @@
         <li>Objects live for the entire duration of their scope, not just from where they were
         declared in their scope. That is to say- an object's constructor is called <i>before its declaration</i>,
         at the beginning of the scope.</li>
+        <li>Objects have their destructors called BEFORE the execution of a return statement's expression. That is
+        to say, if you want to return something from a function which uses the contents of a class with a destructor,
+        you should retrieve that thing BEFORE the return statement itself.</li>
     </ul>
     <hr>
     <center>
