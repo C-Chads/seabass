@@ -412,3 +412,212 @@ codegen u64 cg_seabass_stl_instance_counter = 1;
     ]
 ]
 
+/*
+    unique ptr
+*/
+
+@mktemplate[
+    cguniqueptr_c
+    typed
+    [
+        [__SEABASS_STL_REPLACEMENT_MAGIC__]
+        @globalscope
+            //vector class...
+            class __SEABASS_STL_REPLACEMENT_MAGIC__
+                noexport
+                TYPE* d
+            end
+            //ctor/dtor
+            method codegen __SEABASS_STL_REPLACEMENT_MAGIC__.ctor:
+                this.d = 0;
+            end
+            method codegen __SEABASS_STL_REPLACEMENT_MAGIC__.dtor:
+                if(this.d != 0)
+                    this.d.dtor();
+                    __builtin_free((byte*)this.d)
+                end
+            end
+        end
+    ][
+        TYPE
+    ][
+        char[50] buf
+        u64 ours = cg_seabass_stl_instance_counter++;
+        cgstrcpy(buf, "__cgstlunqimpl__");
+        __builtin_utoa(buf + 16, ours);
+        cgstrll* iter = result;
+        while(iter != 0)
+            if(iter.d != CG_TOK_IDENT) iter = iter.right continue end
+            if(iter.text streq "__SEABASS_STL_REPLACEMENT_MAGIC__")
+                __builtin_free(iter.text);
+                iter.text = __builtin_strdup(buf);
+            end
+            iter = iter.right
+        end
+        return result;
+    ]
+]
+
+
+@mktemplate[
+    cguniqueptr_p
+    typed
+    [
+        [__SEABASS_STL_REPLACEMENT_MAGIC__]
+        @globalscope
+            //vector class...
+            class __SEABASS_STL_REPLACEMENT_MAGIC__
+                noexport
+                TYPE* d
+            end
+            //ctor/dtor
+            method codegen __SEABASS_STL_REPLACEMENT_MAGIC__.ctor:
+                this.d = 0;
+            end
+            method codegen __SEABASS_STL_REPLACEMENT_MAGIC__.dtor:
+                if(this.d != 0)
+                    __builtin_free((byte*)this.d)
+                end
+            end
+        end
+    ][
+        TYPE
+    ][
+        char[50] buf
+        u64 ours = cg_seabass_stl_instance_counter++;
+        cgstrcpy(buf, "__cgstlunqimpl__");
+        __builtin_utoa(buf + 16, ours);
+        cgstrll* iter = result;
+        while(iter != 0)
+            if(iter.d != CG_TOK_IDENT) iter = iter.right continue end
+            if(iter.text streq "__SEABASS_STL_REPLACEMENT_MAGIC__")
+                __builtin_free(iter.text);
+                iter.text = __builtin_strdup(buf);
+            end
+            iter = iter.right
+        end
+        return result;
+    ]
+]
+@mktemplate[
+    cguniqueptr_s
+    typed
+    [
+        [__SEABASS_STL_REPLACEMENT_MAGIC__]
+        @globalscope
+            //vector class...
+            class __SEABASS_STL_REPLACEMENT_MAGIC__
+                noexport
+                TYPE* d
+            end
+            //ctor/dtor
+            method codegen __SEABASS_STL_REPLACEMENT_MAGIC__.ctor:
+                this.d = 0;
+            end
+            method codegen __SEABASS_STL_REPLACEMENT_MAGIC__.dtor:
+                if(this.d != 0)
+                    __builtin_free((byte*)this.d)
+                end
+            end
+        end
+    ][
+        TYPE
+    ][
+        char[50] buf
+        u64 ours = cg_seabass_stl_instance_counter++;
+        cgstrcpy(buf, "__cgstlunqimpl__");
+        __builtin_utoa(buf + 16, ours);
+        cgstrll* iter = result;
+        while(iter != 0)
+            if(iter.d != CG_TOK_IDENT) iter = iter.right continue end
+            if(iter.text streq "__SEABASS_STL_REPLACEMENT_MAGIC__")
+                __builtin_free(iter.text);
+                iter.text = __builtin_strdup(buf);
+            end
+            iter = iter.right
+        end
+        return result;
+    ]
+]
+
+
+@wksht cguniqueptr [
+    [
+        [TYPE]
+        @__SEABASS_STL_REPLACEMENT_MAGIC__[TYPE]
+    ][TYPE][
+        char* replacement_text = "CGSTL_UNIQUEPTR_ERROR";
+        //
+        cgstrll* gotten_type
+        @cg_bldr_foldout_arg gotten_type result
+        if(
+            !(
+                gotten_type.d == CG_TOK_IDENT || //is an identifier- typedecl...
+                (   gotten_type.d == CG_TOK_OPERATOR && //
+                    gotten_type.text streq "@"
+                )
+            )|| gotten_type.right != 0
+            
+        )
+            replacement_text = "cguniqueptr_p"
+        elif(
+            //is metaprogramming...
+            gotten_type.d == CG_TOK_OPERATOR &&
+            gotten_type.text streq "@"
+        )
+            //assume it's a class!
+            replacement_text = "cguniqueptr_c"
+        else
+            cgast* ast = cg_getast();
+            i64 tid = -1;
+            i64 i = 0;
+            i64 ntd = ast.ntypedecls[0];
+            for(i = 0, i < ntd, i++)
+                //is this it?
+                if(ast.type_table[0][i].name streq gotten_type.text)
+                    tid = i;
+                    break
+                end
+            end
+            if(tid == -1)
+                @pprint[
+                    /   "Seabass cguniqueptr STL Error!"
+                    /   "Unknown struct type:"
+                    /   (gotten_type.text)
+                    /   "File:"
+                    /   (gotten_type.filename)
+                    /   "Line:"
+                    /int(gotten_type.linenum)
+                    /   "Column:"
+                    /int(gotten_type.colnum)
+                ]
+                __builtin_exit(1);
+            end
+            //we have a tid... check oop metadata
+            i64 a = ast.oop_metadata[0][tid].have_checked;
+            i64 b = ast.oop_metadata[0][tid].dtor_id;
+            i64 c = ast.oop_metadata[0][tid].ctor_id;
+            //Properly implemented class...
+            if(a && b != -1 && c != -1)
+                replacement_text = "cguniqueptr_c"
+            else//not a properly implemented class
+                replacement_text = "cguniqueptr_s"
+            end
+        end
+        gotten_type.freelist();
+        
+        //perform the replacement...
+        
+        cgstrll* iter = result;
+        while(iter != 0)
+            if(iter.d != CG_TOK_IDENT) iter = iter.right continue end
+            if(iter.text streq "__SEABASS_STL_REPLACEMENT_MAGIC__")
+                __builtin_free(iter.text);
+                iter.text = __builtin_strdup(replacement_text);
+            end
+            iter = iter.right
+        end
+        //return the result...
+        return result;
+    ]
+]
