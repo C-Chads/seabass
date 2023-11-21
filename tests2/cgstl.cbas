@@ -1,6 +1,22 @@
 
 #include <meta>
 
+struct mystruct
+    noexport
+    int a
+    int b
+    int c
+end
+
+method codegen mystruct.dtor:
+    this.a = 0;
+    this.b = 0;
+    this.c = 0;
+    @pprint[
+        /   "Death..."
+    ]
+end
+
 
 fn codegen codegen_main():
     //while(1) end
@@ -19,4 +35,44 @@ fn codegen codegen_main():
         /int(myintvec2.d[0])
     ]
     
+    if(1)
+        @cgvec_s[mystruct] mystructvec
+        mystruct q
+        q.a = -22;
+        mystructvec.push(q);
+        q.a = 8;
+        mystructvec.push(q);
+        q.a = 9;
+        mystructvec.push(q);
+        q.a = 10;
+        mystructvec.push(q);
+        @pprint[
+            /   "Dumping mystructvec..."
+            /int(mystructvec.d[0].a)
+            /int(mystructvec.d[1].a)
+            /int(mystructvec.d[2].a)
+            /int(mystructvec.d[3].a)
+        ]
+    end
+    if(2)
+        @cgvec_c[mystruct] mystructvec
+        if(1)
+            mystruct q
+            q.a = -22;
+            mystructvec.push(q);
+            q.a = 45;
+            mystructvec.push(q);
+            q.a = 1<<30;
+            mystructvec.push(q);
+            q.a = 29;
+            mystructvec.push(q);
+        end
+        @pprint[
+            /   "Dumping mystructvec (classes)..."
+            /int(mystructvec.d[0].a)
+            /int(mystructvec.d[1].a)
+            /int(mystructvec.d[2].a)
+            /int(mystructvec.d[3].a)
+        ]
+    end
 end
