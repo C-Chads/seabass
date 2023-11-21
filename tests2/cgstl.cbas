@@ -1,0 +1,22 @@
+
+#include <meta>
+
+
+fn codegen codegen_main():
+    //while(1) end
+    @cgvec_p[i32] myintvec
+    @cgvec_p[long] myintvec2
+    
+    myintvec.push(32);
+    myintvec.push(-33);
+    myintvec.push(34);
+    myintvec2 := myintvec;
+    myintvec.ctor();
+    @pprint[
+        /   "Dumping elements..."
+        /int(myintvec2.d[2])
+        /int(myintvec2.d[1])
+        /int(myintvec2.d[0])
+    ]
+    
+end

@@ -7,5 +7,7 @@
 #include <stdmeta/errno.hbas>
 #include <stdmeta/knowl.hbas>
 #include <stdmeta/codegen.hbas>
+#include <stdmeta/cgstl.hbas>
+
 
 

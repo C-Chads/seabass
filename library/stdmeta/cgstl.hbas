@@ -1,0 +1,312 @@
+
+#guard SEABASS_COMPILETIME_STL
+
+#include <stdmeta/tbas.hbas>
+
+/*
+    COMPILETIME STL FOR SEABASS
+    
+    CLINKERS:
+    
+    1. type parameters 
+*/
+
+codegen u64 cg_seabass_stl_instance_counter = 1;
+
+
+
+//CG vector, for PRIMITIVE DATA TYPES.
+@mktemplate[
+    cgvec_p
+    typed
+    [
+        [__SEABASS_STL_REPLACEMENT_MAGIC__]
+        @globalscope
+            //vector class...
+            class __SEABASS_STL_REPLACEMENT_MAGIC__
+                noexport
+                TYPE* d
+                u64 len
+            end
+            //ctor/dtor
+            method codegen __SEABASS_STL_REPLACEMENT_MAGIC__.ctor:
+                this.d = 0;
+                this.len = 0;
+            end
+            method codegen __SEABASS_STL_REPLACEMENT_MAGIC__.dtor:
+                if(this.d != 0)
+                    __builtin_free((byte*)this.d)
+                end
+            end
+            method codegen __SEABASS_STL_REPLACEMENT_MAGIC__.push(TYPE a):
+                this.d = cast(TYPE*)__builtin_realloc(
+                    (byte*)this.d,
+                    sizeof(TYPE) * ++this.len
+                );
+                this.d[this.len-1] = a;
+            end
+            method codegen __SEABASS_STL_REPLACEMENT_MAGIC__.pop():
+                if(this.len)
+                    this.len--
+                end
+                if(this.len == 0)
+                    if(this.d != 0)
+                        //Important: we don't call destructors...
+                        //we cannot do this arbitrary because we cannot know
+                        //anything about TYPE. it could be an @ generated thing...
+                        __builtin_free((byte*)this.d)
+                    end
+                    this.d = 0;
+                end
+            end
+            method codegen __SEABASS_STL_REPLACEMENT_MAGIC__.grow(i64 sz):
+                this.len = this.len + sz;
+                this.d = cast(TYPE*)__builtin_realloc(
+                    (byte*)this.d,
+                    sizeof(TYPE) * this.len
+                );
+            end
+            method codegen __SEABASS_STL_REPLACEMENT_MAGIC__.insert(TYPE a, u64 where):
+                if(where >= this.len)
+                    this.grow(where - this.len+1 );
+                    this.d[this.len-1] = a;
+                    return
+                end
+                //Do the memcpy...
+                this.grow(1);
+                byte* b = (byte*)this.d;
+                byte* n = __builtin_malloc(sizeof(TYPE) * this.len);
+                __builtin_memcpy(
+                    n,
+                    b + where * sizeof(TYPE),
+                    sizeof(TYPE) *
+                    (this.len - where-1)
+                );
+                this.d[where] = a;
+                __builtin_memcpy(
+                    b + (where+1) * sizeof(TYPE),
+                    n,
+                    sizeof(TYPE) *
+                    (this.len - where-1)
+                );
+                __builtin_free(n);
+            end
+        end
+    ][
+        TYPE
+    ][
+        char[50] buf
+        u64 ours = cg_seabass_stl_instance_counter++;
+        cgstrcpy(buf, "__cgstlvecimpl__");
+        __builtin_utoa(buf + 16, ours);
+        cgstrll* iter = result;
+        while(iter != 0)
+            if(iter.d != CG_TOK_IDENT) iter = iter.right continue end
+            if(iter.text streq "__SEABASS_STL_REPLACEMENT_MAGIC__")
+                __builtin_free(iter.text);
+                iter.text = __builtin_strdup(buf);
+            end
+            iter = iter.right
+        end
+        return result;
+    ]
+]
+
+//CG vector, for STRUCT TYPES that have NO DESTRUCTOR
+@mktemplate[
+    cgvec_s
+    typed
+    [
+        [__SEABASS_STL_REPLACEMENT_MAGIC__]
+        @globalscope
+            //vector class...
+            class __SEABASS_STL_REPLACEMENT_MAGIC__
+                noexport
+                TYPE* d
+                u64 len
+            end
+            //ctor/dtor
+            method codegen __SEABASS_STL_REPLACEMENT_MAGIC__.ctor:
+                this.d = 0;
+                this.len = 0;
+            end
+            method codegen __SEABASS_STL_REPLACEMENT_MAGIC__.dtor:
+                if(this.d != 0)
+                    __builtin_free((byte*)this.d)
+                end
+            end
+            method codegen __SEABASS_STL_REPLACEMENT_MAGIC__.push(TYPE a):
+                this.d = cast(TYPE*)__builtin_realloc(
+                    (byte*)this.d,
+                    sizeof(TYPE) * ++this.len
+                );
+                this.d[this.len-1] := a;
+            end
+            method codegen __SEABASS_STL_REPLACEMENT_MAGIC__.pop():
+                if(this.len)
+                    this.len--
+                end
+                if(this.len == 0)
+                    if(this.d != 0)
+                        __builtin_free((byte*)this.d)
+                    end
+                    this.d = 0;
+                end
+            end
+            method codegen __SEABASS_STL_REPLACEMENT_MAGIC__.grow(i64 sz):
+                this.len = this.len + sz;
+                this.d = cast(TYPE*)__builtin_realloc(
+                    (byte*)this.d,
+                    sizeof(TYPE) * this.len
+                );
+            end
+            method codegen __SEABASS_STL_REPLACEMENT_MAGIC__.insert(TYPE a, u64 where):
+                if(where >= this.len)
+                    this.grow(where - this.len+1 );
+                    (this.d + (this.len-1)) := a;
+                    return
+                end
+                //Do the memcpy...
+                this.grow(1);
+                byte* b = (byte*)this.d;
+                byte* n = __builtin_malloc(sizeof(TYPE) * this.len);
+                __builtin_memcpy(
+                    n,
+                    b + where * sizeof(TYPE),
+                    sizeof(TYPE) *
+                    (this.len - where-1)
+                );
+                this.d[where] := a;
+                __builtin_memcpy(
+                    b + (where+1) * sizeof(TYPE),
+                    n,
+                    sizeof(TYPE) *
+                    (this.len - where-1)
+                );
+                __builtin_free(n);
+            end
+        end
+    ][
+        TYPE
+    ][
+        char[50] buf
+        u64 ours = cg_seabass_stl_instance_counter++;
+        cgstrcpy(buf, "__cgstlvecimpl__");
+        __builtin_utoa(buf + 16, ours);
+        cgstrll* iter = result;
+        while(iter != 0)
+            if(iter.d != CG_TOK_IDENT) iter = iter.right continue end
+            if(iter.text streq "__SEABASS_STL_REPLACEMENT_MAGIC__")
+                __builtin_free(iter.text);
+                iter.text = __builtin_strdup(buf);
+            end
+            iter = iter.right
+        end
+        return result;
+    ]
+]
+
+
+
+//CG vector, for CLASSES
+//CONSTRUCTORS are __NOT__ called!
+@mktemplate[
+    cgvec_c
+    typed
+    [
+        [__SEABASS_STL_REPLACEMENT_MAGIC__]
+        @globalscope
+            //vector class...
+            class __SEABASS_STL_REPLACEMENT_MAGIC__
+                noexport
+                TYPE* d
+                u64 len
+            end
+            //ctor/dtor
+            method codegen __SEABASS_STL_REPLACEMENT_MAGIC__.ctor:
+                this.d = 0;
+                this.len = 0;
+            end
+            method codegen __SEABASS_STL_REPLACEMENT_MAGIC__.dtor:
+                if(this.d != 0)
+                    u64 i
+                    for(i = 0, i < this.len, i++)
+                        this.d[i].dtor();
+                    end
+                    __builtin_free((byte*)this.d)
+                end
+            end
+            method codegen __SEABASS_STL_REPLACEMENT_MAGIC__.push(TYPE a):
+                this.d = cast(TYPE*)__builtin_realloc(
+                    (byte*)this.d,
+                    sizeof(TYPE) * ++this.len
+                );
+                this.d[this.len-1] := a;
+            end
+            method codegen __SEABASS_STL_REPLACEMENT_MAGIC__.pop():
+                if(this.len)
+                    this.d[this.len-1].dtor();
+                    this.len--
+                end
+                if(this.len == 0)
+                    if(this.d != 0)
+                        __builtin_free((byte*)this.d)
+                    end
+                    this.d = 0;
+                end
+            end
+            method codegen __SEABASS_STL_REPLACEMENT_MAGIC__.grow(i64 sz):
+                this.len = this.len + sz;
+                this.d = cast(TYPE*)__builtin_realloc(
+                    (byte*)this.d,
+                    sizeof(TYPE) * this.len
+                );
+            end
+            method codegen __SEABASS_STL_REPLACEMENT_MAGIC__.insert(TYPE a, u64 where):
+                if(where >= this.len)
+                    this.grow(where - this.len+1 );
+                    (this.d + (this.len-1)) := a;
+                    return
+                end
+                //Do the memcpy...
+                this.grow(1);
+                byte* b = (byte*)this.d;
+                byte* n = __builtin_malloc(sizeof(TYPE) * this.len);
+                __builtin_memcpy(
+                    n,
+                    b + where * sizeof(TYPE),
+                    sizeof(TYPE) *
+                    (this.len - where-1)
+                );
+                this.d[where] := a;
+                __builtin_memcpy(
+                    b + (where+1) * sizeof(TYPE),
+                    n,
+                    sizeof(TYPE) *
+                    (this.len - where-1)
+                );
+                __builtin_free(n);
+            end
+        end
+    ][
+        TYPE
+    ][
+        char[50] buf
+        u64 ours = cg_seabass_stl_instance_counter++;
+        cgstrcpy(buf, "__cgstlvecimpl__");
+        __builtin_utoa(buf + 16, ours);
+        cgstrll* iter = result;
+        while(iter != 0)
+            if(iter.d != CG_TOK_IDENT) iter = iter.right continue end
+            if(iter.text streq "__SEABASS_STL_REPLACEMENT_MAGIC__")
+                __builtin_free(iter.text);
+                iter.text = __builtin_strdup(buf);
+            end
+            iter = iter.right
+        end
+        return result;
+    ]
+]
+
+
+
