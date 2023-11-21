@@ -22,12 +22,14 @@ fn codegen codegen_main():
     //while(1) end
     @cgvec_p[i32] myintvec
     @cgvec_p[long] myintvec2
+    @cgvec_p[llong] myintvec3
     
     myintvec.push(32);
     myintvec.push(-33);
     myintvec.push(34);
     myintvec2 := myintvec;
     myintvec.ctor();
+    //myintvec3 := myintvec;
     @pprint[
         /   "Dumping elements..."
         /int(myintvec2.d[2])
@@ -72,6 +74,8 @@ fn codegen codegen_main():
             /int(mystructvec.d[0].a)
             /int(mystructvec.d[1].a)
             /int(mystructvec.d[2].a)
+            /   "For comparison, 1<<30 is..."
+            /int(1<<30)
             /int(mystructvec.d[3].a)
         ]
     end
