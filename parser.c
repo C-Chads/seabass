@@ -1277,6 +1277,7 @@ void parse_fn(int is_method){
     uint64_t is_explicit_static = 0;
     uint64_t symid;
     uint64_t nargs = 0;
+    int require_metadata_update = 0;
     
     uint64_t k;
     t.basetype = BASE_VOID; //made explicit...
@@ -1377,6 +1378,7 @@ void parse_fn(int is_method){
     n = strdup(peek()->text);
     if(is_method){
         if(streq(n, "ctor") || streq(n, "dtor")){
+            require_metadata_update = 1;
             //Force an update.
             oop_metadata[t_method_struct.structid].have_checked = 0;
         }
@@ -1604,13 +1606,21 @@ void parse_fn(int is_method){
 
     t.funcid = symid;
     if(is_predecl)
+    {
         consume_semicolon("Function predeclaration requires semicolon");
-    if(!is_predecl){
+        if(require_metadata_update)
+        {
+            update_metadata(t_method_struct.structid);
+        }
+    }else{
         symbol_table[symid]->is_incomplete = 1; /*important for codegen functions...*/
         active_function = symid;
         parse_fbody();
         active_function = -1;
         symbol_table[symid]->is_incomplete = 0;
+        if(require_metadata_update){
+            update_metadata(t_method_struct.structid);
+        }
     }
 }
 

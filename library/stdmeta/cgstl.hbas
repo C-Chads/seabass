@@ -1,0 +1,109 @@
+
+#include <stdmeta/tbas.hbas>
+
+/*
+    COMPILETIME STL FOR SEABASS
+*/
+
+codegen u64 cg_seabass_stl_instance_counter = 1;
+
+@wksht __cg_stl_vec_inner_destroy[
+    [
+        [TYPE]
+        u64 i
+        for(i = 0, i < this.len, i++)
+            this.d[i].dtor();
+        end
+    ][
+        TYPE
+    ][
+        cgstrll* gotten_type
+        @cg_bldr_foldout_arg gotten_type result
+        
+        //it's not a struct declaration OR it has pointerlevel/array portion...
+        if(gotten_type.d != CG_TOK_IDENT || gotten_type.right != 0)
+            result.freelist();
+            result = cg_qtok(";");
+            return result
+        end
+        //it is a struct declaration. Does it have OOP metadata?
+        cgast* ast = cg_getast();
+        i64 tid = -1;
+        i64 i = 0;
+        i64 ntd = ast.ntypedecls[0];
+        for(i = 0, i < ntd, i++)
+            //is this it?
+            if(ast.type_table[0][i].name streq gotten_type.text)
+                tid = i;
+                break
+            end
+        end
+        if(tid == -1)
+            @pprint[
+                /   "Seabass STL Error!"
+                /   "Unknown struct type:"
+                /   (gotten_type.text)
+                /   "File:"
+                /   (gotten_type.filename)
+                /   "Line:"
+                /int(gotten_type.linenum)
+                /   "Column:"
+                /int(gotten_type.colnum)
+            ]
+            __builtin_exit(1);
+        end
+        //we have a tid... check oop metadata
+        //TODO: Fix bug: what if we have never mentioned this
+        //struct variable before?
+        if(ast.oop_metadata[0][tid].)
+        
+        return result;
+    ]
+]
+
+@mktemplate[
+    cgvec
+    typed
+    [
+        [__SEABASS_STL_REPLACEMENT_MAGIC__]
+        @globalscope
+            //vector class...
+            class __SEABASS_STL_REPLACEMENT_MAGIC__
+                noexport
+                TYPE* d
+                u64 len
+            end
+            //ctor/dtor
+            method codegen __SEABASS_STL_REPLACEMENT_MAGIC__.ctor:
+                this.d = 0;
+                this.len = 0;
+            end
+            method codegen __SEABASS_STL_REPLACEMENT_MAGIC__.dtor:
+                if(this.d != 0)
+                    //if this was a 
+                    __builtin_free(this.d)
+                end
+            end
+        
+        end
+    ][
+        TYPE
+    ][
+        char[50] buf
+        u64 ours = cg_seabass_stl_instance_counter++;
+        cgstrcpy(buf, "__cgvecimpl__");
+        __builtin_utoa(buf + 13, ours);
+        
+        cgstrll* iter = result;
+        while(iter != 0)
+            if(iter.d != CG_TOK_IDENT) iter = iter.right continue end
+            if(iter.text streq "__SEABASS_STL_REPLACEMENT_MAGIC__")
+                __builtin_free(iter.text);
+                iter.text = __builtin_strdup(buf);
+            end
+            iter = iter.right
+        end
+        return result;
+    ]
+]
+
