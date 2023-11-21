@@ -550,6 +550,13 @@ codegen u64 cg_seabass_stl_instance_counter = 1;
         //
         cgstrll* gotten_type
         @cg_bldr_foldout_arg gotten_type result
+        if(gotten_type == 0)
+            @pprint[
+                /   "Seabass cguniqueptr STL Error!"
+                /   "Empty TYPE field..."
+                /   "(Cannot display line number or anything... sorry!)"
+            ]
+        end
         if(
             !(
                 gotten_type.d == CG_TOK_IDENT || //is an identifier- typedecl...
