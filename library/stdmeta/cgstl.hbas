@@ -394,6 +394,7 @@ codegen u64 cg_seabass_stl_instance_counter = 1;
                 replacement_text = "cgvec_s"
             end
         end
+        gotten_type.freelist();
         
         //perform the replacement...
         
@@ -409,6 +410,5 @@ codegen u64 cg_seabass_stl_instance_counter = 1;
         //return the result...
         return result;
     ]
-
 ]
 
