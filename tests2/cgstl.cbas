@@ -8,6 +8,10 @@ struct mystruct
     int c
 end
 
+method codegen mystruct.ctor:
+    
+end
+
 method codegen mystruct.dtor:
     this.a = 0;
     this.b = 0;
@@ -20,9 +24,9 @@ end
 
 fn codegen codegen_main():
     //while(1) end
-    @cgvec_p[i32] myintvec
-    @cgvec_p[long] myintvec2
-    @cgvec_p[llong] myintvec3
+    @cgvec[i32] myintvec
+    @cgvec[long] myintvec2
+    @cgvec[llong] myintvec3
     
     myintvec.push(32);
     myintvec.push(-33);
@@ -56,8 +60,9 @@ fn codegen codegen_main():
             /int(mystructvec.d[3].a)
         ]
     end
+    @pprint[/bar]
     if(2)
-        @cgvec_c[mystruct] mystructvec
+        @cgvec[mystruct] mystructvec
         if(1)
             mystruct q
             q.a = -22;

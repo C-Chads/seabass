@@ -47,7 +47,7 @@ codegen u64 cg_seabass_stl_instance_counter = 1;
             end
             method codegen __SEABASS_STL_REPLACEMENT_MAGIC__.pop():
                 if(this.len)
-                    this.len--
+                    --this.len
                 end
                 if(this.len == 0)
                     if(this.d != 0)
@@ -56,10 +56,13 @@ codegen u64 cg_seabass_stl_instance_counter = 1;
                         //anything about TYPE. it could be an @ generated thing...
                         __builtin_free((byte*)this.d)
                     end
-                    this.d = 0;
+                    this.d = 0
                 end
             end
             method codegen __SEABASS_STL_REPLACEMENT_MAGIC__.grow(i64 sz):
+                if(sz < -this.len)
+                    sz = -this.len
+                end
                 this.len = this.len + sz;
                 this.d = cast(TYPE*)__builtin_realloc(
                     (byte*)this.d,
@@ -154,6 +157,9 @@ codegen u64 cg_seabass_stl_instance_counter = 1;
                 end
             end
             method codegen __SEABASS_STL_REPLACEMENT_MAGIC__.grow(i64 sz):
+                if(sz < -this.len)
+                    sz = -this.len
+                end
                 this.len = this.len + sz;
                 this.d = cast(TYPE*)__builtin_realloc(
                     (byte*)this.d,
@@ -256,11 +262,22 @@ codegen u64 cg_seabass_stl_instance_counter = 1;
                 end
             end
             method codegen __SEABASS_STL_REPLACEMENT_MAGIC__.grow(i64 sz):
+                if(sz < -this.len)
+                    sz = -this.len
+                end
                 this.len = this.len + sz;
                 this.d = cast(TYPE*)__builtin_realloc(
                     (byte*)this.d,
                     sizeof(TYPE) * this.len
                 );
+                if(sz <= 0)
+                    return
+                end
+                //call constructors...
+                i64 i
+                for(i = 0, i < sz, i++)
+                    this.d[this.len-1-i].ctor()
+                end
             end
             method codegen __SEABASS_STL_REPLACEMENT_MAGIC__.insert(TYPE a, u64 where):
                 if(where >= this.len)
@@ -269,7 +286,13 @@ codegen u64 cg_seabass_stl_instance_counter = 1;
                     return
                 end
                 //Do the memcpy...
-                this.grow(1);
+                //this.grow(1);
+                this.len = this.len + 1;
+                this.d = cast(TYPE*)__builtin_realloc(
+                    (byte*)this.d,
+                    sizeof(TYPE) * this.len
+                );
+                
                 byte* b = (byte*)this.d;
                 byte* n = __builtin_malloc(sizeof(TYPE) * this.len);
                 __builtin_memcpy(
@@ -308,5 +331,84 @@ codegen u64 cg_seabass_stl_instance_counter = 1;
     ]
 ]
 
+@wksht cgvec [
+    [
+        [TYPE]
+        @__SEABASS_STL_REPLACEMENT_MAGIC__[TYPE]
+    ][TYPE][
+        char* replacement_text = "CGSTL_CGVEC_ERROR";
+        //
+        cgstrll* gotten_type
+        @cg_bldr_foldout_arg gotten_type result
+        if(
+            !(
+                gotten_type.d == CG_TOK_IDENT || //is an identifier- typedecl...
+                (   gotten_type.d == CG_TOK_OPERATOR && //
+                    gotten_type.text streq "@"
+                )
+            )|| gotten_type.right != 0
+            
+        )
+            replacement_text = "cgvec_p"
+        elif(
+            //is metaprogramming...
+            gotten_type.d == CG_TOK_OPERATOR &&
+            gotten_type.text streq "@"
+        )
+            //assume it's a class!
+            replacement_text = "cgvec_c"
+        else
+            cgast* ast = cg_getast();
+            i64 tid = -1;
+            i64 i = 0;
+            i64 ntd = ast.ntypedecls[0];
+            for(i = 0, i < ntd, i++)
+                //is this it?
+                if(ast.type_table[0][i].name streq gotten_type.text)
+                    tid = i;
+                    break
+                end
+            end
+            if(tid == -1)
+                @pprint[
+                    /   "Seabass cgvec STL Error!"
+                    /   "Unknown struct type:"
+                    /   (gotten_type.text)
+                    /   "File:"
+                    /   (gotten_type.filename)
+                    /   "Line:"
+                    /int(gotten_type.linenum)
+                    /   "Column:"
+                    /int(gotten_type.colnum)
+                ]
+                __builtin_exit(1);
+            end
+            //we have a tid... check oop metadata
+            i64 a = ast.oop_metadata[0][tid].have_checked;
+            i64 b = ast.oop_metadata[0][tid].dtor_id;
+            i64 c = ast.oop_metadata[0][tid].ctor_id;
+            //Properly implemented class...
+            if(a && b != -1 && c != -1)
+                replacement_text = "cgvec_c"
+            else//not a properly implemented class
+                replacement_text = "cgvec_s"
+            end
+        end
+        
+        //perform the replacement...
+        
+        cgstrll* iter = result;
+        while(iter != 0)
+            if(iter.d != CG_TOK_IDENT) iter = iter.right continue end
+            if(iter.text streq "__SEABASS_STL_REPLACEMENT_MAGIC__")
+                __builtin_free(iter.text);
+                iter.text = __builtin_strdup(replacement_text);
+            end
+            iter = iter.right
+        end
+        //return the result...
+        return result;
+    ]
 
+]
 
