@@ -307,12 +307,12 @@ static void tokenizer(
     const char* STRING_BEGIN = 		"\"";
     const char* STRING_END = 		"\"";
     const char* CHAR_BEGIN = 		"\'";
-    const char* CHAR_END = 			"\'";
+    //const char* CHAR_END = 			"\'";
     /*C-style comments.*/
     const char* COMMENT_BEGIN = 	"/*";
     const char* COMMENT_END = 		"*/";
     const char* LINECOMMENT_BEGIN = 	"//";
-    const char* LINECOMMENT_END = 	"\n";
+    //const char* LINECOMMENT_END = 	"\n";
     const char* INCLUDE_OPEN_SYS = "<";
     const char* INCLUDE_CLOSE_SYS = ">";
     char* text_store = work->text;
@@ -722,13 +722,22 @@ static void tokenizer(
         }
         //if(mode == 0)
         mode_whitespace:
+        for(;work->text[i] != '\0'; i++)
         { /*reading whitespace.*/
             work->data = 0;
-            if(isspace(work->text[i]) && work->text[i]!='\n') continue;
-            work = consume__bytes_with_bigstore(work, i); i=-1; mode = -1; continue;
+            if(isspace(work->text[i]) && work->text[i]!='\n') {
+                continue;
+            }
+            
+            work = consume__bytes_with_bigstore(work, i); 
+            i=0; 
+            mode = -1; 
+            goto done_selecting_mode;
         }
+        break;
         //if(mode == 1)
         mode_identifier:
+        for(;work->text[i] != '\0'; i++)
         { /*valid identifier*/
             work->data = (void*)8;
             if(
@@ -736,21 +745,26 @@ static void tokenizer(
             )
             {
                 work = consume__bytes_with_bigstore(work, i); 
-                i = -1; mode = -1;
+                i = 0; mode = -1;
+                goto done_selecting_mode;
             }
             continue;
         }
+        break;
         //if(mode == 7)
-        mode_decliteral:{ /*Decimal literal, might turn into float*/
+        mode_decliteral:
+        for(;work->text[i] != '\0'; i++)
+        { /*Decimal literal, might turn into float*/
             work->data = (void*)6;
             if(work->text[i] == '.')
             {
                 mode = 11; /*Begin parsing decimal fractional portion*/
                 work->data = (void*)7;
-                continue;
+                i++;
+                goto done_selecting_mode;
             }
             if(work->text[i] == 'E' || work->text[i] == 'e'){
-                if(work->text[i+1] == '-' || work->text[i+1] == '+') 
+                if(work->text[i+1] == '-' || work->text[i+1] == '+')
                     i++;
                 mode = 10; /*Begin parsing the E portion.*/
                 work->data = (void*)7;
@@ -761,14 +775,15 @@ static void tokenizer(
                 !my_isdigit(work->text[i])
             )
             {
-                
                 work = consume__bytes_with_bigstore(work, i); 
-                i = -1; mode = -1; continue;
+                i = 0; mode = -1; goto done_selecting_mode;
             }
             continue;
         }
+        break;
         //if(mode == 8)
         mode_hexliteral:
+        for(;work->text[i] != '\0'; i++)
         { /*Hex literal*/
             work->data = (void*)6;
             if(
@@ -776,12 +791,14 @@ static void tokenizer(
             )
             {
                 work = consume__bytes_with_bigstore(work, i); 
-                i = -1; mode = -1; continue;
+                i = 0; mode = -1; goto done_selecting_mode;
             }
             continue;
         }
         //if(mode == 9)
-        mode_octliteral:{ /*Octal Literal*/
+        mode_octliteral:
+        for(;work->text[i] != '\0'; i++)
+        { /*Octal Literal*/
             work->data = (void*)6;
             if(
                 !my_isoct(work->text[i])
@@ -790,7 +807,8 @@ static void tokenizer(
                 if(my_isdigit(work->text[i]))
                 {
                     mode = 7; /*This is a decimal literal, actually*/
-                    continue;
+                    i++;
+                    goto done_selecting_mode;
                 }
                 /*allow 0e-3*/
                 if(work->text[i] == 'E' || work->text[i] == 'e'){
@@ -805,25 +823,35 @@ static void tokenizer(
                 {
                     mode = 11; /*Begin parsing decimal fractional portion*/
                     work->data = (void*)7;
-                    continue;
+                    i++;
+                    goto done_selecting_mode;
                 }
                 work = consume__bytes_with_bigstore(work, i); 
-                i = -1; mode = -1; continue;
+                i = 0; mode = -1;
+                goto done_selecting_mode;
             }
             continue;
         }
+        break;
         //if(mode == 10)
-        afterE:{ /*after E*/
+        afterE:
+        for(;work->text[i] != '\0'; i++)
+        { /*after E*/
             work->data = (void*)7;
             if(!my_isdigit(work->text[i])){
                 work->data = (void*)7;
                 work = consume__bytes_with_bigstore(work, i); 
-                i = -1; mode = -1; continue;
+                i = 0;
+                mode = -1;
+                goto done_selecting_mode;
             }
             continue;
         }
+        break;
         //if(mode == 11)
-        afterRadix:{ /*After the radix of a float*/
+        afterRadix:
+        for(;work->text[i] != '\0'; i++)
+        { /*After the radix of a float*/
             work->data = (void*)7;
             if(work->text[i] == 'E' || work->text[i] == 'e'){
                 if(work->text[i+1] == '-' || work->text[i+1] == '+')
@@ -834,63 +862,104 @@ static void tokenizer(
             }
             if(!my_isdigit(work->text[i])){
                 work = consume__bytes_with_bigstore(work, i); 
-                i = -1; mode = -1; continue;
+                i = 0; mode = -1; goto done_selecting_mode;
             }
             continue;
         }
+        break;
         //if(mode == 12)
-        mode_incsys:{
+        mode_incsys:
+        for(;work->text[i] != '\0'; i++)
+        {
             work->data = (void*)22;
             if(work->text[i] == '\\' && work->text[i+1] != '\0') {i++; continue;}
             if(strfind(work->text + i, INCLUDE_CLOSE_SYS) == 0){
                 i+=strlen(INCLUDE_CLOSE_SYS);
-                work = consume__bytes_with_bigstore(work, i); i = -1; mode = -1; continue;
+                work = consume__bytes_with_bigstore(work, i); 
+                i = 0; 
+                mode = -1; 
+                goto done_selecting_mode;
             }
             continue;
         }
+        break;
         //if(mode == 2)
-        mode_string:{ /*string.*/
+        mode_string:
+        for(;work->text[i] != '\0'; i++){ /*string.*/
             work->data = (void*)2;
             if(work->text[i] == '\\' && work->text[i+1] != '\0') {i++; continue;}
-            if(strfind(work->text + i, STRING_END) == 0){
+            if(
+                //strfind(work->text + i, STRING_END) == 0
+                (work->text[i] == '\"')
+            ){
                 i+=strlen(STRING_END);
-                work = consume__bytes_with_bigstore(work, i); i = -1; mode = -1; continue;
+                work = consume__bytes_with_bigstore(work, i); 
+                i = 0; 
+                mode = -1;
+                goto done_selecting_mode;
             }
             continue;
         }
+        break;
         //if(mode == 3)
-        mode_comment:{ /*comment.*/
+        mode_comment:
+        for(;work->text[i] != '\0'; i++)
+        { /*comment.*/
             work->data = (void*)4;
             /*if(work->text[i] == '\\' && work->text[i+1] != '\0') {i++; continue;}*/
-            if(strfind(work->text + i, COMMENT_END) == 0){
+            if(
+                //strfind(work->text + i, COMMENT_END) == 0
+                (work->text[i] == '*') &&
+                (work->text[i+1] == '/')
+            ){
                 i+=strlen(COMMENT_END);
 
-                work = consume__bytes_with_bigstore(work, i); i = -1; mode = -1; continue;
+                work = consume__bytes_with_bigstore(work, i); 
+                i = 0; 
+                mode = -1; 
+                goto done_selecting_mode;
             }
             continue;
         }
+        break;
         //if(mode == 4)
-        mode_charlit:{ /*char literal.*/
+        mode_charlit:
+        for(;work->text[i] != '\0'; i++)
+        { /*char literal.*/
             work->data = (void*)3;
             if(work->text[i] == '\\' && work->text[i+1] != '\0') {i++; continue;}
-            if(strfind(work->text + i, CHAR_END) == 0){
-                i+=strlen(CHAR_END);
-                work = consume__bytes_with_bigstore(work, i); i = -1; mode = -1; continue;
+            if(
+                //strfind(work->text + i, CHAR_END) == 0
+                work->text[i] == '\''
+            ){
+                i+=1;
+                work = consume__bytes_with_bigstore(work, i);
+                i = 0;
+                mode = -1;
+                goto done_selecting_mode;
             }
             continue;
         }
+        break;
         //if(mode == 6)
-        mode_linecomment:{ /*line comment*/
+        mode_linecomment:
+        for(;work->text[i] != '\0'; i++)
+        { /*line comment*/
             work->data = (void*)4;
-            if(strfind(work->text + i, LINECOMMENT_END) == 0){
+            if(
+                //strfind(work->text + i, LINECOMMENT_END) == 0
+                (work->text[i] == '\n')
+            ){
                 /*i+=strlen(LINECOMMENT_END);*/
 
                 work = consume__bytes_with_bigstore(work, i); 
-                i = -1; 
-                mode = -1; continue;
+                i = 0;
+                mode = -1;
+                goto done_selecting_mode;
             }
             continue;
         }
+        break;
     } /*eof main tokenizer*/
     //The very last token is currently pointing at the middle of a buffer...
     {
