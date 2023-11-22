@@ -2972,7 +2972,7 @@ void parse_expr_stmt(){
         //No possibility of ambiguity...
         return;
     }
-    consume_semicolon(\
+    consume_semicolon(
         "expression statement requires a semicolon."
         "\nThe place I was trying to find a semicolon was:"
     );
@@ -3163,13 +3163,14 @@ void parse_for(){
 void parse_return(){
     //TODO
     stmt* me;
-    me = parser_push_statement();
-    consume_keyword("return");
-    me->kind = STMT_RETURN;
+    stmt* friendo;
+    consume(); //eat return.
     if(
         symbol_table[active_function]->t.basetype == BASE_VOID &&
         symbol_table[active_function]->t.pointerlevel == 0
     ){
+        me = parser_push_statement();
+        me->kind = STMT_RETURN;
         me->nexpressions = 0;
         //do require a semicolon.
         if(
@@ -3204,8 +3205,37 @@ void parse_return(){
         );
         return;
     }
+    parser_push_statement();
+    me = parser_push_statement();
+    friendo = me-1; //friendo is the previous statement...
+    friendo->kind = STMT_EXPR;
+    friendo->nexpressions = 1;
+    me->kind = STMT_RETURN;
     me->nexpressions = 1;
-    parse_expr((expr_node**)(me->expressions + 0) );
+    /*
+        Friendo is an ASSIGNMENT STATEMENT...
+    */
+    expr_node* c;
+
+    friendo->expressions[0] = c_allocX(sizeof(expr_node));
+    c = friendo->expressions[0];
+    c->kind = EXPR_ASSIGN;
+    
+    expr_node* child_node_self_sym = c_allocX(sizeof(expr_node));
+    child_node_self_sym->symname = strdup("__SEABASS_____RETVAL");
+    child_node_self_sym->kind = EXPR_SYM;
+    c->subnodes[0] = child_node_self_sym;
+    
+    
+    parse_expr((c->subnodes + 1));
+    
+    //we need another one for the return statement...
+    child_node_self_sym = c_allocX(sizeof(expr_node));
+    child_node_self_sym->symname = strdup("__SEABASS_____RETVAL");
+    child_node_self_sym->kind = EXPR_SYM;
+    
+    me->expressions[0] = child_node_self_sym;
+    
     if(
         peek_match_keyw("end") || 
         peek_match_keyw("if") || 
@@ -3226,7 +3256,6 @@ void parse_return(){
         return;
     }
     consume_semicolon("return requires semicolon.");
-
 }
 
 void parse_tail(){
@@ -3277,10 +3306,32 @@ void parse_fbody(){
     symbol_table[active_function]->fbody = c_allocX(sizeof(scope));
     ((scope*)symbol_table[active_function]->fbody)->is_fbody = 1;
     scopestack_push(symbol_table[active_function]->fbody);
+    /*
+        If this is a function with a return value, create a secret
+        variable called SEABASS_____RETVAL
+        which will be used for return values...
+    */
+    if(
+        !(
+            symbol_table[active_function]->t.basetype == BASE_VOID &&
+            symbol_table[active_function]->t.pointerlevel == 0
+        )
+    ){
+        scope* cscope = symbol_table[active_function]->fbody;
+        symdecl s = {0};
+        s.t = symbol_table[active_function]->t;
+        s.t.is_function = 0;
+        s.name = strdup("__SEABASS_____RETVAL");
+        //return value types are always primitives or pointers, meaning this is always
+        //an lvalue...
+        s.t.is_lvalue = 1;
+        cscope->syms = re_allocX(cscope->syms, (++cscope->nsyms) * sizeof(symdecl));
+        cscope->syms[cscope->nsyms-1] = s;
+    }
         parse_stmts();
     scopestack_pop();
     if(nscopes > 0 || nloops > 0){
-        parse_error("INTERNAL PARSER ERROR: Bad scopestack or loopstack.");
+        parse_error("INTERNAL PARSER ERROR: @eof parse_fbody Bad scopestack or loopstack.");
     }
     /*
         handle type checking and most of that language-y stuff.
